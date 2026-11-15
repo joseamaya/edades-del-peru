@@ -132,10 +132,10 @@ Definition of Done and the building audit see
   `profiles.ts`. The region `atmosphere` is applied (Phase 9): `Game.applyAtmosphere` feeds `skyTint`/`fogDensity`
   to the sky, terrain and water as a distance-bounded aerial perspective and `sunWarmth` to the sun; `scene.fog`
   stays null (classic sharp look, buildings undimmed).
-- **Post-processing & the cinematic look**: `src/rendering/PostFX.ts` chains Render → SSAO → Bloom →
+- **Post-processing & the cinematic look**: `src/rendering/PostFX.ts` chains Render → Bloom →
   chromatic aberration → vignette → `OutputPass` → **colour grading** → FXAA. `settings.cinematic` (default
   **on**, `src/core/Config.ts`) enables the whole set and `settings.quality` (`high|medium|low`) tunes
-  SSAO/bloom; both are in the Options panel. On a **software rasterizer** (SwiftShader/llvmpipe) the game starts in
+  bloom; both are in the Options panel. On a **software rasterizer** (SwiftShader/llvmpipe) the game starts in
   the safe _render_ profile (`cinematic` off, `quality` low, pixel ratio 1) without changing the saved player
   settings; `?cine=1` disables that fallback (and `?low=1` still wins). `src/core/QualityGovernor.ts` lowers the preset with hysteresis
   when FPS drops and restores it (never above the chosen preset), dropping the render scale only in severe
@@ -585,7 +585,9 @@ Definition of Done and the building audit see
   value, so changing `renderer.setPixelRatio()` (the governor's render-scale drop, `?low=1`) only shrank the
   canvas and the refraction target; the composer kept rendering the scene, bloom and FXAA at the startup scale.
   `PostFX.setSize(w, h, ratio)` forwards the ratio and `RuntimeController.onResize` passes it; any new resize path
-  must do the same (#449). On a 2× display the difference is large: at DPR 2 in m1_caral the frame is 65.5 ms at
+  must do the same (#449). `PostFX` also sizes the chain in its constructor, so the first frame already has the
+  correct bloom target and FXAA texel size; without it, FXAA stayed at its `1/1024 × 1/512` default until the
+  first resize (#459). On a 2× display the difference is large: at DPR 2 in m1_caral the frame is 65.5 ms at
   native scale and 27.7 ms at scale 1, so without this the governor could not recover a weak HiDPI machine. The
   scale change reallocates the composer targets, so it happens on governor steps (a one-frame hitch in an already
   degraded state) and not per frame.

@@ -108,7 +108,8 @@ export class PostFX {
 
     this.composer.addPass(new RenderPass(scene, camera));
 
-    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), 0.35, 0.3, 0.85);
+    const pixelRatio = renderer.getPixelRatio();
+    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(width * pixelRatio, height * pixelRatio), 0.35, 0.3, 0.85);
     this.composer.addPass(this.bloomPass);
 
     // chromatic aberration + vignette in HDR (before OutputPass)
@@ -129,6 +130,10 @@ export class PostFX {
 
     this.fxaaPass = new ShaderPass(FXAAShader);
     this.composer.addPass(this.fxaaPass);
+
+    // EffectComposer caches the renderer's pixel ratio at construction, and the bloom/FXAA passes keep
+    // their constructor resolution until the first resize. Size the chain now so the first frame is correct.
+    this.setSize(width, height);
   }
 
   /**
