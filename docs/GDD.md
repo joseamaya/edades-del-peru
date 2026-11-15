@@ -101,12 +101,18 @@ rules are in [`design/art-direction.md`](./design/art-direction.md) and
 
 - **Procedural first.** Units and buildings have a procedural model and the simulation never depends on a
   GLB. Rigged models are presentation-only; root motion is ignored.
+- **Cast.** Named characters need a documented name and are classified by likeness in
+  [`design/characters.md`](./design/characters.md). Pre-Hispanic figures without an attested face use a stylized
+  medallion; no portrait is a historical photograph.
+- **Asset path.** [`design/asset-pipeline.md`](./design/asset-pipeline.md) is the start-here route from Blender
+  or GIMP to ingest, provenance and review; the deep rules stay in `authoring-tools.md` and `blender-art.md`.
 - **Authored sites.** The model missions use authored terrain and landmarks; their intro, chapter and epilogue
   art is captured in engine, with approved Blender renders used where they exist (m3 and m4). Renders are
   provenance-gated: a new render starts `reviewed: false` and the game hides it until a human approves it.
 - **Blender and GIMP are local authoring tools**, never CI dependencies. Their versions, MCP setup and
   source layout are in [`design/authoring-tools.md`](./design/authoring-tools.md); the render/export pipeline
-  is in [`design/blender-art.md`](./design/blender-art.md).
+  is in [`design/blender-art.md`](./design/blender-art.md), and the start-here route is
+  [`design/asset-pipeline.md`](./design/asset-pipeline.md).
 - **Every third-party asset** is recorded with its source and licence in [`../PROVENANCE.md`](../PROVENANCE.md).
 - Audio is procedural through the WebAudio engine; no external music or sound pack is required to run.
 
