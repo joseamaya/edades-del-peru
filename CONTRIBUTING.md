@@ -47,9 +47,10 @@ yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build
 ```
 
 **CI:** the `build` job (typecheck/lint/format/unit/build) runs on every PR; the `e2e` workflow runs the
-`@smoke` subset on PRs and the **full** suite on `main`, and is skipped for docs-only PRs
-(`**/*.md`, `.agents/**`). Tag a test `{ tag: '@smoke' }` only if it covers a core flow worth gating
-every PR on (keep the subset fast).
+`@smoke` subset on PRs and the **full** suite on `main`. Documentation-only PRs (Markdown outside
+`docs/historia/`) run the workflow but skip the browser steps, so the required `smoke` checks still report
+success. Historical dossiers count as code because the Codex and E2E assert their text. Tag a test
+`{ tag: '@smoke' }` only if it covers a core flow worth gating every PR on (keep the subset fast).
 
 ## Architecture (summary)
 
