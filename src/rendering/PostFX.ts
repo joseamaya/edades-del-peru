@@ -129,6 +129,10 @@ export class PostFX {
 
     this.fxaaPass = new ShaderPass(FXAAShader);
     this.composer.addPass(this.fxaaPass);
+
+    // EffectComposer caches the renderer's pixel ratio at construction, and the bloom/FXAA passes keep
+    // their constructor resolution until the first resize. Size the chain now so the first frame is correct.
+    this.setSize(width, height);
   }
 
   /**
