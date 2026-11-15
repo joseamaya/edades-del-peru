@@ -9,6 +9,7 @@ const SOURCE_MANIFESTS = [
   path.resolve('art-src/blender/caral/renders.json'),
   path.resolve('art-src/blender/moche/renders.json'),
   path.resolve('art-src/blender/wari/renders.json'),
+  path.resolve('art-src/blender/chanca/renders.json'),
   path.resolve('art-src/blender/mission-decor/renders.json'),
 ];
 const CSV = path.resolve('art-src/blender/caral/caral_asset_manifest.csv');

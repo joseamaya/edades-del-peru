@@ -57,7 +57,8 @@ below, which record each mission's own review and are kept for history). **M** m
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín,
 Tambotoco, Lima and the Junta follow the model pattern and lack mostly art. Every released mission now
 follows the model pattern (256 m, painted ground, acts, in-engine intro and bench), including m8 in this
-pass. **m3–m9 meet the scale, opening and performance gates**; their human art review is pending.
+pass. **m3–m9 meet the scale, opening and performance gates**; their human art review is pending, except
+m5's intro render (approved 2026-11-15).
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
@@ -185,7 +186,8 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 
 ## Yahuar Pampa gold-master status
 
-Reviewed 2026-11-14 as a model mission. The human art gate is still open.
+Reviewed 2026-11-14 as a model mission. The Blender intro render is approved (2026-11-15); the reused
+pucará GLB keeps its own review status (#343).
 
 | Gate        | Status               | Evidence                                                                                                                                                          |
 | ----------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -203,8 +205,8 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Tests       | Met                  | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                                                 |
 | Docs        | Met                  | This document, dossier, `chanca-model-mission.md`, experience table, site note, art docs and README aligned.                                                      |
 | Structure   | Met                  | Three acts, hidden objectives revealed per act, chapter cards with images; the pursuit closes Act III.                                                            |
-| Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_chanca_intro.mjs`; `MISSION_ART` uses the Cusco capture.                              |
-| Art         | Pending human review | The reused Chanca GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                                       |
+| Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_chanca_intro.mjs`; `MISSION_ART` uses the approved EEVEE render (`m5_chanca-intro`).                                                |
+| Art         | Met (intro render)   | Approved `chanca/chanca_intro.blend` render in `src/art/manifest.json`; the reused Chanca GLB keeps its own review status (#343), and the in-engine captures stay recorded in PROVENANCE.                |
 | Performance | Met                  | `bench_scene.mjs`: opening ~682k tris / 362 calls, counterattack ~761k / 521; over the 600k art-direction target (as m7/m9), within the recorded first-pass caps. |
 | Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                |
 

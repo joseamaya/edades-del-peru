@@ -92,7 +92,8 @@ simulation in the E2E; a human playtest is still needed to measure the 20–30 m
 
 ## Open items
 
-1. The Blender intro render is approved (`m5_chanca-intro`, EEVEE, `chanca/chanca_intro.blend`); the in-engine
-   captures remain act-card evidence. Revisit the render if the pucará geometry or the cast changes.
+1. The reused Chanca site GLB keeps its own review status (#343); the Blender intro render is approved
+   (`m5_chanca-intro`, EEVEE, `chanca/chanca_intro.blend`), and the in-engine captures remain act-card
+   evidence. Revisit the render if the pucará geometry or the cast changes.
 2. A real-GPU performance pass; the bench numbers are structural (SwiftShader).
 3. A human playtest to measure the full path.
