@@ -221,7 +221,7 @@ try {
         }
         const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
         if (mission === 'm6b_guerra_civil') {
-          // Act II: the battle of Quipaipan.
+          // Act II: the battle of Quipaipan. `musketeer` is the legacy ranged id (hondero), not a firearm.
           for (let i = 0; i < 14; i++) {
             const kind = i % 5 === 0 ? 'musketeer' : 'soldier';
             g.spawnScriptedUnit(kind, 0, site.x - 15 + (i % 5) * 5, site.z + 10 + Math.floor(i / 5) * 4);

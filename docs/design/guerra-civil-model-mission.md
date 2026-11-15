@@ -15,11 +15,11 @@ hold the pampa, and capture Huáscar without razing Cusco.
 
 ## Acts
 
-| Act                    | Place                | Player action                                                     | Historical idea                                                        |
-| ---------------------- | -------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------- |
-| I · La marcha          | Quito–Cusco road     | Advance with Atahualpa and present battle at Quipaipan            | The dynastic war divides the Tahuantinsuyo                             |
-| II · Quipaipan         | Pampa de Quipaipan   | Hold the pampa 90 s with six soldiers                             | The battle breaks Huáscar's army                                       |
-| III · La captura       | Quipaipan            | Hold the field 20 s with four units and capture Huáscar           | The capture ends the war; the Cusco centre is not the goal             |
+| Act              | Place              | Player action                                                 | Historical idea                                             |
+| ---------------- | ------------------ | ------------------------------------------------------------- | ----------------------------------------------------------- |
+| I · La marcha    | Quito–Cusco road   | Advance with Atahualpa and present battle at Quipaipan        | The dynastic war divides the Tahuantinsuyo                  |
+| II · Quipaipan   | Pampa de Quipaipan | Hold the pampa 90 s with six soldiers                         | The battle breaks Huáscar's army                            |
+| III · La captura | Huáscar's centre   | Move from the pampa and hold the capture 20 s with four units | The capture ends the war; the Cusco centre is not destroyed |
 
 The Cusco centre stays standing: the victory is the capture, not the destruction of the city. The epilogue
 narrates Cajamarca and the weakened empire.
@@ -72,8 +72,8 @@ in the briefing, the chapter cards and the Codex.
 
 - Data: `tests/campaign.test.ts`, `tests/campaign-layout.test.ts`, `tests/authored-sites.test.ts`.
 - Scale: `tests/campaign-scale.test.ts` enforces 256 m, 128² painted ground and the crossing band.
-- E2E: `campaign-playtest.spec.ts` (real orders, no cheats), `campaign-completable.spec.ts`,
-  `save-campaign.spec.ts` (later missions) and `hud-layout.spec.ts`.
+- E2E: `campaign-playtest.spec.ts` (real orders to the capture marker, no cheats),
+  `campaign-completable.spec.ts`, `save-campaign.spec.ts` (mid-capture save/load) and `hud-layout.spec.ts`.
 - Bench: `scripts/bench_scene.mjs` measures the opening (~703k tris / 436 calls) and the battle
   (~967k / 673); over the 600k target as m7/m9; `yarn bench:check`.
 - Evidence: `yarn record --mission=m6b_guerra_civil --mode=clip` and the intro/epilogue captures.

@@ -71,6 +71,16 @@ try {
         const enemy = g.resolveMissionPoint({ ref: 'enemy', dx: 0, dz: 0 });
         const base = g.playerCenter(0);
         const centre = shot.anchor === 'site' ? site : shot.centre === 'enemy' ? enemy : { x: base.x, z: base.z };
+        if (shot.id === 'captura') {
+          for (let i = 0; i < 8; i++) {
+            g.spawnScriptedUnit(
+              i % 4 === 0 ? 'musketeer' : 'soldier',
+              0,
+              enemy.x - 8 + (i % 4) * 4,
+              enemy.z + 10 + Math.floor(i / 4) * 3,
+            );
+          }
+        }
         g.sky.setTimeOfDay(shot.time ?? 0.5);
         let t = 1;
         for (let i = 0; i < 30; i++) {

@@ -777,7 +777,7 @@ test('saves and loads m6 mid-surrender', async ({ page }) => {
     g.update(1 / 60, 0.02);
     document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     const anchor = g.siteAnchor as { x: number; z: number };
-    const army = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead).slice(0, 4) as any[];
+    const army = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead).slice(0, 8) as any[];
     for (const u of army) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
     const dt = 1 / 60;
     let t = 0.1;
@@ -812,6 +812,72 @@ test('saves and loads m6 mid-surrender', async ({ page }) => {
     return {
       surrender: g.mission.getObjectiveProgress('obj_rendicion'),
       canal: g.mission.getObjectiveState('obj_canal'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(after).toEqual(before);
+});
+
+test('saves and loads m6b mid-capture', async ({ page }) => {
+  await page.goto('/?mission=m6b_guerra_civil&seed=777&fog=0&low=1&intro=0');
+  await startMission(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const step = () => {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+      g.update(1 / 60, 0);
+    };
+    m.objState.set('obj_avanzar', 'completed');
+    step();
+    m.objState.set('obj_quipaipan', 'completed');
+    step();
+    const anchor = m.getObjectiveAnchor('obj_captura') as { x: number; z: number };
+    const army = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead).slice(0, 8) as any[];
+    for (const u of army) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    const dt = 1 / 60;
+    let t = 0.1;
+    for (let i = 0; i < Math.ceil(6 / dt) && !m.ended; i++) {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+      for (const u of army) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+      g.update(dt, t);
+      t += dt;
+    }
+    g.saveMatch();
+    return {
+      capture: g.mission.getObjectiveProgress('obj_captura'),
+      hold: m.getObjectiveState('obj_quipaipan'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(before.capture?.current ?? 0).toBeGreaterThan(2);
+  expect(before.hold).toBe('completed');
+
+  await page.goto('/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return {
+      capture: g.mission.getObjectiveProgress('obj_captura'),
+      hold: g.mission.getObjectiveState('obj_quipaipan'),
       tutorialStep: g.tutorial?.toSave().stepId ?? null,
     };
   });

@@ -98,7 +98,7 @@ export const es = {
 
   'hud.victory.title': 'VICTORIA',
   'hud.victory.defeat': 'DERROTA',
-  'hud.victory.win': 'Tu imperio se alza sobre las ruinas del enemigo.',
+  'hud.victory.win': 'La partida termina con la victoria.',
   'hud.victory.lose': 'Tu civilización ha caído ante el avance enemigo.',
   'hud.victory.epilogue': 'Epílogo.',
   'hud.victory.epilogueHint': 'Puedes ampliar el contexto y las fuentes en el Códice desde el menú.',

@@ -13,17 +13,17 @@
 
 ## Certeza
 
-| Afirmación | Certeza | Base |
-| --- | --- | --- |
-| La guerra civil entre Huáscar y Atahualpa tras la muerte de Huayna Cápac | Documentado | Crónicas y tradición inca |
-| La batalla de Quipaipan (1532) y la derrota del ejército de Huáscar | Documentado | Crónicas |
-| La captura de Huáscar en Quipaipan | Documentado | Crónicas |
-| La captura de Atahualpa en Cajamarca (1532) | Documentado | Crónicas españolas |
-| Las cifras de ejércitos | Tradicional, no verificable | Crónicas |
-| El hold, la captura de 20 s y la pampa | Abstracción jugable | Este dossier y `docs/design/guerra-civil-model-mission.md` |
+| Afirmación                                                               | Certeza                     | Base                                                       |
+| ------------------------------------------------------------------------ | --------------------------- | ---------------------------------------------------------- |
+| La guerra civil entre Huáscar y Atahualpa tras la muerte de Huayna Cápac | Documentado                 | Crónicas y tradición inca                                  |
+| La batalla de Quipaipan (1532) y la derrota del ejército de Huáscar      | Documentado                 | Crónicas                                                   |
+| La captura de Huáscar en Quipaipan                                       | Documentado                 | Crónicas                                                   |
+| La captura de Atahualpa en Cajamarca (1532)                              | Documentado                 | Crónicas españolas                                         |
+| Las cifras de ejércitos                                                  | Tradicional, no verificable | Crónicas                                                   |
+| El hold, la captura de 20 s y la pampa                                   | Abstracción jugable         | Este dossier y `docs/design/guerra-civil-model-mission.md` |
 
 ## Fuentes
 
 - Wikipedia: [Guerra civil incaica](https://es.wikipedia.org/wiki/Guerra_civil_incaica), [Atahualpa](https://es.wikipedia.org/wiki/Atahualpa), [Huáscar](https://es.wikipedia.org/wiki/Hu%C3%A1scar).
-- Betanzos, J. (1551). *Suma y narración de los incas*.
-- Cieza de León, P. *Crónica del Perú*.
+- Betanzos, J. (1551). _Suma y narración de los incas_.
+- Cieza de León, P. _Crónica del Perú_.

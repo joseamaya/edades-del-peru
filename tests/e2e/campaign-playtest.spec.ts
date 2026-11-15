@@ -369,6 +369,16 @@ test('plays m6b by holding Quipaipan and capturing Huáscar with real orders', a
       t += dt;
     }
     const progress = m.getObjectiveProgress('obj_quipaipan') as { current: number; target: number } | null;
+    // Act III: move from the pampa to Huáscar's centre and hold the capture.
+    if (!m.ended && m.getObjectiveState('obj_captura') === 'activo') {
+      const capture = m.getObjectiveAnchor('obj_captura') as { x: number; z: number };
+      move(army(), capture.x, capture.z);
+      for (let i = 0; i < Math.ceil(45 / dt) && !m.ended; i++) {
+        if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+        g.update(dt, t);
+        t += dt;
+      }
+    }
     return {
       reach,
       quipaipan: m.getObjectiveState('obj_quipaipan') as string,

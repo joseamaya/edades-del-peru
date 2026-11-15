@@ -520,6 +520,10 @@ describe('campaign educational content', () => {
     expect(m6bActTitles[2]).toContain('Huáscar');
     const capture = m6b.objectives.find((o) => o.id === 'obj_captura')!;
     expect(capture.kind).toBe('hold');
+    expect(capture.pos).toEqual({ ref: 'enemy', dx: 0, dz: 0 });
+    expect(capture.radius).toBeCloseTo(10.667, 3);
+    expect(capture.time).toBe(20);
+    expect(capture.minUnits).toBe(4);
     expect(capture.requires).toBe('obj_quipaipan');
     expect(capture.hidden).toBe(true);
   });

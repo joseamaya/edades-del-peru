@@ -188,8 +188,13 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'huascar',
-        text: 'Sostén la pampa de Quipaipan durante 90 s con al menos seis guerreros y no dejes caer a Atahualpa; al vencer se narra la captura de Huáscar.',
+        text: 'Sostén la pampa de Quipaipan durante 90 s con al menos seis guerreros y no dejes caer a Atahualpa.',
         check: { type: 'objectiveCompleted', objectiveId: 'obj_quipaipan' },
+      },
+      {
+        id: 'captura',
+        text: 'Avanza al centro de Huáscar y sostén la captura veinte segundos: el centro queda intacto, el objetivo es Huáscar.',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_captura' },
       },
     ],
   },
