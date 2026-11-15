@@ -3,37 +3,6 @@
   "sourceRoot": "art-src/blender",
   "assets": [
     {
-      "id": "m5_chanca-intro",
-      "type": "campaign-intro",
-      "scope": "mission",
-      "campaignId": "la-senda-del-sol",
-      "missionId": "m5_yahuar_pampa",
-      "civilization": "inca",
-      "period": 5,
-      "era": 2,
-      "region": "high_andes",
-      "topic": "campaign_intro",
-      "sceneType": "campaign_scene",
-      "asset": "media/generated/campaigns/la-senda-del-sol/m5_yahuar/intro.webp",
-      "render": "mission-decor/renders/chanca_hero.png",
-      "sceneFile": "mission-decor/chanca_fortress_lod0.blend",
-      "confidence": "Reconstrucción volumétrica de una práctica defensiva documentada; planta y remates plausibles.",
-      "camera": "hero",
-      "renderer": "workbench",
-      "license": "project-owned",
-      "author": "Miguel Amaya",
-      "sources": [
-        "docs/historia/campanas/yahuar_pampa.md",
-        "docs/historia/arquitectura.md",
-        "art-src/blender/mission-decor/README.md"
-      ],
-      "alt": "Vista del pucará chanca sobre la pampa de Yahuar, con sus muros y torres de altura.",
-      "caption": "Pucará chanca de Yahuar Pampa",
-      "nature": "abstraction",
-      "sourceSha256": "8ea28413d903a6b719aa5d799d3a8587b278780721fa7c160423e80023d4b7d9",
-      "renderedAt": "2026-10-31T10:00:00-05:00"
-    },
-    {
       "id": "m6_chimu-intro",
       "type": "campaign-intro",
       "scope": "mission",

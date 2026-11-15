@@ -61,7 +61,9 @@ in the quality bar.
 - Three narrated intro beats and the three act cards captured in engine by
   [`scripts/capture_chanca_intro.mjs`](../../scripts/capture_chanca_intro.mjs): Cusco and the pampa, the
   Chanca pucará and the Andahuaylas road, plus a dusk epilogue.
-- `MISSION_ART` (`m5_yahuar_pampa` → `media/chanca/intro-cusco.webp`) and the briefing use the Cusco capture.
+- `MISSION_ART` (`m5_yahuar_pampa` → `media/generated/campaigns/la-senda-del-sol/m5_yahuar/intro.webp`) uses the approved
+  EEVEE render from `art-src/blender/chanca/chanca_intro.blend`; the in-engine captures remain the act-card and
+  epilogue evidence.
 - Victory: the pampa holds and the Chanca camp falls. The epilogue (`media/chanca/intro-epilogo.webp`)
   narrates the integration and Pachacútec. Defeat: Cusco falls or Cusi dies.
 
@@ -90,7 +92,8 @@ simulation in the E2E; a human playtest is still needed to measure the 20–30 m
 
 ## Open items
 
-1. Human art review of the reused Chanca GLB and its Blender records (#343); the in-engine captures are
-   recorded in PROVENANCE and are not a Blender-render claim.
+1. The reused Chanca site GLB keeps its own review status (#343); the Blender intro render is approved
+   (`m5_chanca-intro`, EEVEE, `chanca/chanca_intro.blend`), and the in-engine captures remain act-card
+   evidence. Revisit the render if the pucará geometry or the cast changes.
 2. A real-GPU performance pass; the bench numbers are structural (SwiftShader).
 3. A human playtest to measure the full path.

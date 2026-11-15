@@ -1,7 +1,7 @@
 /**
- * Menu art. All of it is captured from the running game (in-engine recreations): never a Blender
- * render, a historical photograph or a reconstruction claim. Provenance: public/media/menu/PROVENANCE.md
- * and PROVENANCE.md (the Caral captures). Campaigns without art fall back to their accent colour.
+ * Menu art. It mixes in-engine captures with approved Blender renders; neither is a historical
+ * photograph nor a reconstruction claim. Provenance: public/media/menu/PROVENANCE.md,
+ * src/art/manifest.json and PROVENANCE.md (the Caral captures).
  */
 import type { CampaignId } from '../campaign/defs/campaigns';
 import { publicAsset } from '../util/publicAsset';
@@ -20,7 +20,7 @@ export const MISSION_ART: Partial<Record<string, string>> = {
   m2_chavin: publicAsset('media/chavin/intro-templo.webp'),
   m3_moche_recuay: publicAsset('media/moche/intro-valle.webp'),
   m4_wari: publicAsset('media/wari/intro-ayacucho.webp'),
-  m5_yahuar_pampa: publicAsset('media/chanca/intro-cusco.webp'),
+  m5_yahuar_pampa: publicAsset('media/generated/campaigns/la-senda-del-sol/m5_yahuar/intro.webp'),
   m6_chimu_inca: publicAsset('media/chimu/intro-costa.webp'),
   m6b_guerra_civil: publicAsset('media/cusco-inca/intro-quipaipan.webp'),
   m8_independencia: publicAsset('media/independencia/intro-lima.webp'),

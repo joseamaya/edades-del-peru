@@ -1,4 +1,4 @@
-"""Render the m5-m9 campaign intro art from the mission-decor GLBs."""
+"""Render the m6-m9 campaign intro art from the mission-decor GLBs."""
 
 import math
 import os
@@ -10,7 +10,6 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'art-src', 'blender', 'mission-decor', 'renders')
 
 SHOTS = [
-    ('chanca_fortress', 'chanca', (0.34, 0.29, 0.22), (0.62, 0.70, 0.78)),
     ('chimu_compound', 'chimu', (0.60, 0.43, 0.25), (0.76, 0.70, 0.58)),
     ('colonial_church', 'colonial', (0.48, 0.43, 0.34), (0.62, 0.58, 0.52)),
     ('independence_chapel', 'independence', (0.48, 0.45, 0.30), (0.68, 0.72, 0.66)),

@@ -259,7 +259,7 @@ export const es = {
   'hud.menu.briefing.sidesAlone': '{player} · sin enfrentamiento documentado',
   'hud.menu.briefing.optional': 'Opcional',
   'hud.menu.briefing.back': '← Volver a campañas',
-  'hud.menu.briefing.captureCaption': 'Recreación con el motor del juego; no es una imagen histórica.',
+  'hud.menu.briefing.captureCaption': 'Recreación del proyecto; no es una imagen histórica.',
   'hud.menu.briefing.sources': 'Fuentes históricas',
   'hud.menu.briefing.objectives': 'OBJETIVOS',
   'hud.menu.briefing.start': '▶ COMENZAR MISIÓN',

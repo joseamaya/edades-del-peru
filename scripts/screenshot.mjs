@@ -26,7 +26,7 @@ async function main() {
     if (m.type() === 'error') errors.push('CONSOLE: ' + m.text());
   });
 
-  const url = urlArg ?? base + `/?seed=${seed}&fog=0&low=1`;
+  const url = urlArg ? (urlArg.startsWith('/') ? base + urlArg : urlArg) : base + `/?seed=${seed}&fog=0&low=1`;
 
   await page.goto(url, { waitUntil: 'networkidle' });
   // wait for the game to be ready
@@ -58,7 +58,7 @@ async function main() {
     })
     .catch((e) => 'eval-error:' + e.message);
 
-  fs.writeFileSync(path.join(outDir, `${name}.json`), JSON.stringify({ summary, files, errors }, null, 2));
+  fs.writeFileSync(path.join(outDir, `${name}.json`), JSON.stringify({ url, summary, files, errors }, null, 2));
 
   await browser.close();
   await close();
