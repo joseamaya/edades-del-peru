@@ -26,7 +26,7 @@ The audit is the authority. If this summary and the quality bar disagree, the qu
 | **D0 · Documentation foundation** | Documentation map, GDD, ADR log, roadmap and backlog | A new contributor or agent can find the owner document for a task without asking; links resolve |
 | **D1 · Close the model-mission gap** | `m5`–`m9`, `m6b`, `m8` and the remaining chapters | **Done (2026-11-14):** every released mission follows the model pattern and has a model-mission document; the remaining art and performance gaps are D2/D3 |
 | **D2 · Art review and capture** | Pending `reviewed: false` records, the Chavín kit, and the art of the model missions (m3–m9, m6b, Tambotoco, Lima, La Junta) | No unreviewed record ships; the human review is recorded; the captures are current |
-| **D3 · Real-GPU performance** | All model-mission site views and the heaviest late-game views | A measured pass at 1280×800 and 1600×900 is recorded; optimization work is either scheduled or explicitly rejected |
+| **D3 · Real-GPU performance** | The remaining model-mission site views (m3–m9, m6b, La Junta) and late views | A measured pass at 1280×800 and 1600×900 is recorded; optimization work is either scheduled or explicitly rejected |
 | **D4 · Release packaging** | itch build, Pages artifact, publish checklist | The checklist is green on a build that matches the tagged commit |
 
 ## D1 · Closed (2026-11-14)
@@ -51,9 +51,10 @@ but record today's counts and hashes in a new status document or PR, not by edit
 ## D3 · Performance
 
 The `mixed` benchmark already has a real-GPU pass (`yarn bench --gpu`, Intel iGPU), recorded in
-[`../development/performance-audit.md`](../development/performance-audit.md). The remaining gap is the
-**site views of the model missions** (m3–m9, m6b, Tambotoco, Lima and La Junta): their bench numbers are
-structural SwiftShader numbers, as their individual design documents record.
+[`../development/performance-audit.md`](../development/performance-audit.md). Real-GPU openings are also
+recorded for m1, m2, Tambotoco and Lima (#447). The remaining gap is the **site views of m3–m9, m6b and
+La Junta**, plus the late view of any mission whose late game fills the screen; their bench numbers are
+structural SwiftShader numbers unless their design document says otherwise.
 
 The next pass must run on a real GPU and record:
 
