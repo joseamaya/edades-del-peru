@@ -11,6 +11,17 @@
 - **Mapa**: `andes`, con el ejército de Atahualpa avanzando desde el norte hacia Quipaipan y el Cusco.
 - **En el juego**: una misión de avance y batalla: llegar a Quipaipan, **sostener la pampa durante 90 s con al menos seis guerreros** mientras las oleadas de Huáscar contraatacan, y mantener vivo a Atahualpa. La victoria narra la captura de Huáscar en Quipaipan; el centro enemigo del Cusco **no es un objetivo** y la victoria no exige destruirlo. No se introducen caballos ni armas de fuego en el bando inca.
 
+## Certeza
+
+| Afirmación | Certeza | Base |
+| --- | --- | --- |
+| La guerra civil entre Huáscar y Atahualpa tras la muerte de Huayna Cápac | Documentado | Crónicas y tradición inca |
+| La batalla de Quipaipan (1532) y la derrota del ejército de Huáscar | Documentado | Crónicas |
+| La captura de Huáscar en Quipaipan | Documentado | Crónicas |
+| La captura de Atahualpa en Cajamarca (1532) | Documentado | Crónicas españolas |
+| Las cifras de ejércitos | Tradicional, no verificable | Crónicas |
+| El hold, la captura de 20 s y la pampa | Abstracción jugable | Este dossier y `docs/design/guerra-civil-model-mission.md` |
+
 ## Fuentes
 
 - Wikipedia: [Guerra civil incaica](https://es.wikipedia.org/wiki/Guerra_civil_incaica), [Atahualpa](https://es.wikipedia.org/wiki/Atahualpa), [Huáscar](https://es.wikipedia.org/wiki/Hu%C3%A1scar).

@@ -83,7 +83,14 @@ import {
   ARICA_HEIGHTMAP_WORLD_SIZE,
 } from './aricaHeightmap';
 import { aricaLength, aricaPoint } from './aricaSite';
-import { CUSCO_HEIGHTMAP, CUSCO_HEIGHTMAP_SIZE, CUSCO_HEIGHTMAP_WORLD_SIZE } from './cuscoHeightmap';
+import { cuscoIncaLength, cuscoIncaPoint } from './cuscoIncaSite';
+import {
+  CUSCO_GROUND,
+  CUSCO_GROUND_SIZE,
+  CUSCO_HEIGHTMAP,
+  CUSCO_HEIGHTMAP_SIZE,
+  CUSCO_HEIGHTMAP_WORLD_SIZE,
+} from './cuscoHeightmap';
 import {
   JUNTA_GROUND,
   JUNTA_GROUND_SIZE,
@@ -848,26 +855,37 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'cusco_inca_site',
     label: 'Cusco incaico y Quipaipan',
     modelName: 'cusco_inca_site',
-    scale: 0.7,
-    origin: { x: 124.8, z: 130.6 },
-    anchor: { x: 124.8, z: 130.6 },
-    cameraHeight: 58,
+    // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
+    // scale with it so the ushnu still covers its plaza.
+    scale: cuscoIncaLength(0.7),
+    origin: cuscoIncaPoint({ x: 124.8, z: 130.6 }),
+    anchor: cuscoIncaPoint({ x: 124.8, z: 130.6 }),
+    cameraHeight: cuscoIncaLength(58),
     framing: 'site-biased',
     heightField: {
       size: CUSCO_HEIGHTMAP_SIZE,
       worldSize: CUSCO_HEIGHTMAP_WORLD_SIZE,
       heights: CUSCO_HEIGHTMAP,
+      ground: { size: CUSCO_GROUND_SIZE, weights: CUSCO_GROUND },
     },
     pathCellSize: 1,
-    heritageProxies: [{ id: 'cusco_ushnu', x: 124.8, z: 130.6, w: 13, d: 10, h: 6 }],
-    blockers: [{ x: 124.8, z: 130.6, w: 13, d: 10 }],
-    blockerPadding: 0.5,
+    heritageProxies: [
+      {
+        id: 'cusco_ushnu',
+        ...cuscoIncaPoint({ x: 124.8, z: 130.6 }),
+        w: cuscoIncaLength(13),
+        d: cuscoIncaLength(10),
+        h: cuscoIncaLength(6),
+      },
+    ],
+    blockers: [{ ...cuscoIncaPoint({ x: 124.8, z: 130.6 }), w: cuscoIncaLength(13), d: cuscoIncaLength(10) }],
+    blockerPadding: cuscoIncaLength(0.5),
     buildKeepout: [{ x: 0.65, z: 0.68, rx: 0.08, rz: 0.07 }],
     wallCollision: {
       meshPatterns: [/cusco/i],
-      maxStartYAboveBase: 1.2,
+      maxStartYAboveBase: cuscoIncaLength(1.2),
     },
-    walkableCorridor: { width: 8 },
+    walkableCorridor: { width: cuscoIncaLength(8) },
     terrain: {
       ...DEFAULT_SITE_TERRAIN,
       flatNormals: true,

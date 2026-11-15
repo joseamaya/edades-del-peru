@@ -46,7 +46,7 @@ below, which record each mission's own review and are kept for history). **M** m
 | m_tambotoco        | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | –   | P    | M     |
 | m5_yahuar_pampa    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m6_chimu_inca      | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m6b_guerra_civil   | P    | P     | M    | M     | M   | P    | M   | P   | M    | M     | P    | X      | X    | P   | X    | X     |
+| m6b_guerra_civil   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | –   | P    | M     |
 | m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_junta_cusco      | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | –   | P    | M     |
@@ -55,11 +55,11 @@ below, which record each mission's own review and are kept for history). **M** m
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín,
-Tambotoco, Lima and the Junta follow the model pattern and lack mostly art. m6b and m8 still use the
-pre-model template: no acts, intro, 256 m map or bench scene. m3, m4, m5 and m6 were promoted in this pass
-(256 m, painted ground, three acts, in-engine intro and bench). **m3, m4, m5, m6, m7 and m9 meet the scale,
-opening and performance gates** (256 m, painted ground, in-engine intros and epilogues, bench scenes); their
-human art review is pending.
+Tambotoco, Lima and the Junta follow the model pattern and lack mostly art. m8 still uses the pre-model
+template: no acts, intro, 256 m map or bench scene. m3, m4, m5, m6 and m6b were promoted in this pass
+(256 m, painted ground, three acts, in-engine intro and bench). **m3, m4, m5, m6, m6b, m7 and m9 meet the scale, opening and performance
+gates** (256 m, painted ground, in-engine intros and epilogues, bench scenes); their human art review is
+pending.
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
@@ -80,8 +80,8 @@ in-engine intro and epilogue, bench scenes and the scale guard).
    never fights the valley wave. A manual no-cheat playtest remains recommended.
 3. **Art review:** record the human review of Caral's camp pieces and the Chavín kit; recapture Caral's Act
    III card (S).
-4. **Model-mission rebuilds** for m6b and m8 (256 m transect, acts, intro, bench, certainty table)
-   (L each); m3, m4, m5, m6, m7 and m9 are done. The quick wins are done (2026-11-14): m6's gate really closes
+4. **Model-mission rebuilds** for m8 (256 m transect, acts, intro, bench, certainty table) (L); m3, m4, m5,
+   m6, m6b, m7 and m9 are done. The quick wins are done (2026-11-14): m6's gate really closes
    (`canal_closed`) and m6b's victory holds Quipaipan and captures Huáscar instead of razing a building.
 5. **Mid-mission save/load E2E:** fixed (2026-11-14) for Tambotoco (`inticancha`), Lima (`ciudad`) and
    La Junta (the Apacheta hold).
@@ -410,20 +410,26 @@ The table separates what is implemented from the art and performance passes that
 
 ## Inca civil war playable status (m6b)
 
-`m6b_guerra_civil` is released as **playable**. It uses the same authored-site
-pipeline as the later campaigns.
+Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 
-| Gate        | m6b La Guerra Civil                                                                                                                                                       |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| History     | Met: `guerra_civil_inca.md`; Huáscar vs Atahualpa.                                                                                                                        |
-| Identity    | Met: hold Quipaipan with the line, capture Huáscar, protect Atahualpa.                                                                                                    |
-| Terrain     | Met: authored Cusco/Quipaipan heightfield.                                                                                                                                |
-| Play        | Met: real-command playtest attack-moves to Quipaipan and holds the pampa for 90 s with six soldiers; the Cusco centre is not the goal and the playtest keeps it standing. |
-| Contract    | Met: reach, hidden hold (90 s, six units) and protect objectives.                                                                                                         |
-| Onboarding  | Met: three-step tutorial + briefing.                                                                                                                                      |
-| Closure     | Met: epilogue and optional objectives.                                                                                                                                    |
-| UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720 (Caral also at 1600×900/1920×1080).                                             |
-| Visuals     | Met locally: authored Cusco site GLB + heightfield; intro render pending.                                                                                                 |
-| Persistence | Met: save/load round-trip.                                                                                                                                                |
-| Tests       | Met: data, completability and real-command playtest.                                                                                                                      |
-| Docs        | Met: README, dossier, experiences and this table.                                                                                                                         |
+| Gate        | Status               | Evidence                                                                                                                                                                                     |
+| ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| History     | Met                  | `docs/historia/campanas/guerra_civil_inca.md` with its certainty table; no invented battle or ruler.                                                                                         |
+| Identity    | Met                  | The dynastic war, the Quipaipan hold and Huáscar's capture without razing Cusco.                                                                                                             |
+| Terrain     | Met                  | 256 m authored highland heightfield (`cuscoHeightmap.ts`) with painted ground: pampa, terraces, quebrada and ridges.                                                                         |
+| Site        | Met (exception)      | No construction phases: Cusco is a living capital and Quipaipan a battlefield; recorded in `guerra-civil-model-mission.md`.                                                                 |
+| Play        | Met                  | `campaign-playtest.spec.ts` advances, holds and captures with real orders and keeps the centre standing; completable and save paths are covered.                                            |
+| Contract    | Met                  | Three acts (march, Quipaipan, capture) with hidden goals revealed by triggers and chapter cards.                                                                                            |
+| Onboarding  | Met                  | Non-blocking tutorial, briefing, Codex and minimap pips.                                                                                                                                     |
+| Closure     | Met                  | Dusk epilogue capture narrates Cajamarca and the weakened empire.                                                                                                                            |
+| UX          | Met                  | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                                                                           |
+| Visuals     | Met locally          | Authored Cusco GLB, painted pampa and in-engine intro/epilogue captures in `public/media/cusco-inca/`.                                                                                       |
+| Persistence | Met                  | Hold, capture and tutorial round-trip in the save path; v10 m6b saves are rejected (`SAVE_VERSION` 11).                                                                                     |
+| Tests       | Met                  | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                                                                            |
+| Docs        | Met                  | This document, dossier, `guerra-civil-model-mission.md`, experience table, site note, art docs and README aligned.                                                                           |
+| Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                                                               |
+| Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_cusco_inca_intro.mjs`; `MISSION_ART` uses the Quipaipan capture.                                                 |
+| Art         | Pending human review | The reused Cusco GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                                                                   |
+| Performance | Met                  | `bench_scene.mjs`: opening ~703k tris / 436 calls, battle ~967k / 673; over the 600k art-direction target (as m7/m9), within the recorded first-pass caps.                                   |
+| Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                           |
+
