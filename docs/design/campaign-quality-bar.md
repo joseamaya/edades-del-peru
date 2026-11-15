@@ -57,8 +57,8 @@ below, which record each mission's own review and are kept for history). **M** m
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín,
 Tambotoco, Lima and the Junta follow the model pattern and lack mostly art. Every released mission now
 follows the model pattern (256 m, painted ground, acts, in-engine intro and bench), including m8 in this
-pass. **m3–m9 meet the scale, opening and performance gates**; their human art review is pending, except
-m5's intro render (approved 2026-11-15).
+pass. **m3–m9 meet the scale, opening and performance gates**; the m3, m4 and m5 intro renders are approved and
+the rest of the art review is pending.
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at

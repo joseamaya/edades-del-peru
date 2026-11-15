@@ -58,7 +58,7 @@ async function main() {
     })
     .catch((e) => 'eval-error:' + e.message);
 
-  fs.writeFileSync(path.join(outDir, `${name}.json`), JSON.stringify({ summary, files, errors }, null, 2));
+  fs.writeFileSync(path.join(outDir, `${name}.json`), JSON.stringify({ url, summary, files, errors }, null, 2));
 
   await browser.close();
   await close();
