@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "sourceRoot": "art-src/blender",
+  "assets": [
+    {
+      "id": "m_lima-intro",
+      "type": "campaign-intro",
+      "scope": "mission",
+      "campaignId": "virreinato",
+      "missionId": "m_lima",
+      "civilization": "hueste_indiana",
+      "period": 6,
+      "era": 3,
+      "region": "central_coast",
+      "topic": "campaign_intro",
+      "sceneType": "campaign_scene",
+      "asset": "media/generated/campaigns/virreinato/m_lima/intro.webp",
+      "render": "site-intros/m_lima/hero.png",
+      "sceneFile": "site-intros/m_lima/m_lima.blend",
+      "confidence": "Reconstrucción estilizada de la traza de 1535: la iglesia, el cabildo, la plaza y el puente son una abstracción plausible, no un levantamiento. La escena muestra la ciudad en uso; no representa el cerco de 1536.",
+      "camera": "hero",
+      "renderer": "eevee",
+      "license": "project-owned",
+      "author": "Miguel Amaya",
+      "sources": [
+        "docs/historia/campanas/lima.md",
+        "docs/historia/atuendos.md",
+        "docs/design/blender-art.md"
+      ],
+      "alt": "Plaza recién trazada de la Ciudad de los Reyes junto al Rímac, con la iglesia, el cabildo con balcón, la fuente y vecinos.",
+      "caption": "La Ciudad de los Reyes junto al Rímac, 1535",
+      "nature": "abstraction",
+      "sourceSha256": "43647251537d809343bb5a2e81e624bb4139a21284de71d87cab9167436ab74a",
+      "renderedAt": "2026-11-15T17:38:33-05:00"
+    }
+  ]
+}
