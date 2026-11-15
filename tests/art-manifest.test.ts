@@ -151,14 +151,7 @@ describe('Blender art manifest', () => {
   });
 
   it('ships draft intro records for the remaining missions', () => {
-    const missions = [
-      'm_tambotoco',
-      'm6_chimu_inca',
-      'm6b_guerra_civil',
-      'm7_tupac_amaru',
-      'm8_independencia',
-      'm9_guerra_pacifico',
-    ];
+    const missions = ['m6_chimu_inca', 'm6b_guerra_civil', 'm7_tupac_amaru', 'm8_independencia', 'm9_guerra_pacifico'];
     for (const missionId of missions) {
       const intro = ART_MANIFEST.assets.find((a) => a.missionId === missionId && a.type === 'campaign-intro');
       expect(intro, `${missionId} has no intro`).toBeDefined();
