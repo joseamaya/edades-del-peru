@@ -24,9 +24,9 @@ The audit is the authority. If this summary and the quality bar disagree, the qu
 | Milestone | Scope | Exit criterion |
 | --- | --- | --- |
 | **D0 · Documentation foundation** | Documentation map, GDD, ADR log, roadmap and backlog | A new contributor or agent can find the owner document for a task without asking; links resolve |
-| **D1 · Close the model-mission gap** | `m5`–`m9`, `m6b`, `m8` and the remaining chapters | **Done (2026-11-14):** every mission on the model list passes the quality bar and has a model-mission document |
+| **D1 · Close the model-mission gap** | `m5`–`m9`, `m6b`, `m8` and the remaining chapters | **Done (2026-11-14):** every released mission follows the model pattern and has a model-mission document; the remaining art and performance gaps are D2/D3 |
 | **D2 · Art review and capture** | Pending `reviewed: false` records, the Chavín kit, and the art of the model missions (m3–m9, m6b, Tambotoco, Lima, La Junta) | No unreviewed record ships; the human review is recorded; the captures are current |
-| **D3 · Real-GPU performance** | Moche/Wari and the heaviest late-game views | A measured pass at 1280×800 and 1600×900 is recorded; optimization work is either scheduled or explicitly rejected |
+| **D3 · Real-GPU performance** | All model-mission site views and the heaviest late-game views | A measured pass at 1280×800 and 1600×900 is recorded; optimization work is either scheduled or explicitly rejected |
 | **D4 · Release packaging** | itch build, Pages artifact, publish checklist | The checklist is green on a build that matches the tagged commit |
 
 ## D1 · Closed (2026-11-14)
@@ -39,8 +39,9 @@ evidence. No model-mission rebuild remains.
 
 1. Chavín kit: record the human review. Caral's camp pieces and its Act III card were approved and closed on
    2026-11-14; do not re-review them.
-2. Review every remaining `reviewed: false` record; the archived release snapshot lists the set as of
-   2026-10-30. Approve or reject each record with `yarn art:review`.
+2. Review every remaining `reviewed: false` record except the five Caral records still marked `false` in the
+   manifest (tracked in B10); the archived release snapshot lists the set as of 2026-10-30. Approve or reject
+   each record with `yarn art:review`.
 3. Capture the model missions whose art review is pending (m3–m9, m6b, Tambotoco, Lima, La Junta) with the
    current build.
 
@@ -51,8 +52,8 @@ but record today's counts and hashes in a new status document or PR, not by edit
 
 The `mixed` benchmark already has a real-GPU pass (`yarn bench --gpu`, Intel iGPU), recorded in
 [`../development/performance-audit.md`](../development/performance-audit.md). The remaining gap is the
-**Moche and Wari site views**, which the archived release snapshot still lists as measured on software
-rendering.
+**site views of the model missions** (m3–m9, m6b, Tambotoco, Lima and La Junta): their bench numbers are
+structural SwiftShader numbers, as their individual design documents record.
 
 The next pass must run on a real GPU and record:
 

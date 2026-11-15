@@ -46,8 +46,9 @@ A campaign session is:
 **campaign menu → briefing and tutorial → gather, build and train → mission mechanic → objectives →
 epilogue → next mission**
 
-- A model mission targets **30–40 minutes** and is divided into **acts** inside a single mission definition.
-  Documented pacing exceptions (m7, m9) are recorded in the quality bar.
+- A model mission is divided into **acts** inside a single mission definition and targets **30–40 minutes**.
+  The band is a target, not a gate: missions that cannot reach it without padding record their measured path
+  and the exception in their design document (m3–m9 and m6b).
 - Objectives are revealed as the acts advance; optional objectives add depth but never gate victory.
 - The documented historical outcome is the ending, including abandonment, defeat or conquest. It is framed as
   history, not as the player's failure.
