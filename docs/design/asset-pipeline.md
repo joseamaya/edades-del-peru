@@ -37,9 +37,9 @@ game integration               StaticModel / modelAssets / UI
 
 | Asset | Authoring | Ingest / integration | Provenance | Review |
 | --- | --- | --- | --- | --- |
-| Static landmark, prop, architecture kit | Blender, one root empty per LOD | `yarn art:models` → `src/assets/...` → `StaticModel` | `PROVENANCE.md` + source CSV | Art review of the RTS view |
-| Character, unit, mount, siege, vehicle | Blender, shared skeleton and clips | `yarn art:models` → `src/assets/models/` → `modelAssets.ts` + `modelAssetRegistry.ts` | `PROVENANCE.md` + source CSV | `?rig=1` and in-mission capture |
-| Campaign intro, Codex, educational map, tour | Blender render → optional GIMP retouch | `yarn art:blender` → `src/art/manifest.json` + `public/media/generated/` | Manifest record + `PROVENANCE.md` | `yarn art:review` (human) |
+| Static landmark, prop, architecture kit | Blender, one root empty per LOD | `src/assets/...` → `yarn art:models` → `StaticModel` | `PROVENANCE.md` + source CSV where the kit has one | Art review of the RTS view |
+| Character, unit, mount, siege, vehicle | Blender, shared skeleton and clips | `src/assets/models/` → `yarn art:models` → `modelAssets.ts` + `modelAssetRegistry.ts` | `PROVENANCE.md` | `?rig=1` and in-mission capture |
+| Campaign intro, Codex, educational map, tour | Blender render → optional GIMP retouch | `yarn art:blender --manifest=<kit>` → `src/art/manifest.json` + `public/media/generated/` | Manifest record + generated `public/media/generated/PROVENANCE.md` | `yarn art:review` (human) |
 | Material, textile, UI icon, decal | GIMP or the texture scripts | `yarn art:textures` or the owning script → `src/assets/textures/...` | `PROVENANCE.md` | Look check in game/RTS view |
 | Terrain albedo/surface pack | `yarn art:textures --terrain` | `src/assets/textures/terrain/` | `scripts/terrain-textures.json` + `PROVENANCE.md` | Look check in game/RTS view |
 
@@ -55,7 +55,7 @@ game integration               StaticModel / modelAssets / UI
    first.
 6. Integrate the compressed GLB through `StaticModel` or the owning site/registry.
 7. Record id, LOD, scale, triangles, materials, bytes, pivot, orientation, collision, confidence and sources in
-   the source CSV and `PROVENANCE.md`.
+   `PROVENANCE.md` and, where the kit uses one, the source CSV.
 8. Preview the RTS view; capture it for the PR. `yarn bench:check` for the structural budget.
 
 ## Path B · Character or unit (rigged GLB)
@@ -83,19 +83,25 @@ Existing examples: `scripts/build_caral_worker.mjs` (CC0 body/hair/clips + proje
 
 ## Path C · Render, intro, Codex or educational art
 
-1. Render a 1600×900 PNG into `art-src/blender/renders/` with a stable name.
+1. Render a 1600×900 PNG into the kit's `renders/` folder: `art-src/blender/renders/` for Caral,
+   `art-src/blender/<kit>/renders/` for Moche, Wari and mission-decor. Use a stable name.
 2. Retouch in GIMP only if needed; export the final PNG to the same path and update the hash. Keep the `.xcf`
    in Git LFS.
-3. Add an entry to the source manifest for the kit (for example `art-src/blender/caral/renders.json`) with
-   source hash, scene, camera, confidence, sources and Spanish `alt`/`caption`.
-4. Run `yarn art:blender --only=<id>` for a new render or `--force` when replacing one. It verifies hashes,
-   converts to budgeted WebP, writes the asset and updates `src/art/manifest.json` + `PROVENANCE.md`.
+3. Add an entry to the kit's source manifest: `art-src/blender/caral/renders.json` for Caral, or
+   `art-src/blender/<kit>/renders.json` for another kit. Include source hash, scene, camera, confidence,
+   sources and Spanish `alt`/`caption`.
+4. Run `yarn art:blender --manifest=art-src/blender/<kit>/renders.json --only=<id>` for a new render, or add
+   `--force` when replacing one. The default manifest is the Caral kit; without `--manifest` a record from
+   another kit is skipped. It verifies hashes, converts to budgeted WebP, writes the asset and updates
+   `src/art/manifest.json` + `public/media/generated/PROVENANCE.md`.
 5. New renders are `reviewed: false` and hidden in the game. A human runs
    `yarn art:review --id=<id> --reviewer=<name> --approve` (or rejects) after checking the contact sheet.
 6. Preview with `?art=all` for drafts and the normal build for approved art.
 7. `yarn art:validate` and the UI/briefing tests must pass.
 
-A render is never presented as a historical photograph. Its `confidence` and caption say what it is.
+A render is never presented as a historical photograph. Its `confidence` and caption say what it is. The
+ingestion writes the generated provenance copy under `public/media/generated/PROVENANCE.md`; the root
+`PROVENANCE.md` is maintained by hand.
 
 ## Path D · 2D texture, material, icon or decal
 
@@ -119,7 +125,7 @@ A render is never presented as a historical photograph. Its `confidence` and cap
 
 | Command | What it does |
 | --- | --- |
-| `yarn art:blender` | Ingest Blender renders: verify, resize, WebP, manifest, `PROVENANCE.md` |
+| `yarn art:blender` | Ingest Blender renders: verify, resize, WebP, manifest and generated provenance |
 | `yarn art:blender --dry-run` / `--only=<id>` / `--force` | Preview, one record, replace |
 | `yarn art:models` | Meshopt-compress the committed GLBs in place (`--only`, `--dry-run`, `--force`) |
 | `yarn art:textures` | Re-encode material PBR WebPs (`--only`, `--dry-run`, `--force`) |
@@ -131,7 +137,8 @@ A render is never presented as a historical photograph. Its `confidence` and cap
 
 ## Provenance checklist
 
-- [ ] Source recorded in `PROVENANCE.md` (author, URL, licence, date, SHA-256).
+- [ ] Source recorded in `PROVENANCE.md` (root; renders also update the generated
+      `public/media/generated/PROVENANCE.md`).
 - [ ] `.blend`/`.xcf` in Git LFS; exports committed; backups ignored.
 - [ ] Render has a manifest record, `confidence`, `reviewed` and a human reviewer when approved.
 - [ ] GLB is recorded in `PROVENANCE.md` and, where the source kit uses a CSV, the CSV row is updated.
@@ -149,7 +156,8 @@ A render is never presented as a historical photograph. Its `confidence` and cap
 - **Unique garment baked into the shared rig**: it breaks every other variant. Use a variant or a tinted
   clone at runtime.
 - **Render shown before review**: the manifest still says `reviewed: false`. Approve it or keep it hidden.
-- **GIMP retouch without a hash update**: `yarn art:validate` fails and the provenance no longer matches.
+- **GIMP retouch without a hash update**: `yarn art:blender` fails its source-hash check; `yarn art:validate`
+  validates the committed output, not the retouched source.
 - **Third-party asset without a licence**: do not commit it. Record it in `PROVENANCE.md` first.
 
 ## Do not
