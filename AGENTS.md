@@ -41,8 +41,8 @@ Everything runs through `package.json`; there is no `npm test`. The CI gate, in 
 `yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build`, and the repo is kept at
 **0 lint warnings** and Prettier-clean.
 CI runs that `build` job on every PR, the `@smoke` E2E subset on PRs and the full E2E suite on `main`
-(the E2E workflow is skipped for docs-only PRs). CI must be green, but merging also requires the review and
-explicit approval described below.
+(docs-only PRs run the E2E workflow as a fast no-op so the required checks still report success). CI must be
+green, but merging also requires the review and explicit approval described below.
 
 ## Authoring tools (Blender and GIMP)
 
