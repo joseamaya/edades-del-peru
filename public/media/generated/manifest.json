@@ -240,6 +240,67 @@
       }
     },
     {
+      "id": "m_tambotoco-intro",
+      "type": "campaign-intro",
+      "scope": "mission",
+      "campaignId": "inca",
+      "missionId": "m_tambotoco",
+      "civilization": "inca",
+      "period": 5,
+      "era": 2,
+      "region": "high_andes",
+      "topic": "campaign_intro",
+      "sceneType": "campaign_scene",
+      "asset": "media/generated/campaigns/inca/m_tambotoco/intro.webp",
+      "variants": [
+        {
+          "asset": "media/generated/campaigns/inca/m_tambotoco/intro-800.webp",
+          "width": 800,
+          "height": 450,
+          "bytes": 35254
+        }
+      ],
+      "sources": [
+        "docs/historia/campanas/tambotoco.md",
+        "docs/historia/atuendos.md",
+        "docs/design/tambotoco-model-mission.md",
+        "docs/design/blender-art.md"
+      ],
+      "promptVersion": "v1-blender-f9432f6c",
+      "prompt": "Blender render: Cueva de Tambotoco, salida de los Ayar · leyenda",
+      "negativePrompt": "n/a (blender render)",
+      "provider": "blender",
+      "model": "eevee",
+      "generatedAt": "2026-11-15T17:02:04.875Z",
+      "nature": "abstraction",
+      "reviewed": true,
+      "reviewer": "Miguel Amaya",
+      "reviewedAt": "2026-11-15T21:59:59.112Z",
+      "disclaimer": "No es una fotografía histórica: es un render 3D del proyecto.",
+      "alt": "Los ocho hermanos Ayar salen al amanecer de la cueva de Tambotoco; el mayor lleva el bastón de oro y el grupo desciende hacia el valle.",
+      "caption": "Cueva de Tambotoco, salida de los Ayar · leyenda",
+      "width": 1280,
+      "height": 720,
+      "sourceWidth": 1600,
+      "sourceHeight": 900,
+      "crop": "cover-attention",
+      "bytes": 67422,
+      "format": "webp",
+      "sha256": "78fcecdf17930b4e53bf6cb925e11972fd451cff8549b40a801c5ed06abb521c",
+      "blender": {
+        "sceneFile": "tambotoco/tambotoco_intro.blend",
+        "sourceRender": "tambotoco/renders/tambotoco_hero.png",
+        "sourceSha256": "44498fe179e56b178e4c13c50afd651ccc2f9b5ab43feeba701f0cc876206016",
+        "sceneAssetId": null,
+        "confidence": "Reconstrucción estilizada del relato de origen: la cueva, el macizo rocoso y la salida de los Ayar son una escenificación de la leyenda recogida por las crónicas, no un yacimiento identificado ni una fecha histórica. El bastón de oro de Manco Cápac procede de la tradición.",
+        "camera": "hero",
+        "renderer": "eevee",
+        "license": "project-owned",
+        "author": "Miguel Amaya",
+        "renderedAt": "2026-11-15T11:29:30-05:00"
+      }
+    },
+    {
       "id": "m1_caral-intro",
       "type": "campaign-intro",
       "scope": "mission",

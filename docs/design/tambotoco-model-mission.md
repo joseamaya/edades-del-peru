@@ -112,6 +112,18 @@ The legend is about eight siblings, so all eight are on the board from the start
   disagreement between Sarmiento and Garcilaso.
 - Defeat: the valley ayllus reject the newcomers.
 
+## Intro render
+
+- `art-src/blender/tambotoco/tambotoco_intro.blend`, built by
+  `scripts/blender/build_tambotoco_intro.py`, stages the cave mouth, the rocky ridge, the eight Ayar
+  siblings and Manco Capac's golden staff on the authored transect and renders with EEVEE at 1600x900.
+- The record `m_tambotoco-intro` is ingested from `art-src/blender/tambotoco/renders.json` and was
+  approved by a recorded human review; `MISSION_ART` uses the generated WebP and the in-engine captures
+  remain chapter-card evidence.
+- Regenerate with `blender --background --python scripts/blender/build_tambotoco_intro.py`.
+- The scene is a stylization of the myth (no identified cave, no date); the cave, the massif and the staff
+  are labelled as an abstraction in the manifest.
+
 ## Tutorial
 
 Objectives say **what** to do and **where**; the tutorial only teaches **how**, the first time a control is
