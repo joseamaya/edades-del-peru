@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "sourceRoot": "art-src/blender",
+  "assets": [
+    {
+      "id": "m5_chanca-intro",
+      "type": "campaign-intro",
+      "scope": "mission",
+      "campaignId": "la-senda-del-sol",
+      "missionId": "m5_yahuar_pampa",
+      "civilization": "inca",
+      "period": 5,
+      "era": 2,
+      "region": "high_andes",
+      "topic": "campaign_intro",
+      "sceneType": "campaign_scene",
+      "asset": "media/generated/campaigns/la-senda-del-sol/m5_yahuar/intro.webp",
+      "render": "chanca/renders/chanca_hero.png",
+      "sceneFile": "chanca/chanca_intro.blend",
+      "confidence": "Reconstrucción estilizada de un pucará chanca; la planta, las torres y los remates son una abstracción plausible, no un levantamiento. La ropa chanca no está documentada: se usa la túnica andina compartida y la pintura facial atestiguada.",
+      "camera": "hero",
+      "renderer": "eevee",
+      "license": "project-owned",
+      "author": "Miguel Amaya",
+      "sources": [
+        "docs/historia/campanas/yahuar_pampa.md",
+        "docs/historia/arquitectura.md",
+        "docs/historia/atuendos.md",
+        "docs/design/chanca-site.md",
+        "docs/design/blender-art.md"
+      ],
+      "alt": "Atardecer sobre el pucará chanca de Yahuar Pampa, con sus torres de piedra, el campamento y guerreros con pintura facial en la pampa.",
+      "caption": "Pucará chanca de Yahuar Pampa, 1438 · render 3D del proyecto",
+      "nature": "abstraction",
+      "sourceSha256": "bcb1c3d539429b3b009e6aef837ce30306ca03265626e6e915cc3bbbd74166d3",
+      "renderedAt": "2026-11-15T10:29:20-05:00"
+    }
+  ]
+}
