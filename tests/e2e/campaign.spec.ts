@@ -841,8 +841,8 @@ test('m9 fails when the plaza falls before the final assault', async ({ page }) 
   expect(out.won).toBe(false);
 });
 
-test('m8 holds Junín and then Ayacucho with Sucre alive', async ({ page }) => {
-  await page.goto('/?mission=m8_independencia&seed=777&fog=0&low=1&noloop=1');
+test('m8 holds Junín, marches and then Ayacucho with Sucre alive', async ({ page }) => {
+  await page.goto('/?mission=m8_independencia&seed=777&fog=0&low=1&noloop=1&intro=0');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
   });
@@ -853,35 +853,55 @@ test('m8 holds Junín and then Ayacucho with Sucre alive', async ({ page }) => {
     const m = g.mission;
     const cavalry = [...g.units.values()].find((u: any) => u.kind === 'cavalry' && u.owner === 0) as any;
     const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
+    const dismiss = () => document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     const move = (x: number, z: number) => cavalry.pos.set(x, g.terrain.getHeight(x, z), z);
     const dt = 1 / 60;
     // Junín: hold the forward position for 90s.
     for (let i = 0; i < Math.ceil(95 / dt) && !m.ended; i++) {
+      dismiss();
       move(enemy.pos.x - 30, enemy.pos.z);
       for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, i * dt);
     }
     const afterJunin = {
       junin: m.getObjectiveState('obj_junin'),
+      marcha: m.getObjectiveState('obj_marcha'),
       ayacucho: m.getObjectiveState('obj_ayacucho'),
       won: m.won as boolean | null,
     };
-    // Ayacucho: hold the decisive position for 120s.
-    for (let i = 0; i < Math.ceil(125 / dt) && !m.ended; i++) {
+    // Act II: march to the Ayacucho marker.
+    const marcha = m.getObjectiveAnchor('obj_marcha') as { x: number; z: number };
+    for (let i = 0; i < Math.ceil(5 / dt) && !m.ended; i++) {
+      dismiss();
+      move(marcha.x, marcha.z);
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      g.update(dt, i * dt);
+    }
+    const afterMarcha = {
+      marcha: m.getObjectiveState('obj_marcha'),
+      ayacucho: m.getObjectiveState('obj_ayacucho'),
+    };
+    // Act III: hold Ayacucho for 90s.
+    for (let i = 0; i < Math.ceil(95 / dt) && !m.ended; i++) {
+      dismiss();
       move(enemy.pos.x, enemy.pos.z);
       for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, i * dt);
     }
     return {
       afterJunin,
+      afterMarcha,
       ayacucho: m.getObjectiveState('obj_ayacucho'),
       sucre: m.getObjectiveState('obj_sucre'),
       won: m.won as boolean | null,
     };
   });
   expect(out.afterJunin.junin).toBe('completed');
-  expect(out.afterJunin.ayacucho).toBe('activo');
+  expect(out.afterJunin.marcha).toBe('activo');
+  expect(out.afterJunin.ayacucho).toBe('pendiente');
   expect(out.afterJunin.won).not.toBe(true);
+  expect(out.afterMarcha.marcha).toBe('completed');
+  expect(out.afterMarcha.ayacucho).toBe('activo');
   expect(out.ayacucho).toBe('completed');
   expect(out.sucre).not.toBe('failed');
   expect(out.won).toBe(true);

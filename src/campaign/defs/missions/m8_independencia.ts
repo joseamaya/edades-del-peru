@@ -1,5 +1,6 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import type { MissionDef } from '../../types';
+import { INDEPENDENCE_MAP_SIZE, independenceLength } from '../../../model/defs/independenceSite';
 
 export const m8Independencia: MissionDef = {
   id: 'm8_independencia',
@@ -14,7 +15,9 @@ export const m8Independencia: MissionDef = {
   period: HistoricalPeriod.INDEPENDENCE,
   playerCiv: CivId.PATRIOTAS,
   enemyCiv: CivId.REALISTAS,
-  map: { seed: 1824, type: 'andes', size: 192 },
+  map: { seed: 1824, type: 'andes', size: INDEPENDENCE_MAP_SIZE },
+  // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
+  unitSpeedScale: 0.75,
   layout: {
     base: { x: 0.35, z: 0.63 },
     enemyBase: { x: 0.772, z: 0.37 },
@@ -39,25 +42,64 @@ export const m8Independencia: MissionDef = {
   startingResources: { food: 1200, wood: 800, silver: 1200, stone: 500 },
   start: {
     units: [
-      { kind: UnitKind.RIFLEMAN, dx: 6, dz: -6, count: 1, tag: 'sucre' },
-      { kind: UnitKind.RIFLEMAN, dx: 6, dz: -6, count: 4 },
-      { kind: UnitKind.CAVALRY, dx: 10, dz: -2, count: 3 },
-      { kind: UnitKind.PATRIOTA_MONTONERA, dx: 12, dz: -2, count: 2 },
-      { kind: UnitKind.ARTILLERY, dx: 4, dz: 8, count: 2 },
+      { kind: UnitKind.RIFLEMAN, dx: independenceLength(6), dz: -independenceLength(6), count: 1, tag: 'sucre' },
+      { kind: UnitKind.RIFLEMAN, dx: independenceLength(6), dz: -independenceLength(6), count: 10 },
+      { kind: UnitKind.CAVALRY, dx: independenceLength(10), dz: -independenceLength(2), count: 5 },
+      { kind: UnitKind.PATRIOTA_MONTONERA, dx: independenceLength(12), dz: -independenceLength(2), count: 2 },
+      { kind: UnitKind.ARTILLERY, dx: independenceLength(4), dz: independenceLength(8), count: 2 },
     ],
   },
   mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
-  enemy: { active: true, difficulty: 'hard', aggression: 1.3 },
+  enemy: { active: true, difficulty: 'normal', aggression: 1.0 },
   tutorial: true,
+  modelMission: true,
+  narrator: 'Antonio José de Sucre',
+  intro: [
+    {
+      kicker: 'LIMA · 28 DE JULIO DE 1821',
+      title: 'La independencia',
+      text: 'San Martín proclama la independencia en Lima. La campaña final se decide en la sierra, con Bolívar y Sucre al mando de los ejércitos libertadores.',
+      seconds: 9,
+      source: 'docs/historia/campanas/independencia.md',
+      image: 'media/independencia/intro-lima.webp',
+    },
+    {
+      kicker: 'JUNÍN · 6 DE AGOSTO DE 1824',
+      title: 'La caballería',
+      text: 'En la pampa de Junín, la caballería patriota —con montoneras— sostiene el choque contra los dragones realistas. La campaña sigue hacia el sur.',
+      seconds: 9,
+      source: 'docs/historia/campanas/independencia.md',
+      image: 'media/independencia/intro-junin.webp',
+    },
+    {
+      kicker: 'AYACUCHO · 9 DE DICIEMBRE DE 1824',
+      title: 'La rendición realista',
+      text: 'El ejército de Sucre resiste en Ayacucho hasta la rendición realista. La victoria sella la independencia del Perú y el fin del poder español.',
+      seconds: 10,
+      source: 'docs/historia/campanas/independencia.md',
+      image: 'media/independencia/intro-ayacucho.webp',
+    },
+  ],
+  epilogueImage: 'media/independencia/intro-epilogo.webp',
   objectives: [
     {
       id: 'obj_junin',
       kind: 'hold',
-      pos: { ref: 'enemy', dx: -30, dz: 0 },
-      radius: 14,
+      pos: { ref: 'enemy', dx: -independenceLength(30), dz: 0 },
+      radius: independenceLength(14),
       unitKind: UnitKind.CAVALRY,
       time: 90,
       title: 'Sostén Junín con la caballería patriota',
+    },
+    {
+      id: 'obj_marcha',
+      kind: 'reach',
+      // West of the royalist centre, on walkable pampa: the chapel footprint blocks its own centre.
+      pos: { ref: 'enemy', dx: -independenceLength(8), dz: 0 },
+      radius: independenceLength(8),
+      hidden: true,
+      requires: 'obj_junin',
+      title: 'Marcha a Ayacucho con el ejército patriota',
     },
     {
       id: 'obj_sucre',
@@ -69,9 +111,10 @@ export const m8Independencia: MissionDef = {
       id: 'obj_ayacucho',
       kind: 'hold',
       pos: { ref: 'enemy', dx: 0, dz: 0 },
-      radius: 18,
-      time: 120,
+      radius: independenceLength(18),
+      time: 90,
       hidden: true,
+      requires: 'obj_marcha',
       title: 'Sostén Ayacucho hasta la rendición realista',
     },
     {
@@ -83,6 +126,19 @@ export const m8Independencia: MissionDef = {
     },
   ],
   triggers: [
+    {
+      id: 't_acto_i',
+      condition: { type: 'time', seconds: 12 },
+      effects: [
+        {
+          type: 'act',
+          kicker: 'Acto I · Junín',
+          title: 'La caballería patriota',
+          image: 'media/independencia/intro-junin.webp',
+          text: 'La independencia se decide en la sierra. Sostén Junín con la caballería y protege a Sucre.',
+        },
+      ],
+    },
     {
       id: 't_dial_0',
       condition: { type: 'time', seconds: 20 },
@@ -99,6 +155,20 @@ export const m8Independencia: MissionDef = {
       effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }],
     },
     {
+      id: 't_marcha',
+      condition: { type: 'objective', objectiveId: 'obj_marcha', state: 'completed' },
+      effects: [
+        {
+          type: 'act',
+          kicker: 'Acto III · Ayacucho',
+          title: 'La rendición realista',
+          image: 'media/independencia/intro-ayacucho.webp',
+          text: 'El ejército de Sucre ocupa Ayacucho. Sostén el campo hasta la rendición realista; Sucre debe seguir con vida.',
+        },
+        { type: 'objective', objectiveId: 'obj_ayacucho', state: 'activate' },
+      ],
+    },
+    {
       id: 't_wave_1',
       condition: { type: 'time', seconds: 60 },
       effects: [
@@ -110,8 +180,8 @@ export const m8Independencia: MissionDef = {
             { kind: UnitKind.REALISTA_DRAGON, count: 1 },
             { kind: UnitKind.SOLDIER, count: 4 },
           ],
-          pos: { ref: 'enemy', dx: -30, dz: 0 },
-          radius: 7,
+          pos: { ref: 'enemy', dx: -independenceLength(30), dz: 0 },
+          radius: independenceLength(7),
           objective: 'position',
         },
         { type: 'dialogue', text: '¡La caballería realista carga en Junín!' },
@@ -122,10 +192,17 @@ export const m8Independencia: MissionDef = {
       condition: { type: 'objective', objectiveId: 'obj_junin', state: 'completed' },
       effects: [
         {
+          type: 'act',
+          kicker: 'Acto II · La marcha',
+          title: 'Hacia Ayacucho',
+          image: 'media/independencia/intro-marcha.webp',
+          text: 'Junín resiste. Marcha al sur con el ejército patriota: la decisión final espera en Ayacucho.',
+        },
+        {
           type: 'dialogue',
           text: 'General patriota: —Junín resiste. Ahora, a Ayacucho: la decisión final está allí.',
         },
-        { type: 'objective', objectiveId: 'obj_ayacucho', state: 'activate' },
+        { type: 'objective', objectiveId: 'obj_marcha', state: 'activate' },
         {
           type: 'wave',
           owner: 1,
@@ -134,7 +211,7 @@ export const m8Independencia: MissionDef = {
             { kind: UnitKind.CAVALRY, count: 3 },
           ],
           pos: { ref: 'enemy', dx: 0, dz: 0 },
-          radius: 7,
+          radius: independenceLength(7),
           objective: 'position',
         },
       ],

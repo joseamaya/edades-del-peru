@@ -46,6 +46,7 @@ describe('model-mission scale', () => {
       'm_lima',
       'm7_tupac_amaru',
       'm_junta_cusco',
+      'm8_independencia',
       'm9_guerra_pacifico',
     ]);
   });

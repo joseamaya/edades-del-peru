@@ -135,8 +135,13 @@ const TUTORIALS: Record<string, TutorialDef> = {
         check: { type: 'objectiveCompleted', objectiveId: 'obj_junin' },
       },
       {
+        id: 'marcha',
+        text: 'Marcha al sur con el ejército: la decisión final espera en Ayacucho.',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_marcha' },
+      },
+      {
         id: 'ayacucho',
-        text: 'Avanza a Ayacucho y sostén el campo 120 segundos para sellar la independencia.',
+        text: 'Sostén el campo de Ayacucho 90 segundos para sellar la independencia.',
         check: { type: 'objectiveCompleted', objectiveId: 'obj_ayacucho' },
       },
     ],

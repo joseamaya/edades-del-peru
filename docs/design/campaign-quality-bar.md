@@ -50,16 +50,14 @@ below, which record each mission's own review and are kept for history). **M** m
 | m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | –   | P    | M     |
 | m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_junta_cusco      | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | –   | P    | M     |
-| m8_independencia   | P    | P     | P    | P     | M   | P    | M   | P   | P    | P     | X    | X      | X    | X   | X    | X     |
+| m8_independencia   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín,
-Tambotoco, Lima and the Junta follow the model pattern and lack mostly art. m8 still uses the pre-model
-template: no acts, intro, 256 m map or bench scene. m3, m4, m5, m6 and m6b were promoted in this pass
-(256 m, painted ground, three acts, in-engine intro and bench). **m3, m4, m5, m6, m6b, m7 and m9 meet the scale, opening and performance
-gates** (256 m, painted ground, in-engine intros and epilogues, bench scenes); their human art review is
-pending.
+Tambotoco, Lima and the Junta follow the model pattern and lack mostly art. Every released mission now
+follows the model pattern (256 m, painted ground, acts, in-engine intro and bench), including m8 in this
+pass. **m3–m9 meet the scale, opening and performance gates**; their human art review is pending.
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
@@ -80,9 +78,9 @@ in-engine intro and epilogue, bench scenes and the scale guard).
    never fights the valley wave. A manual no-cheat playtest remains recommended.
 3. **Art review:** record the human review of Caral's camp pieces and the Chavín kit; recapture Caral's Act
    III card (S).
-4. **Model-mission rebuilds** for m8 (256 m transect, acts, intro, bench, certainty table) (L); m3, m4, m5,
-   m6, m6b, m7 and m9 are done. The quick wins are done (2026-11-14): m6's gate really closes
-   (`canal_closed`) and m6b's victory holds Quipaipan and captures Huáscar instead of razing a building.
+4. **Model-mission rebuilds:** done for m3–m9 (2026-11-14), including m8. The quick wins are done too:
+   m6's gate really closes (`canal_closed`) and m6b's victory holds Quipaipan and captures Huáscar instead
+   of razing a building.
 5. **Mid-mission save/load E2E:** fixed (2026-11-14) for Tambotoco (`inticancha`), Lima (`ciudad`) and
    La Junta (the Apacheta hold).
 
@@ -296,6 +294,31 @@ intro/epilogue and bench scenes); its art review is pending. The HUD layout has 
 | Scale       | Met                  | 256 m map, 128² painted ground over 256 m, `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                                             |
 | Pacing      | Pending (exception)  | The real-command bot reaches the ending in ~7 min of simulated time; the agreed 20–30 min human path is still unmeasured. The model pattern's 30–40 band is documented as an exception in `colonial-model-mission.md`. |
 | Site        | Met (exception)      | No construction phases: Cusco is a city in use, not a monument the player builds; recorded here and in `colonial-site.md`.                                                                                             |
+
+## La Independencia gold-master status (m8)
+
+Reviewed 2026-11-14 as a model mission. The human art gate is still open.
+
+| Gate        | Status               | Evidence                                                                                                                                      |
+| ----------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| History     | Met                  | `docs/historia/campanas/independencia.md` with its certainty table; no invented units, generals or feats.                                     |
+| Identity    | Met                  | Junín, the march and Ayacucho, with Sucre protected and the royalist surrender as the ending.                                                 |
+| Terrain     | Met                  | 256 m authored highland heightfield (`independenceHeightmap.ts`) with painted ground: pampas, terraces, quebrada and ridges.                  |
+| Site        | Met (exception)      | No construction phases: the Ayacucho chapel and camp are in use; recorded in `independencia-model-mission.md`.                                |
+| Play        | Met                  | `campaign-playtest.spec.ts` holds Junín, marches and holds Ayacucho with real orders and Sucre alive; completable and save paths are covered. |
+| Contract    | Met                  | Three acts (Junín, march, Ayacucho) with a hidden march/third hold revealed by triggers and chapter cards.                                    |
+| Onboarding  | Met                  | Non-blocking tutorial, briefing, Codex and minimap pips.                                                                                      |
+| Closure     | Met                  | Dusk epilogue capture narrates the royalist surrender and the end of Spanish power.                                                           |
+| UX          | Met                  | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                            |
+| Visuals     | Met locally          | Authored Ayacucho GLB, painted pampas and in-engine intro/epilogue captures in `public/media/independencia/`.                                 |
+| Persistence | Met                  | Junín, march and Ayacucho state use the shared save path; v11 m8 saves are rejected (`SAVE_VERSION` 12).                                      |
+| Tests       | Met                  | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                             |
+| Docs        | Met                  | This document, dossier, `independencia-model-mission.md`, experience table, site note, art docs and README aligned.                           |
+| Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                 |
+| Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_independencia_intro.mjs`; `MISSION_ART` uses the Lima capture.    |
+| Art         | Pending human review | The reused Ayacucho GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                 |
+| Performance | Met                  | `bench_scene.mjs`: opening ~590k tris / 621 calls (under 600k, over 200 calls), Ayacucho ~867k / 1,246; within the recorded first-pass caps.  |
+| Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                            |
 
 ## Campaign IV playable status (m8–m9)
 

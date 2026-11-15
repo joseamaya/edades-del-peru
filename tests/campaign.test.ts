@@ -399,7 +399,7 @@ describe('campaign educational content', () => {
 
   it('chapter IV has briefings and guided tutorials', () => {
     for (const [id, steps] of [
-      ['m8_independencia', 4],
+      ['m8_independencia', 5],
       ['m9_guerra_pacifico', 5],
     ] as const) {
       const mis = MISSIONS.find((m) => m.id === id)!;
@@ -584,6 +584,29 @@ describe('campaign educational content', () => {
     expect(ayacucho?.hidden).toBe(true);
     expect(m8.start.units?.some((u) => u.tag === 'sucre')).toBe(true);
     expect(m8.objectives.some((o) => o.entityTag === 'sucre')).toBe(true);
+    expect(m8.modelMission).toBe(true);
+    expect(m8.narrator).toBe('Antonio José de Sucre');
+    expect(m8.map.size).toBe(256);
+    expect(m8.unitSpeedScale).toBe(0.75);
+    expect(m8.intro?.length).toBe(3);
+    expect(new Set(m8.intro?.map((beat) => beat.image)).size, 'three distinct intro captures').toBe(3);
+    expect(m8.intro?.every((beat) => beat.image.startsWith('media/independencia/'))).toBe(true);
+    expect(m8.epilogueImage).toContain('media/independencia/');
+    const marcha = m8.objectives.find((o) => o.id === 'obj_marcha')!;
+    expect(marcha.kind).toBe('reach');
+    expect(marcha.requires).toBe('obj_junin');
+    expect(marcha.radius).toBeCloseTo(10.667, 3);
+    expect(marcha.pos?.ref).toBe('enemy');
+    expect(marcha.pos?.dx).toBeCloseTo(-10.667, 3);
+    expect(ayacucho?.requires).toBe('obj_marcha');
+    expect(junin?.radius).toBeCloseTo(18.667, 3);
+    expect(junin?.pos).toEqual({ ref: 'enemy', dx: -40, dz: 0 });
+    expect(ayacucho?.radius).toBeCloseTo(24, 3);
+    expect(ayacucho?.time).toBe(90);
+    const actTitles = m8.triggers.flatMap((t) => t.effects.flatMap((e) => (e.type === 'act' ? [e.title] : [])));
+    expect(actTitles).toHaveLength(3);
+    expect(actTitles).toContain('Hacia Ayacucho');
+    expect(actTitles).toContain('La rendición realista');
   });
 
   it('hold objectives declare a position, radius and positive time', () => {
