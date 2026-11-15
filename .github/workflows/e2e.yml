@@ -29,7 +29,13 @@ jobs:
             echo "code=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if git diff --name-only FETCH_HEAD HEAD | grep -qvE '\.md$|^\.agents/'; then
+          if ! names=$(git diff --name-only FETCH_HEAD HEAD); then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$names" ]; then
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          elif printf '%s\n' "$names" | grep -qvE '\.md$' || printf '%s\n' "$names" | grep -qE '^docs/historia/'; then
             echo "code=true" >> "$GITHUB_OUTPUT"
           else
             echo "code=false" >> "$GITHUB_OUTPUT"
