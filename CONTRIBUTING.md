@@ -60,7 +60,7 @@ src/
   model/       Defs (periods, civs, units, buildings, techs) + parametric models
   entities/    Unit, Building, Resource node, Projectile (sim) + entity views
   sim/         Three-free simulation primitives (Vec3)
-  campaign/    Mission engine + 9 historical campaigns
+  campaign/    Mission engine + 5 campaigns (13 missions)
   game/        A* pathfinding, Fog of war, AI, Economy
   ui/          Full Spanish HUD
   audio/       Procedural AudioEngine (WebAudio)
@@ -80,6 +80,20 @@ Details on subsystems, controls and code "traps" are in
   Respect chronology: **no firearms, horses, vehicles or engines before 1532**, and
   **no sci-fi** in any era. Chronology is enforced by `tests/history.test.ts`: when adding a
   post-1532 unit, set `UnitArchetype.minPeriod` in `src/model/defs/units.ts`.
+
+## Documentation
+
+[`docs/README.md`](./docs/README.md) owns the documentation map and the status labels; this is the short
+version.
+
+- Start at the map; it routes each task to the document that owns it.
+- The design source of truth is [`docs/GDD.md`](./docs/GDD.md). Closed technical decisions live in
+  [`docs/DECISIONS/`](./docs/DECISIONS/README.md).
+- Design docs are in **English**; player-facing text and `docs/historia/**` are in **Spanish**.
+- Update the living document in the same PR as the behaviour it describes. Mark point-in-time audits as
+  **Snapshot** and do not edit archived documents into current ones.
+- Add new documents to [`docs/README.md`](./docs/README.md). A docs-only PR needs no capture: say
+  "no visible change, because …" in the `yarn evidence` block.
 
 ## Code conventions
 

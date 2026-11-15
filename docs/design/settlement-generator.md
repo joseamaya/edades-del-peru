@@ -1,6 +1,6 @@
-# Settlement generator — design proposal
+# Settlement generator
 
-Status: **implemented.** The pure, terrain-aware layout — the dwellings of the
+Status: **implemented (core).** The pure, terrain-aware layout — the dwellings of the
 starting base plus the full `SettlementPlan` (center, fields and roads) — is
 `planSettlementSite` in `src/model/defs/settlementPlan.ts`. `Game.spawnStartBase`
 consumes it (dwellings as entities; fields/roads rendered visually by
