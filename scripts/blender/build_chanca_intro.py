@@ -564,6 +564,21 @@ def stone_variant(name: str, base: tuple[float, float, float]):
     return mat
 
 
+def tower_stones(bm, wx, wy, radius, base_z, height):
+    z = base_z
+    while z < base_z + height:
+        h = min(RNG.uniform(0.3, 0.42), base_z + height - z)
+        count = max(9, int((2 * math.pi * radius) / 0.62))
+        for i in range(count):
+            theta = (i / count) * math.tau + RNG.uniform(-0.025, 0.025)
+            yaw = theta + math.pi / 2
+            w = (2 * math.pi * radius / count) * 0.92
+            cx = wx + math.cos(theta) * (radius + 0.12)
+            cy = wy + math.sin(theta) * (radius + 0.12)
+            bm_cube(bm, (cx, cy, z + h / 2), (w, 0.3, h), yaw)
+        z += h + 0.045
+
+
 def build_pucara():
     materials = ROOT / 'src' / 'assets' / 'textures' / 'materials'
     stone_set = [
@@ -613,7 +628,25 @@ def build_pucara():
     wall_stones_z(bm, 8.9, -6.5, 6.5, 8.3, 0.45, depth=0.3)
     make_stone_mesh(bm, 'pucara_parapet', stone_set)
 
+    # buttresses and merlons break the rectangular silhouette
+    for lx, lz in ((-7.0, -6.95), (-4.0, -6.95), (4.0, -6.95), (7.0, -6.95), (-8.95, -3.0), (-8.95, 3.0), (8.95, -3.0), (8.95, 3.0)):
+        add_box('buttress', (*world(lx, lz), 7.5), (0.85, 0.85, 2.6), stone_set[0], (0, 0, PUCARA_YAW))
+    for wall, rng in (
+        ('south', [x for x in range(-8, 9) if abs(x) > 3]),
+        ('north', list(range(-8, 9))),
+        ('west', list(range(-6, 7, 2))),
+        ('east', list(range(-6, 7, 2))),
+    ):
+        for v in rng:
+            if wall in ('south', 'north'):
+                wx, wy = world(v * 1.0, -6.95 if wall == 'south' else 6.95)
+            else:
+                wx, wy = world(-8.95 if wall == 'west' else 8.95, v * 1.0)
+            add_box('merlon', (wx, wy, 9.05), (0.55, 0.4, 0.55), stone_set[1], (0, 0, PUCARA_YAW))
+    add_box('gate_canopy', (*world(0, -7.2), 9.65), (5.6, 2.0, 0.28), wood, (0, 0, PUCARA_YAW))
+
     # towers
+    tower_bm = bmesh.new()
     for lx, lz, radius, height in (
         (-6.0, 4.5, 1.55, 4.6),
         (0.0, 5.0, 1.55, 4.6),
@@ -629,6 +662,8 @@ def build_pucara():
         add_cone('tower_roof', (wx, wy, top_z + 0.95), radius + 0.5, 0.08, 1.5, thatch, 16)
         add_cyl('tower_finial', (wx, wy, top_z + 1.95), 0.07, 0.55, wood, 6)
         add_box('tower_door', (*world(lx, lz - 1.1), 7.15), (0.75, 0.14, 1.5), dark, (0, 0, PUCARA_YAW))
+        tower_stones(tower_bm, wx, wy, radius, 6.3, height + 0.2)
+    make_stone_mesh(tower_bm, 'pucara_tower_stones', stone_set)
 
     # gate, lintel and doors
     for lx in (-2.25, 2.25):
@@ -666,6 +701,8 @@ def build_pucara():
     # banners at the gate and inside
     add_banner((*world(-2.9, -6.6), 6.4), PUCARA_YAW, 4.0, 'cloth')
     add_banner((*world(2.9, -6.6), 6.4), PUCARA_YAW, 3.6, 'cloth_ochre')
+    add_banner((*world(-4.8, -6.7), 8.4), PUCARA_YAW, 3.0, 'cloth_ochre')
+    add_banner((*world(4.8, -6.7), 8.4), PUCARA_YAW, 3.0, 'cloth')
 
     # rubble around the platform
     bm = bmesh.new()
@@ -795,6 +832,9 @@ def add_camp():
     ]
     for i, (x, z, deg, leader) in enumerate(workers):
         add_worker((x, z, ground_height(x, z)), math.radians(deg), variant=i, leader=leader)
+    for lx in (-5.0, 0.0, 5.0):
+        wx, wy = world(lx, -6.1)
+        add_worker((wx, wy, 8.45), math.radians(-8), variant=int(lx) + 3)
 
 
 def add_lighting():
