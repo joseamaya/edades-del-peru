@@ -15,7 +15,6 @@ GitHub issue or PR, link it here instead of copying the discussion. The live mis
 | B10 | Reconcile the five Caral `reviewed: false` records | The quality bar closes Caral, but the manifest still marks five Caral captures unreviewed | Each record is approved, documented as unused, or removed; the manifest and the quality bar agree | Next (during B5) |
 | B6 | Real-GPU pass for the remaining model-mission site views | m1, m2, Tambotoco and Lima openings are already in #447; the site views of m3–m9, m6b and La Junta still rest on structural SwiftShader benches | Frame time and draw calls are recorded at 1280×800 and 1600×900; a decision is documented | Queued |
 | B7 | Package the itch build | The Pages build exists; the itch upload was deferred | The package is built from the release commit, checked and uploaded with `butler` | Blocked (tooling) |
-| B8 | Character bible and asset-pipeline cookbook | Character design is scattered and the Blender pipeline has no single "start here" | `docs/design/characters.md` and a pipeline quickstart are linked from the map | Deferred (next documentation cycle) |
 
 ## Closed this cycle
 
@@ -26,6 +25,7 @@ GitHub issue or PR, link it here instead of copying the discussion. The live mis
 | B3 | `m6b_guerra_civil` model-mission rebuild | Merged (`6938884`) |
 | B4 | `m8_independencia` model-mission rebuild | Merged (`d52bb32`) |
 | B9 | Caral art-review line in the quality bar | Fixed in this PR |
+| B8 | Character bible and asset-pipeline cookbook | Done in this PR: `docs/design/characters.md` and `docs/design/asset-pipeline.md` |
 
 ## Rules for the queue
 
