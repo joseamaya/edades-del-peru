@@ -240,6 +240,66 @@
       }
     },
     {
+      "id": "m_junta_cusco-intro",
+      "type": "campaign-intro",
+      "scope": "mission",
+      "campaignId": "independencia",
+      "missionId": "m_junta_cusco",
+      "civilization": "patriotas",
+      "period": 7,
+      "era": 4,
+      "region": "high_andes",
+      "topic": "campaign_intro",
+      "sceneType": "campaign_scene",
+      "asset": "media/generated/campaigns/independencia/m_junta_cusco/intro.webp",
+      "variants": [
+        {
+          "asset": "media/generated/campaigns/independencia/m_junta_cusco/intro-800.webp",
+          "width": 800,
+          "height": 450,
+          "bytes": 23232
+        }
+      ],
+      "sources": [
+        "docs/historia/campanas/junta_cusco.md",
+        "docs/historia/atuendos.md",
+        "docs/design/blender-art.md"
+      ],
+      "promptVersion": "v1-blender-89ac1d1e",
+      "prompt": "Blender render: El Cusco de la Junta, 1814",
+      "negativePrompt": "n/a (blender render)",
+      "provider": "blender",
+      "model": "eevee",
+      "generatedAt": "2026-11-15T23:23:25.437Z",
+      "nature": "abstraction",
+      "reviewed": false,
+      "reviewer": null,
+      "reviewedAt": null,
+      "disclaimer": "No es una fotografía histórica: es un render 3D del proyecto.",
+      "alt": "La plaza del Cusco con la catedral de dos torres, el cabildo y la milicia de la Junta reunida ante la cruz de piedra.",
+      "caption": "El Cusco de la Junta, 1814",
+      "width": 1280,
+      "height": 720,
+      "sourceWidth": 1600,
+      "sourceHeight": 900,
+      "crop": "cover-attention",
+      "bytes": 43172,
+      "format": "webp",
+      "sha256": "881b1b37027fc0d8bc457356954de215dab04b4b1a7ba2d79b60a4d95766af2f",
+      "blender": {
+        "sceneFile": "site-intros/m_junta_cusco/m_junta_cusco.blend",
+        "sourceRender": "site-intros/m_junta_cusco/hero.png",
+        "sourceSha256": "b2bf3119b23619f5db1edf1679a37ca083acf6047cb6e7393fdcef2b59da0384",
+        "sceneAssetId": null,
+        "confidence": "Reconstrucción estilizada de la Plaza del Cusco en 1814: la catedral de dos torres, el cabildo, la plaza y la milicia patriota son una abstracción plausible, no un levantamiento.",
+        "camera": "hero",
+        "renderer": "eevee",
+        "license": "project-owned",
+        "author": "Miguel Amaya",
+        "renderedAt": "2026-11-15T17:45:00-05:00"
+      }
+    },
+    {
       "id": "m_lima-intro",
       "type": "campaign-intro",
       "scope": "mission",
@@ -912,10 +972,10 @@
       }
     },
     {
-      "id": "m9_arica-intro",
+      "id": "m9_guerra_pacifico-intro",
       "type": "campaign-intro",
       "scope": "mission",
-      "campaignId": "la-senda-del-sol",
+      "campaignId": "republica",
       "missionId": "m9_guerra_pacifico",
       "civilization": "republica",
       "period": 8,
@@ -923,52 +983,52 @@
       "region": "south_coast",
       "topic": "campaign_intro",
       "sceneType": "campaign_scene",
-      "asset": "media/generated/campaigns/la-senda-del-sol/m9_arica/intro.webp",
+      "asset": "media/generated/campaigns/republica/m9_guerra_pacifico/intro.webp",
       "variants": [
         {
-          "asset": "media/generated/campaigns/la-senda-del-sol/m9_arica/intro-800.webp",
+          "asset": "media/generated/campaigns/republica/m9_guerra_pacifico/intro-800.webp",
           "width": 800,
           "height": 450,
-          "bytes": 4750
+          "bytes": 24694
         }
       ],
       "sources": [
         "docs/historia/campanas/guerra_del_pacifico.md",
-        "docs/historia/arquitectura.md",
-        "art-src/blender/mission-decor/README.md"
+        "docs/historia/atuendos.md",
+        "docs/design/blender-art.md"
       ],
-      "promptVersion": "v1-blender-41792702",
-      "prompt": "Blender render: Terraza portuaria y batería de Arica",
+      "promptVersion": "v1-blender-353c08ba",
+      "prompt": "Blender render: La batería de Arica y el Morro, 1880",
       "negativePrompt": "n/a (blender render)",
       "provider": "blender",
-      "model": "workbench",
-      "generatedAt": "2026-10-31T23:29:50.428Z",
+      "model": "eevee",
+      "generatedAt": "2026-11-15T23:23:26.016Z",
       "nature": "abstraction",
       "reviewed": false,
       "reviewer": null,
       "reviewedAt": null,
       "disclaimer": "No es una fotografía histórica: es un render 3D del proyecto.",
-      "alt": "Vista de la batería, el almacén y el muelle de la terraza portuaria de Arica.",
-      "caption": "Terraza portuaria y batería de Arica",
+      "alt": "La batería de Arica con sus cañones y la bandera peruana, el Morro al fondo y un buque de la escuadra en el mar.",
+      "caption": "La batería de Arica y el Morro, 1880",
       "width": 1280,
       "height": 720,
       "sourceWidth": 1600,
       "sourceHeight": 900,
       "crop": "cover-attention",
-      "bytes": 8880,
+      "bytes": 48712,
       "format": "webp",
-      "sha256": "2ac411155e095a31c36231ba1d54d381497ffc29da9ad787e4edc93199b66f7e",
+      "sha256": "ef84d71b8938a92028d4b958fd0675372ccc7e5cb9b7637b50afd3fde718da3d",
       "blender": {
-        "sceneFile": "mission-decor/arica_battery_lod0.blend",
-        "sourceRender": "mission-decor/renders/arica_hero.png",
-        "sourceSha256": "4d148e26ff3916d266eddbcf8a7308533e1ad0a6d3a7a3518dc13f70f0633f1c",
+        "sceneFile": "site-intros/m9_guerra_pacifico/m9_guerra_pacifico.blend",
+        "sourceRender": "site-intros/m9_guerra_pacifico/hero.png",
+        "sourceSha256": "d6d215642160984f4216b87a1f1ba75b07de8b05cdf6dd24aaa1df5f6fa67a69",
         "sceneAssetId": null,
-        "confidence": "Infraestructura documentada; planta y remates plausibles.",
+        "confidence": "Reconstrucción estilizada de la batería de Arica en 1880: el terraplén, los cañones, la bandera y el Morro son una abstracción plausible; el buque y la mar son recursos de composición, no un orden de batalla.",
         "camera": "hero",
-        "renderer": "workbench",
+        "renderer": "eevee",
         "license": "project-owned",
         "author": "Miguel Amaya",
-        "renderedAt": "2026-10-31T10:00:00-05:00"
+        "renderedAt": "2026-11-15T17:45:00-05:00"
       }
     }
   ]

@@ -52,15 +52,15 @@ CONFIG = {
         'site': (72.0, 58.0),
         'scale': 1.3,
         'glb': 'colonial/colonial_church_lod0.glb',
-        'camera': (120.0, 112.0, 14.0),
-        'target': (72.0, 56.0, 4.0),
-        'lens': 38,
+        'camera': (112.0, 122.0, 15.0),
+        'target': (72.0, 68.0, 5.0),
+        'lens': 40,
         'sun': (-0.35, -0.55, -0.28),
         'sun_color': (1.0, 0.86, 0.68),
         'sky': (0.34, 0.44, 0.60),
         'water': False,
         'figures': [(54, 74, 150), (61, 78, 145), (84, 74, 30), (90, 80, 35)],
-        'town': True,
+        'bespoke': 'junta',
         'uniform': (0.12, 0.15, 0.24),
         'caption': 'El Cusco de la Junta, 1814',
     },
@@ -69,9 +69,9 @@ CONFIG = {
         'site': (179.7, 97.3),
         'scale': 1.2,
         'glb': 'arica/arica_battery_lod0.glb',
-        'camera': (198.0, 124.0, 7.0),
-        'target': (178.0, 98.0, 3.0),
-        'lens': 40,
+        'camera': (190.0, 118.0, 2.6),
+        'target': (166.0, 99.0, 3.0),
+        'lens': 44,
         'sun': (-0.30, -0.45, -0.34),
         'sun_color': (1.0, 0.82, 0.60),
         'sky': (0.34, 0.45, 0.62),
@@ -402,10 +402,10 @@ def add_cannon(x, z, yaw):
     y = ground_height(x, z)
     wood = MAT['wood']
     iron = material('cannon_iron', (0.09, 0.09, 0.10), 0.55, 0.1)
-    add_cyl('cannon_barrel', (x, z, y + 1.05), 0.16, 2.0, iron, 10, (0, math.radians(90), yaw))
-    add_cyl('cannon_wheel_l', (x - 0.45, z - 0.35, y + 0.55), 0.55, 0.18, wood, 12, (math.radians(90), 0, 0))
-    add_cyl('cannon_wheel_r', (x - 0.45, z + 0.35, y + 0.55), 0.55, 0.18, wood, 12, (math.radians(90), 0, 0))
-    add_box('cannon_carriage', (x - 0.1, z, y + 0.55), (1.5, 0.8, 0.35), wood, (0, 0, yaw))
+    add_cyl('cannon_barrel', (x, z, y + 1.12), 0.21, 2.6, iron, 10, (0, math.radians(90), yaw))
+    add_cyl('cannon_wheel_l', (x - 0.55, z - 0.45, y + 0.62), 0.68, 0.2, wood, 12, (math.radians(90), 0, 0))
+    add_cyl('cannon_wheel_r', (x - 0.55, z + 0.45, y + 0.62), 0.68, 0.2, wood, 12, (math.radians(90), 0, 0))
+    add_box('cannon_carriage', (x - 0.1, z, y + 0.62), (1.9, 1.0, 0.45), wood, (0, 0, yaw))
 
 
 def add_battery():
@@ -420,7 +420,7 @@ def add_battery():
 
 def add_arica_scene():
     sx, sz = CFG['site']
-    stone = material('arica_rampart', (0.34, 0.28, 0.21), 0.98, 0.3)
+    stone = limestone('arica_rampart', (0.30, 0.25, 0.19))
     plaster = material('arica_plaster', (0.66, 0.60, 0.50), 0.95, 0.2)
     tile = material('arica_tile', (0.42, 0.16, 0.08), 0.85, 0.1)
     iron = material('arica_iron', (0.08, 0.08, 0.09), 0.5, 0.1)
@@ -440,7 +440,16 @@ def add_arica_scene():
     # The flagpole and a plain cloth (no invented heraldry).
     fy = ground_height(sx - 16, sz - 10)
     add_cyl('flagpole', (sx - 16, sz - 10, fy + 3.4), 0.06, 6.8, MAT['wood'], 6)
-    add_box('flag', (sx - 15.4, sz - 10, fy + 5.9), (1.2, 0.04, 1.6), MAT['cloth_dark'])
+    flag_red = material('flag_red', (0.55, 0.08, 0.06), 0.9, 0.0)
+    add_box('flag_red_l', (sx - 15.75, sz - 10, fy + 5.9), (0.4, 0.04, 1.6), flag_red)
+    add_box('flag_white', (sx - 15.35, sz - 10, fy + 5.9), (0.4, 0.04, 1.6), material('flag_white', (0.82, 0.80, 0.74), 0.9, 0.0))
+    add_box('flag_red_r', (sx - 14.95, sz - 10, fy + 5.9), (0.4, 0.04, 1.6), flag_red)
+    # Stone magazine behind the guns.
+    add_box('magazine', (sx + 14, sz - 16, ground_height(sx + 14, sz - 16) + 1.9), (10.0, 7.0, 3.8), stone)
+    add_cone('magazine_roof', (sx + 14, sz - 16, ground_height(sx + 14, sz - 16) + 4.2), 6.5, 0.2, 1.6, tile, 4, (0, 0, math.radians(45)))
+    for i in range(7):
+        gx = sx - 16 + i * 5.4
+        add_cyl('gabion', (gx, sz + 1.5, ground_height(gx, sz + 1.5) + 2.6), 0.55, 1.3, MAT['earth'], 8)
     # Soldiers along the rampart.
     for x, z, yaw in (
         (sx - 15, sz + 7, 10),
@@ -620,6 +629,111 @@ def add_lima_city():
     guard = material('lima_guard', (0.16, 0.18, 0.24), 0.92, 0.05)
     for x, z, yaw in ((cx - 7, cz - 9, 10), (cx + 8, cz - 8, 200), (cx + 1, cz - 17, 180)):
         add_warrior((x, z, ground_height(x, z)), math.radians(yaw), cloth=guard)
+
+
+def add_junta_cathedral(cx, cz):
+    plaster = limestone('junta_plaster', (0.70, 0.65, 0.55))
+    stone = limestone('junta_stone', (0.40, 0.38, 0.35))
+    tile = material('junta_tile', (0.40, 0.16, 0.08), 0.82, 0.12)
+    wood = MAT['wood']
+    y = ground_height(cx, cz)
+    add_box('junta_atrium', (cx, cz + 5.0, y + 0.35), (28.0, 12.0, 0.7), stone)
+    add_box('junta_nave', (cx, cz, y + 3.9), (19.0, 9.0, 6.8), plaster)
+    gable_roof('junta_roof', cx, cz, y + 7.2, 20.0, 10.2, 3.0, tile)
+    # Twin towers, one taller.
+    for side, height in ((-1, 15.5), (1, 13.5)):
+        tx = cx + side * 8.4
+        add_box('junta_tower', (tx, cz + 0.8, y + height / 2), (4.6, 4.6, height), plaster)
+        add_box('junta_tower_base', (tx, cz + 0.8, y + 1.3), (5.2, 5.2, 2.6), stone)
+        for dx in (-0.9, 0.9):
+            add_box('junta_belfry', (tx + dx, cz + 0.8 - 2.31, y + height - 2.2), (1.3, 0.16, 2.0), MAT['paint_dark'])
+            add_box('junta_belfry', (tx + dx, cz + 0.8 + 2.31, y + height - 2.2), (1.3, 0.16, 2.0), MAT['paint_dark'])
+        add_cone('junta_cap', (tx, cz + 0.8, y + height + 1.1), 3.5, 0.15, 2.2, tile, 4, (0, 0, math.radians(45)))
+    add_box('junta_cross_v', (cx + 8.4, cz + 0.8, y + 17.2), (0.16, 0.16, 1.3), MAT['paint_dark'])
+    add_box('junta_cross_h', (cx + 8.4, cz + 0.8, y + 17.5), (0.8, 0.16, 0.16), MAT['paint_dark'])
+    # Facade toward the plaza (+Z).
+    fz = cz + 4.52
+    add_box('junta_portal', (cx, fz, y + 2.2), (3.0, 0.3, 4.4), wood)
+    add_box('junta_portal_frame', (cx, fz + 0.05, y + 4.4), (3.8, 0.22, 0.5), stone)
+    add_cyl('junta_rose', (cx, fz + 0.15, y + 6.0), 1.2, 0.2, stone, 16, (math.radians(90), 0, 0))
+    add_cyl('junta_rose_glass', (cx, fz + 0.25, y + 6.0), 0.78, 0.1, MAT['paint_dark'], 16, (math.radians(90), 0, 0))
+    for px in (-5.4, 5.4):
+        add_box('junta_pilaster', (cx + px, fz + 0.1, y + 4.0), (1.0, 0.4, 8.0), stone)
+
+
+def add_junta_city():
+    cx, cz = 72.0, 58.0
+    cy = ground_height(cx, cz)
+    stone = limestone('junta_paving', (0.42, 0.38, 0.33))
+    add_junta_cathedral(cx, cz)
+    # Plaza del Cusco in front of the cathedral.
+    add_box('junta_plaza', (cx, cz + 15.0, cy + 0.03), (36.0, 22.0, 0.16), stone)
+    # Cabildo and arcades closing the plaza.
+    plaster = limestone('junta_cabildo', (0.68, 0.62, 0.50))
+    tile = material('junta_cabildo_tile', (0.40, 0.15, 0.08), 0.82, 0.1)
+    add_box('junta_cabildo', (cx - 24.0, cz + 16.0, cy + 3.4), (7.0, 18.0, 6.8), plaster)
+    add_box('junta_cabildo_roof', (cx - 24.0, cz + 16.0, cy + 7.0), (8.2, 19.0, 0.4), tile)
+    for i in range(4):
+        add_box('junta_cabildo_window', (cx - 20.4, cz + 9 + i * 4.4, cy + 4.3), (0.15, 1.4, 1.5), MAT['paint_dark'])
+        add_box('junta_cabildo_door', (cx - 20.4, cz + 9 + i * 4.4, cy + 1.2), (0.15, 1.1, 2.2), MAT['wood'])
+    for side in (-1, 1):
+        for i in range(4):
+            x = cx + side * 16.0
+            z = cz + 8 + i * 4.4
+            add_box('junta_arcade', (x, z, cy + 2.2), (1.0, 1.0, 4.4), plaster)
+            add_box('junta_arcade_roof', (x, z + 1.8, cy + 4.8), (3.4, 4.2, 0.35), tile)
+    # Houses around the plaza.
+    for x, z, w, d, h in (
+        (cx + 24, cz + 8, 9, 7, 4.8),
+        (cx + 24, cz + 20, 9, 7, 4.2),
+        (cx + 30, cz + 30, 10, 7, 4.6),
+        (cx - 30, cz + 30, 9, 7, 4.0),
+    ):
+        add_lima_house(x, z, w, d, h)
+    # Stone cross and fountain in the plaza.
+    fy = ground_height(cx, cz + 15)
+    add_cyl('junta_cross_base', (cx - 2, cz + 14, fy + 0.5), 1.4, 1.0, stone, 8)
+    add_box('junta_cross_v', (cx - 2, cz + 14, fy + 3.0), (0.22, 0.22, 3.4), stone)
+    add_box('junta_cross_h', (cx - 2, cz + 14, fy + 3.4), (1.8, 0.22, 0.22), stone)
+    add_cyl('junta_fountain', (cx + 8, cz + 18, fy + 0.45), 2.2, 0.9, stone, 12)
+    add_cyl('junta_fountain_water', (cx + 8, cz + 18, fy + 0.92), 1.8, 0.08, MAT['water'], 12)
+    # Patriot militia and the Junta's neighbours.
+    patriot = material('junta_patriot', (0.12, 0.15, 0.24), 0.92, 0.05)
+    for i, (x, z, yaw) in enumerate((
+        (cx - 8, cz + 12, 20), (cx - 2, cz + 10, 0), (cx + 5, cz + 12, 340),
+        (cx - 12, cz + 18, 30), (cx + 3, cz + 20, 0), (cx + 12, cz + 15, 320),
+    )):
+        add_warrior((x, z, ground_height(x, z)), math.radians(yaw), cloth=patriot, leader=i == 1)
+    for x, z in ((cx - 5, cz + 16), (cx + 9, cz + 22)):
+        y = ground_height(x, z)
+        add_cyl('junta_banner', (x, z, y + 2.0), 0.05, 4.0, MAT['wood'], 6)
+        add_box('junta_banner_cloth', (x + 0.55, z, y + 3.4), (1.0, 0.04, 1.4), MAT['cloth_ochre'])
+
+
+def add_arica_backdrop():
+    rock = material('morro_rock', (0.075, 0.085, 0.065), 0.98, 0.35)
+    # The Morro and the headland: big low-poly masses, not cones.
+    for x, z, r, sx, sy, sz in (
+        (72.0, 80.0, 28.0, 1.5, 0.9, 0.55),
+        (34.0, 128.0, 22.0, 1.3, 0.9, 0.5),
+        (18.0, 182.0, 18.0, 1.2, 0.9, 0.45),
+    ):
+        obj = add_ico('morro', (x, z, ground_height(x, z) + r * sz * 0.35), r, rock, 2)
+        for v in obj.data.vertices:
+            v.co *= RNG.uniform(0.86, 1.14)
+        obj.scale = (sx, sy, sz)
+        obj.rotation_euler[2] = math.radians(RNG.uniform(-20, 20))
+    # Sea shelf at the heightmap coast; it floods only the low western plain.
+    add_box('arica_sea', (-130.0, 128.0, 2.35), (400.0, 256.0, 0.12), MAT['water'])
+    # A blockading warship offshore.
+    wood = MAT['wood']
+    hull = material('ship_hull', (0.09, 0.08, 0.07), 0.8, 0.1)
+    add_box('ship_hull', (44.0, 140.0, 4.0), (22.0, 6.0, 3.4), hull)
+    add_box('ship_deck', (44.0, 140.0, 5.8), (19.0, 4.8, 0.25), wood)
+    add_cyl('ship_mast', (44.0, 140.0, 12.0), 0.15, 14.0, wood, 6)
+    add_cyl('ship_funnel', (49.0, 140.0, 8.2), 0.9, 4.6, hull, 8)
+    add_box('ship_bridge', (40.0, 140.0, 6.8), (3.6, 3.2, 1.8), hull)
+    add_cyl('ship_smoke', (49.0, 140.0, 13.0), 1.4, 5.0, material('smoke', (0.2, 0.2, 0.21), 1.0, 0.0), 6)
 
 
 def add_water():
@@ -900,6 +1014,8 @@ def main() -> None:
     build_terrain()
     if CFG.get('bespoke') == 'lima':
         add_lima_city()
+    elif CFG.get('bespoke') == 'junta':
+        add_junta_city()
     elif not CFG.get('bespoke'):
         import_site()
         recolor_site()
@@ -907,6 +1023,7 @@ def main() -> None:
     if CFG.get('town') and CFG.get('bespoke') != 'lima':
         add_town(*CFG['site'])
     if CFG.get('battery'):
+        add_arica_backdrop()
         add_arica_scene()
     if CFG.get('bridge'):
         add_bridge(*CFG['bridge'])

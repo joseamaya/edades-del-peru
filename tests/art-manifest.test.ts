@@ -153,6 +153,7 @@ describe('Blender art manifest', () => {
   it('ships draft intro records for the remaining missions', () => {
     const missions = [
       'm_lima',
+      'm_junta_cusco',
       'm6_chimu_inca',
       'm6b_guerra_civil',
       'm7_tupac_amaru',

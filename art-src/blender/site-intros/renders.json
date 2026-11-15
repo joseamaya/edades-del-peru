@@ -32,6 +32,66 @@
       "nature": "abstraction",
       "sourceSha256": "43647251537d809343bb5a2e81e624bb4139a21284de71d87cab9167436ab74a",
       "renderedAt": "2026-11-15T17:38:33-05:00"
+    },
+    {
+      "type": "campaign-intro",
+      "scope": "mission",
+      "topic": "campaign_intro",
+      "sceneType": "campaign_scene",
+      "camera": "hero",
+      "renderer": "eevee",
+      "license": "project-owned",
+      "author": "Miguel Amaya",
+      "nature": "abstraction",
+      "id": "m_junta_cusco-intro",
+      "campaignId": "independencia",
+      "missionId": "m_junta_cusco",
+      "civilization": "patriotas",
+      "period": 7,
+      "region": "high_andes",
+      "asset": "media/generated/campaigns/independencia/m_junta_cusco/intro.webp",
+      "render": "site-intros/m_junta_cusco/hero.png",
+      "sceneFile": "site-intros/m_junta_cusco/m_junta_cusco.blend",
+      "confidence": "Reconstrucción estilizada de la Plaza del Cusco en 1814: la catedral de dos torres, el cabildo, la plaza y la milicia patriota son una abstracción plausible, no un levantamiento.",
+      "sources": [
+        "docs/historia/campanas/junta_cusco.md",
+        "docs/historia/atuendos.md",
+        "docs/design/blender-art.md"
+      ],
+      "alt": "La plaza del Cusco con la catedral de dos torres, el cabildo y la milicia de la Junta reunida ante la cruz de piedra.",
+      "caption": "El Cusco de la Junta, 1814",
+      "sourceSha256": "b2bf3119b23619f5db1edf1679a37ca083acf6047cb6e7393fdcef2b59da0384",
+      "renderedAt": "2026-11-15T17:45:00-05:00"
+    },
+    {
+      "type": "campaign-intro",
+      "scope": "mission",
+      "topic": "campaign_intro",
+      "sceneType": "campaign_scene",
+      "camera": "hero",
+      "renderer": "eevee",
+      "license": "project-owned",
+      "author": "Miguel Amaya",
+      "nature": "abstraction",
+      "id": "m9_guerra_pacifico-intro",
+      "campaignId": "republica",
+      "missionId": "m9_guerra_pacifico",
+      "civilization": "republica",
+      "period": 8,
+      "region": "south_coast",
+      "asset": "media/generated/campaigns/republica/m9_guerra_pacifico/intro.webp",
+      "render": "site-intros/m9_guerra_pacifico/hero.png",
+      "sceneFile": "site-intros/m9_guerra_pacifico/m9_guerra_pacifico.blend",
+      "confidence": "Reconstrucción estilizada de la batería de Arica en 1880: el terraplén, los cañones, la bandera y el Morro son una abstracción plausible; el buque y la mar son recursos de composición, no un orden de batalla.",
+      "sources": [
+        "docs/historia/campanas/guerra_del_pacifico.md",
+        "docs/historia/atuendos.md",
+        "docs/design/blender-art.md"
+      ],
+      "alt": "La batería de Arica con sus cañones y la bandera peruana, el Morro al fondo y un buque de la escuadra en el mar.",
+      "caption": "La batería de Arica y el Morro, 1880",
+      "sourceSha256": "d6d215642160984f4216b87a1f1ba75b07de8b05cdf6dd24aaa1df5f6fa67a69",
+      "renderedAt": "2026-11-15T17:45:00-05:00"
     }
   ]
 }
