@@ -18,7 +18,18 @@
   se reparte en **huamanis** y la monarquía chimú pasa a ser vasalla. Querrotumi se subleva en **1475** y
   es vencido.
 - **Mapa**: `costa` con canal y Chan Chan.
-- **En el juego**: el canal arranca abierto y su compuerta es operable (field card `chimu_canal`). Llegar a Paramonga activa el objetivo; **cerrar la compuerta** es lo que corta el agua y dispara la rendición de Chan Chan (victoria), sin reducir la misión a destruir un centro genérico. Chan Chan se representa con el centro enemigo y un compuesto adobe decorativo; la geometría del canal y el conjunto son visual-only. El epílogo recuerda la capitulación, el traslado de Minchancaman y la revuelta de Querrotumi en 1475.
+- **En el juego**: el canal arranca abierto y su compuerta es operable (field card `chimu_canal`). Tres actos: I avanzar a Paramonga, II cerrar la compuerta, III marchar a Chan Chan y sostener la capitulación. Cerrar el agua no termina la misión: la ciudad se rinde al llegar. Chan Chan se representa con el centro enemigo y un compuesto adobe; la geometría del canal y el conjunto son visual-only. El epílogo recuerda la capitulación, el traslado de Minchancaman y la revuelta de Querrotumi en 1475.
+
+## Certeza
+
+| Afirmación | Certeza | Base |
+| --- | --- | --- |
+| La campaña inca contra Chimor y el choque de Paramonga | Documentado por las crónicas | Cieza de León y fuentes coloniales |
+| Túpac Yupanqui seca el canal que abastecía Chan Chan | Documentado por las crónicas; trazado y compuerta abstraídos | Fuentes coloniales |
+| La capitulación de Chan Chan y el traslado de Minchancaman al Cusco | Documentado | Fuentes coloniales |
+| La revuelta de Querrotumi en 1475 y su derrota | Documentado | Fuentes coloniales |
+| El trazado exacto del canal y la compuerta | Abstracción jugable | Este dossier y `docs/design/chimu-model-mission.md` |
+| Los actos, la rendición de 30 s y la toma opcional del centro | Abstracción jugable | Este dossier |
 
 ## Fuentes
 

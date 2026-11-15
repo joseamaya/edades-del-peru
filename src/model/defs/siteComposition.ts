@@ -10,7 +10,7 @@ export interface SiteComposition {
   point<T extends { x: number; z: number }>(p: T): T;
 }
 
-/** The campaign sites (Arica, Cusco) were authored for the former 192 m maps. */
+/** The campaign sites (Arica, Cusco, Moche, Wari, Chan Chan) were authored for the former 192 m maps. */
 export const SITE_SOURCE_SIZE = 192;
 
 export function siteComposition(mapSize: number, sourceSize = SITE_SOURCE_SIZE): SiteComposition {

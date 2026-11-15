@@ -54,7 +54,14 @@ import {
   CHANCA_HEIGHTMAP_WORLD_SIZE,
 } from './chancaHeightmap';
 import { chancaLength, chancaPoint } from './chancaSite';
-import { CHIMU_HEIGHTMAP, CHIMU_HEIGHTMAP_SIZE, CHIMU_HEIGHTMAP_WORLD_SIZE } from './chimuHeightmap';
+import {
+  CHIMU_GROUND,
+  CHIMU_GROUND_SIZE,
+  CHIMU_HEIGHTMAP,
+  CHIMU_HEIGHTMAP_SIZE,
+  CHIMU_HEIGHTMAP_WORLD_SIZE,
+} from './chimuHeightmap';
+import { chimuLength, chimuPoint } from './chimuSite';
 import {
   COLONIAL_GROUND,
   COLONIAL_GROUND_SIZE,
@@ -688,26 +695,37 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'chimu_site',
     label: 'Conjunto chimú de Chan Chan',
     modelName: 'chimu_site',
-    scale: 0.7,
-    origin: { x: 142.8, z: 65 },
-    anchor: { x: 142.8, z: 65 },
-    cameraHeight: 55,
+    // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
+    // scale with it so Chan Chan still covers its terrace.
+    scale: chimuLength(0.7),
+    origin: chimuPoint({ x: 142.8, z: 65 }),
+    anchor: chimuPoint({ x: 142.8, z: 65 }),
+    cameraHeight: chimuLength(55),
     framing: 'site-biased',
     heightField: {
       size: CHIMU_HEIGHTMAP_SIZE,
       worldSize: CHIMU_HEIGHTMAP_WORLD_SIZE,
       heights: CHIMU_HEIGHTMAP,
+      ground: { size: CHIMU_GROUND_SIZE, weights: CHIMU_GROUND },
     },
     pathCellSize: 1,
-    heritageProxies: [{ id: 'chimu_compound', x: 142.8, z: 65, w: 11, d: 8.5, h: 4.5 }],
-    blockers: [{ x: 142.8, z: 65, w: 11, d: 8.5 }],
-    blockerPadding: 0.5,
+    heritageProxies: [
+      {
+        id: 'chimu_compound',
+        ...chimuPoint({ x: 142.8, z: 65 }),
+        w: chimuLength(11),
+        d: chimuLength(8.5),
+        h: chimuLength(4.5),
+      },
+    ],
+    blockers: [{ ...chimuPoint({ x: 142.8, z: 65 }), w: chimuLength(11), d: chimuLength(8.5) }],
+    blockerPadding: chimuLength(0.5),
     buildKeepout: [{ x: 0.744, z: 0.339, rx: 0.075, rz: 0.065 }],
     wallCollision: {
       meshPatterns: [/chimu/i],
-      maxStartYAboveBase: 1.2,
+      maxStartYAboveBase: chimuLength(1.2),
     },
-    walkableCorridor: { width: 8 },
+    walkableCorridor: { width: chimuLength(8) },
     terrain: {
       ...DEFAULT_SITE_TERRAIN,
       flatNormals: true,

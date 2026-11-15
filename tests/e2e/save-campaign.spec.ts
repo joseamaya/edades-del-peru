@@ -749,6 +749,75 @@ test('saves and loads m5 mid-siege', async ({ page }) => {
   expect(after).toEqual(before);
 });
 
+test('saves and loads m6 mid-surrender', async ({ page }) => {
+  await page.goto('/?mission=m6_chimu_inca&seed=777&fog=0&low=1&intro=0');
+  await startMission(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const tupac = [...g.units.values()].find((u: any) => u.tag === 'tupac_yupanqui') as any;
+    const advance = m.getObjectiveAnchor('obj_avanzar') as { x: number; z: number };
+    tupac.pos.set(advance.x, g.terrain.getHeight(advance.x, advance.z), advance.z);
+    g.update(1 / 60, 0);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    const canal = g.canalSite as { x: number; z: number };
+    tupac.pos.set(canal.x, g.terrain.getHeight(canal.x, canal.z), canal.z);
+    g.update(1 / 60, 0.01);
+    g.toggleCanal();
+    g.update(1 / 60, 0.02);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    const anchor = g.siteAnchor as { x: number; z: number };
+    const army = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead).slice(0, 4) as any[];
+    for (const u of army) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    const dt = 1 / 60;
+    let t = 0.1;
+    for (let i = 0; i < Math.ceil(10 / dt) && !m.ended; i++) {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+      for (const u of army) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+      g.update(dt, t);
+      t += dt;
+    }
+    g.saveMatch();
+    return {
+      surrender: g.mission.getObjectiveProgress('obj_rendicion'),
+      canal: m.getObjectiveState('obj_canal'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(before.surrender?.current ?? 0).toBeGreaterThan(5);
+  expect(before.canal).toBe('completed');
+
+  await page.goto('/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return {
+      surrender: g.mission.getObjectiveProgress('obj_rendicion'),
+      canal: g.mission.getObjectiveState('obj_canal'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(after).toEqual(before);
+});
+
 test('saves and loads the later campaign missions', async ({ context }) => {
   test.setTimeout(180_000);
   for (const id of [

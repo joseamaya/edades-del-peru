@@ -41,6 +41,7 @@ describe('model-mission scale', () => {
       'm4_wari',
       'm_tambotoco',
       'm5_yahuar_pampa',
+      'm6_chimu_inca',
       'm_lima',
       'm7_tupac_amaru',
       'm_junta_cusco',

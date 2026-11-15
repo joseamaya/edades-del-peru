@@ -425,6 +425,22 @@ slot is absent (offline / without assets).
 - **Review**: no human art-review gate applies to in-engine captures; the reused Chanca GLB keeps its own
   review status in `src/art/manifest.json` (#343).
 
+### Chimú (m6) intro and epilogue images (in-engine recreations)
+
+- **Location**: `public/media/chimu/intro-{costa,paramonga,canal,rendicion,epilogo}.webp` (960x540, WebP q58).
+- **Source**: captured from the game itself by `scripts/capture_chimu_intro.mjs` on the 256 m north-coast
+  transect: the Inca camp, Paramonga and the Chan Chan canal, plus a dusk epilogue. Rendered without the
+  HUD or character nameplates at 1600x900 and resized with `sharp`. Regenerate with
+  `node scripts/capture_chimu_intro.mjs` (one with `--only=ID`) after art changes.
+- **Runtime**: the briefing and the "Tu senda" card use `intro-costa`; the three intro beats and the act
+  cards use the coast, Paramonga, the canal and the capitulation captures; the victory epilogue uses
+  `intro-epilogo`.
+- **Content**: project-owned game renders (authored Chimú heightfield, the reused `chimu_site` compound and
+  the procedural camps). Recreations of the game's own scenes: never historical photographs, and not
+  Blender renders (so not in `src/art/manifest.json`).
+- **Review**: no human art-review gate applies to in-engine captures; the reused Chimú GLB keeps its own
+  review status in `src/art/manifest.json` (#343).
+
 ### Caral Pyramid Mayor modular scenery
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.

@@ -1,5 +1,6 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import type { MissionDef } from '../../types';
+import { CHIMU_MAP_SIZE, chimuLength } from '../../../model/defs/chimuSite';
 
 export const m6ChimuInca: MissionDef = {
   id: 'm6_chimu_inca',
@@ -14,9 +15,40 @@ export const m6ChimuInca: MissionDef = {
   defeat: 'La resistencia chimú detiene al ejército inca y la costa norte permanece libre.',
   period: HistoricalPeriod.LATE_HORIZON,
   tutorial: true,
+  modelMission: true,
+  narrator: 'Túpac Yupanqui',
+  intro: [
+    {
+      kicker: 'COSTA NORTE · c. 1470',
+      title: 'La Guerra del Norte',
+      text: 'El Tahuantinsuyo ya domina el Collao, Cajamarca y la costa sur. Solo falta el poderoso Reino Chimú de Minchancaman, con su capital en Chan Chan.',
+      seconds: 9,
+      source: 'docs/historia/campanas/chimu_inca.md',
+      image: 'media/chimu/intro-costa.webp',
+    },
+    {
+      kicker: 'PARAMONGA',
+      title: 'El primer choque',
+      text: 'La vanguardia inca choca en Paramonga y recibe refuerzos de los curacas. El camino sigue por Huarmey y el valle del Santa hacia el corazón chimú.',
+      seconds: 9,
+      source: 'docs/historia/campanas/chimu_inca.md',
+      image: 'media/chimu/intro-paramonga.webp',
+    },
+    {
+      kicker: 'EL CANAL DE CHAN CHAN',
+      title: 'El agua como poder',
+      text: 'Túpac Yupanqui seca el canal que abastece Chan Chan. La ciudad, en el desierto, capitula; Minchancaman es llevado al Cusco.',
+      seconds: 10,
+      source: 'docs/historia/campanas/chimu_inca.md',
+      image: 'media/chimu/intro-canal.webp',
+    },
+  ],
+  epilogueImage: 'media/chimu/intro-epilogo.webp',
   playerCiv: CivId.INCA,
   enemyCiv: CivId.CHIMU,
-  map: { seed: 1470, type: 'coast', size: 192 },
+  map: { seed: 1470, type: 'coast', size: CHIMU_MAP_SIZE },
+  // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
+  unitSpeedScale: 0.75,
   region: 'north_coast',
   layout: {
     base: { x: 0.35, z: 0.62 },
@@ -33,7 +65,7 @@ export const m6ChimuInca: MissionDef = {
       name: 'Canal de Chan Chan',
       x: 0.5,
       z: 0.5,
-      length: 28,
+      length: chimuLength(28),
       yaw: 0.2,
       initiallyOpen: true,
       heritageId: 'chimu_canal',
@@ -53,10 +85,10 @@ export const m6ChimuInca: MissionDef = {
   startingResources: { food: 1000, wood: 700, silver: 900, stone: 400 },
   start: {
     units: [
-      { kind: UnitKind.RIFLEMAN, dx: 10, dz: -4, count: 1, tag: 'tupac_yupanqui' },
-      { kind: UnitKind.RIFLEMAN, dx: 12, dz: -8, count: 1 },
-      { kind: UnitKind.MUSKETEER, dx: 6, dz: 10, count: 2 },
-      { kind: UnitKind.RIFLEMAN, dx: 4, dz: -6, count: 4 },
+      { kind: UnitKind.RIFLEMAN, dx: chimuLength(10), dz: -chimuLength(4), count: 1, tag: 'tupac_yupanqui' },
+      { kind: UnitKind.RIFLEMAN, dx: chimuLength(12), dz: -chimuLength(8), count: 1 },
+      { kind: UnitKind.MUSKETEER, dx: chimuLength(6), dz: chimuLength(10), count: 2 },
+      { kind: UnitKind.RIFLEMAN, dx: chimuLength(4), dz: -chimuLength(6), count: 4 },
     ],
   },
   mark: [{ tag: 'chan_chan', kind: BuildingKind.CENTER, owner: 1 }],
@@ -66,16 +98,16 @@ export const m6ChimuInca: MissionDef = {
       id: 'obj_avanzar',
       kind: 'reach',
       entityTag: 'tupac_yupanqui',
-      pos: { ref: 'enemy', dx: -18, dz: 0 },
-      radius: 8,
+      pos: { ref: 'enemy', dx: -chimuLength(18), dz: 0 },
+      radius: chimuLength(8),
       title: 'Avanza hasta Paramonga',
     },
     {
       id: 'obj_canal',
       kind: 'canal_closed',
-      // The straight canal's gate sits at one end (14 m from its centre): the crew may close it from there.
+      // The straight canal's gate sits at one end (18.67 m from its centre): the crew may close it from there.
       pos: { ref: 'canal', dx: 0, dz: 0 },
-      radius: 16,
+      radius: chimuLength(16),
       hidden: true,
       title: 'Corta el agua de Chan Chan: cierra la compuerta',
     },
@@ -84,6 +116,17 @@ export const m6ChimuInca: MissionDef = {
       kind: 'protect',
       entityTag: 'tupac_yupanqui',
       title: 'Mantén con vida a Túpac Yupanqui',
+    },
+    {
+      id: 'obj_rendicion',
+      kind: 'hold',
+      pos: { ref: 'site', dx: 0, dz: 0 },
+      radius: chimuLength(18),
+      time: 30,
+      minUnits: 4,
+      hidden: true,
+      requires: 'obj_canal',
+      title: 'Recibe la capitulación de Chan Chan',
     },
     {
       id: 'obj_kill',
@@ -95,6 +138,19 @@ export const m6ChimuInca: MissionDef = {
     { id: 'obj_hold', kind: 'survive', time: 600, optional: true, title: 'Mantén el campamento 10 minutos' },
   ],
   triggers: [
+    {
+      id: 't_acto_i',
+      condition: { type: 'time', seconds: 12 },
+      effects: [
+        {
+          type: 'act',
+          kicker: 'Acto I · Paramonga',
+          title: 'La avanzada del norte',
+          image: 'media/chimu/intro-paramonga.webp',
+          text: 'Minchancaman no se someterá. Avanza por los valles hasta Paramonga; el camino a Chan Chan empieza en la costa.',
+        },
+      ],
+    },
     {
       id: 't_dial_0',
       condition: { type: 'time', seconds: 20 },
@@ -121,16 +177,28 @@ export const m6ChimuInca: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 6 },
             { kind: UnitKind.MUSKETEER, count: 3 },
           ],
-          pos: { ref: 'player', dx: 20, dz: 20 },
-          radius: 7,
+          pos: { ref: 'player', dx: chimuLength(20), dz: chimuLength(20) },
+          radius: chimuLength(7),
         },
         { type: 'dialogue', text: '¡Querrotumi contraataca desde Paramonga!' },
       ],
     },
     {
       id: 't_paramonga',
-      condition: { type: 'unit_near', entityTag: 'tupac_yupanqui', pos: { ref: 'enemy', dx: -18, dz: 0 }, radius: 8 },
+      condition: {
+        type: 'unit_near',
+        entityTag: 'tupac_yupanqui',
+        pos: { ref: 'enemy', dx: -chimuLength(18), dz: 0 },
+        radius: chimuLength(8),
+      },
       effects: [
+        {
+          type: 'act',
+          kicker: 'Acto II · El canal',
+          title: 'El agua de Chan Chan',
+          image: 'media/chimu/intro-canal.webp',
+          text: 'Paramonga ha caído. El canal de Chan Chan está adelante: cierra su compuerta y la ciudad se quedará sin agua.',
+        },
         {
           type: 'dialogue',
           text: 'Túpac Yupanqui: —¡Paramonga ha caído! El canal de Chan Chan está adelante: cierra su compuerta y la ciudad se quedará sin agua.',
@@ -143,10 +211,27 @@ export const m6ChimuInca: MissionDef = {
       condition: { type: 'objective', objectiveId: 'obj_canal', state: 'completed' },
       effects: [
         {
-          type: 'dialogue',
-          text: 'Túpac Yupanqui: —El canal está cortado. Chan Chan, sin agua, no puede resistir.',
+          type: 'act',
+          kicker: 'Acto III · La capitulación',
+          title: 'Chan Chan se rinde',
+          image: 'media/chimu/intro-rendicion.webp',
+          text: 'El canal está cortado. Marcha a Chan Chan y recibe la capitulación de Minchancaman; la ciudad no resiste sin agua.',
         },
-        { type: 'victory' },
+        {
+          type: 'dialogue',
+          text: 'Túpac Yupanqui: —El canal está cortado. Chan Chan, sin agua, no puede resistir. ¡A la ciudad!',
+        },
+        { type: 'objective', objectiveId: 'obj_rendicion', state: 'activate' },
+      ],
+    },
+    {
+      id: 't_rendicion',
+      condition: { type: 'objective', objectiveId: 'obj_rendicion', state: 'completed' },
+      effects: [
+        {
+          type: 'dialogue',
+          text: 'Minchancaman capitula. Chan Chan se rinde y el norte queda integrado al Tahuantinsuyo.',
+        },
       ],
     },
   ],
