@@ -10,12 +10,11 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
 
 - **Release:** `0.1.0`, campaign-only, five campaigns and thirteen missions.
 - **Gold master:** Caral (`m1_caral`) meets every gate of the campaign quality bar.
-- **On the pattern, art pending:** Chavín, Tambotoco, Lima and La Junta.
-- **Promoted in the 2026-11-14 pass:** Moche, Wari, Túpac Amaru and Arica (scale, opening and performance
-  gates; human art review pending).
-- **Model-mission rebuild in progress:** `m5_yahuar_pampa` is being rebuilt on a separate branch. Do not start
-  a second rebuild of the same mission; merge that work before updating its row in the quality bar.
-- **Still pre-model:** `m6_chimu_inca`, `m6b_guerra_civil` and `m8_independencia`.
+- **Model pattern:** every released mission follows it after the m5–m9, m6b and m8 rebuilds (closed
+  2026-11-14); all thirteen missions have a model-mission document.
+- **Performance:** m3–m9 and m6b meet the scale, opening and performance gates; their human art review is
+  pending.
+- **Art pending:** Chavín, Tambotoco, Lima and La Junta still lack mostly art.
 - **Open release work:** human art review, a site-specific real-GPU performance pass and the itch package.
 
 The audit is the authority. If this summary and the quality bar disagree, the quality bar wins.
@@ -25,21 +24,16 @@ The audit is the authority. If this summary and the quality bar disagree, the qu
 | Milestone | Scope | Exit criterion |
 | --- | --- | --- |
 | **D0 · Documentation foundation** | Documentation map, GDD, ADR log, roadmap and backlog | A new contributor or agent can find the owner document for a task without asking; links resolve |
-| **D1 · Close the model-mission gap** | `m5` (external branch), `m6`, `m6b`, `m8` | Every mission on the model list passes the quality bar; the audit is updated; each mission has a model-mission document |
-| **D2 · Art review and capture** | Pending `reviewed: false` records, the Chavín contact sheet, art of the promoted missions | No unreviewed record ships; the human review is recorded; the captures are current |
+| **D1 · Close the model-mission gap** | `m5`–`m9`, `m6b`, `m8` and the remaining chapters | **Done (2026-11-14):** every mission on the model list passes the quality bar and has a model-mission document |
+| **D2 · Art review and capture** | Pending `reviewed: false` records, the Chavín kit, and the art of the model missions (m3–m9, m6b, Tambotoco, Lima, La Junta) | No unreviewed record ships; the human review is recorded; the captures are current |
 | **D3 · Real-GPU performance** | Moche/Wari and the heaviest late-game views | A measured pass at 1280×800 and 1600×900 is recorded; optimization work is either scheduled or explicitly rejected |
 | **D4 · Release packaging** | itch build, Pages artifact, publish checklist | The checklist is green on a build that matches the tagged commit |
 
-## D1 · Work order
+## D1 · Closed (2026-11-14)
 
-1. Merge the `m5_yahuar_pampa` rebuild that is already in progress on its own branch.
-2. Rebuild `m6_chimu_inca`: 256 m transect, acts, intro, bench scene, certainty table and model-mission doc.
-3. Rebuild `m6b_guerra_civil` to the same standard.
-4. Rebuild `m8_independencia` to the same standard.
-5. Re-run the quality-bar audit and update the matrix.
-
-One rebuild at a time. Each rebuild is a large change: it needs its own branch, its own playtest, its own
-captures and its own quality-bar row. Do not start the next one until the previous one is merged.
+m5–m9, m6b and m8 were rebuilt with 256 m transects, acts, in-engine openings and bench scenes. Every
+released mission now has a model-mission document and follows the model pattern; the quality bar records the
+evidence. No model-mission rebuild remains.
 
 ## D2 · Art review order
 
@@ -47,7 +41,8 @@ captures and its own quality-bar row. Do not start the next one until the previo
    2026-11-14; do not re-review them.
 2. Review every remaining `reviewed: false` record; the archived release snapshot lists the set as of
    2026-10-30. Approve or reject each record with `yarn art:review`.
-3. Capture the promoted missions (Moche, Wari, Túpac Amaru, Arica) with the current build.
+3. Capture the model missions whose art review is pending (m3–m9, m6b, Tambotoco, Lima, La Junta) with the
+   current build.
 
 The release-candidate document is an **archived snapshot** from 2026-10-30. Use its checklist as a template,
 but record today's counts and hashes in a new status document or PR, not by editing the snapshot.
@@ -81,7 +76,7 @@ The next pass must run on a real GPU and record:
 | --- | --- | --- |
 | Documentation drifts from code | Agents follow stale rules | Living docs are updated in the same PR; snapshots are labelled; the map is the entry point |
 | Art review becomes the bottleneck | Renders stay hidden or block a release | Review in batches with a contact sheet; `yarn art:review` records the decision |
-| Two branches rebuild the same mission | Wasted work and conflicts | One model-mission rebuild at a time; check the quality bar and open PRs before starting |
+| The quality bar and the roadmap disagree | A stale line sends work backwards | The quality bar is the authority; reconcile it in the same PR |
 | No real GPU available | Performance decisions rest on software rendering | Schedule a reference-hardware pass; do not present SwiftShader numbers as a GPU verdict |
 | Scope creep from the campaign redesign | The 13 released missions never close | The redesign is approved design, not committed scope; new missions need a dossier, a branch and an explicit approval |
 
@@ -95,5 +90,5 @@ The next pass must run on a real GPU and record:
 ## Updating this roadmap
 
 The project author updates this document when a milestone closes or the active phase changes. A model-mission
-rebuild updates the quality bar and its own design document in the same PR; it does not rewrite this roadmap
-unless it changes the milestone.
+change updates the quality bar and its own design document in the same PR; it does not rewrite this roadmap
+unless it changes a milestone.

@@ -94,8 +94,8 @@ and new records change.
 ### Missions, sites and art sources
 
 A mission normally has three documents: a historical dossier (the facts), a model-mission design (the
-gameplay) and a site document (the authored place). A missing model-mission document means the mission still
-uses the pre-model template; confirm its status in `campaign-quality-bar.md`.
+gameplay) and a site document (the authored place). All thirteen released missions have a model-mission
+document; a new mission is not complete without one. The quality bar is the live status.
 
 | Campaign | Mission | Historical dossier | Model-mission design | Site / art design |
 | --- | --- | --- | --- | --- |
@@ -104,18 +104,17 @@ uses the pre-model template; confirm its status in `campaign-quality-bar.md`.
 | Culturas Preincas | `m3_moche_recuay` | [`moche_recuay.md`](./historia/campanas/moche_recuay.md) | [`moche-model-mission.md`](./design/moche-model-mission.md) | [`moche-sacred-site.md`](./design/moche-sacred-site.md) |
 | Culturas Preincas | `m4_wari` | [`wari_tiahuanaco.md`](./historia/campanas/wari_tiahuanaco.md) | [`wari-model-mission.md`](./design/wari-model-mission.md) | [`wari-sacred-site.md`](./design/wari-sacred-site.md) |
 | El Tahuantinsuyo | `m_tambotoco` | [`tambotoco.md`](./historia/campanas/tambotoco.md) | [`tambotoco-model-mission.md`](./design/tambotoco-model-mission.md) | — |
-| El Tahuantinsuyo | `m5_yahuar_pampa` | [`yahuar_pampa.md`](./historia/campanas/yahuar_pampa.md) | — (rebuild in progress; see `plan/backlog.md` B1) | [`chanca-site.md`](./design/chanca-site.md) |
-| El Tahuantinsuyo | `m6_chimu_inca` | [`chimu_inca.md`](./historia/campanas/chimu_inca.md) | — (pre-model template; see the quality bar) | [`chimu-site.md`](./design/chimu-site.md) |
-| El Tahuantinsuyo | `m6b_guerra_civil` | [`guerra_civil_inca.md`](./historia/campanas/guerra_civil_inca.md) | — (pre-model template; see the quality bar) | [`cusco-site.md`](./design/cusco-site.md) |
+| El Tahuantinsuyo | `m5_yahuar_pampa` | [`yahuar_pampa.md`](./historia/campanas/yahuar_pampa.md) | [`chanca-model-mission.md`](./design/chanca-model-mission.md) | [`chanca-site.md`](./design/chanca-site.md) |
+| El Tahuantinsuyo | `m6_chimu_inca` | [`chimu_inca.md`](./historia/campanas/chimu_inca.md) | [`chimu-model-mission.md`](./design/chimu-model-mission.md) | [`chimu-site.md`](./design/chimu-site.md) |
+| El Tahuantinsuyo | `m6b_guerra_civil` | [`guerra_civil_inca.md`](./historia/campanas/guerra_civil_inca.md) | [`guerra-civil-model-mission.md`](./design/guerra-civil-model-mission.md) | [`cusco-site.md`](./design/cusco-site.md) |
 | El Virreinato | `m_lima` | [`lima.md`](./historia/campanas/lima.md) | [`lima-model-mission.md`](./design/lima-model-mission.md) | — |
 | El Virreinato | `m7_tupac_amaru` | [`tupac_amaru.md`](./historia/campanas/tupac_amaru.md) | [`colonial-model-mission.md`](./design/colonial-model-mission.md) | [`colonial-site.md`](./design/colonial-site.md) |
 | La Independencia | `m_junta_cusco` | [`junta_cusco.md`](./historia/campanas/junta_cusco.md) | [`junta-cusco-model-mission.md`](./design/junta-cusco-model-mission.md) | — |
-| La Independencia | `m8_independencia` | [`independencia.md`](./historia/campanas/independencia.md) | — (pre-model template; see the quality bar) | [`independence-site.md`](./design/independence-site.md) |
+| La Independencia | `m8_independencia` | [`independencia.md`](./historia/campanas/independencia.md) | [`independencia-model-mission.md`](./design/independencia-model-mission.md) | [`independence-site.md`](./design/independence-site.md) |
 | La República | `m9_guerra_pacifico` | [`guerra_del_pacifico.md`](./historia/campanas/guerra_del_pacifico.md) | [`arica-model-mission.md`](./design/arica-model-mission.md) | [`arica-site.md`](./design/arica-site.md) |
 
-`m5_yahuar_pampa` is being rebuilt on a separate branch. When that branch merges, replace the dash with the
-link to its model-mission document and update the quality-bar row. The branch is tracked in
-[`plan/backlog.md`](./plan/backlog.md) (B1) and [`plan/ROADMAP.md`](./plan/ROADMAP.md) (D1).
+All thirteen released missions have a model-mission document. For the live status of any mission, use
+[`campaign-quality-bar.md`](./design/campaign-quality-bar.md).
 
 ### Systems, tools and status
 
