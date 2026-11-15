@@ -65,6 +65,12 @@ const STEPS: Record<number, Step> = {
     if (settings?.missionId === 'm6b_guerra_civil') return null;
     return { ...save, version: 11 };
   },
+  // v11 → v12 moved m8 to the 256 m transect.
+  11: (save) => {
+    const settings = save.settings as { missionId?: unknown } | undefined;
+    if (settings?.missionId === 'm8_independencia') return null;
+    return { ...save, version: 12 };
+  },
 };
 
 export type MigrationResult =

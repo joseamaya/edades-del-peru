@@ -456,6 +456,21 @@ slot is absent (offline / without assets).
 - **Review**: no human art-review gate applies to in-engine captures; the reused Cusco GLB keeps its own
   review status in `src/art/manifest.json` (#343).
 
+### Independencia (m8) intro and epilogue images (in-engine recreations)
+
+- **Location**: `public/media/independencia/intro-{lima,junin,ayacucho,epilogo}.webp` (960x540, WebP q58).
+- **Source**: captured from the game itself by `scripts/capture_independencia_intro.mjs` on the 256 m
+  Junín–Ayacucho transect: the Lima campaign camp, Junín and the Ayacucho chapel, plus a dusk epilogue.
+  Rendered without the HUD or character nameplates at 1600x900 and resized with `sharp`. Regenerate with
+  `node scripts/capture_independencia_intro.mjs` (one with `--only=ID`) after art changes.
+- **Runtime**: the briefing and the "Tu senda" card use `intro-lima`; the three intro beats and the act
+  cards use the Lima, Junín and Ayacucho captures; the victory epilogue uses `intro-epilogo`.
+- **Content**: project-owned game renders (authored Junín–Ayacucho heightfield, the reused
+  `independence_site` chapel and the procedural camps). Recreations of the game's own scenes: never
+  historical photographs, and not Blender renders (so not in `src/art/manifest.json`).
+- **Review**: no human art-review gate applies to in-engine captures; the reused chapel GLB keeps its own
+  review status in `src/art/manifest.json` (#343).
+
 ### Caral Pyramid Mayor modular scenery
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.

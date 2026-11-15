@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the authored Junín–Ayacucho heightfield (m8, 192 m map)."""
+"""Generate the authored Junín–Ayacucho heightfield (m8, 256 m map)."""
 
 from __future__ import annotations
 
@@ -7,8 +7,11 @@ import base64
 import math
 from pathlib import Path
 
-SIZE = 192
+SIZE = 256
+# The composition was authored for the former 192 m map; sample it 4/3 larger on the 256 m transect.
+SOURCE_SIZE = 192
 N = SIZE + 1
+GROUND_SIZE = 128
 SITE_Y = 5.0
 VALLEY = 3.2
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,12 +51,50 @@ def height(x: float, z: float) -> float:
     return max(0.9, h)
 
 
+def ground_weights(x: float, z: float) -> tuple[float, float, float, float]:
+    """Painted ground weights (grass, dirt, sand, rock) in the former 192 m frame."""
+    base = smoothstep(45.0, 53.0, x) * (1.0 - smoothstep(84.0, 92.0, x))
+    base *= smoothstep(105.0, 113.0, z) * (1.0 - smoothstep(137.0, 145.0, z))
+    site = smoothstep(122.0, 130.0, x) * (1.0 - smoothstep(152.0, 160.0, x))
+    site *= smoothstep(55.0, 63.0, z) * (1.0 - smoothstep(86.0, 94.0, z))
+    approach = smoothstep(84.0, 92.0, x) * (1.0 - smoothstep(128.0, 136.0, x))
+    approach *= smoothstep(78.0, 86.0, z) * (1.0 - smoothstep(112.0, 120.0, z))
+    terrace = max(base, site, approach)
+    ridge = max(
+        smoothstep(15.0, 0.0, z),
+        smoothstep(154.0, 184.0, x),
+        smoothstep(154.0, 186.0, z),
+        smoothstep(24.0, 8.0, x),
+    )
+    quebrada = math.exp(-((x - 151.0) / 5.0) ** 2) * smoothstep(50.0, 68.0, z) * (1.0 - smoothstep(94.0, 114.0, z))
+    mottle = 0.85 + 0.3 * (0.5 + 0.5 * math.sin(x * 0.12 + 0.7) * math.sin(z * 0.1 + 0.3))
+
+    grass = max(0.02, (1.0 - ridge) * (1.0 - terrace * 0.4) * 0.9 * mottle)
+    dirt = max(0.03, terrace * 0.9 + quebrada * 0.3)
+    sand = max(0.02, quebrada * 0.5)
+    rock = max(0.02, ridge)
+    total = grass + dirt + sand + rock
+    return (grass / total, dirt / total, sand / total, rock / total)
+
+
+ground_values = []
+# Texel centres at 2 m, matching `sampleAuthoredGround` (0..SIZE corners would shift the paint 1 m).
+for iz in range(GROUND_SIZE):
+    z = (iz + 0.5) * SIZE / GROUND_SIZE
+    for ix in range(GROUND_SIZE):
+        x = (ix + 0.5) * SIZE / GROUND_SIZE
+        weights = ground_weights(x * SOURCE_SIZE / SIZE, z * SOURCE_SIZE / SIZE)
+        for w in weights:
+            ground_values.append(max(0, min(255, round(w * 255))))
+
+ground_b64 = base64.b64encode(bytearray(ground_values)).decode('ascii')
+
 values = []
 for iz in range(N):
     z = iz * SIZE / (N - 1)
     for ix in range(N):
         x = ix * SIZE / (N - 1)
-        values.append(round(height(x, z) * 1000.0))
+        values.append(round(height(x * SOURCE_SIZE / SIZE, z * SOURCE_SIZE / SIZE) * 1000.0))
 
 raw = bytearray()
 for v in values:
@@ -74,7 +115,16 @@ OUT.write_text(
     '  }\n'
     '  return out;\n'
     '}\n'
-    'export const INDEPENDENCE_HEIGHTMAP = decode();\n',
+    'export const INDEPENDENCE_HEIGHTMAP = decode();\n'
+    'export const INDEPENDENCE_GROUND_SIZE = ' + str(GROUND_SIZE) + ';\n'
+    'const GROUND_B64 =\n  \'' + ground_b64 + '\';\n'
+    'function decodeGround(): Uint8Array {\n'
+    '  const bin = atob(GROUND_B64);\n'
+    '  const out = new Uint8Array(' + str(len(ground_values)) + ');\n'
+    '  for (let i = 0; i < out.length; i++) out[i] = bin.charCodeAt(i);\n'
+    '  return out;\n'
+    '}\n'
+    'export const INDEPENDENCE_GROUND = decodeGround();\n',
     encoding='utf-8',
 )
 print(f'wrote {OUT} ({len(b64)} base64 chars, {len(values)} samples)')

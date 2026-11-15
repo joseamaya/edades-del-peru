@@ -191,7 +191,7 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
   test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/?mission=m8_independencia&seed=777&fog=0&low=1&noloop=1');
+  await page.goto('/?mission=m8_independencia&seed=777&fog=0&low=1&noloop=1&intro=0');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
   });
@@ -220,15 +220,17 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
     move(artillery, center.x, center.z + 15);
     move([...cavalry, ...rifles], enemy.pos.x - 30, enemy.pos.z);
     for (let i = 0; i < Math.ceil(110 / dt) && !m.ended; i++) {
+      if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       g.update(dt, t);
       t += dt;
     }
     const junin = m.getObjectiveState('obj_junin') as string;
     // 120 s hold plus the march from Junín. Units that chase an enemy out of the radius reset the hold,
     // so the line is re-formed every 20 s, as a player would; a fixed 150 s budget flipped with timing.
-    for (let i = 0; i < Math.ceil(240 / dt) && !m.ended; i++) {
+    for (let i = 0; i < Math.ceil(360 / dt) && !m.ended; i++) {
+      if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       if (i % Math.ceil(20 / dt) === 0) {
-        move(cavalry, enemy.pos.x, enemy.pos.z);
+        move([...cavalry, ...artillery], enemy.pos.x, enemy.pos.z);
         move(rifles, enemy.pos.x - 12, enemy.pos.z + 10);
       }
       g.update(dt, t);
@@ -241,14 +243,20 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
     }
     return {
       junin,
+      marcha: m.getObjectiveState('obj_marcha') as string,
       ayacucho: m.getObjectiveState('obj_ayacucho') as string,
       sucre: m.getObjectiveState('obj_sucre') as string,
+      mapSize: g.settings.mapSize,
+      site: g.siteDef?.id,
       won: m.won as boolean | null,
     };
   });
   expect(out.junin).toBe('completed');
+  expect(out.marcha).toBe('completed');
   expect(out.ayacucho).toBe('completed');
   expect(out.sucre).not.toBe('failed');
+  expect(out.mapSize, 'the model mission runs on 256 m').toBe(256);
+  expect(out.site).toBe('independence_site');
   expect(out.won).toBe(true);
   expect(errors).toEqual([]);
 });

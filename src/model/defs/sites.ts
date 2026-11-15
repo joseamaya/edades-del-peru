@@ -71,6 +71,8 @@ import {
 } from './colonialHeightmap';
 import { colonialLength, colonialPoint } from './colonialSite';
 import {
+  INDEPENDENCE_GROUND,
+  INDEPENDENCE_GROUND_SIZE,
   INDEPENDENCE_HEIGHTMAP,
   INDEPENDENCE_HEIGHTMAP_SIZE,
   INDEPENDENCE_HEIGHTMAP_WORLD_SIZE,
@@ -84,6 +86,7 @@ import {
 } from './aricaHeightmap';
 import { aricaLength, aricaPoint } from './aricaSite';
 import { cuscoIncaLength, cuscoIncaPoint } from './cuscoIncaSite';
+import { independenceLength, independencePoint } from './independenceSite';
 import {
   CUSCO_GROUND,
   CUSCO_GROUND_SIZE,
@@ -784,26 +787,37 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'independence_site',
     label: 'Capilla y campamento patriota de Ayacucho',
     modelName: 'independence_site',
-    scale: 0.65,
-    origin: { x: 134.8, z: 71 },
-    anchor: { x: 134.8, z: 71 },
-    cameraHeight: 54,
+    // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
+    // scale with it so the chapel still covers its terrace.
+    scale: independenceLength(0.65),
+    origin: independencePoint({ x: 134.8, z: 71 }),
+    anchor: independencePoint({ x: 134.8, z: 71 }),
+    cameraHeight: independenceLength(54),
     framing: 'site-biased',
     heightField: {
       size: INDEPENDENCE_HEIGHTMAP_SIZE,
       worldSize: INDEPENDENCE_HEIGHTMAP_WORLD_SIZE,
       heights: INDEPENDENCE_HEIGHTMAP,
+      ground: { size: INDEPENDENCE_GROUND_SIZE, weights: INDEPENDENCE_GROUND },
     },
     pathCellSize: 1,
-    heritageProxies: [{ id: 'independence_chapel', x: 134.8, z: 71, w: 9, d: 9, h: 6 }],
-    blockers: [{ x: 134.8, z: 71, w: 9, d: 9 }],
-    blockerPadding: 0.5,
+    heritageProxies: [
+      {
+        id: 'independence_chapel',
+        ...independencePoint({ x: 134.8, z: 71 }),
+        w: independenceLength(9),
+        d: independenceLength(9),
+        h: independenceLength(6),
+      },
+    ],
+    blockers: [{ ...independencePoint({ x: 134.8, z: 71 }), w: independenceLength(9), d: independenceLength(9) }],
+    blockerPadding: independenceLength(0.5),
     buildKeepout: [{ x: 0.702, z: 0.37, rx: 0.065, rz: 0.065 }],
     wallCollision: {
       meshPatterns: [/independence/i],
-      maxStartYAboveBase: 1.2,
+      maxStartYAboveBase: independenceLength(1.2),
     },
-    walkableCorridor: { width: 8 },
+    walkableCorridor: { width: independenceLength(8) },
     terrain: {
       ...DEFAULT_SITE_TERRAIN,
       flatNormals: true,

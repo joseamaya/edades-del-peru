@@ -19,6 +19,17 @@
   hechos. La caballería patriota incluye **montoneras** y las oleadas realistas, **dragones**. El mapa fija
   dos pampas de altura y una iglesia realista como referencia visual.
 
+## Certeza
+
+| Afirmación | Certeza | Base |
+| --- | --- | --- |
+| San Martín proclama la independencia en Lima (1821) | Documentado | Actas y crónicas |
+| Batalla de Junín (6 de agosto de 1824) | Documentado | Basadre y fuentes contemporáneas |
+| Batalla de Ayacucho y rendición realista (9 de diciembre de 1824) | Documentado | Basadre y fuentes contemporáneas |
+| Sucre al mando del ejército patriota en Ayacucho | Documentado | Basadre |
+| Las cifras de efectivos | Tradicional, no verificable | Crónicas |
+| Los actos, los holds de 90 s y la marcha | Abstracción jugable | Este dossier y `docs/design/independencia-model-mission.md` |
+
 ## Fuentes
 
 - Wikipedia: [Independencia del Perú](https://es.wikipedia.org/wiki/Independencia_del_Per%C3%BA).
