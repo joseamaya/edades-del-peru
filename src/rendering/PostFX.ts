@@ -108,7 +108,8 @@ export class PostFX {
 
     this.composer.addPass(new RenderPass(scene, camera));
 
-    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), 0.35, 0.3, 0.85);
+    const pixelRatio = renderer.getPixelRatio();
+    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(width * pixelRatio, height * pixelRatio), 0.35, 0.3, 0.85);
     this.composer.addPass(this.bloomPass);
 
     // chromatic aberration + vignette in HDR (before OutputPass)

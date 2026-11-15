@@ -63,6 +63,15 @@ test.describe('post-processing render scale (#449)', () => {
     });
     const sizes = await page.evaluate(() => {
       const g = (window as unknown as { game: any }).game;
+      const fxaa = g.postfx.fxaaPass.uniforms['resolution'].value as { x: number; y: number };
+      const bright = g.postfx.bloomPass.renderTargetBright as { width: number; height: number };
+      const initial = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        ratio: g.renderer.getPixelRatio() as number,
+        fxaa: [fxaa.x, fxaa.y],
+        bloom: [bright.width, bright.height],
+      };
       const read = () => ({
         target: g.postfx.composer.renderTarget1.width as number,
         ratio: g.renderer.getPixelRatio() as number,
@@ -76,8 +85,15 @@ test.describe('post-processing render scale (#449)', () => {
       g.runtime.setPixelRatioOverride(1);
       const at1 = read();
       g.runtime.setPixelRatioOverride(null);
-      return { at2, at1 };
+      return { initial, at2, at1 };
     });
+    expect(sizes.initial.ratio).toBeGreaterThanOrEqual(1);
+    expect(sizes.initial.fxaa[0]).toBeCloseTo(1 / (sizes.initial.width * sizes.initial.ratio), 8);
+    expect(sizes.initial.fxaa[1]).toBeCloseTo(1 / (sizes.initial.height * sizes.initial.ratio), 8);
+    expect(sizes.initial.bloom).toEqual([
+      Math.round((sizes.initial.width * sizes.initial.ratio) / 2),
+      Math.round((sizes.initial.height * sizes.initial.ratio) / 2),
+    ]);
     expect(sizes.at2.ratio).toBe(2);
     expect(sizes.at2.target).toBe(sizes.at2.width * 2);
     expect(sizes.at2.refraction).toBe(Math.floor(sizes.at2.buffer / 2));
