@@ -16,11 +16,11 @@ counterfactual victory.
 
 ## Acts
 
-| Act                        | Place                       | Player action                                               | Historical idea                                                        |
-| -------------------------- | --------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------- |
-| I · 5 June, the summons    | Port terrace and cuartel    | Refuse the summons, mine the approaches, visit the battery   | The political decision comes before the battle                         |
-| II · 7 June, bombardment   | Cuartel and fort            | Hold the cuartel, keep Bolognesi alive through the act       | The garrison endures artillery and the first assault waves             |
-| III · the assault          | Battery and last line       | Hold the last line for 120 s                                 | The plaza falls; the epilogue tells Bolognesi's death and the *Manco Cápac* |
+| Act                      | Place                    | Player action                                              | Historical idea                                                             |
+| ------------------------ | ------------------------ | ---------------------------------------------------------- | --------------------------------------------------------------------------- |
+| I · 5 June, the summons  | Port terrace and cuartel | Refuse the summons, mine the approaches, visit the battery | The political decision comes before the battle                              |
+| II · 7 June, bombardment | Cuartel and fort         | Hold the cuartel, keep Bolognesi alive through the act     | The garrison endures artillery and the first assault waves                  |
+| III · the assault        | Battery and last line    | Hold the last line for 120 s                               | The plaza falls; the epilogue tells Bolognesi's death and the _Manco Cápac_ |
 
 Optional: visit the battery card. The mission has no counterfactual victory and no "Arica resists"
 ending.
@@ -62,8 +62,17 @@ recorded here and in the quality bar. The Morro is not invented as a new mesh.
   the plaza and the summons, the battery with the Pacific behind it, and the assault.
 - `MISSION_ART` (`m9_guerra_pacifico` → `media/arica/intro-cuartel.webp`) and the briefing use the cuartel capture.
 - Victory: the last line holds for the documented fall; the epilogue (`media/arica/intro-epilogo.webp`)
-  tells the fall, Bolognesi's death and the scuttling of the *Manco Cápac*.
+  tells the fall, Bolognesi's death and the scuttling of the _Manco Cápac_.
 - Defeat: the fort falls before the final assault or Bolognesi dies during the bombardment.
+
+## Intro render
+
+- `art-src/blender/site-intros/m9_guerra_pacifico/m9_guerra_pacifico.blend`, built by
+  `scripts/blender/build_site_intro.py --mission=m9_guerra_pacifico`, stages the battery: earth-and-stone
+  rampart, guns, gabions, magazine, the Peruvian flag, the Morro and a blockading warship.
+- The record `m9_guerra_pacifico-intro` replaces the retired `m9_arica-intro` draft and is pending human
+  review; the briefing keeps the in-engine capture until it is approved.
+- Regenerate with `blender --background --python scripts/blender/build_site_intro.py -- --mission=m9_guerra_pacifico`.
 
 ## Tutorial
 

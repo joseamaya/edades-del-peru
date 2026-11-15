@@ -47,9 +47,9 @@ below, which record each mission's own review and are kept for history). **M** m
 | m5_yahuar_pampa    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6_chimu_inca      | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m6b_guerra_civil   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | –   | P    | M     |
+| m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | P   | P    | M     |
 | m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m_junta_cusco      | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | –   | P    | M     |
+| m_junta_cusco      | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | P   | P    | M     |
 | m8_independencia   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 
@@ -349,7 +349,7 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 | Gate        | Status               | Evidence                                                                                                                                                                                           |
 | ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Opening     | Met                  | Three-beat in-engine intro (`capture_arica_intro.mjs`), `MISSION_ART` and an epilogue capture; PROVENANCE records the captures.                                                                    |
-| Art         | Pending human review | The `arica_site` GLB and the draft Blender intro record keep their `reviewed: false` status (#343); the in-engine captures are not a Blender claim.                                                |
+| Art         | Pending human review | The authored battery intro (`m9_guerra_pacifico-intro`) is a draft; the `arica_site` GLB and the in-engine captures keep their own status.                                                         |
 | Performance | Met                  | `bench_scene.mjs`: opening ~535k tris / 600 calls, late ~813k / 782, under the recorded first-pass caps; `yarn bench:check` green. The call count is over §11's 200 target, as Lima and the Junta. |
 | Scale       | Met                  | 256 m map, 128² painted ground over 256 m, `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                         |
 | Pacing      | Pending (exception)  | The real-command bot reaches the ending in ~7 min of simulated time; a human 20–30 min path is still unmeasured. The 30–40 target is documented as an exception in `arica-model-mission.md`.       |
@@ -376,7 +376,7 @@ procedural life overlay (houses, market, well and people).
 | Tests       | Met: `tests/junta-cusco.test.ts`, scale, campaign path and the campaign E2E specs.                                                                                                                         |
 | Docs        | Met: dossier, `junta-cusco-model-mission.md`, this table and the redesign status.                                                                                                                          |
 | Performance | Partial: ~741k triangles / ~986 draw calls, dominated by unit rigs; passes the 780k/1000 regression cap but remains over art-direction §11's 600k/200 target.                                              |
-| Art         | N/A for new models: the mission reuses the colonial plaza GLB; the captures are in-engine and documented in PROVENANCE.                                                                                    |
+| Art         | Draft: authored plaza intro render awaiting human review; the captures are in-engine and documented in PROVENANCE.                                                                                         |
 | Structure   | Met: three acts with hidden objectives, two chapter cards, optional Melgar/artillery goals and the documented ending.                                                                                      |
 | Opening     | Met: three narrated beats with in-engine captures, two act cards and the epilogue backdrop.                                                                                                                |
 | Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).                                                                                                       |
@@ -401,7 +401,7 @@ Quizu's hills) and starts as the traced plaza; the colonial church and the stree
 | Tests       | Met: `tests/lima.test.ts`, scale, campaign path and the campaign E2E specs.                                                                                             |
 | Docs        | Met: dossier, `lima-model-mission.md`, this table and the redesign status.                                                                                              |
 | Performance | Partial: opening ~767k / ~834 under 800k/860; the city with the siege crowd is ~1.06M / ~1,227 under the 1.1M/1,250 regression cap, still over §11's 600k/200 target.   |
-| Art         | N/A for new Blender models: the plaza is the reused colonial GLB and the streets are procedural; captures are in-engine.                                                |
+| Art         | Draft: authored plaza/cathedral intro render awaiting human review; the streets remain procedural and the captures are in-engine.                                       |
 | Structure   | Met: three acts with hidden objectives, two chapter cards and the documented siege.                                                                                     |
 | Opening     | Met: three narrated beats with in-engine captures, two act cards and the epilogue backdrop.                                                                             |
 | Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).                                                                    |
