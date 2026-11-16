@@ -1109,11 +1109,12 @@ when quality ≠ `low`, one extra full-scene pass for water refraction — the `
 (disabling refraction) when the frame rate stays below its threshold, so measure on a real GPU before drawing
 conclusions from the SwiftShader numbers above.
 
-## GitHub Pages readiness (not deployed)
+## GitHub Pages
 
-The game is not published yet. `vite.config.ts` accepts `VITE_BASE` and defaults
-to `./`, so the itch.io zip keeps relative paths. For the future GitHub Pages
-project site, build with:
+The game is published as a project site at
+<https://joseamaya.github.io/edades-del-peru/> (the itch upload is deferred).
+`vite.config.ts` accepts `VITE_BASE` and defaults to `./`, so the itch.io zip keeps
+relative paths. For the GitHub Pages project site, build with:
 
 ```bash
 VITE_BASE=/edades-del-peru/ yarn build
