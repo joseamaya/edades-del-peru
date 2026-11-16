@@ -96,4 +96,4 @@ hold La Apacheta, resist at Umachiri. The informational montonera step advances 
 3. Performance: the high-preset opening measures ~741k triangles / ~986 draw calls in
    `scripts/bench_scene.mjs`, dominated by the unit rigs at the base. It passes the 780k/1000 regression
    cap but is not within art-direction §11's 600k/200 target.
-4. Human review of any new Blender pieces (none yet; the captures are in-engine).
+4. The plaza intro render is approved; any future Blender pieces still need their own review.

@@ -60,7 +60,8 @@ recorded here and in the quality bar. The Morro is not invented as a new mesh.
 
 - Three narrated intro beats captured in engine by [`scripts/capture_arica_intro.mjs`](../../scripts/capture_arica_intro.mjs):
   the plaza and the summons, the battery with the Pacific behind it, and the assault.
-- `MISSION_ART` (`m9_guerra_pacifico` → `media/arica/intro-cuartel.webp`) and the briefing use the cuartel capture.
+- `MISSION_ART` (`m9_guerra_pacifico` → `media/generated/campaigns/republica/m9_guerra_pacifico/intro.webp`)
+  and the briefing use the approved Blender render; the cuartel capture remains a chapter card.
 - Victory: the last line holds for the documented fall; the epilogue (`media/arica/intro-epilogo.webp`)
   tells the fall, Bolognesi's death and the scuttling of the _Manco Cápac_.
 - Defeat: the fort falls before the final assault or Bolognesi dies during the bombardment.
@@ -98,7 +99,7 @@ padding the mission with invented acts. Re-measure after map, wave or economy ch
 
 ## Open items
 
-1. Human art review of the `arica_site` GLB and the draft Blender intro record (#343); the in-engine
+1. Human art review of the `arica_site` GLB (#343); the authored intro render is approved and the in-engine
    captures are recorded in PROVENANCE and are not a Blender-render claim.
 2. A real-GPU performance pass; the current bench numbers are structural (SwiftShader) and not a GPU
    benchmark.

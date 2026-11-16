@@ -304,8 +304,9 @@ slot is absent (offline / without assets).
   crossing, the hills of Quizu and the dusk view are staged through the debug harness, rendered without the
   HUD at 1600x900 and resized with `sharp`. Regenerate them with `node scripts/capture_lima_intro.mjs`
   (one with `--only=ID`) after art changes.
-- **Runtime (menu)**: `intro-ciudad` is the Virreinato campaign card and the briefing art for `m_lima`;
-  the intro beats, the Act II/III chapter cards and the victory epilogue use the captures.
+- **Runtime (menu)**: the briefing uses the approved Blender render
+  `media/generated/campaigns/virreinato/m_lima/intro.webp`; `intro-ciudad` remains the Virreinato campaign card
+  and the intro beats, Act II/III chapter cards and victory epilogue use the captures.
 - **Content**: project-owned game renders (authored coast terrain, the reused colonial plaza and the
   procedural settlements). They are recreations of the game's own scenes: never historical photographs.
 - **Review**: no human art-review gate applies to in-engine captures; the reused colonial plaza GLB keeps
@@ -339,8 +340,9 @@ slot is absent (offline / without assets).
   La Apacheta/Umachiri views are staged through the debug harness, rendered without the HUD at 1600x900 and
   resized with `sharp`; the epilogue uses a low cinematic camera over Umachiri at dusk. Regenerate them with
   `node scripts/capture_junta_intro.mjs` (one with `--only=ID`) after art changes.
-- **Runtime (menu)**: the briefing and the "Tu senda" card use `intro-cabildo`; the campaign card for La
-  Independencia reuses it. The intro beats, the Act II/III chapter cards and the victory epilogue use the
+- **Runtime (menu)**: the briefing and the "Tu senda" card use the approved Blender render
+  `media/generated/campaigns/independencia/m_junta_cusco/intro.webp`; the campaign card for La Independencia
+  reuses `intro-cabildo`. The intro beats, the Act II/III chapter cards and the victory epilogue use the
   other three captures.
 - **Content**: project-owned game renders (authored terrain, the reused `colonial_site` plaza and the
   procedural patriot camp). They are recreations of the game's own scenes: never historical photographs,
@@ -355,7 +357,8 @@ slot is absent (offline / without assets).
   transect: the port terrace and cuartel, the battery with the Pacific behind it, the assault view and a
   low cinematic epilogue over the battery. Rendered without the HUD at 1600x900 and resized with `sharp`.
   Regenerate with `node scripts/capture_arica_intro.mjs` (one with `--only=ID`) after art changes.
-- **Runtime**: the briefing and the "Tu senda" card use `intro-cuartel`; the three intro beats use the cuartel,
+- **Runtime**: the briefing and the "Tu senda" card use the approved Blender render
+  `media/generated/campaigns/republica/m9_guerra_pacifico/intro.webp`; the three intro beats use the cuartel,
   the battery and the assault; the victory epilogue uses `intro-epilogo`.
 - **Content**: project-owned game renders (authored Arica heightfield, the low-poly `arica_site` battery,
   the procedural port terrace and the units). They are recreations of the game's own scenes: never
