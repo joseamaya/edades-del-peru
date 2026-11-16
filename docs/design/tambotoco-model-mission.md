@@ -58,11 +58,16 @@ Painted ground is sampled at 128 × 128 over 256 m; the worker crosses in ≈2:2
 ## Site and factions
 
 `tambotoco_site` is drawn by `AylluSite`: the cave mouth, the Huanacaure shrine, three valley hamlets and
-Inticancha, with smoke, fires, villagers and llamas. Inticancha grows in two phases: `inticancha` (Act IV)
-only traces the plaza, its ring and the four cancha plots for the player's store and houses; `fundada`
-(the four canchas built) adds the houses, terraces, fields, people and fire, so the settlement never stands
-before the ayllus build it. The plaza and the plots stay walkable and buildable; the ring houses block from
-the `fundada` phase.
+Inticancha, with smoke, fires, villagers and llamas. The kit is modular and terrain-conformed
+(`rendering/aylluKit.ts`): plastered houses with gable thatch roofs, round qollqas, open sheds, coursed
+stone plinths and retaining walls, a paved plaza at grade with flagstones, terraced fields with maize rows and
+a low altar. Every piece samples the ground it spans, so huts, canchas, terraces and fields
+sit on the Pacaritambo slope instead of floating; the fields and terraces also live on dry, gently sloping
+ground (`tests/tambotoco-layout.test.ts`). Inticancha grows in two phases: `inticancha` (Act IV) only traces
+the plaza, its ring and the four cancha plots for the player's store and houses; `fundada` (the four canchas
+built) adds the houses, terraces, fields, people and fire, so the settlement never stands before the ayllus
+build it. The plaza and the plots stay walkable and buildable; the ring houses block from the `fundada`
+phase.
 
 - **Señorío del Cusco (Killke)**: the player; a new LATE_INTERMEDIATE civilization with a circular-plaza
   silhouette. No imperial Inca units or buildings.
@@ -164,20 +169,29 @@ dialogue.
 - `tests/e2e/fow-zones.spec.ts` (`@smoke`, SwiftShader) is the reproducible regression for the fog fix.
   `docs/media/tambotoco-fow-before.webp` is the Huanacaure view on `main` (white slabs); the after capture
   is `docs/media/tambotoco-fow-after.webp` (landscape and ayllu site dimmed, no white).
+- `node scripts/capture_ayllu_kit.mjs --tag=after` (and `--tag=before` on the previous single-mesh site,
+  same views) → `docs/media/tambotoco-kit-{before,after}.webp` for Inticancha and
+  `docs/media/tambotoco-kit-valley-{before,after}.webp` for the hualla valley. 1600×900 with the HUD
+  hidden, site at `fundada`, resized to 960×540 WebP q58. They show the mud plaza and box huts replaced by
+  coursed stone platforms, flagstones, thatch houses, qollqas and terraced fields.
 
 ## Open items
 
 1. Performance (measured 2026-11-16; the mission is now in `bench:check`): software/SwiftShader (the
-   backend `bench:check` runs) measures **467,220 triangles / ≈301 draw calls** at the opening and
-   **636,372 / 310** on the founded Inticancha framed on the four canchas, over the 620k late target but
-   under the 660k first-pass cap and the 360-call cap. Hardware high quality (`--gpu`, Intel iGPU)
-   measures **684,810 / 305** and **854,190 / 316**, over both caps and over art-direction §11's
-   200-call target; frame p50 is 30.2 ms at 1600×900 (33 fps) and 24.4 ms without the water refraction.
+   backend `bench:check` runs) measures **472,892 triangles / 301 draw calls** at the opening and
+   **648,082 / 313** on the founded Inticancha framed on the four canchas, over the 620k late target but
+   under the 660k first-pass cap and the 360-call cap. The modular kit costs about 6k triangles at the
+   opening and 12k late, with essentially no additional draw calls: the site still merges one mesh per phase.
+   Hardware high quality (`--gpu`, Intel iGPU) measured **684,810 / 305** and **854,190 / 316** on the
+   pre-kit site; it was not re-measured after the kit, which adds the same order of triangles. Both are
+   over the caps and
+   over art-direction §11's 200-call target; frame p50 was 30.2 ms at 1600×900 (33 fps) and 24.4 ms
+   without the water refraction.
    The performance row is therefore **Partial**, not Met: the next pass is the hardware/LOD pass, not a
    doc change. `yarn bench:check` currently stops earlier at the pre-existing `m8_independencia` overrun;
    the two Tambotoco commands pass individually. The mission starts with a small force (5 workers,
    7 militia, 2 slingers, 1 scout) to keep the rig count down.
-2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry); a Blender architecture
-   kit (cave, shrine, houses, terraces) is the next art pass.
+2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry), now a modular,
+   terrain-conformed kit; a Blender architecture kit could replace it later without touching the layout.
 3. A manual 30–40 minute playtest without isolated attrition, checking that the eight nameplates stay
    readable at the default zoom.

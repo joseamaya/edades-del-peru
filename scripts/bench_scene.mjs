@@ -70,11 +70,12 @@ const BUDGETS = {
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
   // Tambotoco opening: the ayllu site, eight nameplates and the hero rings/banners/tunic accents.
-  // Measured 467k/≈301 in software and 684k/305 on the Intel iGPU; first-pass cap, still over §11's
-  // 200-call target. The hardware view is the open performance item.
+  // Measured 472,892/301 in software after the modular kit (was 467k/≈301); first-pass cap, still
+  // over §11's 200-call target. The hardware view is the open performance item.
   m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 340, kitTriangles: 0, kitDrawCalls: 0 },
-  // The founded Inticancha (the `fundada` phase at victory) framed on the four canchas: 636,372/310
-  // in software and 854,190/316 on the Intel iGPU. First-pass cap; over the 600k art-direction target.
+  // The founded Inticancha (the `fundada` phase at victory) framed on the four canchas: 648,082/313
+  // in software after the kit (was 636,372/310). First-pass cap with ~2% headroom; over the 600k
+  // art-direction target. The hardware view is the open performance item.
   m_tambotoco_late: { sceneTriangles: 660_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
   // Lima opening: the hueste with horses and artillery. First-pass cap measured ~763k / 839; tighten after
   // the unit-rig pass (art-direction §11 targets 200 calls).
