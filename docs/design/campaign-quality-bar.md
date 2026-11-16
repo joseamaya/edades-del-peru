@@ -47,7 +47,7 @@ below, which record each mission's own review and are kept for history). **M** m
 | m5_yahuar_pampa    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6_chimu_inca      | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6b_guerra_civil   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | P    | M     |
+| m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | P    | M     |
 | m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_junta_cusco      | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | P    | M     |
 | m8_independencia   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
@@ -77,9 +77,10 @@ in-engine intro and epilogue, bench scenes and the scale guard).
 
 1. **Invented outcomes:** fixed for m9 (#468) and m7 (#469). Both play their documented outcomes now.
 2. **No-cheat playtests:** HP pinning removed (2026-11-14) from Chavín, Tambotoco, Lima and the Junta;
-   Chavín keeps **Play P** because the harness still uses direct field-card/tech calls. Tambotoco is Met
-   (automated): it fights the valley wave and visits the shrine and the gate through the HUD. A manual
-   no-cheat playtest remains recommended for both.
+   Chavín keeps **Play P** because the harness still uses direct field-card/tech calls. Tambotoco and Lima
+   are Met (automated): Tambotoco fights the valley wave and visits the shrine and the gate through the HUD;
+   Lima opens the Plaza Mayor card through the HUD and advances its tutorial. A manual no-cheat playtest
+   remains recommended for all of them.
 3. **Art review:** the render records are reconciled (0 `reviewed: false`); what remains is the human review
    of the reused site GLBs and the Chavín kit (#343).
 4. **Model-mission rebuilds:** done for m3–m9 (2026-11-14), including m8. The quick wins are done too:
@@ -393,7 +394,7 @@ Quizu's hills) and starts as the traced plaza; the colonial church and the stree
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met: `docs/historia/campanas/lima.md` with a certainty table; the valley was inhabited and the defence relied on Andean allies.                                         |
 | Identity    | Met: found the city and hold the siege; the curaca pact is optional.                                                                                                    |
-| Play        | Met: three acts complete with real move/build/attack orders and no HP pinning; the plaza visit still uses the field-card API, and a human playtest remains recommended. |
+| Play        | Met (automated): three acts complete with real move/build/attack orders and no HP pinning. The plaza visit goes through the HUD — the E2E selects the Plaza Mayor on the map, presses «Visitar» and checks the tutorial advances from `traza` to `cabildo` — instead of calling `visitHeritage`. A human playtest remains recommended. |
 | Contract    | Met: Act II–III hidden, the curaca pact optional, Pizarro protected from the start.                                                                                     |
 | Onboarding  | Met: six-step tutorial, briefing and Codex.                                                                                                                             |
 | Closure     | Met: the epilogue states that Cusco remains besieged; no counterfactual is hidden.                                                                                      |
@@ -402,8 +403,8 @@ Quizu's hills) and starts as the traced plaza; the colonial church and the stree
 | Site        | Met: `traza` (cord, packed plaza, provisional shelters) → `ciudad` (church, ten houses, market, well, people) triggered by the cabildo.                                 |
 | Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                   |
 | Tests       | Met: `tests/lima.test.ts`, scale, campaign path and the campaign E2E specs.                                                                                             |
-| Docs        | Met: dossier, `lima-model-mission.md`, this table and the redesign status.                                                                                              |
-| Performance | Partial: opening ~767k / ~834 under 800k/860; the city with the siege crowd is ~1.06M / ~1,227 under the 1.1M/1,250 regression cap, still over §11's 600k/200 target.   |
+| Docs        | Met: dossier, `lima-model-mission.md`, this table and the redesign status; the 2026-11-16 pass refreshed the performance figures.                                          |
+| Performance | Partial: software `bench:check` opening 663,949 tris / 624 calls and the city with the siege crowd 927,198 / 928 (under the 800k/860 and 1.1M/1,250 regression caps). Hardware high (`--gpu`, Intel iGPU) 874,505 / 627 and 1,134,038 / 931, against 974,062 / 832 and 1,267,920 / 1,226 with VSM on the same scene: the PCF pass takes ~100k/134k triangles and 205/295 calls off. Both views are still far over §11's 600k/200 target, so the row stays Partial until the hardware/LOD pass. |
 | Art         | Met: approved authored plaza/cathedral intro render; the streets remain procedural and the captures are in-engine.                                                      |
 | Structure   | Met: three acts with hidden objectives, two chapter cards and the documented siege.                                                                                     |
 | Opening     | Met: three narrated beats with in-engine captures, two act cards and the epilogue backdrop.                                                                             |

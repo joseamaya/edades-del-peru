@@ -78,14 +78,17 @@ siege, take the camp.
 - `tests/lima.test.ts`: acts, scale, site, roster and historical labels.
 - `tests/campaign-scale.test.ts`: 256 m, 128² ground, crossing band.
 - Campaign E2E: briefing, epilogue, art, geography, layout, save/load and the campaign path.
-- Real-command playtest through the three acts.
+- Real-command playtest through the three acts; the Plaza Mayor card is opened by clicking the monument on
+  the map and pressing «Visitar» in the HUD, which also advances the tutorial from `traza` to `cabildo`.
 
 ## Open items
 
 1. In-engine captures and `MISSION_ART` are shipped; regenerate them with `scripts/capture_lima_intro.mjs` after art changes.
-2. Performance: the opening measures ~767k triangles / ~834 draw calls under the 800k/860 first-pass cap;
-   the city with the siege crowd measures ~1.06M / ~1,227 under the 1.1M/1,250 regression cap. Both remain
-   over art-direction §11's 600k/200 target.
+2. Performance: software `bench:check` opening 663,949 triangles / 624 draw calls and the city with the
+   siege crowd 927,198 / 928, under the 800k/860 and 1.1M/1,250 regression caps. Hardware high (`--gpu`,
+   Intel iGPU) 874,505 / 627 and 1,134,038 / 931, against 974,062 / 832 and 1,267,920 / 1,226 with VSM on
+   the same scene. Both views remain over art-direction §11's 600k/200 target; the hardware/LOD pass is
+   still open.
 3. The approved intro render is a first pass: a future revision can extend it to the 1536 siege and solve the
    Rímac/bridge composition.
 4. A manual 30–40 minute playtest.
