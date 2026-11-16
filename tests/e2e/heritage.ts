@@ -9,11 +9,15 @@ export interface HeritageClickWindow extends Window {
  * Page-side helper shared by the campaign playtests: select a heritage building on the map and press its
  * HUD command, the way a player does. It has to live on `window` because both playtests run one long
  * in-page simulation and cannot call a Node module from inside it.
+ *
+ * Keep the body self-contained: Playwright serializes it and runs it in the page, so it must not reference
+ * imports or module constants (only `window`, `document` and browser globals).
  */
 export async function installHeritageClick(page: Page): Promise<void> {
   await page.addInitScript(() => {
     (window as unknown as HeritageClickWindow).__heritageClick = (id, labelSource) => {
       const g = (window as unknown as { game: any }).game;
+      const THREE = (window as unknown as { THREE: any }).THREE;
       let world: { x: number; y: number; z: number } | null = null;
       const proxy = (g.siteDef?.heritageProxies ?? []).find((p: { id: string }) => p.id === id);
       if (proxy) {
@@ -29,8 +33,8 @@ export async function installHeritageClick(page: Page): Promise<void> {
         if (owner) {
           // The acequia's id sits on the whole canal group; aim at its gate, not the group origin.
           const target = owner.getObjectByName?.('canal_gate') ?? owner;
-          const box = new (window as unknown as { THREE: any }).THREE.Box3().setFromObject(target);
-          const c = box.getCenter(new (window as unknown as { THREE: any }).THREE.Vector3());
+          const box = new THREE.Box3().setFromObject(target);
+          const c = box.getCenter(new THREE.Vector3());
           world = { x: c.x, y: c.y, z: c.z };
         }
       }
@@ -41,7 +45,6 @@ export async function installHeritageClick(page: Page): Promise<void> {
       cam.position.set(world.x + 0.01, groundY + 36, world.z + 36);
       cam.lookAt(world.x, groundY + 2, world.z);
       cam.updateMatrixWorld();
-      const THREE = (window as unknown as { THREE: any }).THREE;
       const p = new THREE.Vector3(world.x, world.y, world.z).project(cam);
       const x = (p.x * 0.5 + 0.5) * window.innerWidth;
       const y = (-p.y * 0.5 + 0.5) * window.innerHeight;

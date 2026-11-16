@@ -79,8 +79,8 @@ const BUDGETS = {
   // scene), now under the 620k late target. Hardware high measured 808,827/301 (864,833/314 with VSM),
   // still over the 660k cap: the hardware/LOD pass is the open item (B6).
   m_tambotoco_late: { sceneTriangles: 660_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
-  // Lima opening: the hueste with horses and artillery. Software ~648k/624 after the PCF shadow pass and the
-  // rig silhouette rule (the vegetation kit varies a few percent between runs; calls are stable; under the
+  // Lima opening: the hueste with horses and artillery. Software ~645k/624 (627–664k observed, the vegetation
+  // kit varies between runs) after the PCF shadow pass and the rig silhouette rule (under the
   // 800k/860 cap, over art-direction §11's 600k/200 target). Hardware high ~874k/627 (974,062/832 with VSM
   // on the same scene): ~100k triangles and 205 calls off.
   m_lima: { sceneTriangles: 800_000, sceneDrawCalls: 860, kitTriangles: 140_000, kitDrawCalls: 25 },
