@@ -278,8 +278,9 @@ features are not documented, so this is a plausible Andean representation, not a
 The same constants drive the procedural humanoids and the recoloured CC0 body texture. Historical models must follow the
 period dossiers and their source/licence must be recorded in [`PROVENANCE.md`](../../PROVENANCE.md) before they
 are used in a campaign. See [`docs/development.md`](../development.md) for the clip convention, the build script
-and the migration steps. Only the eyes (too small to cast a readable shadow) skip the VSM shadow pass; the
-garments keep their shadows, which keeps the worker inside its budget without cutting visible geometry.
+and the migration steps. Only the meshes that make up the silhouette cast a shadow: the worker keeps its body
+(`workerAttire`), and every other rig keeps the meshes covering most of its triangles (`limitShadowCasters`).
+That keeps each unit inside the shadow budget without cutting visible geometry.
 Gender is a **presentation-only** mix: `genderForId` assigns female/male 50/50 deterministically. The rigged
 Caral worker and scout use male and female CC0 bodies with the same skeleton; the male worker wears the tunic +
 short wrap, the female worker the tunic + long skirt. The scout uses the same commoner tunic/skirt or wrap, a

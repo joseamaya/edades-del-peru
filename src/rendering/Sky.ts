@@ -38,7 +38,6 @@ export class Sky {
     this.light.shadow.bias = -0.0003;
     this.light.shadow.normalBias = 0.06;
     this.light.shadow.radius = 1.5;
-    this.light.shadow.blurSamples = 6;
     scene.add(this.light);
 
     this.hemi = new THREE.HemisphereLight(0xcdd6e6, 0x55664a, 0.4);
@@ -259,10 +258,10 @@ export class Sky {
     shadow.mapSize.set(size, size);
     shadow.map?.dispose();
     shadow.map = null;
-    // VSM keeps a second render target for the blur; three reallocates it with the map.
-    const vsm = shadow as THREE.DirectionalLightShadow & { mapPass: THREE.WebGLRenderTarget | null };
-    vsm.mapPass?.dispose();
-    vsm.mapPass = null;
+    // A shadow mode that keeps a second target (VSM's blur) reallocates it with the map; drop it too.
+    const extra = shadow as THREE.DirectionalLightShadow & { mapPass: THREE.WebGLRenderTarget | null };
+    extra.mapPass?.dispose();
+    extra.mapPass = null;
   }
 
   /**

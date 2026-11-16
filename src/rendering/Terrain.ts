@@ -445,18 +445,6 @@ export class Terrain {
         varying vec2 vUv;
         varying float vHeight;
         varying vec3 vNormal;
-        varying vec4 vDirShadowCoord;
-        #ifdef USE_SHADOWMAP
-        uniform mat4 directionalShadowMatrix[ 1 ];
-        struct DirectionalLightShadow {
-          float shadowIntensity;
-          float shadowBias;
-          float shadowNormalBias;
-          float shadowRadius;
-          vec2 shadowMapSize;
-        };
-        uniform DirectionalLightShadow directionalLightShadows[ 1 ];
-        #endif
         void main() {
           vColor = color;
           vUv = uv;
@@ -513,18 +501,6 @@ export class Terrain {
         varying vec2 vUv;
         varying float vHeight;
         varying vec3 vNormal;
-        varying vec4 vDirShadowCoord;
-        #ifdef USE_SHADOWMAP
-        uniform sampler2D directionalShadowMap[ 1 ];
-        struct DirectionalLightShadow {
-          float shadowIntensity;
-          float shadowBias;
-          float shadowNormalBias;
-          float shadowRadius;
-          vec2 shadowMapSize;
-        };
-        uniform DirectionalLightShadow directionalLightShadows[ 1 ];
-        #endif
 
         float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
         float noise(vec2 p) {
@@ -728,8 +704,6 @@ ${FOW_DIM_GLSL}
           float spec = pow(max(dot(N, Hv), 0.0), shin) * (1.0 - clamp(rough, 0.0, 1.0)) * 0.22;
           lit += sunColor * spec * cloudShadow;
           lit *= 0.7 + 0.35 * ndl * cloudShadow;
-          // received directional shadows (units and buildings)
-          #include <terrain_shadow_hook>
 
           // atmospheric fog (aerial perspective)
           float dist = distance(cameraPos, vWorldPos);
@@ -760,40 +734,11 @@ ${FOW_DIM_GLSL}
       `,
     });
 
+    // The terrain is a ShaderMaterial with `lights: false`, so three never binds the shadow uniforms:
+    // a hand-written shadow sample here would compile and then do nothing (the old `terrain_shadow_hook`
+    // multiplied by a `shadowIntensity` that stayed 0). Ground contact comes from the paved/splat shading
+    // and the entities' blob shadows; real terrain shadows are tracked in the backlog.
     const mesh = new THREE.Mesh(geo, mat);
-    mesh.receiveShadow = true;
-    // receive directional shadows: manual sampling of the VSM shadow map
-    (mat as any).shadowMap = true;
-    mat.customProgramCacheKey = () => 'terrain-shadow-v5';
-    mat.onBeforeCompile = (shader: any) => {
-      shader.vertexShader = shader.vertexShader.replace(
-        'gl_Position = projectionMatrix * viewMatrix * wp;',
-        `gl_Position = projectionMatrix * viewMatrix * wp;
-         #if defined(USE_SHADOWMAP)
-           vec3 shadowN = normalize(mat3(modelMatrix) * normal);
-           vec4 shadowWP = wp + vec4(shadowN * directionalLightShadows[0].shadowNormalBias, 0.0);
-           vDirShadowCoord = directionalShadowMatrix[0] * shadowWP;
-         #endif`,
-      );
-      shader.fragmentShader = shader.fragmentShader.replace(
-        '#include <terrain_shadow_hook>',
-        `#if defined(USE_SHADOWMAP)
-          vec4 sc = vDirShadowCoord;
-          sc.xyz /= sc.w;
-          sc.z += directionalLightShadows[0].shadowBias;
-          float sh = 1.0;
-          if (sc.x >= 0.0 && sc.x <= 1.0 && sc.y >= 0.0 && sc.y <= 1.0 && sc.z <= 1.0) {
-            vec2 vdist = texture2D(directionalShadowMap[0], sc.xy).rg;
-            float mean = vdist.x;
-            float variance = vdist.y * vdist.y;
-            float hard = step(mean, sc.z);
-            float v = clamp((variance / (variance + (sc.z - mean) * (sc.z - mean)) - 0.3) / 0.7, 0.0, 1.0);
-            sh = max(hard, v);
-          }
-          lit *= mix(1.0, sh, directionalLightShadows[0].shadowIntensity);
-        #endif`,
-      );
-    };
     return mesh;
   }
 

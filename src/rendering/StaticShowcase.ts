@@ -116,7 +116,7 @@ export async function mountStaticShowcase(options: StaticShowcaseOptions): Promi
   renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.domElement.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;display:block;';
   document.body.appendChild(renderer.domElement);
 

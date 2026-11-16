@@ -70,12 +70,13 @@ const BUDGETS = {
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
   // Tambotoco opening: the ayllu site, eight nameplates and the hero rings/banners/tunic accents.
-  // Measured 472,892/301 in software after the modular kit (was 467k/≈301); first-pass cap, still
-  // over §11's 200-call target. The hardware view is the open performance item.
+  // Measured 408,221/309 in software after the PCF shadow pass and the rig silhouette rule (474,351/323
+  // with VSM on the same scene: the VSM draws every receiver into the shadow map); still over §11's
+  // 200-call target. The hardware view is the open performance item.
   m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 340, kitTriangles: 0, kitDrawCalls: 0 },
-  // The founded Inticancha (the `fundada` phase at victory) framed on the four canchas: 648,082/313
-  // in software after the kit (was 636,372/310). First-pass cap with ~2% headroom; over the 600k
-  // art-direction target. The hardware view is the open performance item.
+  // The founded Inticancha (the `fundada` phase at victory) framed on the four canchas: 591,009/295
+  // in software after the PCF shadow pass and the rig silhouette rule (647,015/308 with VSM on the same
+  // scene), now under the 620k late target. The hardware view is the open performance item.
   m_tambotoco_late: { sceneTriangles: 660_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
   // Lima opening: the hueste with horses and artillery. First-pass cap measured ~763k / 839; tighten after
   // the unit-rig pass (art-direction §11 targets 200 calls).
@@ -95,7 +96,8 @@ const BUDGETS = {
   m6_chimu_inca: { sceneTriangles: 530_000, sceneDrawCalls: 290, kitTriangles: 15_000, kitDrawCalls: 3 },
   // Inca civil war opening: the Quito camp and Quipaipan. Measured ~703k / 436; over the 600k target.
   m6b_guerra_civil: { sceneTriangles: 745_000, sceneDrawCalls: 465, kitTriangles: 0, kitDrawCalls: 0 },
-  // Independence opening: the Lima camp and Junín. Measured ~590k / 621; over the 200-call target.
+  // Independence opening: the Lima camp and Junín. Measured 567,865 / 603 after the PCF shadow pass and the
+  // rig silhouette rule (674,476 / 823 with VSM); under both caps, over the 200-call target.
   m8_independencia: { sceneTriangles: 625_000, sceneDrawCalls: 660, kitTriangles: 0, kitDrawCalls: 0 },
   // Túpac Amaru opening on the 256 m valley: the camp, the chapel and the starting column. Measured
   // ~537k / 661–665; first-pass cap with ~6 % headroom (the call count is over art-direction §11's target).
