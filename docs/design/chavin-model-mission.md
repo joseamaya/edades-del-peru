@@ -19,12 +19,12 @@ implementation contract.
 
 Target length: 30–40 minutes. Four acts inside one `MissionDef` (`src/campaign/defs/missions/m2_chavin.ts`).
 
-| Act | Date         | Historical idea                          | Mechanic                                      | Site phase                    |
-| --- | ------------ | ---------------------------------------- | --------------------------------------------- | ----------------------------- |
-| I   | c. 900 a.C.  | The oracle receives pilgrims and gifts   | Reach the site; hand over the first offerings | `old_temple_foundation`       |
-| II  | Generations  | The Old Temple and the Lanzón gallery    | Hand over stone; hold the plaza; build fair   | `old_temple`                  |
-| III | c. 500 a.C.  | The New Temple and long-distance exchange | Expand Edificio A; research; great pilgrimage | `new_temple_foundation` → `new_temple` |
-| IV  | c. 500–200 a.C. | Influence fragments; documented decline | Tour the centre and its record                | `apogee`                      |
+| Act | Date            | Historical idea                           | Mechanic                                      | Site phase                             |
+| --- | --------------- | ----------------------------------------- | --------------------------------------------- | -------------------------------------- |
+| I   | c. 900 a.C.     | The oracle receives pilgrims and gifts    | Reach the site; hand over the first offerings | `old_temple_foundation`                |
+| II  | Generations     | The Old Temple and the Lanzón gallery     | Hand over stone; hold the plaza; build fair   | `old_temple`                           |
+| III | c. 500 a.C.     | The New Temple and long-distance exchange | Expand Edificio A; research; great pilgrimage | `new_temple_foundation` → `new_temple` |
+| IV  | c. 500–200 a.C. | Influence fragments; documented decline   | Tour the centre and its record                | `apogee`                               |
 
 - Act objectives start `hidden: true` except Act I and are revealed by triggers.
 - Chapter cards (`act` effect) open between acts and pause the mission clock.
@@ -48,13 +48,13 @@ the period, as the dossier explains.
 
 `ChavínPhase` and `CHAVIN_PHASE_PLAN` live in `src/model/defs/chavinCity.ts`.
 
-| Phase                   | Stands                                                        |
-| ----------------------- | ------------------------------------------------------------- |
-| `old_temple_foundation` | Terraces, Plaza Circular, Edificio B foundation, gallery       |
-| `old_temple`            | Finished Edificio B / Templo Viejo                             |
-| `new_temple_foundation` | Edificio A foundation                                          |
-| `new_temple`            | Finished Edificio A and Portada de las Falcónidas              |
-| `apogee`                | Fair tents, pilgrims and the living centre                     |
+| Phase                   | Stands                                                   |
+| ----------------------- | -------------------------------------------------------- |
+| `old_temple_foundation` | Terraces, Plaza Circular, Edificio B foundation, gallery |
+| `old_temple`            | Finished Edificio B / Templo Viejo                       |
+| `new_temple_foundation` | Edificio A foundation                                    |
+| `new_temple`            | Finished Edificio A and Portada de las Falcónidas        |
+| `apogee`                | Fair tents, pilgrims and the living centre               |
 
 Heritage cards stand from their phase (`CHAVIN_HERITAGE_SINCE`), and their blockers only block once the
 building exists. The hidden source GLB keeps the click proxies; the kit draws the visible city.
@@ -90,6 +90,11 @@ They advance on what the player does and never repeat the briefing.
 - The Lanzón scan remains removed; the game uses the project-owned reconstructed Lanzón.
 - New manifests start `reviewed: false`; a human review records `reviewer`/`reviewedAt` before the Art
   gate can be marked Met.
+- Intro render: `art-src/blender/site-intros/m2_chavin/m2_chavin.blend`, built by
+  `scripts/blender/build_site_intro.py --mission=m2_chavin`, uses the Chavín heightmap and the site model
+  with masonry materials, the circular court and figures. The record `m2_chavin-intro` is a draft pending
+  human review; the briefing keeps the in-engine capture until it is approved. Regenerate with
+  `blender --background --python scripts/blender/build_site_intro.py -- --mission=m2_chavin`.
 
 ## Performance
 

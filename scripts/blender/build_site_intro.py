@@ -77,16 +77,16 @@ CONFIG = {
     'm2_chavin': {
         'hm': 'chavin',
         'site': (128.0, 128.0),
-        'scale': 0.22,
-        'glb': 'chavin/chavin_site_lod0.glb',
-        'camera': (160.0, 178.0, 14.0),
-        'target': (124.0, 124.0, 8.0),
-        'lens': 42,
+        'scale': 0.42,
+        'bespoke': 'chavin',
+        'camera': (164.0, 208.0, 18.0),
+        'target': (118.0, 130.0, 4.0),
+        'lens': 38,
+
         'sun': (-0.4, -0.5, -0.32),
         'sun_color': (1.0, 0.84, 0.62),
         'sky': (0.36, 0.46, 0.62),
         'water': False,
-        'figures': [(108, 150, 35), (115, 155, 30), (140, 150, 145)],
         'caption': 'Chavín de Huántar, el templo nuevo',
     },
     'm6_chimu_inca': {
@@ -728,6 +728,103 @@ def add_arica_backdrop():
     add_cyl('ship_smoke', (49.0, 140.0, 13.0), 1.4, 5.0, material('smoke', (0.2, 0.2, 0.21), 1.0, 0.0), 6)
 
 
+def reset_material(mat, color, roughness=0.95):
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    nodes.clear()
+    out = nodes.new('ShaderNodeOutputMaterial')
+    bsdf = nodes.new('ShaderNodeBsdfPrincipled')
+    bsdf.inputs['Base Color'].default_value = (*color, 1)
+    bsdf.inputs['Roughness'].default_value = roughness
+    noise = nodes.new('ShaderNodeTexNoise')
+    noise.inputs['Scale'].default_value = 22.0
+    noise.inputs['Detail'].default_value = 7.0
+    bump = nodes.new('ShaderNodeBump')
+    bump.inputs['Strength'].default_value = 0.3
+    bump.inputs['Distance'].default_value = 0.08
+    links.new(noise.outputs['Fac'], bump.inputs['Height'])
+    links.new(bump.outputs['Normal'], bsdf.inputs['Normal'])
+    links.new(bsdf.outputs['BSDF'], out.inputs['Surface'])
+
+
+def reset_masonry(mat, color):
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    nodes.clear()
+    out = nodes.new('ShaderNodeOutputMaterial')
+    bsdf = nodes.new('ShaderNodeBsdfPrincipled')
+    bsdf.inputs['Roughness'].default_value = 0.96
+    brick = nodes.new('ShaderNodeTexBrick')
+    brick.inputs['Scale'].default_value = 3.0
+    brick.inputs['Mortar Size'].default_value = 0.035
+    brick.inputs['Color1'].default_value = (*color, 1)
+    brick.inputs['Color2'].default_value = (*[c * 0.78 for c in color], 1)
+    brick.inputs['Mortar'].default_value = (0.12, 0.11, 0.10, 1)
+    bump = nodes.new('ShaderNodeBump')
+    bump.inputs['Strength'].default_value = 0.45
+    bump.inputs['Distance'].default_value = 0.07
+    links.new(brick.outputs['Color'], bsdf.inputs['Base Color'])
+    links.new(brick.outputs['Fac'], bump.inputs['Height'])
+    links.new(bump.outputs['Normal'], bsdf.inputs['Normal'])
+    links.new(bsdf.outputs['BSDF'], out.inputs['Surface'])
+
+
+def import_chavin():
+    glb = ROOT / 'src' / 'assets' / 'sites' / 'chavin' / 'chavin_site_lod0.glb'
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=str(glb))
+    new = [o for o in bpy.data.objects if o not in before]
+    for obj in list(new):
+        if 'Terrain' in obj.name or 'Reference' in obj.name:
+            bpy.data.objects.remove(obj, do_unlink=True)
+            new.remove(obj)
+    palette = {
+        'plaster': (0.30, 0.28, 0.25),
+        'stone_tiled': (0.24, 0.23, 0.21),
+        'stone_dark': (0.18, 0.17, 0.16),
+        'ashlar': (0.28, 0.26, 0.23),
+        'portada': (0.32, 0.30, 0.27),
+        'gallery': (0.025, 0.023, 0.020),
+        'earth': (0.30, 0.23, 0.15),
+        'vegetation': (0.14, 0.20, 0.08),
+        'water': (0.05, 0.16, 0.22),
+    }
+    for mat in bpy.data.materials:
+        key = next((k for k in palette if k in mat.name.lower()), None)
+        if not key:
+            continue
+        if key in ('stone_tiled', 'stone_dark', 'ashlar', 'portada'):
+            reset_masonry(mat, palette[key])
+        else:
+            reset_material(mat, palette[key], 0.9 if key == 'water' else 0.95)
+    meshes = [o for o in new if o.type == 'MESH']
+    lo = Vector((1e9, 1e9, 1e9)); hi = Vector((-1e9, -1e9, -1e9))
+    for obj in meshes:
+        for corner in obj.bound_box:
+            w = obj.matrix_world @ Vector(corner)
+            lo = Vector((min(lo[i], w[i]) for i in range(3)))
+            hi = Vector((max(hi[i], w[i]) for i in range(3)))
+    scale = CFG['scale']
+    ox, oz = CFG['site']
+    empty = bpy.data.objects.new('chavin', None)
+    bpy.context.collection.objects.link(empty)
+    empty.location = (ox - ((lo.x + hi.x) / 2) * scale, oz - ((lo.y + hi.y) / 2) * scale, ground_height(ox, oz) - lo.z * scale)
+    empty.scale = (scale, scale, scale)
+    for obj in new:
+        if obj.parent is None:
+            obj.parent = empty
+
+
+def add_chavin_scene():
+    import_chavin()
+    sx, sz = CFG['site']
+    priest = material('chavin_cloth', (0.34, 0.15, 0.09), 0.92, 0.05)
+    for x, z, yaw in ((sx - 36, sz + 22, 10), (sx - 30, sz + 26, 15), (sx + 8, sz + 30, 160), (sx + 14, sz + 33, 165)):
+        add_warrior((x, z, ground_height(x, z)), math.radians(yaw), cloth=priest, leader=(x == sx - 22))
+
+
 def add_water():
     # A simple sea plane and the river ribbon; the terrain supplies the banks.
     if CFG['hm'] in ('lima', 'arica'):
@@ -1006,6 +1103,8 @@ def main() -> None:
     build_terrain()
     if CFG.get('bespoke') == 'lima':
         add_lima_city()
+    elif CFG.get('bespoke') == 'chavin':
+        add_chavin_scene()
     elif CFG.get('bespoke') == 'junta':
         add_junta_city()
     elif not CFG.get('bespoke'):

@@ -40,7 +40,7 @@ below, which record each mission's own review and are kept for history). **M** m
 | Mission            | Hist | Ident | Play | Contr | Onb | Clos | UX  | Vis | Pers | Tests | Docs | Struct | Open | Art | Perf | Scale |
 | ------------------ | ---- | ----- | ---- | ----- | --- | ---- | --- | --- | ---- | ----- | ---- | ------ | ---- | --- | ---- | ----- |
 | m1_caral           | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
-| m2_chavin          | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | X   | M    | M     |
+| m2_chavin          | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | P   | M    | M     |
 | m3_moche_recuay    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m4_wari            | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_tambotoco        | M    | M     | P    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | P    | M     |
@@ -129,7 +129,7 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 | Docs        | Met                  | Dossier, `chavin-model-mission.md`, this table, `chavin-sacred-site.md`, PROVENANCE and README aligned.                                                                      |
 | Structure   | Met                  | Four acts, hidden objectives revealed per act, chapter cards with images, optional goals, documented decline.                                                                |
 | Opening     | Met                  | Three-beat narrated intro and briefing with the mission's own art; chapter-card and epilogue captures from `capture_chavin_intro.mjs`.                                       |
-| Art         | Pending human review | Kit and captures are exported with `reviewed: false`; a human review must record `reviewer`/`reviewedAt` before this gate is Met.                                            |
+| Art         | Pending human review | Authored intro render (`m2_chavin-intro`) is a draft; the kit and captures are exported with `reviewed: false`. A human review must record `reviewer`/`reviewedAt`.          |
 | Performance | Met                  | `bench_scene.mjs` re-run 2026-11-09 after the resize: opening 413,433 tris / 160 calls; late 462,835 / 223; within the 450k / 600k budgets.                                  |
 | Scale       | Met                  | 256 m map, painted ground every 2 m (128 over 256) and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                       |
 
