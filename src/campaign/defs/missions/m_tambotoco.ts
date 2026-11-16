@@ -203,9 +203,9 @@ export const mTambotoco: MissionDef = {
       id: 'a1_caza',
       kind: 'gather',
       fromNode: 'hunt',
-      count: 120,
+      count: 60,
       hidden: true,
-      title: 'Caza 120 de comida y llévala al depósito para sostener a las familias',
+      title: 'Caza 60 de comida y llévala al depósito para sostener a las familias',
     },
     {
       id: 'a1_manco',
@@ -258,7 +258,7 @@ export const mTambotoco: MissionDef = {
       radius: 10,
       optional: true,
       hidden: true,
-      title: 'Visita la aldea hualla',
+      title: 'Visita la aldea hualla y aprovisiónate',
     },
     {
       id: 'a4_inticancha',
@@ -274,7 +274,9 @@ export const mTambotoco: MissionDef = {
       kind: 'network',
       buildingKind: BuildingKind.HOUSE,
       nodes: TAMBOTOCO_CANCHAS,
-      radius: 9,
+      // Adjacent plots are 17-24 m apart: 6 m leaves a dead band at the midpoint (the old 9 m could
+      // count one house twice) while absorbing a tree, rock or unit offset on the plot.
+      radius: 6,
       count: 4,
       hidden: true,
       title: 'Construye cuatro viviendas en las canchas marcadas de Inticancha',
@@ -379,6 +381,20 @@ export const mTambotoco: MissionDef = {
           // They come out to meet the party at Huanacaure, as the tutorial says; the truce stops them.
           target: { dx: TAMBOTOCO_HOLD.x, dz: TAMBOTOCO_HOLD.z },
         },
+      ],
+    },
+    {
+      // The optional hualla visit pays in stores, not in a new system: the village shares its harvest.
+      id: 't_hualla',
+      condition: { type: 'objective', objectiveId: 'a3_hualla', state: 'completed' },
+      effects: [
+        {
+          type: 'dialogue',
+          speaker: 'Memoria de los Ayar',
+          duration: 7,
+          text: 'La partida se aprovisiona en la aldea hualla: comida y madera para el campamento.',
+        },
+        { type: 'resources', player: 0, amount: { food: 150, wood: 100 } },
       ],
     },
     {
