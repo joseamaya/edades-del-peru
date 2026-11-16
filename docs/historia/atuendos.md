@@ -138,6 +138,11 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 > `vehicle_rockets`) usan `vehicle_rig.glb`: moto, pieza antiaérea y lanzacohetes son siluetas genéricas de la
 > República contemporánea, sin un modelo histórico concreto, y solo aparecen en la era contemporánea.
 
+> **Héroes de campaña.** Los comandantes con nombre usan el mismo rig y las prendas ya documentadas de su
+> cultura; el género declarado de cada uno elige cuerpo, falda o wrap, y el acento de presentación tiñe
+> túnica, falda/wrap y cinta sin postular una prenda nueva. El manto de héroe reutiliza la manta simple de
+> la abstracción general. No es un atuendo histórico específico ni un retrato.
+
 > **Implementación riggeada (m4–m6).** Wari añade el disco pectoral (pecho/espalda); Chanca, la pintura
 > facial en guerreros; Chimú, orejeras de metal; e Inca, el canesú rojo. Tiahuanaco comparte la
 > diadema/abstracción textil porque sus prendas concretas no están documentadas. La túnica/wrap, el escudo, la

@@ -342,6 +342,18 @@ slot is absent (offline / without assets).
 - **Review**: no human art-review gate applies to in-engine captures; the modular kit has no GLB asset and
   the authored layout stays the source of truth for a later Blender kit.
 
+### Tambotoco Ayar identity captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-cast.webp` (briefing medallions), `docs/media/tambotoco-heroes-close.webp`
+  (four siblings) and `docs/media/tambotoco-heroes-far.webp` (strategic zoom), 960x540 WebP q58.
+- **Source**: captured from the game itself by `scripts/capture_ayar_identity.mjs`. The cast capture is the briefing screen with the eight SVG medallions; the close group repositions
+  four authored units under the debug harness and renders without the HUD; the far view is the RTS
+  camera at its map maximum.
+- **Content**: in-engine recreations of the game's own scene. The medallions and the accent colours are
+  stylized presentation, not likenesses or attested garments; the bodies use the shared ayllu rig.
+- **Review**: no human art-review gate applies to in-engine captures; no new model, texture or manifest
+  entry is added.
+
 ### La Junta del Cusco intro, chapter and epilogue images (in-engine recreations)
 
 - **Location**: `public/media/junta/intro-{cabildo,apacheta,umachiri,epilogo}.webp` (960x540, WebP q58,

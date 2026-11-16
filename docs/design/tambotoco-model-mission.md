@@ -92,13 +92,21 @@ and the only "engine" of the mission is water.
 The legend is about eight siblings, so all eight are on the board from the start and read as leads:
 
 - **In the party**: Ayar Manco, Ayar Auca, Ayar Cachi, Ayar Uchu, Mama Huaco, Mama Ocllo, Mama Ipacura and
-  Mama Raua are tagged start units. Each carries a gold hero ring, a banner pole (standing beside the
-  figure) with an accent crest, a `★` nameplate in the legible parchment colour and a tunic, headband and
-  macana tinted with its commander accent; the selection panel shows the portrait, name, hero badge and
-  role. The accent is a presentation device to tell the eight apart, **not** a claim about Inca attire: the
-  bodies are still the shared ayllu rig, and unique outfits are the next art pass.
+  Mama Raua are tagged start units. Each hero keeps its declared **gender**: the four Ayar men use the male
+  body, wrap and tunic; the four Mamas use the female body, skirt and tunic, including the three worker
+  Mamas. The unit-id split no longer decides a named character's body. Attire is the shared ayllu rig: the
+  commander accent tints the consolidated cloth material (tunic and skirt/wrap, lifted away from skin tone),
+  a procedural band rings the head and a cloth **hero mantle** (`CommanderDef.mantle`: long on the Mamas)
+  broadens the silhouette; the macana stays in hand. The accent is a presentation device to tell the eight
+  apart, **not** a claim about a specific garment, and a Blender outfit kit remains a later pass.
+- **Field markers**: every hero has a gold ring. Close in, a banner pole carries a **crest shape declared per commander**
+  (`CommanderDef.crest`: diamond, tetrahedron, stone or spire) in the accent colour, so the eight do not
+  read as eight identical diamonds. At the strategic zoom the banner and crest drop out and only the rings
+  remain; the `★` nameplates finish fading just past that cutoff, so labels never pile up at map scale.
 - **In the briefing**: the eight portraits (Ayar Manco, Ayar Auca, Ayar Cachi, Ayar Uchu, Mama Huaco, Mama
-  Ocllo, Mama Ipacura, Mama Raua) use the procedural stylized medallions; no new art is needed.
+  Ocllo, Mama Ipacura, Mama Raua) use the procedural stylized medallions, now with the commander accent in
+  the gradient and frame and a gender silhouette (long hair and shoulder cloth for the Mamas); no new art
+  is needed.
 - **Myth beats**: Ayar Cachi is retired at Tambo Quiro, Ayar Uchu at Huanacaure and Ayar Auca at Inticancha.
   Each `memory` effect removes the unit without a death animation and raises a named huaca marker
   (`MemoryStones`); the narration explains the transformation.
@@ -174,6 +182,10 @@ dialogue.
   `docs/media/tambotoco-kit-valley-{before,after}.webp` for the hualla valley. 1600×900 with the HUD
   hidden, site at `fundada`, resized to 960×540 WebP q58. They show the mud plaza and box huts replaced by
   coursed stone platforms, flagstones, thatch houses, qollqas and terraced fields.
+- `node scripts/capture_ayar_identity.mjs` → `docs/media/tambotoco-cast.webp` (the eight briefing
+  medallions), `docs/media/tambotoco-heroes-close.webp` (Manco, Huaco, Ocllo and Cachi: male/female bodies,
+  garments and three crest shapes) and `docs/media/tambotoco-heroes-far.webp` (strategic zoom: rings only,
+  no plates or banners).
 
 ## Open items
 
