@@ -72,8 +72,8 @@ function finalize(id: ModelAssetId, gltf: GLTF, definition: ModelAssetDefinition
     const mesh = obj as THREE.Mesh;
     if (!mesh.isMesh) return;
     const skip = skipShadows.has(mesh.name);
-    // Keep skipped meshes out of the shadow pass in both modes: PCF draws casters only, and VSM
-    // also draws receivers.
+    // Keep skipped meshes out of the shadow pass: PCF draws casters only, and the flags also cover a
+    // future mode that draws receivers.
     mesh.castShadow = !skip;
     mesh.receiveShadow = !skip;
     // A skinned mesh's bind-pose bounding sphere does not follow the bones.

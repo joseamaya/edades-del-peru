@@ -4,10 +4,10 @@ import { launchChromium, withViteServer, reviewDir, cliArg } from './lib.mjs';
 
 /**
  * Evidence captures for the shadow pass (VSM -> PCF and the rig silhouette rule).
- * Usage: node scripts/capture_shadow_pass.mjs [--tag=after]
+ * Usage: node scripts/capture_shadow_pass.mjs [--tag=after|before]
  * Writes review/shadow-<tag>-{opening,close}.png at 1600x900, high quality, the bench framing, and the
- * 960x540 WebP copies under docs/media/. Run it on `main` with `--tag=before` to reproduce the old VSM
- * pair; the committed `m8-shadow-before.webp` was taken that way.
+ * 960x540 WebP copies docs/media/m8-shadow-<tag>-{opening,close}.webp. Run it from a worktree at `main`
+ * with `--tag=before` to reproduce the VSM side; the committed before pair was taken that way.
  */
 const tag = cliArg('tag', 'after');
 const WEBP_DIR = path.resolve('docs/media');

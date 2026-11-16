@@ -724,7 +724,9 @@ Definition of Done and the building audit see
   `lights: false`, so three never binds the shadow uniforms and the old hand-written `terrain_shadow_hook`
   multiplied by a `shadowIntensity` that stayed 0. The hook was removed on 2026-11-16 (no pixel changed);
   ground contact comes from the splat/paved shading and the entities' blob shadows. Real terrain shadows
-  need `lights: true` plus a PCF sample, and are tracked in the backlog.
+  need `lights: true` plus a PCF sample, and are tracked in the backlog. Evidence for the pass that
+  exposed it: `docs/media/m8-shadow-{before,after}-{opening,close}.webp`
+  (`node scripts/capture_shadow_pass.mjs --tag=before|after`).
 - **The terrain material weights are a CPU splatmap** (`src/rendering/terrainSplat.ts`): a deterministic
   512² RGBA texture (grass, dirt, sand, rock) built once per match from `TerrainData`; snow stays procedural by
   height. `Terrain` uploads it as a `DataTexture`. Keep the generation pure and seed-stable; #304 paints
@@ -740,7 +742,8 @@ Definition of Done and the building audit see
   summit bands. `HistoricalMapProfile.region` selects the palette and `SiteTerrainStyle.palette` overrides it
   (Caral). The shader mixes one band colour with the tinted albedo by `textureMix`; do not reintroduce the old
   aridity/vegetation/temperature multiplier chain. Terrain lighting shares the scene hemisphere light
-  (`Terrain.setHemisphere`, fed by `Sky.getHemi`) plus the sun/cloud shadow. Before/after evidence:
+  (`Terrain.setHemisphere`, fed by `Sky.getHemi`) plus the shader's sun term and procedural cloud shadow
+  (not the shadow map: see the dead-hook note below). Before/after evidence:
   `docs/media/terrain-palettes-before-after.webp` (left `main`, right this palette pass).
 - **Terrain faces must point up**: in `Terrain.buildMesh` the indices go `(a,c,b)` and `(b,c,d)` (not `(a,b,c)`).
   Inverting the winding makes faces point down: backface culling hides the terrain and the sky dome appears as if

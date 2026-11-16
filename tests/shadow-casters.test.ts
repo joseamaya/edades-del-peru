@@ -46,7 +46,7 @@ describe('limitShadowCasters', () => {
     expect(small.castShadow).toBe(true);
   });
 
-  it('ignores hidden meshes, so a hidden gender variant never casts', () => {
+  it('ignores hidden meshes and leaves their flags untouched', () => {
     const body = mesh(2400);
     const hidden = mesh(2400, false);
     const root = rig(body, hidden);

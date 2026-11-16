@@ -15,7 +15,7 @@ function triangles(mesh: THREE.Mesh): number {
  * few meshes that make it up — enough to cover `coverage` of the rig's visible triangles, at least one —
  * and let the rest skip the shadow pass. Only ever turns casting off, so it cannot add a caster.
  *
- * Returns the number of meshes that still cast.
+ * Returns how many meshes it kept; those that were already non-casting stay non-casting.
  */
 export function limitShadowCasters(root: THREE.Object3D, coverage = RIG_SHADOW_COVERAGE): number {
   const meshes: THREE.Mesh[] = [];

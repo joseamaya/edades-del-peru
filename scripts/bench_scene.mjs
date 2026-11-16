@@ -70,13 +70,13 @@ const BUDGETS = {
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
   // Tambotoco opening: the ayllu site, eight nameplates and the hero rings/banners/tunic accents.
-  // Measured 408,221/309 in software after the PCF shadow pass and the rig silhouette rule (472,892/301
-  // with VSM: the VSM draws every receiver into the shadow map); still over §11's 200-call target. The
-  // hardware view is the open performance item.
+  // Measured 408,221/309 in software after the PCF shadow pass and the rig silhouette rule (474,351/323
+  // with VSM on the same scene: the VSM draws every receiver into the shadow map); still over §11's
+  // 200-call target. The hardware view is the open performance item.
   m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 340, kitTriangles: 0, kitDrawCalls: 0 },
   // The founded Inticancha (the `fundada` phase at victory) framed on the four canchas: 591,009/295
-  // in software after the PCF shadow pass and the rig silhouette rule (648,082/313 with VSM), now under
-  // the 620k late target. The hardware view is the open performance item.
+  // in software after the PCF shadow pass and the rig silhouette rule (647,015/308 with VSM on the same
+  // scene), now under the 620k late target. The hardware view is the open performance item.
   m_tambotoco_late: { sceneTriangles: 660_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
   // Lima opening: the hueste with horses and artillery. First-pass cap measured ~763k / 839; tighten after
   // the unit-rig pass (art-direction §11 targets 200 calls).
