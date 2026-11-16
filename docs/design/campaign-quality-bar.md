@@ -43,7 +43,7 @@ below, which record each mission's own review and are kept for history). **M** m
 | m2_chavin          | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | M    | M     |
 | m3_moche_recuay    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m4_wari            | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m_tambotoco        | M    | M     | P    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | P    | M     |
+| m_tambotoco        | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | P    | M     |
 | m5_yahuar_pampa    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6_chimu_inca      | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6b_guerra_civil   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
@@ -77,8 +77,9 @@ in-engine intro and epilogue, bench scenes and the scale guard).
 
 1. **Invented outcomes:** fixed for m9 (#468) and m7 (#469). Both play their documented outcomes now.
 2. **No-cheat playtests:** HP pinning removed (2026-11-14) from Chavín, Tambotoco, Lima and the Junta;
-   Chavín and Tambotoco keep **Play P** because the harness still uses direct field-card/tech calls and
-   never fights the valley wave. A manual no-cheat playtest remains recommended.
+   Chavín keeps **Play P** because the harness still uses direct field-card/tech calls. Tambotoco is Met
+   (automated): it fights the valley wave and visits the shrine and the gate through the HUD. A manual
+   no-cheat playtest remains recommended for both.
 3. **Art review:** the render records are reconciled (0 `reviewed: false`); what remains is the human review
    of the reused site GLBs and the Chavín kit (#343).
 4. **Model-mission rebuilds:** done for m3–m9 (2026-11-14), including m8. The quick wins are done too:
@@ -420,7 +421,7 @@ The table separates what is implemented from the performance pass that is still 
 | History     | Met: `docs/historia/campanas/tambotoco.md` with a certainty table; the dossier states that Sarmiento is hostile and Garcilaso gives another version.                     |
 | Identity    | Met: water and land as leverage, not a pitched battle; the four canchas order the foundation.                                                                            |
 | Characters  | Met: eight named siblings with declared genders, accent attire and a hero mantle; crests differ and far zoom keeps only the rings. Cachi, Uchu and Auca leave a named huaca. |
-| Play        | Partial: no HP pinning; the E2E now holds Huanacaure through the valley wave, builds the optional irrigation farm and verifies the gate is closed and `a3_acequia` pending before the hold, then opens it; the heritage card and gate are still invoked by API, so a human playtest remains. `yarn record --mode=full` completes with the wave. |
+| Play        | Met (automated): no HP pinning; the E2E holds Huanacaure through the valley wave, builds the optional irrigation farm and verifies `a3_acequia` is pending before the hold, then opens it. The heritage visit and the gate now go through the HUD — the test selects the monument on the map, presses «Visitar» and «Abrir compuerta» — instead of calling `visitHeritage`/`toggleCanal`. `yarn record --mode=full` completes with the wave; a human 30–40 min playtest is still recommended. |
 | Contract    | Met: Acts II–IV hidden; the hualla visit (pays 150 food / 100 wood) and the irrigation farm are optional; the defended intake (`a3_oleada`) gates the acequia, the only required water step.     |
 | Onboarding  | Met: six-step tutorial that teaches controls (move, camp store, hunt, visit, water, canchas), briefing with the eight siblings and Codex.                                |
 | Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden.                                                                |

@@ -1271,6 +1271,55 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       }
       dismissCard();
     };
+    // Select a monument on the map and press its HUD command, the way a player does, instead of calling
+    // `visitHeritage`/`toggleCanal` directly. `?noloop=1` stops the loop, so the HUD must be pumped once
+    // after the click for the panel to rebuild.
+    const clickHeritage = (id: string, label: RegExp) => {
+      let world: { x: number; y: number; z: number } | null = null;
+      const proxy = (g.siteDef?.heritageProxies ?? []).find((p: { id: string }) => p.id === id);
+      if (proxy) {
+        world = { x: proxy.x, y: g.terrain.getHeight(proxy.x, proxy.z) + (proxy.h ?? 4) * 0.6, z: proxy.z };
+      }
+      // `?noloop=1` means no frame rendered, so world matrices (and therefore picking) are stale.
+      g.scene.updateMatrixWorld(true);
+      if (!world) {
+        let owner: any = null;
+        g.scene.traverse((o: any) => {
+          if (!owner && o.userData?.heritageId === id) owner = o;
+        });
+        if (owner) {
+          // The acequia's id sits on the whole canal group; aim at its gate, not the group origin.
+          const target = owner.getObjectByName?.('canal_gate') ?? owner;
+          const box = new window.THREE.Box3().setFromObject(target);
+          const c = box.getCenter(new window.THREE.Vector3());
+          world = { x: c.x, y: c.y, z: c.z };
+        }
+      }
+      if (!world) throw new Error(`no geometry for heritage ${id}`);
+      // Frame the monument directly: the mission's intro/follow camera would ignore `moveTo`.
+      const groundY = g.terrain.getHeight(world.x, world.z);
+      const cam = g.camera.camera;
+      cam.position.set(world.x + 0.01, groundY + 36, world.z + 36);
+      cam.lookAt(world.x, groundY + 2, world.z);
+      cam.updateMatrixWorld();
+      const p = new window.THREE.Vector3(world.x, world.y, world.z).project(cam);
+      const x = (p.x * 0.5 + 0.5) * window.innerWidth;
+      const y = (-p.y * 0.5 + 0.5) * window.innerHeight;
+      const canvas = document.querySelector('#render-canvas') as HTMLCanvasElement;
+      canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: x, clientY: y, button: 0, bubbles: true }));
+      window.dispatchEvent(new MouseEvent('mouseup', { clientX: x, clientY: y, button: 0, bubbles: true }));
+      // The click sets the selection; force the command panel to rebuild for it.
+      g.hud.bottomKey = '';
+      g.hud.renderBottomIfChanged();
+      const button = [...document.querySelectorAll<HTMLButtonElement>('.ed-command')].find((b) =>
+        label.test(b.textContent ?? ''),
+      );
+      if (!button) {
+        const labels = [...document.querySelectorAll('.ed-command')].map((b) => b.textContent).join(' | ');
+        throw new Error(`no «${label}» command for ${id}; got: ${labels}`);
+      }
+      button.dispatchEvent(new PointerEvent('pointerdown', { button: 0, bubbles: true }));
+    };
     const move = (ids: number[], x: number, z: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
     const gather = (ids: number[], entityId: number) =>
@@ -1340,17 +1389,15 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
         (u: any) => u.owner === 0 && !u.dead && Math.hypot(u.pos.x - 120, u.pos.z - 106) <= 15,
       );
       // Inspect only once the card is active, or the hold would start during the travel loop.
-      if (near && m.getObjectiveState('a2_huanacaure') === 'active') {
-        g.visitHeritage('tambotoco_huanacaure');
-        break;
-      }
+      if (near && m.getObjectiveState('a2_huanacaure') === 'active') break;
     }
-    if (m.getObjectiveState('a2_huanacaure') !== 'completed') g.visitHeritage('tambotoco_huanacaure');
+    clickHeritage('tambotoco_huanacaure', /Visitar/);
     step(2);
     const huanacaure = m.getObjectiveState('a2_huanacaure') as string;
 
     // The acequia is locked until the party has held Huanacaure through the alcabizas' wave.
-    const gateLocked = g.toggleCanal();
+    clickHeritage('tambotoco_acequia', /Abrir compuerta/);
+    const gateLocked = g.isCanalOpen();
     const lockedAcequia = m.getObjectiveState('a3_acequia') as string;
     const holdHpBefore = [...g.units.values()]
       .filter((u: any) => u.owner === 0 && !u.dead)
@@ -1369,7 +1416,7 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       .reduce((sum: number, u: any) => sum + u.hp, 0);
     const holdDamage = holdHpBefore - holdHpAfter;
     const oleada = m.getObjectiveState('a3_oleada') as string;
-    g.toggleCanal();
+    clickHeritage('tambotoco_acequia', /Abrir compuerta/);
     step(2);
     const acequia = m.getObjectiveState('a3_acequia') as string;
 
