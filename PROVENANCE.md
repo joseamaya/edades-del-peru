@@ -436,7 +436,9 @@ slot is absent (offline / without assets).
   transect: the Inca camp, Paramonga and the Chan Chan canal, plus a dusk epilogue. Rendered without the
   HUD or character nameplates at 1600x900 and resized with `sharp`. Regenerate with
   `node scripts/capture_chimu_intro.mjs` (one with `--only=ID`) after art changes.
-- **Runtime**: the briefing and the "Tu senda" card use `intro-costa`; the three intro beats and the act
+- **Runtime**: the briefing and the "Tu senda" card use the approved Blender render
+  `media/generated/campaigns/la-senda-del-sol/m6_chimu/intro.webp`; `intro-costa` remains a chapter card. The
+  three intro beats and the act
   cards use the coast, Paramonga, the canal and the capitulation captures; the victory epilogue uses
   `intro-epilogo`.
 - **Content**: project-owned game renders (authored Chimú heightfield, the reused `chimu_site` compound and

@@ -73,8 +73,8 @@ in the quality bar.
 - `art-src/blender/site-intros/m6_chimu_inca/m6_chimu_inca.blend`, built by
   `scripts/blender/build_site_intro.py --mission=m6_chimu_inca`, stages the Chan Chan enclosure: adobe walls,
   niches, gate steps, courtyard rooms and the Inca column outside.
-- The record `m6_chimu-intro` is a draft pending human review; the briefing keeps the in-engine capture
-  until it is approved.
+- The record `m6_chimu-intro` was approved by a recorded human review; `MISSION_ART` uses the generated
+  WebP and the in-engine captures remain evidence.
 - Regenerate with `blender --background --python scripts/blender/build_site_intro.py -- --mission=m6_chimu_inca`.
 
 ## Tutorial
@@ -102,7 +102,7 @@ marches and holds); a human playtest is still needed to measure the 20–30 min 
 
 ## Open items
 
-1. Human art review of the reused Chimú GLB and its records (#343), and of the draft intro render; the
+1. Human art review of the reused Chimú GLB and its records (#343); the intro render is approved and the
    in-engine captures are recorded in PROVENANCE and are not a Blender-render claim.
 2. A real-GPU performance pass; the bench numbers are structural (SwiftShader).
 3. A human playtest to measure the full path.
