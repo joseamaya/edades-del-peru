@@ -580,6 +580,9 @@ slot is absent (offline / without assets).
 
 ### Chavín architecture kit and in-engine captures (m2)
 
+- **Runtime (briefing)**: the briefing uses the approved Blender render
+  `media/generated/campaigns/la-senda-del-sol/m2_chavin/intro.webp`; `intro-templo` remains a chapter card.
+
 - **Kit**: `src/assets/architecture/chavin/chavin_<piece>_lod{0,1}.glb`.
 - **Source**: `art-src/blender/chavin/chavin_lod0_clean.blend` / `chavin_lod1_clean.blend` (LFS),
   derived from the project's Chavín preview and re-exported with

@@ -40,7 +40,7 @@ below, which record each mission's own review and are kept for history). **M** m
 | Mission            | Hist | Ident | Play | Contr | Onb | Clos | UX  | Vis | Pers | Tests | Docs | Struct | Open | Art | Perf | Scale |
 | ------------------ | ---- | ----- | ---- | ----- | --- | ---- | --- | --- | ---- | ----- | ---- | ------ | ---- | --- | ---- | ----- |
 | m1_caral           | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
-| m2_chavin          | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | X   | M    | M     |
+| m2_chavin          | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | M    | M     |
 | m3_moche_recuay    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m4_wari            | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_tambotoco        | M    | M     | P    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | P    | M     |
@@ -54,8 +54,8 @@ below, which record each mission's own review and are kept for history). **M** m
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
-camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín follows the
-model pattern and still lacks mostly art. Every released mission now
+camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín's intro render
+is approved; its kit and captures keep their own review status. Every released mission now
 follows the model pattern (256 m, painted ground, acts, in-engine intro and bench), including m8 in this
 pass. **m3–m9 meet the scale, opening and performance gates**; the m3, m4, m5, Tambotoco, Lima, La Junta and
 Arica intro renders are approved and the rest of the art review is pending.
@@ -77,7 +77,7 @@ in-engine intro and epilogue, bench scenes and the scale guard).
 2. **No-cheat playtests:** HP pinning removed (2026-11-14) from Chavín, Tambotoco, Lima and the Junta;
    Chavín and Tambotoco keep **Play P** because the harness still uses direct field-card/tech calls and
    never fights the valley wave. A manual no-cheat playtest remains recommended.
-3. **Art review:** record the human review of the Chavín kit and the pending art of m2, m6, m6b, m7 and m8.
+3. **Art review:** record the human review of the Chavín kit and the pending art of m6, m6b, m7 and m8.
 4. **Model-mission rebuilds:** done for m3–m9 (2026-11-14), including m8. The quick wins are done too:
    m6's gate really closes (`canal_closed`) and m6b's victory holds Quipaipan and captures Huáscar instead
    of razing a building.
@@ -129,7 +129,7 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 | Docs        | Met                  | Dossier, `chavin-model-mission.md`, this table, `chavin-sacred-site.md`, PROVENANCE and README aligned.                                                                      |
 | Structure   | Met                  | Four acts, hidden objectives revealed per act, chapter cards with images, optional goals, documented decline.                                                                |
 | Opening     | Met                  | Three-beat narrated intro and briefing with the mission's own art; chapter-card and epilogue captures from `capture_chavin_intro.mjs`.                                       |
-| Art         | Pending human review | Kit and captures are exported with `reviewed: false`; a human review must record `reviewer`/`reviewedAt` before this gate is Met.                                            |
+| Art         | Met (intro render)   | Approved `m2_chavin-intro` render; the kit and captures keep their own `reviewed: false` status.                                                                           |
 | Performance | Met                  | `bench_scene.mjs` re-run 2026-11-09 after the resize: opening 413,433 tris / 160 calls; late 462,835 / 223; within the 450k / 600k budgets.                                  |
 | Scale       | Met                  | 256 m map, painted ground every 2 m (128 over 256) and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                       |
 
