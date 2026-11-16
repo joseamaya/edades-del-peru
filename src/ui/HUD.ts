@@ -185,7 +185,7 @@ const CSS = /* css */ `
 
   /* Command bar: one low horizontal strip right of the minimap (AoE/SC2 layout). Selection info on the
      left, actions in a row in the middle, orders on the right; it only grows when the actions wrap. */
-  #ui-root { --minimap-size: 190px; --bar-gap: 12px; --panel-floor: 150px; }
+  #ui-root { --minimap-size: 190px; --bar-gap: 12px; }
   #ed-bottom { position: absolute; left: calc(var(--minimap-size) + 2 * var(--bar-gap)); right: var(--bar-gap); bottom: var(--bar-gap); max-width: 1180px; margin: 0 auto; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; pointer-events: auto; display: flex; flex-direction: column; box-shadow: 0 6px 30px rgba(0,0,0,0.55); overflow: hidden; }
   #ed-bottom-header { padding: 3px 12px; font-size: 12px; font-weight: 700; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; background: rgba(232,195,106,0.06); background-image: var(--weave); background-repeat: repeat-x; background-position: bottom; }
   #ed-bottom-header:empty { display: none; }
@@ -505,10 +505,8 @@ const CSS = /* css */ `
   #ed-objectives .obj.failed { color: var(--red); }
   #ed-objectives .obj.failed .mark { color: var(--red); }
 
-  #ed-dialogue { position: absolute; left: 50%; transform: translateX(-50%); width: min(560px, 86vw); background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; background-image: var(--weave); background-repeat: repeat-x; background-position: top; }
-  /* The dialogue sits above the command bar, whose height changes with the selected
-     panel; the floor keeps them clear of the minimap while nothing is selected. */
-  #ed-dialogue { bottom: max(var(--panel-floor), calc(var(--ed-command-bar-h, 0px) + 2 * var(--bar-gap))); }
+  /* Dialogue dock: left, above the minimap, so a long mission line never covers the party. */
+  #ed-dialogue { position: absolute; left: var(--bar-gap); bottom: max(calc(var(--minimap-size) + 2 * var(--bar-gap)), calc(var(--ed-command-bar-h, 0px) + 2 * var(--bar-gap))); width: min(440px, 38vw); background: rgba(12,14,18,0.94); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; background-image: var(--weave); background-repeat: repeat-x; background-position: top; }
   #ed-dialogue.show { opacity: 1; }
   #ed-dialogue .who { font-size: 11px; letter-spacing: 1px; color: var(--gold); font-weight: 700; margin-bottom: 3px; }
   #ed-dialogue .txt { font-size: 13px; color: var(--text); line-height: 1.4; }
@@ -531,6 +529,37 @@ const CSS = /* css */ `
   .ed-alert { pointer-events: auto; cursor: pointer; background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 6px 9px; font-size: 12px; color: var(--text); box-shadow: 0 4px 16px rgba(0,0,0,0.5); animation: alert-in 0.2s ease; }
   .ed-alert.warn { border-left-color: var(--red); }
   @keyframes alert-in { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+  /* Large screens: the same HUD at a readable size instead of 12 px labels on a 1920 panel. */
+  @media (min-width: 1700px) {
+    #ui-root { --minimap-size: 228px; --bar-gap: 14px; }
+    .ed-topbar { height: 54px; padding: 8px 16px; }
+    .ed-logo { font-size: 18px; }
+    .ed-logo svg { width: 26px; height: 26px; }
+    .ed-res { font-size: 15px; min-width: 104px; padding: 4px 12px; }
+    .ed-idle, #ed-pop, #ed-era { font-size: 14px; }
+    #ed-era { max-width: 300px; }
+    .ed-topbtn, .speed-btn { font-size: 14px; }
+    .speed-btn { width: 30px; height: 30px; }
+    #ed-alerts { top: 66px; width: 290px; }
+    #ed-right-column { top: 66px; right: 16px; width: 300px; gap: 10px; }
+    #ed-objectives { padding: 12px 14px; min-height: 120px; }
+    #ed-objectives .obj { font-size: 14px; }
+    #ed-objectives details.obj-archive > summary { font-size: 12px; }
+    #ed-tutorial { padding: 14px 18px; }
+    #ed-tutorial .tut-head { font-size: 12px; }
+    #ed-tutorial .tut-step { font-size: 16px; }
+    #ed-dialogue { width: min(540px, 38vw); padding: 12px 18px; }
+    #ed-dialogue .who { font-size: 13px; }
+    #ed-dialogue .txt { font-size: 15px; }
+    #ed-bottom { max-width: 1500px; }
+    #ed-bottom-header { font-size: 14px; padding: 4px 14px; }
+    #ed-desc { flex-basis: 320px; max-height: 140px; font-size: 14px; }
+    #ed-desc h3 { font-size: 16px; }
+    .ed-card { width: 70px; height: 70px; font-size: 12px; }
+    #ed-commands { flex-basis: 310px; }
+    #ed-commands .ed-command { padding: 6px 10px; font-size: 13px; }
+  }
+
 `;
 
 /**

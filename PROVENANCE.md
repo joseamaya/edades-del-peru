@@ -342,6 +342,15 @@ slot is absent (offline / without assets).
 - **Review**: no human art-review gate applies to in-engine captures; the modular kit has no GLB asset and
   the authored layout stays the source of truth for a later Blender kit.
 
+### Tambotoco HUD captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-hud-{1280,1600,1920}.webp` (native size, WebP q72).
+- **Source**: captured from the game by `scripts/capture_hud_dialogue.mjs` at 1280x720, 1600x900 and
+  1920x1080, with a mission line in the dialogue dock and the starting party selected. Native size, because a
+downscaled 1920 shot would look smaller than the 1280 one.
+- **Content**: in-engine recreations of the game's own HUD; no external art.
+- **Review**: no human art-review gate applies to in-engine captures.
+
 ### Tambotoco Ayar identity captures (in-engine evidence)
 
 - **Location**: `docs/media/tambotoco-cast.webp` (briefing medallions), `docs/media/tambotoco-heroes-close.webp`

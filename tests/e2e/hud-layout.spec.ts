@@ -254,7 +254,19 @@ for (const { width, height, missions } of RESOLUTIONS) {
         expect(snap.threePanels['ed-help']).not.toBeNull();
 
         expect(violations(snap.initial), 'start state').toEqual([]);
-        expect(violations(snap.dialogue), 'dialogue over the command panel').toEqual([]);
+        expect(violations(snap.dialogue), 'dialogue dock against the other panels').toEqual([]);
+        // `read()` returns null for a panel the current overlay makes unmeasurable; the overlap pass
+        // tolerates that, so only assert the dock shape when both boxes exist.
+        const dock = snap.dialogue['ed-dialogue'];
+        const minimap = snap.dialogue['ed-minimap-wrap'];
+        const command = snap.dialogue['ed-bottom'];
+        if (dock && minimap) {
+          expect(dock.x, 'dialogue dock on the left').toBeLessThan(200);
+          expect(dock.y + dock.h, 'dialogue above the minimap').toBeLessThanOrEqual(minimap.y + 1);
+        }
+        if (dock && command) {
+          expect(dock.y + dock.h, 'dialogue above the command bar').toBeLessThanOrEqual(command.y + 1);
+        }
         expect(violations(snap.build), 'worker build panel').toEqual([]);
         expect(violations(snap.building), 'building panel').toEqual([]);
         expect(violations(snap.threePanels), 'objectives, tutorial and shortcuts together').toEqual([]);
