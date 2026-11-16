@@ -209,6 +209,20 @@ describe('rigged model assets', () => {
     expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.REALISTAS])).toContain('caral_worker');
   });
 
+  it('lets a named hero gender override the unit-id split for body and garments', () => {
+    const byId = unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 2);
+    expect(byId?.variant).toBe('chanca_soldier_f');
+    const hero = unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 2, 'male');
+    expect(hero?.variant).toBe('chanca_soldier_m');
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 3, 'female')?.variant).toBe(
+      'chanca_soldier_f',
+    );
+    // The Killke señorío shares the Chanca kit, and the recursion must carry the override.
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 3, 'female')?.asset).toBe(
+      'caral_worker',
+    );
+  });
+
   it('maps post-1532 humanoid classes to colonial/republican rig variants', () => {
     expect(unitModelAsset(UnitKind.SOLDIER, Era.VICEROYALTY, CivId.REALISTAS, 2)).toEqual({
       asset: 'caral_worker',

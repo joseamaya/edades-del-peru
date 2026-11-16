@@ -440,10 +440,15 @@ test('saves and loads Tambotoco mid Act IV (Inticancha phase)', async ({ page })
       g.update(dt, t);
       t += dt;
     }
+    const heroes = [...g.units.values()]
+      .filter((u: any) => u.tag)
+      .map((u: any) => ({ tag: u.tag, gender: u.gender, variant: u.unitView?.rig?.variantId ?? null }))
+      .sort((a: any, b: any) => a.tag.localeCompare(b.tag));
     g.saveMatch();
     return {
       phase: g.sitePhase,
       timer: g.mission.timer,
+      heroes,
       heritage: g.getVisitedHeritage(),
       canchas: g.mission.getObjectiveProgress('a4_canchas'),
       objectives: Object.fromEntries(
@@ -470,9 +475,14 @@ test('saves and loads Tambotoco mid Act IV (Inticancha phase)', async ({ page })
   const after = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
+    const heroes = [...g.units.values()]
+      .filter((u: any) => u.tag)
+      .map((u: any) => ({ tag: u.tag, gender: u.gender, variant: u.unitView?.rig?.variantId ?? null }))
+      .sort((a: any, b: any) => a.tag.localeCompare(b.tag));
     return {
       phase: g.sitePhase,
       timer: g.mission.timer,
+      heroes,
       heritage: g.getVisitedHeritage(),
       canchas: g.mission.getObjectiveProgress('a4_canchas'),
       objectives: Object.fromEntries(

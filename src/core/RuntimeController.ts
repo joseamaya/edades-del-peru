@@ -187,6 +187,8 @@ export class RuntimeController {
 
     for (const us of data.units) {
       const u = new Unit(us.kind, us.owner, us.era, this.game.makeBuildContext(us.owner), us.id);
+      // The tag is hero identity: the view picks body, garments and portrait from it when it is created.
+      u.tag = us.tag;
       u.setContext(this.game.unitContext);
       this.applyPlayerBonuses(u, this.game.players[us.owner]);
       this.game.attachUnit(u);
@@ -941,7 +943,7 @@ export class RuntimeController {
       this.game.fow,
       this.game.settings.fogOfWar,
     );
-    this.game.heroMarkers?.sync(this.game.units.values());
+    this.game.heroMarkers?.sync(this.game.units.values(), this.game.camera.getZoom(), this.game.camera.maxZoom);
     // The mission card and the opening flight own the screen: plates and banners over the text are noise.
     const cinematic = this.game.isCinematicActive();
     this.game.characterLabels?.setVisible(!cinematic);

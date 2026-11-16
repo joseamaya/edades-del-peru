@@ -3,6 +3,7 @@ import type { Unit } from '../entities/Unit';
 import type { Fow } from '../game/Fow';
 import { commanderById, commanderLabel } from '../model/defs/commanders';
 import type { WorldLabel, WorldLabelLayer } from '../ui/WorldLabels';
+import { HERO_DETAIL_ZOOM } from './HeroMarkers';
 import { labelFade } from './MapLabels';
 
 /**
@@ -22,7 +23,9 @@ export class CharacterLabels {
 
   /** Follow living characters; enemy names only show while the fog lets the player see them. */
   sync(units: Iterable<Unit>, camera: RTSCamera, fow: Fow, fogOn: boolean): void {
-    const fade = labelFade(camera.getZoom(), camera.maxZoom);
+    // Nameplates belong to the close game: at the strategic zoom they overlap each other, so only the
+    // hero rings carry identity. They finish fading just past the banner/crest cutoff.
+    const fade = labelFade(camera.getZoom(), camera.maxZoom * (HERO_DETAIL_ZOOM + 0.05));
     const live = new Set<number>();
     for (const unit of units) {
       const commander = commanderById(unit.tag);

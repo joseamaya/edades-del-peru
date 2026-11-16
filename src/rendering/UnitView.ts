@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { EntityView } from '../entities/EntityView';
-import { commanderById, DEFAULT_HERO_ACCENT } from '../model/defs/commanders';
+import { commanderById, DEFAULT_HERO_ACCENT, type CommanderDef } from '../model/defs/commanders';
 import { acquireRig } from './ModelAssets';
 import type { RigInstance } from './RigInstance';
 import { buildModel, disposeModel, type BuildContext } from '../model/ProceduralModel';
@@ -14,6 +14,7 @@ import {
 } from '../model/defs/modelAssets';
 import type { Unit } from '../entities/Unit';
 import { FishingNetFx } from './FishingNetFx';
+import { createRigAttireTools, type RigAttireTools } from './rigAttire';
 import { clamp } from '../util/math';
 import type { Resources } from '../core/types';
 
@@ -42,14 +43,15 @@ export class UnitView {
   private bobY = 0;
   private scene: THREE.Scene | null = null;
   private net: FishingNetFx | null = null;
-  private readonly heroMaterials: THREE.Material[] = [];
+  private heroAttire: RigAttireTools | null = null;
   private heroDressed = false;
 
   constructor(
     private readonly unit: Unit,
     ctx: BuildContext,
   ) {
-    const choice = unitModelAsset(unit.kind, unit.era, ctx.civ.id, unit.id);
+    // `Unit.gender` already resolves a tagged commander before the id split.
+    const choice = unitModelAsset(unit.kind, unit.era, ctx.civ.id, unit.id, unit.gender);
     this.rig = choice ? acquireRig(choice.asset, choice.variant) : null;
     const model = this.rig
       ? this.rig.root
@@ -66,25 +68,82 @@ export class UnitView {
     if (!commander?.hero) return;
     this.heroDressed = true;
     this.view.group.scale.multiplyScalar(1.16);
-    this.dressHero(commander.accent ?? DEFAULT_HERO_ACCENT);
+    this.dressHero(commander);
   }
 
-  /** Hero attire on the shared ayllu rig: accent tunic, headband and macana, no new model. */
-  private dressHero(accent: string): void {
+  /**
+   * Hero attire on the shared ayllu rig: the commander's accent on tunic, skirt/wrap and headband, a
+   * cloth mantle that broadens the silhouette (longer on the Mamas) and the macana. No new model and no
+   * garment that the dossier does not allow; the accent is presentation only.
+   */
+  private dressHero(commander: CommanderDef): void {
     const root = this.rig?.root;
     if (!root) return;
-    const color = new THREE.Color(accent);
-    const tunic = this.unit.gender === 'female' ? 'attire_tunic_f' : 'attire_tunic_m';
-    for (const name of [tunic, 'attire_headband', 'attire_andean_macana', 'attire_andean_macana_head']) {
+    const female = this.unit.gender === 'female';
+    const accent = new THREE.Color(commander.accent ?? DEFAULT_HERO_ACCENT);
+    // Lift the tunic away from the skin tone; the dark accent carries the skirt/wrap and the headband.
+    const cloth = accent.clone().lerp(new THREE.Color('#ecdfc6'), 0.3);
+    const dark = accent.clone().multiplyScalar(0.55);
+    const light = accent.clone().lerp(new THREE.Color('#efe0c0'), 0.6);
+    const tools = createRigAttireTools(root);
+    this.heroAttire = tools;
+    const tint = (name: string, color: THREE.Color): void => tools.tint(name, color.getHex());
+    tools.show(female ? 'attire_tunic_f' : 'attire_tunic_m', true);
+    tools.show(female ? 'attire_skirt_f' : 'attire_wrap_m', true);
+    // The rig caches its garment geometry per variant with the source colours baked into vertices, so the
+    // visible cloth is one `rig:consolidated` mesh; its per-unit material carries the accent. Tinting the
+    // source meshes would only paint layer-31 copies that never draw.
+    const tunic = root.getObjectByName(female ? 'attire_tunic_f' : 'attire_tunic_m') as THREE.Mesh | null;
+    const clothMap = (tunic?.material as THREE.MeshStandardMaterial | undefined)?.map?.uuid;
+    root.traverse((object) => {
+      const mesh = object as THREE.SkinnedMesh;
+      if (!mesh.isSkinnedMesh || mesh.name !== 'rig:consolidated') return;
+      const material = mesh.material as THREE.MeshStandardMaterial;
+      if (!clothMap) {
+        console.warn('[hero] no cloth map on the rig; the accent cannot tint the garments');
+        return;
+      }
+      if (material.map?.uuid === clothMap) material.color.copy(cloth);
+    });
+    for (const name of ['attire_andean_macana', 'attire_andean_macana_head']) {
       const mesh = root.getObjectByName(name) as THREE.Mesh | null;
       if (!mesh?.isMesh) continue;
       mesh.visible = true;
-      const material = (mesh.material as THREE.MeshStandardMaterial).clone();
-      material.color.copy(color);
-      mesh.material = material;
-      if (name.startsWith('attire_andean_macana')) mesh.scale.multiplyScalar(1.25);
-      this.heroMaterials.push(material);
+      mesh.scale.multiplyScalar(1.25);
+      tint(name, dark);
     }
+    // A hero band on the head bone: the consolidated headband shares its flat group with hair and eyes.
+    // Local bone space, like the worker band, so it follows the hero scale instead of the world units.
+    const head = tools.bone('Head');
+    if (head) {
+      const band = new THREE.Mesh(
+        tools.track(new THREE.TorusGeometry(0.1, 0.014, 6, 20)),
+        tools.material(dark.getHex(), 0.9),
+      );
+      band.name = 'attire_hero_band';
+      band.rotation.x = Math.PI / 2;
+      band.position.set(0, 0.16, 0);
+      head.add(band);
+    }
+    const spine = tools.bonePosition('spine_03');
+    if (!spine) return;
+    const mantle = new THREE.Mesh(
+      tools.track(
+        new THREE.CylinderGeometry(
+          0.2,
+          0.29,
+          commander.mantle === 'long' ? 0.42 : 0.34,
+          10,
+          1,
+          true,
+          Math.PI * 0.2,
+          Math.PI * 1.5,
+        ),
+      ),
+      tools.material(light.getHex(), 0.95),
+    );
+    mantle.name = 'attire_hero_mantle';
+    tools.attach('spine_03', mantle, new THREE.Vector3(spine.x, spine.y - 0.01, spine.z));
   }
 
   attach(scene: THREE.Scene): void {
@@ -244,7 +303,7 @@ export class UnitView {
     } else {
       disposeModel(this.view.group);
     }
-    for (const material of this.heroMaterials) material.dispose();
-    this.heroMaterials.length = 0;
+    this.heroAttire?.dispose();
+    this.heroAttire = null;
   }
 }

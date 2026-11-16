@@ -1,6 +1,7 @@
 import { getCiv } from '../model/defs/civs';
 import type { CommanderDef } from '../model/defs/commanders';
 import type { EmblemId } from '../model/defs/civs';
+import { HUMAN_HAIR } from '../model/defs/people';
 
 const PORTRAIT_VIEW = 64;
 let portraitSeq = 0;
@@ -55,24 +56,33 @@ function emblem(emblem: EmblemId, x: number, y: number, color: string): string {
  */
 export function portraitSvg(cmd: CommanderDef, size = 64): string {
   const c = getCiv(cmd.civ).colors;
+  const accent = cmd.accent ?? c.accent;
+  const female = cmd.gender === 'female';
   const clip = `pc-${cmd.id}-${portraitSeq++}`;
   const label = escapeXml(`Retrato estilizado de ${cmd.name}`);
   const initialsText = escapeXml(initials(cmd.name));
-  return `<svg class="ed-portrait" width="${size}" height="${size}" viewBox="0 0 ${PORTRAIT_VIEW} ${PORTRAIT_VIEW}" role="img" aria-label="${label}">
+  // A silhouette cue, not a likeness: long hair and a shoulder cloth for the Mamas, a short crop for the men.
+  const hair = female
+    ? `<path d="M19 30 q0 -18 13 -18 t13 18 v12 q-4 -7 -13 -7 t-13 7 z" fill="${HUMAN_HAIR}" opacity="0.95" />`
+    : `<path d="M20 24 q2 -11 12 -11 t12 11 q-6 -4 -12 -4 t-12 4 z" fill="${HUMAN_HAIR}" opacity="0.9" />`;
+  const shawl = female ? `<path d="M8 62 q3 -21 24 -21 t24 21 z" fill="${accent}" opacity="0.3" />` : '';
+  return `<svg class="ed-portrait" data-gender="${cmd.gender}" width="${size}" height="${size}" viewBox="0 0 ${PORTRAIT_VIEW} ${PORTRAIT_VIEW}" role="img" aria-label="${label}">
     <defs>
       <clipPath id="${clip}"><polygon points="32,2 60,17 60,47 32,62 4,47 4,17" /></clipPath>
       <linearGradient id="${clip}-bg" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="${c.primary}" />
-        <stop offset="1" stop-color="${c.accent}" />
+        <stop offset="1" stop-color="${accent}" />
       </linearGradient>
     </defs>
     <g clip-path="url(#${clip})">
       <rect width="${PORTRAIT_VIEW}" height="${PORTRAIT_VIEW}" fill="url(#${clip}-bg)" />
+      ${hair}
       <circle cx="32" cy="26" r="12" fill="${c.secondary}" opacity="0.92" />
       <path d="M12 62 q4 -18 20 -18 t20 18 z" fill="${c.secondary}" opacity="0.92" />
       <path d="M12 62 q4 -18 20 -18 t20 18 z" fill="#000" opacity="0.12" />
+      ${shawl}
     </g>
-    <polygon points="32,2 60,17 60,47 32,62 4,47 4,17" fill="none" stroke="${c.secondary}" stroke-width="1.6" opacity="0.85" />
+    <polygon points="32,2 60,17 60,47 32,62 4,47 4,17" fill="none" stroke="${accent}" stroke-width="1.8" opacity="0.9" />
     <text x="32" y="57" text-anchor="middle" font-family="Georgia, serif" font-size="10" font-weight="700" fill="${c.secondary}" opacity="0.95">${initialsText}</text>
     ${emblem(getCiv(cmd.civ).visual.emblem, 52, 12, c.secondary)}
   </svg>`;
