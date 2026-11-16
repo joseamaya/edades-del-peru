@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { TAMBOTOCO_HOLD, TAMBOTOCO_OUTLET } from '../../src/campaign/defs/missions/m_tambotoco';
+import type { HeritageBuildingId } from '../../src/model/defs/heritage';
 import { installHeritageClick, type HeritageClickWindow } from './heritage';
 
 /** Caral's Act III and IV objective ids, used by the real-command playtest. */
@@ -1273,7 +1274,7 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       }
       dismissCard();
     };
-    const clickHeritage = (id: string, labelSource: string) =>
+    const clickHeritage = (id: HeritageBuildingId, labelSource: string) =>
       (window as unknown as HeritageClickWindow).__heritageClick(id, labelSource);
     const move = (ids: number[], x: number, z: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
@@ -1513,7 +1514,7 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
       );
     const build = (ids: number[], entityId: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'build', entityId }, clear: true }, false);
-    const clickHeritage = (id: string, labelSource: string) =>
+    const clickHeritage = (id: HeritageBuildingId, labelSource: string) =>
       (window as unknown as HeritageClickWindow).__heritageClick(id, labelSource);
 
     // The tutorial is sequential: select the infantry first, or the `traza` step never shows.
