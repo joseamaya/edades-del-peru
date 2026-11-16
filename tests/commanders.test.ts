@@ -1,7 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { COMMANDERS, commanderById, commanderFor, normalizeCommanderName } from '../src/model/defs/commanders';
+import {
+  COMMANDERS,
+  commanderAccent,
+  commanderById,
+  commanderFor,
+  commanderShortName,
+  DEFAULT_HERO_ACCENT,
+  normalizeCommanderName,
+} from '../src/model/defs/commanders';
 import { portraitSvg } from '../src/ui/Portrait';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import { getCiv } from '../src/model/defs/civs';
@@ -102,6 +110,22 @@ describe('commander identity', () => {
     for (const id of ['mama_huaco', 'mama_ocllo', 'mama_ipacura', 'mama_raua'] as const) {
       expect(COMMANDERS[id].mantle, id).toBe('long');
     }
+  });
+});
+
+describe('commander presentation names', () => {
+  it('shortens the Ayar and the long documented names without losing identity', () => {
+    expect(commanderShortName(COMMANDERS.manco_capac)).toBe('Manco');
+    expect(commanderShortName(COMMANDERS.mama_ocllo)).toBe('Ocllo');
+    expect(commanderShortName(COMMANDERS.mama_ipacura)).toBe('Ipacura');
+    expect(commanderShortName(COMMANDERS.tupac_amaru)).toBe('Amaru');
+    expect(commanderShortName(COMMANDERS.san_martin)).toBe('Martín');
+    expect(commanderShortName(COMMANDERS.grau)).toBe('Grau');
+  });
+
+  it('has one accent fallback for every presentation surface', () => {
+    expect(commanderAccent(COMMANDERS.manco_capac)).toBe(COMMANDERS.manco_capac.accent);
+    expect(commanderAccent({ ...COMMANDERS.grau, accent: undefined })).toBe(DEFAULT_HERO_ACCENT);
   });
 });
 

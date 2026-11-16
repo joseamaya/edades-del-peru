@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { EntityView } from '../entities/EntityView';
-import { commanderById, DEFAULT_HERO_ACCENT, type CommanderDef } from '../model/defs/commanders';
+import { commanderAccent, commanderById, type CommanderDef } from '../model/defs/commanders';
 import { acquireRig } from './ModelAssets';
 import type { RigInstance } from './RigInstance';
 import { buildModel, disposeModel, type BuildContext } from '../model/ProceduralModel';
@@ -80,7 +80,7 @@ export class UnitView {
     const root = this.rig?.root;
     if (!root) return;
     const female = this.unit.gender === 'female';
-    const accent = new THREE.Color(commander.accent ?? DEFAULT_HERO_ACCENT);
+    const accent = new THREE.Color(commanderAccent(commander));
     // Lift the tunic away from the skin tone; the dark accent carries the skirt/wrap and the headband.
     const cloth = accent.clone().lerp(new THREE.Color('#ecdfc6'), 0.3);
     const dark = accent.clone().multiplyScalar(0.55);

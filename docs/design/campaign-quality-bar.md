@@ -421,7 +421,7 @@ The table separates what is implemented from the performance pass that is still 
 | Contract    | Met: Acts II–IV hidden; the hualla visit (pays 150 food / 100 wood) and the irrigation farm are optional; the defended intake (`a3_oleada`) gates the acequia, the only required water step.     |
 | Onboarding  | Met: six-step tutorial that teaches controls (move, camp store, hunt, visit, water, canchas), briefing with the eight siblings and Codex.                                |
 | Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden.                                                                |
-| UX          | Met: campaign layout at 1600×900, the eight-card briefing at 1280×720, a left dialogue dock above the minimap, a large-screen HUD scale at 1920×1080 and `hud-layout.spec.ts`. |
+| UX          | Met: campaign layout at 1600×900, the eight-card briefing at 1280×720, a left dialogue dock above the minimap, portrait chips for a selected cast, a large-screen HUD scale at 1920×1080 and `hud-layout.spec.ts`. |
 | Visuals     | Met: 256 m transect, the modular terrain-conformed ayllu kit (coursed stone, thatch houses, qollqas, terraced fields, paved plaza at grade) and the approved EEVEE intro render (`m_tambotoco-intro`). |
 | Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                    |
 | Tests       | Met: `tests/tambotoco.test.ts` (cast, tags, huaca beats), scale, campaign path and the campaign E2E specs.                                                               |

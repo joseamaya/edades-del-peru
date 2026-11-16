@@ -56,7 +56,14 @@ import { renderBriefing } from './MissionBriefing';
 import { decorateTitleScreen, renderCampaignPath, renderMainMenu } from './SeriesMenu';
 import { publicAsset } from '../util/publicAsset';
 import type { MissionDef, ObjectiveProgress, ObjState } from '../campaign/types';
-import { COMMANDERS, commanderById, commanderLabel, type PortraitId } from '../model/defs/commanders';
+import {
+  COMMANDERS,
+  commanderById,
+  commanderAccent,
+  commanderLabel,
+  commanderShortName,
+  type PortraitId,
+} from '../model/defs/commanders';
 import type { HeritageBuildingDef, HeritageBuildingId } from '../model/defs/heritage';
 import { portraitSvg } from './Portrait';
 import { DamageNumbers } from './DamageNumbers';
@@ -190,9 +197,12 @@ const CSS = /* css */ `
   #ed-bottom-header { padding: 3px 12px; font-size: 12px; font-weight: 700; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; background: rgba(232,195,106,0.06); background-image: var(--weave); background-repeat: repeat-x; background-position: bottom; }
   #ed-bottom-header:empty { display: none; }
   #ed-bottom-body { padding: 6px 8px; display: flex; flex-direction: row; align-items: flex-start; gap: 10px; }
-  #ed-desc { flex: 0 0 250px; max-height: 120px; overflow-y: auto; font-size: 12px; color: var(--text-dim); line-height: 1.35; padding-right: 10px; border-right: 1px solid var(--line); }
+  #ed-desc { flex: 0 0 250px; max-height: 140px; overflow-y: auto; font-size: 12px; color: var(--text-dim); line-height: 1.35; padding-right: 10px; border-right: 1px solid var(--line); }
   #ed-desc:empty { display: none; }
   #ed-desc h3 { margin: 0 0 3px; font-size: 14px; color: var(--text); }
+  #ed-desc .ed-hero-chips { display: flex; flex-wrap: wrap; gap: 3px; margin: 0 0 5px; }
+  #ed-desc .ed-hero-chip { display: inline-flex; align-items: center; gap: 3px; padding: 1px 5px 1px 2px; border: 1px solid var(--line); border-left: 2px solid var(--accent, var(--gold)); border-radius: 3px; background: var(--panel-2); color: var(--text); font-size: 11px; line-height: 1.2; }
+  #ed-desc .ed-hero-chip .ed-portrait { width: 18px; height: 18px; }
   .ed-grid { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 5px; min-width: 0; }
   #ed-commands { flex: 0 1 260px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 4px; padding-left: 10px; border-left: 1px solid var(--line); }
   #ed-commands:empty { display: none; }
@@ -553,8 +563,10 @@ const CSS = /* css */ `
     #ed-dialogue .txt { font-size: 15px; }
     #ed-bottom { max-width: 1500px; }
     #ed-bottom-header { font-size: 14px; padding: 4px 14px; }
-    #ed-desc { flex-basis: 320px; max-height: 140px; font-size: 14px; }
+    #ed-desc { flex-basis: 320px; max-height: 160px; font-size: 14px; }
     #ed-desc h3 { font-size: 16px; }
+    #ed-desc .ed-hero-chip { font-size: 12px; }
+    #ed-desc .ed-hero-chip .ed-portrait { width: 20px; height: 20px; }
     .ed-card { width: 70px; height: 70px; font-size: 12px; }
     #ed-commands { flex-basis: 310px; }
     #ed-commands .ed-command { padding: 6px 10px; font-size: 13px; }
@@ -1882,8 +1894,18 @@ export class HUD {
       const c = commanderById(u.tag);
       return c ? [c] : [];
     });
-    const castLine =
-      commander || cast.length === 0 ? '' : `<b>${t('hud.unit.cast')}:</b> ${cast.map((c) => c.name).join(' · ')}<br>`;
+    // One chip per named character: a portrait, a short name and the commander's accent, instead of a
+    // paragraph of eight names that wrapped over the unit stats.
+    const chips =
+      cast.length === 0
+        ? ''
+        : `<div class="ed-hero-chips">${cast
+            .map((c) => {
+              const accent = commanderAccent(c);
+              const name = escapeHtml(c.name);
+              return `<span class="ed-hero-chip" style="--accent:${accent}" title="${name}" aria-label="${name}">${portraitSvg(c, 18)}<span>${escapeHtml(commanderShortName(c))}</span></span>`;
+            })
+            .join('')}</div>`;
     const mixed = new Set(units.map((u) => u.kind)).size > 1;
     const title = commander
       ? commanderLabel(commander)
@@ -1895,7 +1917,7 @@ export class HUD {
       title,
       commander
         ? `${commander.hero ? `${t('hud.unit.hero')} · ` : ''}${commander.role}<br>${this.unitDesc(first)}`
-        : `${castLine}${this.unitDesc(first)}`,
+        : `${chips}${this.unitDesc(first)}`,
     );
     this.clearGrid();
     // summary by type (click = select only that type) — AoE2 style

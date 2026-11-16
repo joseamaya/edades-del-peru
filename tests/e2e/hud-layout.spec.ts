@@ -42,6 +42,7 @@ type State = Record<string, Box | null>;
 interface Snapshots {
   initial: State;
   dialogue: State;
+  chips: State;
   build: State;
   building: State;
   threePanels: State;
@@ -126,6 +127,14 @@ async function snapshots(page: Page): Promise<Snapshots> {
     await render();
     const dialogue = read();
 
+    // A selected party of named characters grows the description column with portrait chips.
+    const tagged = [...g.units.values()].filter((u: any) => u.owner === 0 && u.tag).map((u: any) => u.id);
+    if (tagged.length) {
+      g.selectUnits(tagged);
+      await render();
+    }
+    const chips = read();
+
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as
       { id: number } | undefined;
     if (!worker) throw new Error('the mission has no player worker to open the build panel');
@@ -178,6 +187,7 @@ async function snapshots(page: Page): Promise<Snapshots> {
     return {
       initial,
       dialogue,
+      chips,
       build,
       building: buildingSnap,
       threePanels,
@@ -255,6 +265,7 @@ for (const { width, height, missions } of RESOLUTIONS) {
 
         expect(violations(snap.initial), 'start state').toEqual([]);
         expect(violations(snap.dialogue), 'dialogue dock against the other panels').toEqual([]);
+        expect(violations(snap.chips), 'selected cast with portrait chips').toEqual([]);
         // `read()` returns null for a panel the current overlay makes unmeasurable; the overlap pass
         // tolerates that, so only assert the dock shape when both boxes exist.
         const dock = snap.dialogue['ed-dialogue'];
