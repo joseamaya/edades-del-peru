@@ -3,37 +3,6 @@
   "sourceRoot": "art-src/blender",
   "assets": [
     {
-      "id": "m6_chimu-intro",
-      "type": "campaign-intro",
-      "scope": "mission",
-      "campaignId": "la-senda-del-sol",
-      "missionId": "m6_chimu_inca",
-      "civilization": "inca",
-      "period": 5,
-      "era": 2,
-      "region": "north_coast",
-      "topic": "campaign_intro",
-      "sceneType": "campaign_scene",
-      "asset": "media/generated/campaigns/la-senda-del-sol/m6_chimu/intro.webp",
-      "render": "mission-decor/renders/chimu_hero.png",
-      "sceneFile": "mission-decor/chimu_compound_lod0.blend",
-      "confidence": "Tradición arquitectónica documentada; combinación y dimensiones plausibles.",
-      "camera": "hero",
-      "renderer": "workbench",
-      "license": "project-owned",
-      "author": "Miguel Amaya",
-      "sources": [
-        "docs/historia/campanas/chimu_inca.md",
-        "docs/historia/arquitectura.md",
-        "art-src/blender/mission-decor/README.md"
-      ],
-      "alt": "Vista del conjunto chimú de adobe, con audiencia, muros y patio.",
-      "caption": "Conjunto chimú de Chan Chan",
-      "nature": "abstraction",
-      "sourceSha256": "71a26600795cdf103bf1fc0d06058ca5557530b9a0f953728015e5796b1b20d0",
-      "renderedAt": "2026-10-31T10:00:00-05:00"
-    },
-    {
       "id": "m7_colonial-intro",
       "type": "campaign-intro",
       "scope": "mission",

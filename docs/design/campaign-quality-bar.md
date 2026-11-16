@@ -45,7 +45,7 @@ below, which record each mission's own review and are kept for history). **M** m
 | m4_wari            | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_tambotoco        | M    | M     | P    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | P    | M     |
 | m5_yahuar_pampa    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
-| m6_chimu_inca      | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | P   | M    | M     |
+| m6_chimu_inca      | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6b_guerra_civil   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | P    | M     |
 | m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
@@ -77,7 +77,7 @@ in-engine intro and epilogue, bench scenes and the scale guard).
 2. **No-cheat playtests:** HP pinning removed (2026-11-14) from Chavín, Tambotoco, Lima and the Junta;
    Chavín and Tambotoco keep **Play P** because the harness still uses direct field-card/tech calls and
    never fights the valley wave. A manual no-cheat playtest remains recommended.
-3. **Art review:** record the human review of the Chavín kit and the pending art of m6, m6b, m7 and m8.
+3. **Art review:** record the human review of the Chavín kit and the pending art of m6b, m7 and m8.
 4. **Model-mission rebuilds:** done for m3–m9 (2026-11-14), including m8. The quick wins are done too:
    m6's gate really closes (`canal_closed`) and m6b's victory holds Quipaipan and captures Huáscar instead
    of razing a building.
@@ -114,24 +114,24 @@ added (see `caral-model-mission.md` Open items); the unit speed scale paces the 
 
 Reviewed 2026-11-07 against the model-mission gates. Status is honest about the human art gate.
 
-| Gate        | Status               | Evidence                                                                                                                                                                     |
-| ----------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| History     | Met                  | `docs/historia/campanas/chavin.md` with its certainty table; UNESCO 330, Plan de Manejo 2020, Rick et al., Burger/Kembel; no invented war.                                   |
-| Identity    | Met                  | Ceremonial prestige: offerings fund the temple, pilgrimage fills the plaza, the fair links long-distance exchange.                                                           |
-| Play        | Partial (automated)  | The playtest reaches victory without HP pinning, but still teleports the holder and invokes offerings, techs and heritage directly; the manual no-cheat playtest is pending. |
-| Contract    | Met                  | Acts II–IV start hidden and are revealed by triggers; optional Plaza, gallery, Portada and major offering never gate victory.                                                |
-| Onboarding  | Met                  | Nine-step non-blocking Chavín tutorial, briefing and Codex; the briefing shows Act I only.                                                                                   |
-| Closure     | Met                  | Decline epilogue with its own capture and optional-achievement summary; “Continuar” to m3.                                                                                   |
-| UX          | Met                  | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                                                           |
-| Visuals     | Met locally          | Source-derived Chavín kit, phased temple, highland palette and current RTS captures in `public/media/chavin/`.                                                               |
-| Persistence | Met                  | `save-campaign.spec.ts` restores the site phase, offerings and tutorial step.                                                                                                |
-| Tests       | Met (automated)      | Data, site, tutorial, E2E mission, save/load and automated playtest; the manual playtest is pending.                                                                         |
-| Docs        | Met                  | Dossier, `chavin-model-mission.md`, this table, `chavin-sacred-site.md`, PROVENANCE and README aligned.                                                                      |
-| Structure   | Met                  | Four acts, hidden objectives revealed per act, chapter cards with images, optional goals, documented decline.                                                                |
-| Opening     | Met                  | Three-beat narrated intro and briefing with the mission's own art; chapter-card and epilogue captures from `capture_chavin_intro.mjs`.                                       |
-| Art         | Met (intro render)   | Approved `m2_chavin-intro` render; the kit and captures keep their own `reviewed: false` status.                                                                           |
-| Performance | Met                  | `bench_scene.mjs` re-run 2026-11-09 after the resize: opening 413,433 tris / 160 calls; late 462,835 / 223; within the 450k / 600k budgets.                                  |
-| Scale       | Met                  | 256 m map, painted ground every 2 m (128 over 256) and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                       |
+| Gate        | Status              | Evidence                                                                                                                                                                     |
+| ----------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| History     | Met                 | `docs/historia/campanas/chavin.md` with its certainty table; UNESCO 330, Plan de Manejo 2020, Rick et al., Burger/Kembel; no invented war.                                   |
+| Identity    | Met                 | Ceremonial prestige: offerings fund the temple, pilgrimage fills the plaza, the fair links long-distance exchange.                                                           |
+| Play        | Partial (automated) | The playtest reaches victory without HP pinning, but still teleports the holder and invokes offerings, techs and heritage directly; the manual no-cheat playtest is pending. |
+| Contract    | Met                 | Acts II–IV start hidden and are revealed by triggers; optional Plaza, gallery, Portada and major offering never gate victory.                                                |
+| Onboarding  | Met                 | Nine-step non-blocking Chavín tutorial, briefing and Codex; the briefing shows Act I only.                                                                                   |
+| Closure     | Met                 | Decline epilogue with its own capture and optional-achievement summary; “Continuar” to m3.                                                                                   |
+| UX          | Met                 | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                                                           |
+| Visuals     | Met locally         | Source-derived Chavín kit, phased temple, highland palette and current RTS captures in `public/media/chavin/`.                                                               |
+| Persistence | Met                 | `save-campaign.spec.ts` restores the site phase, offerings and tutorial step.                                                                                                |
+| Tests       | Met (automated)     | Data, site, tutorial, E2E mission, save/load and automated playtest; the manual playtest is pending.                                                                         |
+| Docs        | Met                 | Dossier, `chavin-model-mission.md`, this table, `chavin-sacred-site.md`, PROVENANCE and README aligned.                                                                      |
+| Structure   | Met                 | Four acts, hidden objectives revealed per act, chapter cards with images, optional goals, documented decline.                                                                |
+| Opening     | Met                 | Three-beat narrated intro and briefing with the mission's own art; chapter-card and epilogue captures from `capture_chavin_intro.mjs`.                                       |
+| Art         | Met (intro render)  | Approved `m2_chavin-intro` render; the kit and captures keep their own `reviewed: false` status.                                                                             |
+| Performance | Met                 | `bench_scene.mjs` re-run 2026-11-09 after the resize: opening 413,433 tris / 160 calls; late 462,835 / 223; within the 450k / 600k budgets.                                  |
+| Scale       | Met                 | 256 m map, painted ground every 2 m (128 over 256) and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                       |
 
 ## Moche gold-master status
 
@@ -213,26 +213,26 @@ pucará GLB keeps its own review status (#343).
 
 Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 
-| Gate        | Status               | Evidence                                                                                                                                                             |
-| ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| History     | Met                  | `docs/historia/campanas/chimu_inca.md` with its certainty table; the canal is a labelled abstraction.                                                                |
-| Identity    | Met                  | Water as power: Paramonga, the Chan Chan gate and the surrender of the desert capital.                                                                               |
-| Terrain     | Met                  | 256 m authored coastal heightfield (`chimuHeightmap.ts`) with painted ground: beach, valley, terraces and foothills.                                                 |
-| Site        | Met (exception)      | No construction phases: Chan Chan is a living capital, not a monument the player builds; recorded in `chimu-model-mission.md`.                                       |
-| Play        | Met                  | `campaign.spec.ts` covers gate and surrender; `campaign-playtest.spec.ts` advances, closes and holds with real orders; completable and save paths are covered.       |
-| Contract    | Met                  | Three acts (Paramonga, canal, capitulation) with hidden goals revealed by triggers and chapter cards; optional centre/timer.                                         |
-| Onboarding  | Met                  | Non-blocking tutorial, briefing, Codex and minimap pips.                                                                                                             |
-| Closure     | Met                  | Dusk epilogue capture narrates Minchancaman's transfer and Querrotumi's revolt; optional objectives summarised.                                                      |
-| UX          | Met                  | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                                                   |
-| Visuals     | Met locally          | Authored Chimú GLB, painted coast and in-engine intro/epilogue captures in `public/media/chimu/`.                                                                    |
-| Persistence | Met                  | Gate, hold timer and tutorial round-trip in the shared save path; v9 m6 saves are rejected (`SAVE_VERSION` 10).                                                      |
-| Tests       | Met                  | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                                                    |
-| Docs        | Met                  | This document, dossier, `chimu-model-mission.md`, experience table, site note, art docs and README aligned.                                                          |
-| Structure   | Met                  | Three acts, hidden objectives revealed per act, chapter cards with images and optional goals.                                                                        |
-| Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_chimu_intro.mjs`; `MISSION_ART` uses the coast capture.                                  |
-| Art         | Pending human review | The reused Chimú GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                                           |
-| Performance | Met                  | `bench_scene.mjs`: opening ~499k tris / 273 calls, surrender ~765k / 516; within the recorded first-pass caps (the late view is over the 600k art-direction target). |
-| Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                   |
+| Gate        | Status             | Evidence                                                                                                                                                             |
+| ----------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| History     | Met                | `docs/historia/campanas/chimu_inca.md` with its certainty table; the canal is a labelled abstraction.                                                                |
+| Identity    | Met                | Water as power: Paramonga, the Chan Chan gate and the surrender of the desert capital.                                                                               |
+| Terrain     | Met                | 256 m authored coastal heightfield (`chimuHeightmap.ts`) with painted ground: beach, valley, terraces and foothills.                                                 |
+| Site        | Met (exception)    | No construction phases: Chan Chan is a living capital, not a monument the player builds; recorded in `chimu-model-mission.md`.                                       |
+| Play        | Met                | `campaign.spec.ts` covers gate and surrender; `campaign-playtest.spec.ts` advances, closes and holds with real orders; completable and save paths are covered.       |
+| Contract    | Met                | Three acts (Paramonga, canal, capitulation) with hidden goals revealed by triggers and chapter cards; optional centre/timer.                                         |
+| Onboarding  | Met                | Non-blocking tutorial, briefing, Codex and minimap pips.                                                                                                             |
+| Closure     | Met                | Dusk epilogue capture narrates Minchancaman's transfer and Querrotumi's revolt; optional objectives summarised.                                                      |
+| UX          | Met                | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                                                   |
+| Visuals     | Met locally        | Authored Chimú GLB, painted coast and in-engine intro/epilogue captures in `public/media/chimu/`.                                                                    |
+| Persistence | Met                | Gate, hold timer and tutorial round-trip in the shared save path; v9 m6 saves are rejected (`SAVE_VERSION` 10).                                                      |
+| Tests       | Met                | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                                                    |
+| Docs        | Met                | This document, dossier, `chimu-model-mission.md`, experience table, site note, art docs and README aligned.                                                          |
+| Structure   | Met                | Three acts, hidden objectives revealed per act, chapter cards with images and optional goals.                                                                        |
+| Opening     | Met                | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_chimu_intro.mjs`; `MISSION_ART` uses the approved Chan Chan render.                      |
+| Art         | Met (intro render) | Approved `m6_chimu-intro` render; the reused Chimú GLB and the captures keep their own `reviewed: false` status.                                                     |
+| Performance | Met                | `bench_scene.mjs`: opening ~499k tris / 273 calls, surrender ~765k / 516; within the recorded first-pass caps (the late view is over the 600k art-direction target). |
+| Scale       | Met                | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                   |
 
 ## Applying it to m2–m9
 

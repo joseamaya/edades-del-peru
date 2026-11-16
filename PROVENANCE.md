@@ -425,7 +425,7 @@ slot is absent (offline / without assets).
   cards use the city, the pampa and the pursuit captures; the victory epilogue uses `intro-epilogo`.
 - **Content**: the briefing image is a project-owned Blender render (`art-src/blender/chanca/chanca_intro.blend`,
   recorded as `m5_chanca-intro` in `src/art/manifest.json`); the captures are recreations of the game's own
-  scenes. Neither is a historical photograph.
+  scenes. The captures are never historical photographs and are not Blender renders; the briefing render is.
 - **Review**: the intro render was approved by a recorded human review (`yarn art:review`); the reused
   Chanca GLB is tracked in #343 and is not a manifest record.
 
@@ -436,14 +436,15 @@ slot is absent (offline / without assets).
   transect: the Inca camp, Paramonga and the Chan Chan canal, plus a dusk epilogue. Rendered without the
   HUD or character nameplates at 1600x900 and resized with `sharp`. Regenerate with
   `node scripts/capture_chimu_intro.mjs` (one with `--only=ID`) after art changes.
-- **Runtime**: the briefing and the "Tu senda" card use `intro-costa`; the three intro beats and the act
-  cards use the coast, Paramonga, the canal and the capitulation captures; the victory epilogue uses
-  `intro-epilogo`.
-- **Content**: project-owned game renders (authored Chimú heightfield, the reused `chimu_site` compound and
-  the procedural camps). Recreations of the game's own scenes: never historical photographs, and not
-  Blender renders (so not in `src/art/manifest.json`).
-- **Review**: no human art-review gate applies to in-engine captures; the reused Chimú GLB keeps its own
-  review status in `src/art/manifest.json` (#343).
+- **Runtime**: the briefing and the "Tu senda" card use the approved Blender render
+  `media/generated/campaigns/la-senda-del-sol/m6_chimu/intro.webp`; `intro-costa` remains a chapter card.
+  The three intro beats and the act cards use the coast, Paramonga, the canal and the capitulation
+  captures; the victory epilogue uses `intro-epilogo`.
+- **Content**: project-owned game captures (authored Chimú heightfield, the reused `chimu_site` compound and
+  the procedural camps). The captures are recreations of the game's own scenes: never historical
+  photographs and not Blender renders. The briefing render is the `m6_chimu-intro` manifest record.
+- **Review**: no human art-review gate applies to the in-engine captures; the authored briefing render was
+  approved by a recorded human review, and the reused Chimú GLB is tracked in #343, not in the manifest.
 
 ### Inca civil war (m6b) intro and epilogue images (in-engine recreations)
 

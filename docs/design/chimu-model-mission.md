@@ -62,11 +62,21 @@ in the quality bar.
 - Three narrated intro beats and the three act cards captured in engine by
   [`scripts/capture_chimu_intro.mjs`](../../scripts/capture_chimu_intro.mjs): the north coast, Paramonga, the
   canal and the capitulation, plus a dusk epilogue.
-- `MISSION_ART` (`m6_chimu_inca` → `media/chimu/intro-costa.webp`) and the briefing use the coast capture.
+- `MISSION_ART` (`m6_chimu_inca` → `media/generated/campaigns/la-senda-del-sol/m6_chimu/intro.webp`) and the
+  briefing use the approved Chan Chan render; `intro-costa` remains a chapter card.
 - Victory: the canal is closed and Chan Chan holds the surrender; the Act III card uses the capitulation
   capture. The epilogue (`media/chimu/intro-epilogo.webp`) narrates Minchancaman's transfer and
   Querrotumi's revolt. Defeat: the
   Inca column or Túpac Yupanqui is lost.
+
+## Intro render
+
+- `art-src/blender/site-intros/m6_chimu_inca/m6_chimu_inca.blend`, built by
+  `scripts/blender/build_site_intro.py --mission=m6_chimu_inca`, stages the Chan Chan enclosure: adobe walls,
+  niches, gate steps, courtyard rooms and the Inca column outside.
+- The record `m6_chimu-intro` was approved by a recorded human review; `MISSION_ART` uses the generated
+  WebP and the in-engine captures remain evidence.
+- Regenerate with `blender --background --python scripts/blender/build_site_intro.py -- --mission=m6_chimu_inca`.
 
 ## Tutorial
 
@@ -93,7 +103,7 @@ marches and holds); a human playtest is still needed to measure the 20–30 min 
 
 ## Open items
 
-1. Human art review of the reused Chimú GLB and its Blender records (#343); the in-engine captures are
-   recorded in PROVENANCE and are not a Blender-render claim.
+1. Human art review of the reused Chimú GLB and its records (#343); the intro render is approved and the
+   in-engine captures are recorded in PROVENANCE and are not a Blender-render claim.
 2. A real-GPU performance pass; the bench numbers are structural (SwiftShader).
 3. A human playtest to measure the full path.

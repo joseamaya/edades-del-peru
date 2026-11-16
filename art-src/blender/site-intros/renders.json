@@ -124,6 +124,36 @@
       "nature": "abstraction",
       "sourceSha256": "5f212e4af2b54ab7c25d4173c8be5fedfd7c3eb14f7e9750ccf85a8a4ca87ac1",
       "renderedAt": "2026-11-15T18:25:00-05:00"
+    },
+    {
+      "id": "m6_chimu-intro",
+      "type": "campaign-intro",
+      "scope": "mission",
+      "campaignId": "la-senda-del-sol",
+      "missionId": "m6_chimu_inca",
+      "civilization": "inca",
+      "period": 5,
+      "region": "north_coast",
+      "topic": "campaign_intro",
+      "sceneType": "campaign_scene",
+      "asset": "media/generated/campaigns/la-senda-del-sol/m6_chimu/intro.webp",
+      "render": "site-intros/m6_chimu_inca/hero.png",
+      "sceneFile": "site-intros/m6_chimu_inca/m6_chimu_inca.blend",
+      "confidence": "Reconstrucción estilizada de Chan Chan: la muralla, las hornacinas, el patio y las salas son una abstracción plausible del conjunto de adobe, no un levantamiento. Las figuras usan el modelo estilizado compartido del proyecto.",
+      "camera": "hero",
+      "renderer": "eevee",
+      "license": "project-owned",
+      "author": "Miguel Amaya",
+      "sources": [
+        "docs/historia/campanas/chimu_inca.md",
+        "docs/historia/arquitectura.md",
+        "docs/design/blender-art.md"
+      ],
+      "alt": "El recinto amurallado de Chan Chan con sus hornacinas, el patio, las salas de adobe y guerreros incas en el exterior.",
+      "caption": "Chan Chan y la costa chimú",
+      "nature": "abstraction",
+      "sourceSha256": "925c48328f440fad6450d5dad53349149cc5d1ab947fec1416cfb8689eb561d3",
+      "renderedAt": "2026-11-15T21:30:00-05:00"
     }
   ]
 }
