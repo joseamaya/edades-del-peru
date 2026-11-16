@@ -150,6 +150,9 @@ valley wave and open the acequia in one step ({key:selectArmy}, right-click; car
 - `node scripts/shots_evidence.mjs --scene=tambotoco-heroes` → `docs/media/tambotoco-heroes.webp` (close)
   and `docs/media/tambotoco-heroes-rts.webp` (field markers). Both scenes render at 1600×900 and the WebP
   copies are resized to 960×540, WebP q58.
+- `tests/e2e/fow-visual.spec.ts` (`@smoke`, SwiftShader) is the reproducible regression for the fog fix.
+  `docs/media/tambotoco-fow-before.webp` is the Huanacaure view on `main` (white slabs); the after capture
+  is `docs/media/tambotoco-fow-after.webp` (landscape and ayllu site dimmed, no white).
 
 ## Open items
 
