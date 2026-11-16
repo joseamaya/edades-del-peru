@@ -91,17 +91,16 @@ CONFIG = {
     },
     'm6_chimu_inca': {
         'hm': 'chimu',
-        'site': (190.4, 86.7),
-        'scale': 1.15,
-        'glb': 'chimu/chimu_compound_lod0.glb',
-        'camera': (222.0, 132.0, 12.0),
-        'target': (188.0, 86.0, 6.0),
-        'lens': 44,
+        'site': (190.0, 87.0),
+        'scale': 1.0,
+        'bespoke': 'chimu',
+        'camera': (222.0, 150.0, 18.0),
+        'target': (186.0, 92.0, 3.0),
+        'lens': 45,
         'sun': (-0.35, -0.5, -0.30),
         'sun_color': (1.0, 0.78, 0.54),
-        'sky': (0.38, 0.46, 0.58),
+        'sky': (0.36, 0.46, 0.60),
         'water': True,
-        'figures': [(166, 108, 30), (172, 112, 35), (208, 106, 150)],
         'caption': 'Chan Chan y la costa chimú',
     },
     'm6b_guerra_civil': {
@@ -825,6 +824,47 @@ def add_chavin_scene():
         add_warrior((x, z, ground_height(x, z)), math.radians(yaw), cloth=priest, leader=(x == sx - 22))
 
 
+def add_chimu_scene():
+    sx, sz = 190.0, 87.0
+    adobe = material('chimu_adobe', (0.48, 0.34, 0.21), 0.96, 0.35)
+    adobe_dark = material('chimu_adobe_dark', (0.42, 0.30, 0.19), 0.96, 0.3)
+    floor = material('chimu_floor', (0.50, 0.38, 0.26), 0.98, 0.2)
+    dark = material('chimu_niche', (0.06, 0.045, 0.03), 1.0, 0.0)
+    cy = ground_height(sx, sz)
+    # Palace enclosure with a south gate.
+    add_box('chimu_wall_s', (sx - 13, sz + 18, cy + 2.6), (20.0, 1.8, 5.2), adobe)
+    add_box('chimu_wall_s2', (sx + 13, sz + 18, cy + 2.6), (20.0, 1.8, 5.2), adobe)
+    add_box('chimu_wall_n', (sx, sz - 18, cy + 2.6), (48.0, 1.8, 5.2), adobe)
+    add_box('chimu_wall_w', (sx - 24, sz, cy + 2.6), (1.8, 38.0, 5.2), adobe)
+    add_box('chimu_wall_e', (sx + 24, sz, cy + 2.6), (1.8, 38.0, 5.2), adobe)
+    add_box('chimu_plaza', (sx, sz, cy + 0.65), (46.0, 34.0, 0.3), floor)
+    # Stepped platform in the north-west corner.
+    add_box('chimu_platform', (sx - 14, sz - 10, cy + 1.4), (14.0, 10.0, 2.8), adobe_dark)
+    add_box('chimu_platform_top', (sx - 14, sz - 10, cy + 2.9), (10.0, 7.0, 0.4), floor)
+    for i in range(5):
+        add_box('chimu_ramp', (sx - 14, sz - 3 + i * 1.1, cy + 0.25 + i * 0.45), (6.0, 1.2, 0.35), adobe)
+    # Niches along the outer south wall (Chimú adobe frieze).
+    for i in range(9):
+        x = sx - 17 + i * 4.2
+        if abs(x - sx) < 4:
+            continue
+        add_box('chimu_niche', (x, sz + 19.0, cy + 2.8), (1.4, 0.25, 1.8), dark)
+    # Gate steps.
+    for i in range(5):
+        add_box('chimu_step', (sx, sz + 20 + i * 1.2, cy + 0.2 - i * 0.25), (7.0, 1.2, 0.4), adobe)
+    # Storerooms and an audience hall inside the enclosure.
+    for x, z, w, d, h in ((sx + 10, sz - 6, 9, 6, 3.2), (sx + 10, sz + 4, 9, 6, 2.8), (sx - 8, sz + 8, 10, 5, 3.0)):
+        add_box('chimu_room', (x, z, cy + 0.8 + h / 2), (w, d, h), adobe_dark)
+        add_box('chimu_room_door', (x, z - d / 2 - 0.05, cy + 1.9), (1.4, 0.14, 2.0), dark)
+    # Defenders on the wall and Inca warriors approaching.
+    chimu_cloth = material('chimu_cloth', (0.55, 0.30, 0.12), 0.92, 0.05)
+    for x, z, yaw in ((sx - 18, sz + 20, 0), (sx + 16, sz + 20, 0), (sx - 4, sz + 21, 5)):
+        add_warrior((x, z, ground_height(x, z) + 5.2), math.radians(yaw), cloth=chimu_cloth, leader=(x == sx - 18))
+    inca = material('chimu_inca', (0.36, 0.12, 0.07), 0.92, 0.05)
+    for x, z, yaw in ((sx - 18, sz + 34, 0), (sx - 10, sz + 36, 5), (sx - 2, sz + 34, 350), (sx + 8, sz + 37, 355), (sx + 16, sz + 34, 0)):
+        add_warrior((x, z, ground_height(x, z)), math.radians(yaw), cloth=inca, leader=(x == sx - 18))
+
+
 def add_water():
     # A simple sea plane and the river ribbon; the terrain supplies the banks.
     if CFG['hm'] in ('lima', 'arica'):
@@ -1101,7 +1141,9 @@ def main() -> None:
         MAT['cloth'] = material('uniform_cloth', tuple(uniform), 0.92, 0.05)
         MAT['cloth_dark'] = material('uniform_dark', tuple(c * 0.55 for c in uniform), 0.94, 0.05)
     build_terrain()
-    if CFG.get('bespoke') == 'lima':
+    if CFG.get('bespoke') == 'chimu':
+        add_chimu_scene()
+    elif CFG.get('bespoke') == 'lima':
         add_lima_city()
     elif CFG.get('bespoke') == 'chavin':
         add_chavin_scene()

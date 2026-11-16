@@ -68,6 +68,15 @@ in the quality bar.
   Querrotumi's revolt. Defeat: the
   Inca column or Túpac Yupanqui is lost.
 
+## Intro render
+
+- `art-src/blender/site-intros/m6_chimu_inca/m6_chimu_inca.blend`, built by
+  `scripts/blender/build_site_intro.py --mission=m6_chimu_inca`, stages the Chan Chan enclosure: adobe walls,
+  niches, gate steps, courtyard rooms and the Inca column outside.
+- The record `m6_chimu-intro` is a draft pending human review; the briefing keeps the in-engine capture
+  until it is approved.
+- Regenerate with `blender --background --python scripts/blender/build_site_intro.py -- --mission=m6_chimu_inca`.
+
 ## Tutorial
 
 The non-blocking steps cover selection, Paramonga, the canal and Chan Chan; the historical context stays in
@@ -93,7 +102,7 @@ marches and holds); a human playtest is still needed to measure the 20–30 min 
 
 ## Open items
 
-1. Human art review of the reused Chimú GLB and its Blender records (#343); the in-engine captures are
-   recorded in PROVENANCE and are not a Blender-render claim.
+1. Human art review of the reused Chimú GLB and its records (#343), and of the draft intro render; the
+   in-engine captures are recorded in PROVENANCE and are not a Blender-render claim.
 2. A real-GPU performance pass; the bench numbers are structural (SwiftShader).
 3. A human playtest to measure the full path.

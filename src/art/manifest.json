@@ -747,46 +747,46 @@
           "asset": "media/generated/campaigns/la-senda-del-sol/m6_chimu/intro-800.webp",
           "width": 800,
           "height": 450,
-          "bytes": 6164
+          "bytes": 21604
         }
       ],
       "sources": [
         "docs/historia/campanas/chimu_inca.md",
         "docs/historia/arquitectura.md",
-        "art-src/blender/mission-decor/README.md"
+        "docs/design/blender-art.md"
       ],
-      "promptVersion": "v1-blender-2495a2df",
-      "prompt": "Blender render: Conjunto chimú de Chan Chan",
+      "promptVersion": "v1-blender-9acd93be",
+      "prompt": "Blender render: Chan Chan y la costa chimú",
       "negativePrompt": "n/a (blender render)",
       "provider": "blender",
-      "model": "workbench",
-      "generatedAt": "2026-10-31T23:29:50.030Z",
+      "model": "eevee",
+      "generatedAt": "2026-11-16T03:00:53.216Z",
       "nature": "abstraction",
       "reviewed": false,
       "reviewer": null,
       "reviewedAt": null,
       "disclaimer": "No es una fotografía histórica: es un render 3D del proyecto.",
-      "alt": "Vista del conjunto chimú de adobe, con audiencia, muros y patio.",
-      "caption": "Conjunto chimú de Chan Chan",
+      "alt": "El recinto amurallado de Chan Chan con sus hornacinas, el patio, las salas de adobe y guerreros incas en el exterior.",
+      "caption": "Chan Chan y la costa chimú",
       "width": 1280,
       "height": 720,
       "sourceWidth": 1600,
       "sourceHeight": 900,
       "crop": "cover-attention",
-      "bytes": 10734,
+      "bytes": 41110,
       "format": "webp",
-      "sha256": "3f7cd28781c24eddac2d669ba085c521e08ba46bbb90db8c9e4413efdf65044b",
+      "sha256": "fa10b59d8c75eba1a5f726161d75d193caf6d42a85667d9a2b16afcedf2e7d8e",
       "blender": {
-        "sceneFile": "mission-decor/chimu_compound_lod0.blend",
-        "sourceRender": "mission-decor/renders/chimu_hero.png",
-        "sourceSha256": "71a26600795cdf103bf1fc0d06058ca5557530b9a0f953728015e5796b1b20d0",
+        "sceneFile": "site-intros/m6_chimu_inca/m6_chimu_inca.blend",
+        "sourceRender": "site-intros/m6_chimu_inca/hero.png",
+        "sourceSha256": "925c48328f440fad6450d5dad53349149cc5d1ab947fec1416cfb8689eb561d3",
         "sceneAssetId": null,
-        "confidence": "Tradición arquitectónica documentada; combinación y dimensiones plausibles.",
+        "confidence": "Reconstrucción estilizada de Chan Chan: la muralla, las hornacinas, el patio y las salas son una abstracción plausible del conjunto de adobe, no un levantamiento. Las figuras usan el modelo estilizado compartido del proyecto.",
         "camera": "hero",
-        "renderer": "workbench",
+        "renderer": "eevee",
         "license": "project-owned",
         "author": "Miguel Amaya",
-        "renderedAt": "2026-10-31T10:00:00-05:00"
+        "renderedAt": "2026-11-15T21:30:00-05:00"
       }
     },
     {
