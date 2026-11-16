@@ -120,6 +120,14 @@ The legend is about eight siblings, so all eight are on the board from the start
 - **Optional goal**: keeping Ayar Manco alive is a bonus, not a defeat condition, so the mission stays
   playable without a healer.
 
+## HUD and dialogue
+
+Mission dialogue is a left dock above the minimap, so a long historical line does not cover the party at
+1280x720. At 1700 px and above the HUD (top bar, objectives, tutorial, dialogue, cards, minimap and command
+bar) scales up instead of staying at 12 px labels on a 1920 panel. `tests/e2e/hud-layout.spec.ts` still
+checks the panels geometrically at 1280x720, 1600x900 and 1920x1080. Captures:
+`docs/media/tambotoco-hud-{1280,1600,1920}.webp` (native size), `node scripts/capture_hud_dialogue.mjs`.
+
 ## Opening and closing
 
 - The opening camera holds the cave mouth (with torches and a path) and flies down to the camp; the first
