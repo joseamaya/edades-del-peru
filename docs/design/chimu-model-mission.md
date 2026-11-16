@@ -62,7 +62,8 @@ in the quality bar.
 - Three narrated intro beats and the three act cards captured in engine by
   [`scripts/capture_chimu_intro.mjs`](../../scripts/capture_chimu_intro.mjs): the north coast, Paramonga, the
   canal and the capitulation, plus a dusk epilogue.
-- `MISSION_ART` (`m6_chimu_inca` → `media/chimu/intro-costa.webp`) and the briefing use the coast capture.
+- `MISSION_ART` (`m6_chimu_inca` → `media/generated/campaigns/la-senda-del-sol/m6_chimu/intro.webp`) and the
+  briefing use the approved Chan Chan render; `intro-costa` remains a chapter card.
 - Victory: the canal is closed and Chan Chan holds the surrender; the Act III card uses the capitulation
   capture. The epilogue (`media/chimu/intro-epilogo.webp`) narrates Minchancaman's transfer and
   Querrotumi's revolt. Defeat: the
