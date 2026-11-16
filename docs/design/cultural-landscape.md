@@ -145,7 +145,7 @@ exposes it via `getCanal`.
   `tests/e2e/landscape.spec.ts`. Basing the budget on the declared vocabulary (not
   on the measured mesh count) makes it non-circular: un-merging a road/path into
   per-segment meshes exceeds the budget and fails. The factor 2 leaves room for one
-  main-pass plus one shadow-pass draw per feature; under `PCFSoftShadowMap` only
+  main-pass plus one shadow-pass draw per feature; under `PCFShadowMap` only
   casters enter the shadow map, so the bound is a ceiling rather than a measurement
   of the current pass. Numbers are only comparable on the same
   machine/browser; `bench.json` records the OS/CPU/Node so runs can be compared

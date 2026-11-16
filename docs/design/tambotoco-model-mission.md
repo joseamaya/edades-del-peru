@@ -211,7 +211,7 @@ dialogue.
    backend `bench:check` runs) measures **408,221 triangles / 309 draw calls** at the opening and
    **591,009 / 295** on the founded Inticancha framed on the four canchas — under the 620k late target, the
    660k first-pass cap and the 360-call cap. The 2026-11-16 pass moved the renderer's shadow map from VSM to
-   PCFSoft (VSM also draws every shadow *receiver* into the map) and kept only the silhouette meshes of each
+   PCF (VSM also draws every shadow *receiver* into the map) and kept only the silhouette meshes of each
    rig in the shadow pass; that took 65k triangles off the opening and 57k off the late view. Hardware high
    quality (`--gpu`, Intel iGPU) measured **684,810 / 305** and **854,190 / 316** on the pre-kit site; it has
    not been re-measured since the kit or the shadow change, and both numbers are over the caps. The

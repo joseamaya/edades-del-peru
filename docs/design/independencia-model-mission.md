@@ -76,7 +76,7 @@ briefing, the chapter cards and the Codex.
   `save-campaign.spec.ts` (mid-Ayacucho save/load) and `hud-layout.spec.ts`.
 - Bench: `scripts/bench_scene.mjs` measures the opening (567,865 tris / 603 calls; under the 625k first-pass
   cap and over the 200-call target) and Ayacucho (808,151 / 959); `yarn bench:check`. The 2026-11-16 pass moved
-  the shadow map to PCFSoft and kept only each rig's silhouette in the shadow pass.
+  the shadow map to PCF and kept only each rig's silhouette in the shadow pass.
 - Evidence: `yarn record --mission=m8_independencia --mode=clip` and the intro/epilogue captures.
 - Save compatibility: `SAVE_VERSION` 12 rejects v11 m8 saves (their 192 m coordinates cannot be carried
   over); `REPLAY_VERSION` 39.

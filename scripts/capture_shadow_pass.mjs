@@ -3,7 +3,7 @@ import sharp from 'sharp';
 import { launchChromium, withViteServer, reviewDir, cliArg } from './lib.mjs';
 
 /**
- * Evidence captures for the shadow pass (VSM -> PCFSoft and the rig silhouette rule).
+ * Evidence captures for the shadow pass (VSM -> PCF and the rig silhouette rule).
  * Usage: node scripts/capture_shadow_pass.mjs [--tag=after]
  * Writes review/shadow-<tag>-{opening,close}.png at 1600x900, high quality, the bench framing, and the
  * 960x540 WebP copies under docs/media/. Run it on `main` with `--tag=before` to reproduce the old VSM

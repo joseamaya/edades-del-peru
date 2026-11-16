@@ -10,10 +10,10 @@ export function createRenderer(): THREE.WebGLRenderer {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
-  // PCFSoft, not VSM: three's VSM also renders every shadow *receiver* into the shadow map, so a
-  // scene with ~1 000 receiving meshes pays a second full draw for all of them. On the m8 opening that
-  // was 391 of 823 calls; PCFSoft draws only the casters and drops the two VSM blur passes.
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // PCF, not VSM: three's VSM also renders every shadow *receiver* into the shadow map, so a scene with
+  // ~1 000 receiving meshes pays a second full draw for all of them. On the m8 opening that was 391 of
+  // 823 calls; PCF draws only the casters. (PCFSoft is deprecated in r185 and falls back to PCF.)
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   // The map is redrawn once per frame from `RuntimeController.frameShadows`: a frame with
   // post-processing renders the scene twice (water refraction + composer) and three would otherwise
   // run the whole shadow pass inside each of them.
