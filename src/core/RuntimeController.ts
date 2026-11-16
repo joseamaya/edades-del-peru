@@ -15,7 +15,7 @@ import { detachBuilding, detachUnit, modernizeUnit } from '../rendering/RenderSy
 import { elevationDamageMultiplier, ArmorProfile } from '../game/combat';
 import { Resources, PlayerState, UnitKind, BuildingKind, OrderKind, OrderTarget, RESOURCE_KEYS } from '../core/types';
 import { distance2D } from '../util/math';
-import { CANAL_DRY_DROUGHT, CANAL_WET_FLOW, canalIrrigationAt } from '../model/defs/canal';
+import { CANAL_DRY_DROUGHT, CANAL_IRRIGATION_REACH, CANAL_WET_FLOW, canalIrrigationAt } from '../model/defs/canal';
 import { getUnitStats, DamageClass, unitClassFor } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { saveReplay } from '../game/replay';
@@ -95,7 +95,7 @@ export class RuntimeController {
     if (path && path.length >= 2) {
       if (!this.game.canalOpen) return 0;
       if ((this.game.environment.drought ?? 0) >= CANAL_DRY_DROUGHT) return 0;
-      return canalIrrigationAt(path, x, z);
+      return canalIrrigationAt(path, x, z, spec.irrigationReach);
     }
     if (!this.game.canalOpen || !this.game.canalSite) return 0;
     const yaw = spec.yaw ?? 0;
@@ -104,7 +104,7 @@ export class RuntimeController {
     const along = dx * Math.cos(yaw) + dz * Math.sin(yaw);
     const across = -dx * Math.sin(yaw) + dz * Math.cos(yaw);
     if (Math.abs(along) > (spec.length ?? 24) / 2) return 0;
-    return Math.max(0, 1 - Math.abs(across) / 2.5);
+    return Math.max(0, 1 - Math.abs(across) / (spec.irrigationReach ?? CANAL_IRRIGATION_REACH));
   }
 
   updateCanalVisual(): void {

@@ -11,6 +11,13 @@ import {
 // Los hijos de Tambotoco: the cave, the Huanacaure huaca, the valley and Inticancha.
 const TAMBOTOCO_TAMBO_QUIRO = { x: 70, z: 91 } as const;
 const TAMBOTOCO_ENEMY = { x: 212, z: 200 } as const;
+/** The canal intake (gate) and outlet (optional farm anchor), in world metres. */
+const TAMBOTOCO_INTAKE = { x: 158, z: 176 } as const;
+export const TAMBOTOCO_OUTLET = { x: 182, z: 194 } as const;
+/** The valley sortie starts on the Huanacaure approach, not at the far enemy base. */
+export const TAMBOTOCO_WAVE = { x: 142, z: 126 } as const;
+/** The defended ring south of the huaca; the wave marches here. */
+export const TAMBOTOCO_HOLD = { x: TAMBOTOCO_HUANACAURE.x, z: TAMBOTOCO_HUANACAURE.z + 12 } as const;
 /** Ground radius (m) revealed by the narrated Act III/IV camera beats. */
 const TAMBOTOCO_CAMERA_REVEAL = 45;
 
@@ -76,21 +83,24 @@ export const mTambotoco: MissionDef = {
     },
     canal: {
       name: 'Acequia de los alcabizas',
-      x: 158 / 256,
-      z: 176 / 256,
+      x: TAMBOTOCO_INTAKE.x / 256,
+      z: TAMBOTOCO_INTAKE.z / 256,
       width: 1.6,
       path: [
         { x: 152 / 256, z: 160 / 256 },
         { x: 156 / 256, z: 168 / 256 },
         { x: 162 / 256, z: 178 / 256 },
         { x: 172 / 256, z: 188 / 256 },
-        { x: 182 / 256, z: 194 / 256 },
+        { x: TAMBOTOCO_OUTLET.x / 256, z: TAMBOTOCO_OUTLET.z / 256 },
       ],
       initiallyOpen: false,
       irrigation: true,
+      // The farm keepout band is 3.2 m; a 4.5 m reach still gives a legal, irrigated farm on the bank.
+      irrigationReach: 4.5,
       heritageId: 'tambotoco_acequia',
+      // The gate is active only after t_oleada; the defended intake is the real lock.
       lockedUntilObjective: 'a3_acequia',
-      lockedHint: 'La acequia de los alcabizas está más adelante en la leyenda: primero llega al valle por Huanacaure.',
+      lockedHint: 'La compuerta espera a los alcabizas: primero llega a Huanacaure y resiste su oleada.',
     },
     roads: [
       // The path starts at the cave mouth and passes the Act I exit marker (a1_salida), so «sigue el camino»
@@ -215,10 +225,31 @@ export const mTambotoco: MissionDef = {
       title: 'Sube a Huanacaure y abre la ficha de la huaca',
     },
     {
+      id: 'a3_oleada',
+      kind: 'hold',
+      pos: { dx: TAMBOTOCO_HOLD.x, dz: TAMBOTOCO_HOLD.z },
+      radius: 10,
+      minUnits: 3,
+      time: 60,
+      hidden: true,
+      title: 'Resiste la oleada en Huanacaure',
+    },
+    {
       id: 'a3_acequia',
       kind: 'canal_open',
       hidden: true,
       title: 'Desvía el agua de los alcabizas: abre la compuerta de la acequia hacia tus campos',
+    },
+    {
+      id: 'a3_riego',
+      kind: 'build',
+      buildingKind: BuildingKind.FARM,
+      pos: { dx: TAMBOTOCO_OUTLET.x, dz: TAMBOTOCO_OUTLET.z },
+      radius: 4,
+      count: 1,
+      hidden: true,
+      optional: true,
+      title: 'Riega una chacra junto a la acequia',
     },
     {
       id: 'a3_hualla',
@@ -332,8 +363,9 @@ export const mTambotoco: MissionDef = {
           image: 'media/tambotoco/intro-valle.webp',
           text: 'El valle del Cusco ya tiene ayllus: huallas, sauaseray y alcabizas. La tradición cuenta que los recién llegados quitaron el agua a los alcabizas para obligarlos a ceder tierras. El agua es la palanca.',
         },
-        { type: 'camera', pos: { dx: 170, dz: 186 }, reveal: TAMBOTOCO_CAMERA_REVEAL },
-        { type: 'objective', objectiveId: 'a3_acequia', state: 'activate', announce: true },
+        // Hold the camera on the wave/ring, not the far valley: the player must see what is coming.
+        { type: 'camera', pos: { dx: 130, dz: 128 }, reveal: TAMBOTOCO_CAMERA_REVEAL },
+        { type: 'objective', objectiveId: 'a3_oleada', state: 'activate', announce: true },
         { type: 'objective', objectiveId: 'a3_hualla', state: 'activate', announce: true },
         {
           type: 'wave',
@@ -342,11 +374,26 @@ export const mTambotoco: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 3 },
             { kind: UnitKind.MUSKETEER, count: 2 },
           ],
-          pos: { dx: TAMBOTOCO_ENEMY.x, dz: TAMBOTOCO_ENEMY.z },
-          radius: 10,
+          pos: { dx: TAMBOTOCO_WAVE.x, dz: TAMBOTOCO_WAVE.z },
+          radius: 8,
           // They come out to meet the party at Huanacaure, as the tutorial says; the truce stops them.
-          target: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z + 12 },
+          target: { dx: TAMBOTOCO_HOLD.x, dz: TAMBOTOCO_HOLD.z },
         },
+      ],
+    },
+    {
+      id: 't_oleada',
+      condition: { type: 'objective', objectiveId: 'a3_oleada', state: 'completed' },
+      effects: [
+        {
+          type: 'dialogue',
+          speaker: 'Memoria de los Ayar',
+          duration: 8,
+          text: 'La toma resiste. Los alcabizas ya no pueden cerrar el paso del agua: abre la compuerta y llévala a tus campos.',
+        },
+        // Point the camera at the intake so the unlocked gate is the next thing the player sees.
+        { type: 'camera', pos: { dx: TAMBOTOCO_INTAKE.x, dz: TAMBOTOCO_INTAKE.z }, reveal: TAMBOTOCO_CAMERA_REVEAL },
+        { type: 'objective', objectiveId: 'a3_acequia', state: 'activate', announce: true },
       ],
     },
     {
@@ -377,6 +424,7 @@ export const mTambotoco: MissionDef = {
           reveal: TAMBOTOCO_CAMERA_REVEAL,
         },
         { type: 'objective', objectiveId: 'a4_inticancha', state: 'activate', announce: true },
+        { type: 'objective', objectiveId: 'a3_riego', state: 'activate', announce: true },
       ],
     },
     {
