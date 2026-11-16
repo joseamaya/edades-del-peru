@@ -68,8 +68,8 @@ The match is locked to `HistoricalPeriod.INDEPENDENCE` and `Era.REPUBLIC`:
 - `art-src/blender/site-intros/m_junta_cusco/m_junta_cusco.blend`, built by
   `scripts/blender/build_site_intro.py --mission=m_junta_cusco`, stages the Plaza del Cusco: a twin-tower
   cathedral, the cabildo, arcades, houses, the stone cross and the patriot militia; it is a scene, not an in-game kit.
-- The record `m_junta_cusco-intro` is a draft pending human review; the briefing keeps the in-engine
-  capture until it is approved.
+- The record `m_junta_cusco-intro` was approved by a recorded human review; `MISSION_ART` uses the generated
+  WebP and the in-engine capture remains evidence.
 - Regenerate with `blender --background --python scripts/blender/build_site_intro.py -- --mission=m_junta_cusco`.
 
 ## Tutorial
@@ -96,4 +96,4 @@ hold La Apacheta, resist at Umachiri. The informational montonera step advances 
 3. Performance: the high-preset opening measures ~741k triangles / ~986 draw calls in
    `scripts/bench_scene.mjs`, dominated by the unit rigs at the base. It passes the 780k/1000 regression
    cap but is not within art-direction §11's 600k/200 target.
-4. Human review of any new Blender pieces (none yet; the captures are in-engine).
+4. The plaza intro render is approved; any future Blender pieces still need their own review.

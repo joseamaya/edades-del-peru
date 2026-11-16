@@ -64,8 +64,8 @@ barracks, arsenal, stable, artillery workshop, fortress, walls, gate, tower and 
   `scripts/blender/build_site_intro.py --mission=m_lima`, stages the Plaza Mayor on the Lima
   heightmap: an authored cathedral (portal, rose window, tower and cross), the cabildo with its wooden
   balcony, tiled houses, the fountain and neighbours.
-- The record `m_lima-intro` is ingested from `art-src/blender/site-intros/renders.json` and is pending
-  human review; the briefing keeps the in-engine capture until it is approved.
+- The record `m_lima-intro` is ingested from `art-src/blender/site-intros/renders.json` and was approved by a
+  recorded human review; `MISSION_ART` uses the generated WebP and the in-engine captures remain evidence.
 - Regenerate with `blender --background --python scripts/blender/build_site_intro.py -- --mission=m_lima`.
 
 ## Tutorial
@@ -86,6 +86,6 @@ siege, take the camp.
 2. Performance: the opening measures ~767k triangles / ~834 draw calls under the 800k/860 first-pass cap;
    the city with the siege crowd measures ~1.06M / ~1,227 under the 1.1M/1,250 regression cap. Both remain
    over art-direction §11's 600k/200 target.
-3. The Blender scene is a first draft (`m_lima-intro`): extend it to the 1536 siege and solve the
-   Rímac/bridge composition before approval.
+3. The approved intro render is a first pass: a future revision can extend it to the 1536 siege and solve the
+   Rímac/bridge composition.
 4. A manual 30–40 minute playtest.

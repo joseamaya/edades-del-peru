@@ -170,7 +170,7 @@ built by `scripts/blender/build_tambotoco_intro.py`; its `m_tambotoco-intro` rec
 The first missions of the later campaigns use `scripts/blender/build_site_intro.py` and
 `art-src/blender/site-intros/renders.json`: `m_lima` (authored cathedral, cabildo and plaza), `m_junta_cusco`
 (twin-tower cathedral and the Junta's militia) and `m9_guerra_pacifico` (battery, Morro and warship). Those
-records are drafts pending human review and are ingested with:
+records are approved and used by `MISSION_ART`; they are ingested with:
 
 ```bash
 yarn art:blender --manifest=art-src/blender/site-intros/renders.json
