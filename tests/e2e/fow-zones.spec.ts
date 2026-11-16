@@ -9,11 +9,26 @@ import { test, expect, Page } from '@playwright/test';
  */
 
 const FOG_URL = '/?play=1&civ=moche&period=2&seed=777&low=1&noloop=1';
-const LAYERS = ['landscape', 'settlement', 'landmark'] as const;
+const TAMBOTOCO_URL = '/?mission=m_tambotoco&seed=1200&fog=1&low=1&noloop=1&intro=0';
+const CASES = [
+  { layer: 'landscape', url: FOG_URL },
+  { layer: 'settlement', url: FOG_URL },
+  { layer: 'landmark', url: FOG_URL },
+  // The ayllu site is a child of the landmark in Tambotoco; boot the mission so it exists.
+  { layer: 'ayllu', url: TAMBOTOCO_URL },
+] as const;
 
 async function boot(page: Page, url: string): Promise<void> {
   await page.goto(url, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+}
+
+async function bootMission(page: Page): Promise<void> {
+  await page.goto(TAMBOTOCO_URL, { waitUntil: 'networkidle' });
+  await page.getByRole('button', { name: /COMENZAR MISIÓN/ }).click({ timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.aylluSite != null, null, {
     timeout: 30_000,
   });
 }
@@ -75,8 +90,10 @@ test('the cultural layers share the terrain fog mask', { tag: '@smoke' }, async 
 });
 
 test('the cultural layers dim per fog zone (unexplored/explored/visible)', { tag: '@smoke' }, async ({ page }) => {
-  for (const layer of LAYERS) {
-    await boot(page, FOG_URL);
+  for (const testCase of CASES) {
+    const layer = testCase.layer;
+    if (layer === 'ayllu') await bootMission(page);
+    else await boot(page, testCase.url);
     const r = await page.evaluate((which: string) => {
       const g = (window as unknown as { game: any }).game;
       const THREE = (window as unknown as { THREE: any }).THREE;
@@ -84,11 +101,23 @@ test('the cultural layers dim per fog zone (unexplored/explored/visible)', { tag
       let root: any;
       if (which === 'landscape') root = g.landscape?.group;
       else if (which === 'settlement') root = g.settlements?.[0]?.group;
-      else root = g.landmark;
+      else if (which === 'ayllu') {
+        // The ayllu site is the landmark in Tambotoco; the Inticancha phase has a ground-level plaza
+        // that the minimum-zoom camera can frame (the shrine stone is too tall for the sampler).
+        g.setSitePhase('inticancha');
+        root = g.landmark;
+      } else root = g.landmark;
       if (!root) return { ok: false, reason: 'missing group' };
 
       // pick a mesh guaranteed to carry the feature (prefer the wide ones)
-      const prefer = which === 'landscape' ? 'field' : which === 'settlement' ? 'fields' : null;
+      const prefer =
+        which === 'landscape'
+          ? 'field'
+          : which === 'settlement'
+            ? 'fields'
+            : which === 'ayllu'
+              ? 'ayllu:inticancha'
+              : null;
       let mesh: any = null;
       if (prefer) root.traverse((o: any) => (mesh ||= o.isMesh && o.name === prefer ? o : null));
       if (!mesh) root.traverse((o: any) => (mesh ||= o.isMesh && o.geometry?.attributes?.position ? o : null));

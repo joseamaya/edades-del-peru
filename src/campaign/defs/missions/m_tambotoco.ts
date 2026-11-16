@@ -11,6 +11,8 @@ import {
 // Los hijos de Tambotoco: the cave, the Huanacaure huaca, the valley and Inticancha.
 const TAMBOTOCO_TAMBO_QUIRO = { x: 70, z: 91 } as const;
 const TAMBOTOCO_ENEMY = { x: 212, z: 200 } as const;
+/** Ground radius (m) revealed by the narrated Act III/IV camera beats. */
+const TAMBOTOCO_CAMERA_REVEAL = 45;
 
 export const mTambotoco: MissionDef = {
   id: 'm_tambotoco',
@@ -330,7 +332,7 @@ export const mTambotoco: MissionDef = {
           image: 'media/tambotoco/intro-valle.webp',
           text: 'El valle del Cusco ya tiene ayllus: huallas, sauaseray y alcabizas. La tradición cuenta que los recién llegados quitaron el agua a los alcabizas para obligarlos a ceder tierras. El agua es la palanca.',
         },
-        { type: 'camera', pos: { dx: 170, dz: 186 } },
+        { type: 'camera', pos: { dx: 170, dz: 186 }, reveal: TAMBOTOCO_CAMERA_REVEAL },
         { type: 'objective', objectiveId: 'a3_acequia', state: 'activate', announce: true },
         { type: 'objective', objectiveId: 'a3_hualla', state: 'activate', announce: true },
         {
@@ -369,7 +371,11 @@ export const mTambotoco: MissionDef = {
           text: 'Con el agua y la tierra aseguradas, los ayllus fundan Inticancha y ordenan el sitio en cuatro canchas. La leyenda del Cusco empieza aquí.',
         },
         { type: 'site_phase', phase: 'inticancha' },
-        { type: 'camera', pos: { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z } },
+        {
+          type: 'camera',
+          pos: { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z },
+          reveal: TAMBOTOCO_CAMERA_REVEAL,
+        },
         { type: 'objective', objectiveId: 'a4_inticancha', state: 'activate', announce: true },
       ],
     },

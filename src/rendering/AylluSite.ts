@@ -381,11 +381,17 @@ export class AylluSite {
    * Emit one cooking puff or altar flame near the camera, round-robin. Called from `Game.updateCityLife`
    * (the same presentation path as Caral), so the site inherits its distance cap and quiet phases.
    */
-  updateLife(focus: { x: number; z: number }, particles: Particles, lifeTurn: number): void {
+  updateLife(
+    focus: { x: number; z: number },
+    particles: Particles,
+    lifeTurn: number,
+    visibleAt: (x: number, z: number) => boolean,
+  ): void {
     const nearby = this.life.filter(
       (s) =>
         phaseOrder(this.plan, s.phase) <= phaseOrder(this.plan, this.phase) &&
-        Math.hypot(s.x - focus.x, s.z - focus.z) < 55,
+        Math.hypot(s.x - focus.x, s.z - focus.z) < 55 &&
+        visibleAt(s.x, s.z),
     );
     if (!nearby.length) return;
     const emit = (source: LifeSource, count: number): void => {

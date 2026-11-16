@@ -103,8 +103,10 @@ The legend is about eight siblings, so all eight are on the board from the start
   briefing name the eight.
 - The cave clearing is lit while the opening holds it and stays explored afterwards, so the landmark the
   story starts from never sits under black or blue-tinted fog.
-- The ayllu site is exempt from the injected fog shader: that shader whitens the merged vertex-coloured
-  site on software rendering (SwiftShader), which is how the captures and recordings are produced.
+- The ayllu site uses the same fog mask as the terrain. The old injection dimmed alpha as well as colour;
+  opaque landscape and site meshes then wrote alpha 0 and the post-processed SwiftShader frame showed
+  white slabs. `applyFow` now dims colour only. The cave clearing is explored by the opening reveal;
+  Huanacaure and the valley stay dark until reached or shown by the Act III/IV camera beats (`reveal: 45`).
 - Three narrated beats: the cave, Huanacaure, the valley.
 - Three chapter cards open the act that follows: Ayar Uchu en Huanacaure, el agua de los alcabizas and
   Ayar Auca en Inticancha.
@@ -150,13 +152,22 @@ valley wave and open the acequia in one step ({key:selectArmy}, right-click; car
 - `node scripts/shots_evidence.mjs --scene=tambotoco-heroes` → `docs/media/tambotoco-heroes.webp` (close)
   and `docs/media/tambotoco-heroes-rts.webp` (field markers). Both scenes render at 1600×900 and the WebP
   copies are resized to 960×540, WebP q58.
+- `tests/e2e/fow-zones.spec.ts` (`@smoke`, SwiftShader) is the reproducible regression for the fog fix.
+  `docs/media/tambotoco-fow-before.webp` is the Huanacaure view on `main` (white slabs); the after capture
+  is `docs/media/tambotoco-fow-after.webp` (landscape and ayllu site dimmed, no white).
 
 ## Open items
 
-1. Performance: the opening measures ~567k triangles / ~339 draw calls in `bench_scene.mjs` (ayllu site,
-   eight nameplates, hero rings/banners and tunic accents) under the 600k/340 first-pass cap; the Act IV
-   Inticancha view measures 472k/217. The next pass should tighten toward art-direction §11's 200 calls.
-   The mission starts with a small force (5 workers, 7 militia, 2 slingers, 1 scout) to keep the rig count down.
+1. Performance (measured 2026-11-16; the mission is now in `bench:check`): software/SwiftShader (the
+   backend `bench:check` runs) measures **467,220 triangles / ≈301 draw calls** at the opening and
+   **636,372 / 310** on the founded Inticancha framed on the four canchas, over the 620k late target but
+   under the 660k first-pass cap and the 360-call cap. Hardware high quality (`--gpu`, Intel iGPU)
+   measures **684,810 / 305** and **854,190 / 316**, over both caps and over art-direction §11's
+   200-call target; frame p50 is 30.2 ms at 1600×900 (33 fps) and 24.4 ms without the water refraction.
+   The performance row is therefore **Partial**, not Met: the next pass is the hardware/LOD pass, not a
+   doc change. `yarn bench:check` currently stops earlier at the pre-existing `m8_independencia` overrun;
+   the two Tambotoco commands pass individually. The mission starts with a small force (5 workers,
+   7 militia, 2 slingers, 1 scout) to keep the rig count down.
 2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry); a Blender architecture
    kit (cave, shrine, houses, terraces) is the next art pass.
 3. A manual 30–40 minute playtest without isolated attrition, checking that the eight nameplates stay

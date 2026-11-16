@@ -22,6 +22,12 @@ const patched = new WeakSet<THREE.Material>();
  * dimmed, currently visible clear. The grid is sampled in world XZ, so the layer
  * dims glued to the relief without a second visibility system. The uniforms are
  * shared, so toggling fog updates every patched material at once.
+ *
+ * Only the colour is dimmed. Multiplying alpha as well made opaque landscape/site
+ * meshes write alpha 0; the post-processed frame then showed them as white slabs
+ * (SwiftShader, the backend used for the review captures). A dark RGB over the
+ * black unexplored terrain is enough to hide them; transparent field/path overlays
+ * keep their alpha and rely on the same RGB dimming.
  */
 export function applyFow(material: THREE.Material, u: FowUniforms): void {
   // A second patch would declare the varyings twice and break the shader (a group can be decorated
@@ -52,11 +58,10 @@ export function applyFow(material: THREE.Material, u: FowUniforms): void {
           float fowValue = texture2D(fowMap, vFowWorld.xz / fowMapSize).r;
           float fow = fowDim(fowValue);
           gl_FragColor.rgb *= fow;
-          gl_FragColor.a *= fow;
         }`,
       );
   };
-  material.customProgramCacheKey = () => 'fow-v1';
+  material.customProgramCacheKey = () => 'fow-v2';
   material.userData.fow = u;
   material.needsUpdate = true;
 }

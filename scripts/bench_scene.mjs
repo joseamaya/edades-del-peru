@@ -69,12 +69,13 @@ const BUDGETS = {
   // Chavín opening: the phased kit, highland vegetation and the base. Measure first, then ratchet down.
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
-  // Tambotoco opening: the ayllu site, eight nameplates and the hero rings/banners/tunic accents;
-  // measured ~567k / 339. First-pass cap; still over §11's 200-call target.
+  // Tambotoco opening: the ayllu site, eight nameplates and the hero rings/banners/tunic accents.
+  // Measured 467k/≈301 in software and 684k/305 on the Intel iGPU; first-pass cap, still over §11's
+  // 200-call target. The hardware view is the open performance item.
   m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 340, kitTriangles: 0, kitDrawCalls: 0 },
-  // The founded Inticancha (the `fundada` phase at victory) is the heaviest view; it must not blow the
-  // same first-pass budget.
-  m_tambotoco_late: { sceneTriangles: 620_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
+  // The founded Inticancha (the `fundada` phase at victory) framed on the four canchas: 636,372/310
+  // in software and 854,190/316 on the Intel iGPU. First-pass cap; over the 600k art-direction target.
+  m_tambotoco_late: { sceneTriangles: 660_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
   // Lima opening: the hueste with horses and artillery. First-pass cap measured ~763k / 839; tighten after
   // the unit-rig pass (art-direction §11 targets 200 calls).
   m_lima: { sceneTriangles: 800_000, sceneDrawCalls: 860, kitTriangles: 140_000, kitDrawCalls: 25 },
@@ -229,7 +230,24 @@ try {
                   : 'in_use',
           );
         }
-        const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
+        // Tambotoco's `site` ref is Huanacaure; Act IV lives at Inticancha. Frame the four canchas
+        // themselves, or the "late" view measures the shrine meadow and the settlement sits off-camera.
+        const canchas =
+          mission === 'm_tambotoco'
+            ? [
+                [156, 190],
+                [180, 190],
+                [168, 178],
+                [168, 202],
+              ]
+            : null;
+        const site =
+          canchas === null
+            ? g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 })
+            : {
+                x: canchas.reduce((sum, [x]) => sum + x, 0) / canchas.length,
+                z: canchas.reduce((sum, [, z]) => sum + z, 0) / canchas.length,
+              };
         if (mission === 'm8_independencia') {
           // Act III: Ayacucho.
           for (let i = 0; i < 14; i++) {
@@ -318,17 +336,10 @@ try {
             g.spawnScriptedUnit('worker', 0, site.x - 12 + (i % 6) * 4, site.z + 18 + Math.floor(i / 6) * 3);
           }
         }
-        if (mission === 'm_tambotoco') {
+        if (canchas) {
           // Measure the Act IV settlement, not an empty meadow: the store and the four canchas.
           g.spawnScriptedBuilding('mill', 0, site.x, site.z);
-          for (const [x, z] of [
-            [156, 190],
-            [180, 190],
-            [168, 178],
-            [168, 202],
-          ]) {
-            g.spawnScriptedBuilding('house', 0, x, z);
-          }
+          for (const [x, z] of canchas) g.spawnScriptedBuilding('house', 0, x, z);
         }
         let t = 1;
         for (let i = 0; i < 60; i++) {

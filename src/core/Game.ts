@@ -1269,6 +1269,11 @@ export class Game {
   private lifeTimer = 0;
   private lifeTurn = 0;
 
+  /** True when a ground point is explored, or fog is off; shared by presentation visibility checks. */
+  isExploredAt(x: number, z: number): boolean {
+    return !this.settings.fogOfWar || this.fow.isExplored(x, z);
+  }
+
   /**
    * The city in use (presentation only): cooking smoke behind the dwellings near the camera, the sacred
    * fire on the Pyramid Mayor once it is in use, and a large blaze while the community gathers for the
@@ -1283,7 +1288,7 @@ export class Game {
     const focus = this.camera.getTarget();
     // The ayllu kit owns its life sources (huts, altars) and reuses this presentation tick, so it
     // inherits the same 70 m camera cap as Caral's cooking smoke.
-    this.aylluSite?.updateLife(focus, this.particles, this.lifeTurn);
+    this.aylluSite?.updateLife(focus, this.particles, this.lifeTurn, (x, z) => this.isExploredAt(x, z));
     this.colonialSite?.updateLife(focus, this.particles, this.lifeTurn);
     const city = this.caralCity ?? this.chavinCity;
     if (!city) return;

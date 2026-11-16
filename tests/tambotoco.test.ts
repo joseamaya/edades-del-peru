@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import pkg from '../package.json';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import { getEducational } from '../src/campaign/defs/educational';
 import { tutorialForMission } from '../src/campaign/defs/tutorials';
@@ -196,6 +197,11 @@ describe('Los hijos de Tambotoco', () => {
     const site = getAuthoredSite('tambotoco_site')!;
     expect(site.modelName).toBe('ayllu_site');
     expect(site.phases?.phases).toEqual(['cave', 'huanacaure', 'inticancha', 'fundada']);
+  });
+
+  it('is covered by the performance gate, opening and founded Inticancha', () => {
+    expect(pkg.scripts['bench:check']).toContain('--mission=m_tambotoco --assert');
+    expect(pkg.scripts['bench:check']).toContain('--mission=m_tambotoco --stage=late --assert');
   });
 
   it('raises a huaca when the legend leaves a sibling behind', () => {
