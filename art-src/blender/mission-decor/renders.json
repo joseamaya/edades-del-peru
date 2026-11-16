@@ -63,37 +63,6 @@
       "nature": "abstraction",
       "sourceSha256": "9553b0d8f155f435359da12150acf918500de6771ef895ba762c89d8dbaa4777",
       "renderedAt": "2026-10-31T10:00:00-05:00"
-    },
-    {
-      "id": "m6b_guerra_civil-intro",
-      "type": "campaign-intro",
-      "scope": "mission",
-      "campaignId": "la-senda-del-sol",
-      "missionId": "m6b_guerra_civil",
-      "civilization": "inca",
-      "period": 5,
-      "era": 2,
-      "region": "high_andes",
-      "topic": "campaign_intro",
-      "sceneType": "campaign_scene",
-      "asset": "media/generated/campaigns/la-senda-del-sol/m6b_guerra_civil/intro.webp",
-      "render": "mission-decor/renders/cusco_hero.png",
-      "sceneFile": "mission-decor/cusco_inca_lod0.blend",
-      "confidence": "tipología documentada; planta y remates plausibles",
-      "camera": "hero",
-      "renderer": "workbench",
-      "license": "project-owned",
-      "author": "Miguel Amaya",
-      "sources": [
-        "docs/historia/campanas/guerra_civil_inca.md",
-        "docs/historia/arquitectura.md",
-        "art-src/blender/mission-decor/README.md"
-      ],
-      "alt": "Vista del ushnu, la plaza y el recinto amurallado del Cusco incaico.",
-      "caption": "Cusco incaico y Quipaipan, 1529–1532",
-      "nature": "abstraction",
-      "sourceSha256": "72eae8f2ab3144c1f634f25de5a4551723ce849958c441cb18a5407c657b48cf",
-      "renderedAt": "2026-10-31T18:25:00-05:00"
     }
   ]
 }

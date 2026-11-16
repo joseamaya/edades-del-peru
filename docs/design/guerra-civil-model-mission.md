@@ -63,6 +63,15 @@ builds; the exception is recorded here and in the quality bar.
 - Victory: the pampa is held and Huáscar is captured. The epilogue (`media/cusco-inca/intro-epilogo.webp`)
   narrates Cajamarca. Defeat: Atahualpa dies or the army is lost.
 
+## Intro render
+
+- `art-src/blender/site-intros/m6b_guerra_civil/m6b_guerra_civil.blend`, built by
+  `scripts/blender/build_site_intro.py --mission=m6b_guerra_civil`, stages the Cusco plaza with the ushnu,
+  a kallanka, banners and the two Inca factions.
+- The record `m6b_guerra_civil-intro` is a draft pending human review; the briefing keeps the in-engine
+  capture until it is approved.
+- Regenerate with `blender --background --python scripts/blender/build_site_intro.py -- --mission=m6b_guerra_civil`.
+
 ## Tutorial
 
 The non-blocking steps cover selection, the march, the battle and the capture; the historical context stays
