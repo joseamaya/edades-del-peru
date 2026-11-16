@@ -329,6 +329,19 @@ slot is absent (offline / without assets).
 - **Review**: no human art-review gate applies to in-engine captures; the procedural ayllu site has no GLB
   manifest entry, and the Chanca pucará GLB is tracked in #343, not in the manifest.
 
+### Tambotoco ayllu kit captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-kit-{before,after}.webp` (Inticancha) and
+  `docs/media/tambotoco-kit-valley-{before,after}.webp` (hualla valley), 960x540 WebP q58, ~93 KB in total.
+- **Source**: captured from the game itself by `scripts/capture_ayllu_kit.mjs` (1600x900, HUD hidden, site
+  at `fundada`); the `before` set comes from the previous single-mesh `AylluSite` on `main`, captured by
+  copying the same script into a `main` worktree and running the same views. Regenerate the after set with
+  `node scripts/capture_ayllu_kit.mjs --tag=after` after kit changes.
+- **Content**: in-engine recreations of the game's own scene. No model, texture or manifest entry is added
+  by the kit; it is generated geometry.
+- **Review**: no human art-review gate applies to in-engine captures; the modular kit has no GLB asset and
+  the authored layout stays the source of truth for a later Blender kit.
+
 ### La Junta del Cusco intro, chapter and epilogue images (in-engine recreations)
 
 - **Location**: `public/media/junta/intro-{cabildo,apacheta,umachiri,epilogo}.webp` (960x540, WebP q58,
