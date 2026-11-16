@@ -330,7 +330,7 @@ export const mTambotoco: MissionDef = {
           image: 'media/tambotoco/intro-valle.webp',
           text: 'El valle del Cusco ya tiene ayllus: huallas, sauaseray y alcabizas. La tradición cuenta que los recién llegados quitaron el agua a los alcabizas para obligarlos a ceder tierras. El agua es la palanca.',
         },
-        { type: 'camera', pos: { dx: 170, dz: 186 } },
+        { type: 'camera', pos: { dx: 170, dz: 186 }, reveal: 45 },
         { type: 'objective', objectiveId: 'a3_acequia', state: 'activate', announce: true },
         { type: 'objective', objectiveId: 'a3_hualla', state: 'activate', announce: true },
         {
@@ -369,7 +369,7 @@ export const mTambotoco: MissionDef = {
           text: 'Con el agua y la tierra aseguradas, los ayllus fundan Inticancha y ordenan el sitio en cuatro canchas. La leyenda del Cusco empieza aquí.',
         },
         { type: 'site_phase', phase: 'inticancha' },
-        { type: 'camera', pos: { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z } },
+        { type: 'camera', pos: { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z }, reveal: 45 },
         { type: 'objective', objectiveId: 'a4_inticancha', state: 'activate', announce: true },
       ],
     },

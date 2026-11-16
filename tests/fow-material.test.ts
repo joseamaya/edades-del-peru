@@ -30,6 +30,14 @@ describe('applyFow', () => {
     expect(material.userData.fow).toBe(fow);
   });
 
+  it('dims colour only: alpha dimming turned opaque meshes white in the post-processed frame', () => {
+    const material = new THREE.MeshStandardMaterial();
+    applyFow(material, createFowUniforms());
+    const { fragment } = runCompile(material);
+    expect(fragment).toContain('gl_FragColor.rgb *= fow');
+    expect(fragment).not.toContain('gl_FragColor.a *= fow');
+  });
+
   it('chains any pre-existing onBeforeCompile', () => {
     const material = new THREE.MeshStandardMaterial();
     let previousCalls = 0;

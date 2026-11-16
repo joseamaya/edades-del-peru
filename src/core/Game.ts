@@ -1283,7 +1283,12 @@ export class Game {
     const focus = this.camera.getTarget();
     // The ayllu kit owns its life sources (huts, altars) and reuses this presentation tick, so it
     // inherits the same 70 m camera cap as Caral's cooking smoke.
-    this.aylluSite?.updateLife(focus, this.particles, this.lifeTurn);
+    this.aylluSite?.updateLife(
+      focus,
+      this.particles,
+      this.lifeTurn,
+      (x, z) => !this.settings.fogOfWar || this.fow.isExplored(x, z),
+    );
     this.colonialSite?.updateLife(focus, this.particles, this.lifeTurn);
     const city = this.caralCity ?? this.chavinCity;
     if (!city) return;

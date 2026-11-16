@@ -30,9 +30,9 @@ export const TAMBOTOCO_CANCHAS = [
 ];
 
 export const TAMBOTOCO_INTICANCHA_HUTS: readonly AylluHut[] = [
-  { x: 156, z: 176, w: 3.2, d: 2.8, wall: 1.5, smoke: true },
+  { x: 158, z: 176, w: 3.2, d: 2.8, wall: 1.5, smoke: true },
   { x: 180, z: 176, w: 3.2, d: 2.8, wall: 1.5, smoke: false },
-  { x: 155, z: 203, w: 3.2, d: 2.8, wall: 1.5, smoke: true },
+  { x: 162, z: 203, w: 3.2, d: 2.8, wall: 1.5, smoke: true },
   { x: 181, z: 203, w: 3.2, d: 2.8, wall: 1.5, smoke: false },
   { x: 168, z: 172, w: 4.2, d: 2.8, wall: 1.5, smoke: true },
   { x: 168, z: 210, w: 3.2, d: 2.8, wall: 1.5, smoke: false },
@@ -69,7 +69,7 @@ export const TAMBOTOCO_VILLAGES: readonly AylluVillage[] = [
       { x: 134, z: 160, w: 3, d: 2.6, wall: 1.4, smoke: true },
       { x: 142, z: 163, w: 3, d: 2.6, wall: 1.4, smoke: true },
       { x: 138, z: 167, w: 3, d: 2.6, wall: 1.4, smoke: false },
-      { x: 136, z: 168, w: 3, d: 2.6, wall: 1.4, smoke: false },
+      { x: 132, z: 166, w: 3, d: 2.6, wall: 1.4, smoke: false },
     ],
     field: { x: 147, z: 157, w: 10, d: 7, rows: 5 },
   },
@@ -81,7 +81,7 @@ export const TAMBOTOCO_VILLAGES: readonly AylluVillage[] = [
       { x: 184, z: 212, w: 3, d: 2.6, wall: 1.4, smoke: true },
       { x: 192, z: 215, w: 3, d: 2.6, wall: 1.4, smoke: true },
       { x: 188, z: 219, w: 3, d: 2.6, wall: 1.4, smoke: false },
-      { x: 186, z: 220, w: 3, d: 2.6, wall: 1.4, smoke: false },
+      { x: 182, z: 221, w: 3, d: 2.6, wall: 1.4, smoke: false },
     ],
     field: { x: 197, z: 209, w: 10, d: 7, rows: 5 },
   },
@@ -93,7 +93,7 @@ export const TAMBOTOCO_VILLAGES: readonly AylluVillage[] = [
       { x: 194, z: 164, w: 3, d: 2.6, wall: 1.4, smoke: true },
       { x: 202, z: 167, w: 3, d: 2.6, wall: 1.4, smoke: true },
       { x: 198, z: 171, w: 3, d: 2.6, wall: 1.4, smoke: false },
-      { x: 196, z: 172, w: 3, d: 2.6, wall: 1.4, smoke: false },
+      { x: 192, z: 174, w: 3, d: 2.6, wall: 1.4, smoke: false },
     ],
     field: { x: 207, z: 161, w: 10, d: 7, rows: 5 },
   },

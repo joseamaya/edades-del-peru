@@ -153,10 +153,14 @@ valley wave and open the acequia in one step ({key:selectArmy}, right-click; car
 
 ## Open items
 
-1. Performance: the opening measures ~567k triangles / ~339 draw calls in `bench_scene.mjs` (ayllu site,
-   eight nameplates, hero rings/banners and tunic accents) under the 600k/340 first-pass cap; the Act IV
-   Inticancha view measures 472k/217. The next pass should tighten toward art-direction §11's 200 calls.
-   The mission starts with a small force (5 workers, 7 militia, 2 slingers, 1 scout) to keep the rig count down.
+1. Performance (measured 2026-11-16; the mission is now in `bench:check`): software/SwiftShader (the
+   backend `bench:check` runs) measures **467,220 triangles / 300 draw calls** at the opening and
+   **501,980 / 229** at the founded Inticancha, inside the 600k/340 and 620k/360 first-pass caps.
+   Hardware high quality (`--gpu`, Intel iGPU) measures **684,810 / 305** and **719,570 / 233**, over
+   those caps and over art-direction §11's 200-call target; frame p50 is 30.2 ms at 1600×900 (33 fps)
+   and 24.4 ms without the water refraction. The performance row is therefore **Partial**, not Met:
+   the next pass is the hardware/LOD pass, not a doc change. The mission starts with a small force
+   (5 workers, 7 militia, 2 slingers, 1 scout) to keep the rig count down.
 2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry); a Blender architecture
    kit (cave, shrine, houses, terraces) is the next art pass.
 3. A manual 30–40 minute playtest without isolated attrition, checking that the eight nameplates stay

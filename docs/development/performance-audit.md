@@ -175,6 +175,12 @@ de una GPU dedicada; el `loadavg` va en el JSON.
 | m_tambotoco apertura | 331 | 759k | 43.8/47.2/57.3 ms | 26.7 ms | 17.1 ms (39 %) |
 | m_lima apertura | 843 | 973k | 50.6/63.7/74.5 ms | 31.8 ms | 18.8 ms (37 %) |
 
+> **Actualización 2026-11-16 (m_tambotoco).** `bench_scene.mjs --gpu` mide hoy **684.810 tris / 305 calls**
+> en la apertura y **719.570 / 233** en el Inticancha fundado: sigue por encima de los caps 600k/620k. En
+> software (SwiftShader, lo que ejecuta `bench:check`) mide 467.220/300 y 501.980/229, dentro de los caps.
+> La misión ya está en `bench:check`; la fila `Performance` de la quality bar pasa a **Partial** con ambas
+> cifras. Frame p50 a 1600×900 alta: 30,2 ms (33 fps), 24,4 ms sin refracción del agua.
+
 `draws escena` es un solo pase de escena (con su pase de sombras) y es el número estructural comparable con los
 presupuestos de `bench_scene`. Desde #455 el frame con post-proceso dibuja la escena **dos veces** (refracción y
 compositor) y el pase de sombras **una**: en m1_caral el frame mide 309 draws ≈ 2 × 116 de escena + 61 de sombras

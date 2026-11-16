@@ -291,9 +291,9 @@ export class WorldViewDecor {
           def.phases ?? { phases: ['cave'], initial: 'cave' },
         );
         ayllu.setPhase(this.game.sitePhase);
-        // No fog patch here: the injected shader whitens the merged vertex-coloured site on software
-        // rendering, and the cave is the mission's opening image. The site phases follow the cast, so
-        // their geometry is explored when it appears.
+        // The site is fogged like every other cultural layer: the cave stays explored by the opening
+        // reveal, while Huanacaure and the valley hamlets stay dark until the player reaches them.
+        applyFowToObject(ayllu.group, this.game.fowUniforms);
         this.game.aylluSite = ayllu;
       }
       return;

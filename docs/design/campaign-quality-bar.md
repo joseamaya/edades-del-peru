@@ -426,7 +426,7 @@ The table separates what is implemented from the performance pass that is still 
 | Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                    |
 | Tests       | Met: `tests/tambotoco.test.ts` (cast, tags, huaca beats), scale, campaign path and the campaign E2E specs.                                                               |
 | Docs        | Met: dossier, `tambotoco-model-mission.md`, this table and the redesign status.                                                                                          |
-| Performance | Partial: opening ~567k triangles / ~339 calls under 600k/340 (hero markers and accents), Act IV 472k/217 under 620k/360; still over art-direction §11's 200-call target. |
+| Performance | Partial (measured 2026-11-16): software `bench:check` opening 467,220 tris / 300 calls, Act IV 501,980 / 229, within 600k/340 and 620k/360; hardware high 684,810 / 305 and 719,570 / 233, over those caps; still over art-direction §11's 200-call target. |
 | Art         | Met: approved authored EEVEE intro render; the ayllu kit stays procedural; captures are in-engine and documented in PROVENANCE.                                          |
 | Structure   | Met: four acts with hidden objectives, three chapter cards and the documented foundation.                                                                                |
 | Opening     | Met: three narrated beats with in-engine captures, three act cards and the epilogue backdrop.                                                                            |
