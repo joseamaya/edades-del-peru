@@ -51,6 +51,8 @@ export interface MissionCanal {
   initiallyOpen?: boolean;
   /** Whether the authored canal contributes irrigation yield to nearby farms. */
   irrigation?: boolean;
+  /** Irrigation reach in metres from the trace; defaults to 2.5. */
+  irrigationReach?: number;
   /**
    * Objective that must be active before the gate answers (Caral's Act II canal). Until then the
    * gate is scenery: opening it would complete the objective the moment it appears.

@@ -417,8 +417,8 @@ The table separates what is implemented from the performance pass that is still 
 | History     | Met: `docs/historia/campanas/tambotoco.md` with a certainty table; the dossier states that Sarmiento is hostile and Garcilaso gives another version.                     |
 | Identity    | Met: water and land as leverage, not a pitched battle; the four canchas order the foundation.                                                                            |
 | Characters  | Met: the eight siblings march as named units; Cachi, Uchu and Auca leave a named huaca.                                                                                  |
-| Play        | Partial: no HP pinning and the acts build/visit correctly, but the E2E never fights the valley wave; `yarn record --mode=full` and a human playtest are still needed.    |
-| Contract    | Met: Acts II–IV hidden, the hualla visit is optional, and the acequia is the only required water step.                                                                   |
+| Play        | Partial: no HP pinning; the E2E now holds Huanacaure through the valley wave, builds the optional irrigation farm and verifies the gate is closed and `a3_acequia` pending before the hold, then opens it; the heritage card and gate are still invoked by API, so a human playtest remains. `yarn record --mode=full` completes with the wave. |
+| Contract    | Met: Acts II–IV hidden; the hualla visit and the irrigation farm are optional; the defended intake (`a3_oleada`) gates the acequia, the only required water step.     |
 | Onboarding  | Met: six-step tutorial that teaches controls (move, camp store, hunt, visit, water, canchas), briefing with the eight siblings and Codex.                                |
 | Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden.                                                                |
 | UX          | Met: campaign layout at 1600×900, the eight-card briefing at 1280×720 and `hud-layout.spec.ts`.                                                                          |

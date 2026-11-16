@@ -1,14 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import pkg from '../package.json';
 import { MISSIONS } from '../src/campaign/defs/campaign';
+import { TAMBOTOCO_HOLD, TAMBOTOCO_OUTLET, TAMBOTOCO_WAVE } from '../src/campaign/defs/missions/m_tambotoco';
 import { getEducational } from '../src/campaign/defs/educational';
 import { tutorialForMission } from '../src/campaign/defs/tutorials';
+import { canalIrrigationAt } from '../src/model/defs/canal';
 import { getAuthoredSite } from '../src/model/defs/sites';
 import { commanderById } from '../src/model/defs/commanders';
 import { unitTrainableInPeriod } from '../src/model/defs/units';
 import { BuildingKind, CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
 
 const TAMBOTOCO = MISSIONS.find((m) => m.id === 'm_tambotoco')!;
+const HIDDEN_OBJECTIVE_IDS = [
+  'a1_campamento',
+  'a1_caza',
+  'a2_huanacaure',
+  'a3_oleada',
+  'a3_acequia',
+  'a3_riego',
+  'a4_inticancha',
+  'a4_canchas',
+] as const;
 
 describe('Los hijos de Tambotoco', () => {
   it('is the 256 m legendary opening of El Tahuantinsuyo', () => {
@@ -33,7 +45,7 @@ describe('Los hijos de Tambotoco', () => {
 
   it('plays four acts with the later ones hidden and revealed by triggers', () => {
     expect(TAMBOTOCO.objectives.find((o) => o.id === 'a1_salida')!.hidden).toBeFalsy();
-    for (const id of ['a1_campamento', 'a1_caza', 'a2_huanacaure', 'a3_acequia', 'a4_inticancha', 'a4_canchas']) {
+    for (const id of HIDDEN_OBJECTIVE_IDS) {
       expect(TAMBOTOCO.objectives.find((o) => o.id === id)!.hidden, id).toBe(true);
     }
     const acts = TAMBOTOCO.triggers.flatMap((t) => t.effects.filter((fx) => fx.type === 'act'));
@@ -47,9 +59,53 @@ describe('Los hijos de Tambotoco', () => {
         t.effects.flatMap((fx) => (fx.type === 'objective' && fx.state === 'activate' ? [fx.objectiveId] : [])),
       ),
     );
-    for (const id of ['a1_campamento', 'a1_caza', 'a2_huanacaure', 'a3_acequia', 'a4_inticancha', 'a4_canchas']) {
+    for (const id of HIDDEN_OBJECTIVE_IDS) {
       expect(activated.has(id), id).toBe(true);
     }
+  });
+
+  it('makes the defended intake the gate to the water', () => {
+    const wave = TAMBOTOCO.objectives.find((o) => o.id === 'a3_oleada')!;
+    expect(wave.kind).toBe('hold');
+    expect(wave.pos).toEqual({ dx: TAMBOTOCO_HOLD.x, dz: TAMBOTOCO_HOLD.z });
+    expect(wave.radius).toBe(10);
+    expect(wave.minUnits).toBe(3);
+    expect(wave.time).toBe(60);
+    expect(wave.hidden).toBe(true);
+
+    const gate = TAMBOTOCO.triggers.find((t) => t.id === 't_huanacaure')!;
+    expect(gate.effects.some((fx) => fx.type === 'objective' && fx.objectiveId === 'a3_acequia')).toBe(false);
+    expect(gate.effects.some((fx) => fx.type === 'objective' && fx.objectiveId === 'a3_oleada')).toBe(true);
+    const spawn = gate.effects.find((fx) => fx.type === 'wave')!;
+    expect(spawn.type).toBe('wave');
+    if (spawn.type === 'wave') {
+      expect(spawn.pos).toEqual({ dx: TAMBOTOCO_WAVE.x, dz: TAMBOTOCO_WAVE.z });
+      expect(spawn.target).toEqual({ dx: TAMBOTOCO_HOLD.x, dz: TAMBOTOCO_HOLD.z });
+      expect(spawn.units.reduce((n, u) => n + u.count, 0)).toBe(5);
+    }
+
+    const afterWave = TAMBOTOCO.triggers.find((t) => t.id === 't_oleada')!;
+    expect(afterWave.condition).toEqual({ type: 'objective', objectiveId: 'a3_oleada', state: 'completed' });
+    expect(
+      afterWave.effects.some(
+        (fx) => fx.type === 'objective' && fx.objectiveId === 'a3_acequia' && fx.state === 'activate',
+      ),
+    ).toBe(true);
+
+    const riego = TAMBOTOCO.objectives.find((o) => o.id === 'a3_riego')!;
+    expect(riego.kind).toBe('build');
+    expect(riego.buildingKind).toBe(BuildingKind.FARM);
+    expect(riego.optional).toBe(true);
+    expect(riego.pos).toEqual({ dx: TAMBOTOCO_OUTLET.x, dz: TAMBOTOCO_OUTLET.z });
+    expect(riego.radius).toBe(4);
+    const water = TAMBOTOCO.triggers.find((t) => t.id === 't_acequia')!;
+    expect(
+      water.effects.some((fx) => fx.type === 'objective' && fx.objectiveId === 'a3_riego' && fx.state === 'activate'),
+    ).toBe(true);
+
+    const agua = tutorialForMission('m_tambotoco')!.steps.find((step) => step.id === 'agua')!;
+    expect(agua.gateObjective).toBe('a3_oleada');
+    expect(agua.check).toEqual({ type: 'objectiveCompleted', objectiveId: 'a3_acequia' });
   });
 
   it('starts with the party only: no centre or dwellings, and the workers raise the first camp', () => {
@@ -90,8 +146,9 @@ describe('Los hijos de Tambotoco', () => {
     expect(TAMBOTOCO.objectives.find((o) => o.id === 'a3_acequia')!.kind).toBe('canal_open');
     expect(TAMBOTOCO.layout?.canal?.heritageId).toBe('tambotoco_acequia');
     expect(TAMBOTOCO.layout?.canal?.lockedUntilObjective).toBe('a3_acequia');
-    // Its own locked-gate hint: the shared default talks about Caral's valley fields.
-    expect(TAMBOTOCO.layout?.canal?.lockedHint).toContain('Huanacaure');
+    // Its own locked-gate hint: the gate waits for the defended intake, not Caral's valley fields.
+    expect(TAMBOTOCO.layout?.canal?.lockedHint).toContain('oleada');
+    expect(TAMBOTOCO.layout?.canal?.lockedHint).toContain('compuerta');
     const inticancha = TAMBOTOCO.objectives.find((o) => o.id === 'a4_inticancha')!;
     expect(inticancha.kind).toBe('build');
     expect(inticancha.buildingKind).toBe(BuildingKind.MILL);
@@ -99,6 +156,18 @@ describe('Los hijos de Tambotoco', () => {
     expect(canchas.kind).toBe('network');
     expect(canchas.buildingKind).toBe(BuildingKind.HOUSE);
     expect(canchas.nodes).toHaveLength(4);
+  });
+
+  it('puts the optional farm inside the acequia reach and not on the plaza', () => {
+    const size = TAMBOTOCO.map.size;
+    const path = (TAMBOTOCO.layout?.canal?.path ?? []).map((p) => ({ x: p.x * size, z: p.z * size }));
+    const reach = TAMBOTOCO.layout?.canal?.irrigationReach;
+    expect(reach).toBe(4.5);
+    // A farm centre 3.8 m from the outlet is legal (keepout 3.2 m) and gets a real yield (>0.1).
+    expect(canalIrrigationAt(path, TAMBOTOCO_OUTLET.x + 3.8, TAMBOTOCO_OUTLET.z, reach)).toBeGreaterThan(0.1);
+    // The reach is local: the west side of the plaza and the cave stay dry.
+    expect(canalIrrigationAt(path, 160, 190, reach)).toBe(0);
+    expect(canalIrrigationAt(path, 40, 55, reach)).toBe(0);
   });
 
   it('keeps the roster inside the Intermedio Tardío', () => {

@@ -425,6 +425,7 @@ test('saves and loads Tambotoco mid Act IV (Inticancha phase)', async ({ page })
       'a1_caza',
       'a1_manco',
       'a2_huanacaure',
+      'a3_oleada',
       'a3_acequia',
       'a3_hualla',
       'a4_inticancha',

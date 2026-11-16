@@ -3,7 +3,7 @@ import { distanceToPath } from '../../util/math';
 /** Default water width for an authored canal in world units. */
 export const DEFAULT_CANAL_WIDTH = 2.2;
 /** Distance from the channel centreline where the irrigation bonus fades out (m). */
-const CANAL_IRRIGATION_REACH = 2.5;
+export const CANAL_IRRIGATION_REACH = 2.5;
 /** Channel is dry (and its stone plug back in place) from this drought level. */
 export const CANAL_DRY_DROUGHT = 0.35;
 /** The summer flood (sierra rains) fills the channel from this wet-season level. */
@@ -21,6 +21,11 @@ export function canalEdgeHalfWidth(width: number): number {
 }
 
 /** Irrigation strength (0..1) at a point, from its distance to the authored channel. */
-export function canalIrrigationAt(path: readonly { x: number; z: number }[], x: number, z: number): number {
-  return Math.max(0, 1 - distanceToPath(x, z, path) / CANAL_IRRIGATION_REACH);
+export function canalIrrigationAt(
+  path: readonly { x: number; z: number }[],
+  x: number,
+  z: number,
+  reach = CANAL_IRRIGATION_REACH,
+): number {
+  return Math.max(0, 1 - distanceToPath(x, z, path) / reach);
 }

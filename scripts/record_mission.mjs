@@ -244,6 +244,21 @@ async function playMission(page, plan) {
   await look(page, { x: plan.heritage.x, z: plan.heritage.z + 3 }, 28);
   await page.waitForTimeout(4000);
 
+  // The acequia is locked until the party has held Huanacaure through the alcabizas' wave.
+  const gateProbe = await page.evaluate(() => {
+    const g = window.game;
+    const before = g.isCanalOpen();
+    g.toggleCanal();
+    return { before, after: g.isCanalOpen() };
+  });
+  if (gateProbe.before || gateProbe.after) throw new Error('the acequia opened before the hold');
+  await move(page, army, { x: plan.heritage.x, z: plan.heritage.z + 12 });
+  await waitObjective(page, 'a3_oleada', 'completed', 120_000, deadline, async () => {
+    await look(page, null, 30, 'army');
+    await move(page, army, { x: plan.heritage.x, z: plan.heritage.z + 12 });
+  });
+  if (await hasEnded(page)) return;
+
   await page.evaluate(() => window.game.toggleCanal());
   await look(page, null, 31, 'workers');
   await waitObjective(page, 'a3_acequia', 'completed', 30_000, deadline);

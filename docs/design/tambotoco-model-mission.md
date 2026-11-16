@@ -20,18 +20,23 @@ history.
 | --------------- | ----------------------- | ---------------------------------------------------- | --------------------------------------------------------------- |
 | I · La cueva    | Tambotoco / Pacaritambo | Leave the cave, raise the first camp, hunt 120 food  | The peregrination starts as a movement of families, not an army |
 | II · Huanacaure | Huanacaure hill         | Reach and visit the huaca                            | Ayar Uchu becomes stone; the huaca marks the route              |
-| III · El agua   | Cusco valley            | Open the acequia to force the alcabizas to cede land | Water as political leverage (Sarmiento)                         |
+| III · El agua   | Cusco valley            | Hold Huanacaure through the wave, open the acequia, irrigate a farm (optional) | Water as political leverage (Sarmiento)                         |
 | IV · Inticancha | Cusco valley            | Build the communal store and lay out four canchas    | The ayllu settlement becomes the future Cusco                   |
 
 Opening the acequia is the documented leverage made mechanical: its trigger fires a `truce` effect, so the
 valley ayllus join the player's team, their AI stops campaigning and their warriors return home. Without it
 the AI base, 45 m from Inticancha, razed the communal store and the cancha houses and Act IV could not be
-finished. The truce is re-applied on load. The valley wave of Act III marches on the party at Huanacaure
-(`target`), so the tutorial's «salen a tu encuentro» is true; the truce sends it home. The Act IV card shows
-the traced plaza (`intro-traza`), not the founded settlement, and `fundada` fires on the victory tick.
+finished. The truce is re-applied on load. The valley wave of Act III now starts on the Huanacaure approach
+and marches on the party (`target`); the tutorial's «salen a tu encuentro» is true. The gate stays locked
+until `a3_oleada` (a 60 s hold at Huanacaure with at least three units) completes; then `t_oleada`
+activates the acequia and the truce can fire. The wave is real pressure: the party takes damage and the enemy base can attack the camp during the hold;
+an earlier autopilot run lost Ayar Manco's optional protect, the latest kept him. The Act IV card shows the traced plaza (`intro-traza`), not the founded settlement,
+and `fundada` fires on the victory tick.
 
-Optional: keep Ayar Manco alive and visit the hualla village. Victory = Inticancha founded and four canchas
-built.
+Optional: keep Ayar Manco alive, visit the hualla village and build one farm within 4.0 m of the acequia
+outlet (`a3_riego`). The 3.2 m building keepout leaves a legal, irrigated band at the bank; the canal's
+`authoredCanalAt` reach is 4.5 m for this mission, so the farm receives the yield. Victory = Inticancha
+founded and four canchas built.
 
 ## Map
 
@@ -131,18 +136,22 @@ The legend is about eight siblings, so all eight are on the board from the start
 Objectives say **what** to do and **where**; the tutorial only teaches **how**, the first time a control is
 needed, because the Inca campaign opens from a fresh save and can be a player's first mission. Six
 non-blocking steps, each gated on its objective: move the party (box select, right-click), place the
-communal store (build bar), hunt (right-click on animals), visit the huaca (card → «Visitar»), answer the
-valley wave and open the acequia in one step ({key:selectArmy}, right-click; card → «Abrir compuerta», so no
-«attack» advice outlives the truce) and place the four cancha houses ({key:buildHouse}). The eight siblings and the myth stay in the briefing and the dialogue.
+communal store (build bar), hunt (right-click on animals), visit the huaca (card → «Visitar»), hold
+Huanacaure through the valley wave and open the acequia in one step ({key:selectArmy}, right-click; the gate
+stays locked until the 60 s hold; card → «Abrir compuerta», so no «attack» advice outlives the truce) and
+place the four cancha houses ({key:buildHouse}). The eight siblings and the myth stay in the briefing and the
+dialogue.
 
 ## Tests
 
 - `tests/tambotoco.test.ts`: acts, hidden objectives, chapter cards, scale, roster, the Leyenda label,
-  the eight-portrait cast, the eight tagged siblings and the three huaca beats.
+  the eight-portrait cast, the eight tagged siblings, the three huaca beats, the `a3_oleada` hold →
+  `a3_acequia` chain, the locked gate hint and the optional `a3_riego` farm.
 - `tests/campaign-scale.test.ts`: 256 m, 128² ground, crossing band.
 - Campaign E2E: briefing (eight cards, no scroll at 1280×720), visible nameplates, a named party
   selection, epilogue, intro art, geography, layout, save/load and the campaign path.
-- A real-command playtest through the four acts.
+- A real-command playtest through the four acts that holds the Huanacaure ring through the wave, verifies the
+  gate stays locked before the hold and opens it after.
 - `yarn record --mission=m_tambotoco --mode=clip|full`: in-engine recording for review, with a JSON timeline.
 
 ## Evidence

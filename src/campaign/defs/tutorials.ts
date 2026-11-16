@@ -34,8 +34,8 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'agua',
-        text: 'Los ayllus del valle salen a tu encuentro: pulsa {key:selectArmy} y haz clic derecho sobre ellos para defenderte. Luego haz clic en la compuerta de la acequia y pulsa «💧 Abrir compuerta»: el agua se desvía a tus campos y, sin ella, los alcabizas cederán.',
-        gateObjective: 'a3_acequia',
+        text: 'Los ayllus del valle salen a tu encuentro: pulsa {key:selectArmy}, mantén a tu gente dentro del círculo dorado de Huanacaure y haz clic derecho sobre ellos para defenderte. Cuando hayas resistido la oleada, haz clic en la compuerta de la acequia y pulsa «💧 Abrir compuerta»: el agua se desvía a tus campos y, sin ella, los alcabizas cederán.',
+        gateObjective: 'a3_oleada',
         check: { type: 'objectiveCompleted', objectiveId: 'a3_acequia' },
       },
       {
