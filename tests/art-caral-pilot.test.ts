@@ -35,6 +35,9 @@ const EXPECTED = [
   'm7_colonial-intro',
   'm8_independencia-intro',
 ];
+/** Draft intros removed from the committed manifest in the 2026-11-16 art reconciliation. */
+const REMOVED_DRAFTS = new Set(['m6b_guerra_civil-intro', 'm7_colonial-intro', 'm8_independencia-intro']);
+const EXPECTED_COMMITTED = EXPECTED.filter((id) => !REMOVED_DRAFTS.has(id));
 const EXPECTED_META: Record<string, { civilization: string; period: number; region: string }> = {
   'm1_caral-intro': { civilization: 'caral', period: 0, region: 'central_coast' },
   'm2_chavin-intro': { civilization: 'chavin', period: 1, region: 'andean_valley' },
@@ -91,7 +94,7 @@ describe('Blender campaign art', () => {
 
   it('has a valid committed manifest with the same pilot ids', () => {
     expect(validateManifestData(ART_MANIFEST)).toEqual([]);
-    expect(ART_MANIFEST.assets.map((asset) => asset.id).sort()).toEqual([...EXPECTED].sort());
+    expect(ART_MANIFEST.assets.map((asset) => asset.id).sort()).toEqual([...EXPECTED_COMMITTED].sort());
     for (const asset of ART_MANIFEST.assets) {
       expect(asset.provider).toBe('blender');
       if (asset.reviewed) expect(asset.reviewer).toBeTruthy();

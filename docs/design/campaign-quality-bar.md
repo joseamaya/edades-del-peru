@@ -58,7 +58,9 @@ camp pieces, vegetation, household props and fauna approved by a recorded human 
 is approved; its kit and captures keep their own review status. Every released mission now
 follows the model pattern (256 m, painted ground, acts, in-engine intro and bench), including m8 in this
 pass. **m3–m9 meet the scale, opening and performance gates**; the m3, m4, m5, Tambotoco, Lima, La Junta and
-Arica intro renders are approved and the rest of the art review is pending.
+Arica intro renders are approved. Every render record in `src/art/manifest.json` is now approved: the five
+Caral education/tour records were reconciled and the three draft Workbench mission intros were removed. The
+open art review is the reused site GLBs (#343).
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
@@ -77,7 +79,8 @@ in-engine intro and epilogue, bench scenes and the scale guard).
 2. **No-cheat playtests:** HP pinning removed (2026-11-14) from Chavín, Tambotoco, Lima and the Junta;
    Chavín and Tambotoco keep **Play P** because the harness still uses direct field-card/tech calls and
    never fights the valley wave. A manual no-cheat playtest remains recommended.
-3. **Art review:** record the human review of the Chavín kit and the pending art of m6b, m7 and m8.
+3. **Art review:** the render records are reconciled (0 `reviewed: false`); what remains is the human review
+   of the reused site GLBs and the Chavín kit (#343).
 4. **Model-mission rebuilds:** done for m3–m9 (2026-11-14), including m8. The quick wins are done too:
    m6's gate really closes (`canal_closed`) and m6b's victory holds Quipaipan and captures Huáscar instead
    of razing a building.
@@ -290,7 +293,7 @@ intro/epilogue and bench scenes); its art review is pending. The HUD layout has 
 | Gate        | Status               | Evidence                                                                                                                                                                                                               |
 | ----------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Opening     | Met                  | Three-beat in-engine intro (`capture_colonial_intro.mjs`), `MISSION_ART` and an epilogue capture; PROVENANCE records the captures.                                                                                     |
-| Art         | Pending human review | The reused `colonial_site` GLB and the draft `m7_colonial-intro` Blender record keep their `reviewed: false` status (#343).                                                                                            |
+| Art         | Pending (GLB)        | The draft `m7_colonial-intro` record was removed in the art reconciliation (a Workbench blockout with no ground, sky or people; the opening uses the in-engine capture). The reused `colonial_site` GLB keeps its own review status (#343).                                                                                            |
 | Performance | Met                  | `bench_scene.mjs`: opening ~537k tris / 661–665 calls, late ~811k / 1083, under the recorded first-pass caps; `yarn bench:check` green.                                                                                |
 | Scale       | Met                  | 256 m map, 128² painted ground over 256 m, `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                                             |
 | Pacing      | Pending (exception)  | The real-command bot reaches the ending in ~7 min of simulated time; the agreed 20–30 min human path is still unmeasured. The model pattern's 30–40 band is documented as an exception in `colonial-model-mission.md`. |
@@ -317,7 +320,7 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Docs        | Met                  | This document, dossier, `independencia-model-mission.md`, experience table, site note, art docs and README aligned.                           |
 | Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                 |
 | Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_independencia_intro.mjs`; `MISSION_ART` uses the Lima capture.    |
-| Art         | Pending human review | The reused Ayacucho GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                 |
+| Art         | Pending (GLB)        | The draft `m8_independencia-intro` record (a Workbench blockout that did not show the tents its caption promised) was removed in the art reconciliation; the opening uses the in-engine Lima capture. The reused Ayacucho GLB keeps its review status (#343). |
 | Performance | Met                  | `bench_scene.mjs` 2026-11-16, after the PCF shadow pass and the rig silhouette rule: opening 567,865 tris / 603 calls (under 625k/660, over 200 calls), Ayacucho 808,151 / 959 (under 920k/1,325); the caps were not raised; the scene now measures under them. |
 | Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                            |
 
@@ -453,6 +456,6 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Docs        | Met                  | This document, dossier, `guerra-civil-model-mission.md`, experience table, site note, art docs and README aligned.                                         |
 | Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                              |
 | Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_cusco_inca_intro.mjs`; `MISSION_ART` uses the Quipaipan capture.               |
-| Art         | Pending human review | The reused Cusco GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                                 |
+| Art         | Pending (GLB)        | The draft `m6b_guerra_civil-intro` record (a grey Workbench blockout of the walled compound) was removed in the art reconciliation; the opening uses the in-engine Quipaipan capture. The reused Cusco GLB keeps its review status (#343). |
 | Performance | Met                  | `bench_scene.mjs`: opening ~703k tris / 436 calls, battle ~967k / 673; over the 600k art-direction target (as m7/m9), within the recorded first-pass caps. |
 | Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                         |

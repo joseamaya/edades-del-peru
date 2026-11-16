@@ -91,8 +91,10 @@ invented acts were added.
 
 ## Open items
 
-1. Human art review of the reused `colonial_site` GLB and the draft `m7_colonial-intro` Blender record
-   (#343); the in-engine captures are recorded in PROVENANCE and are not a Blender-render claim.
+1. Human art review of the reused `colonial_site` GLB (#343). The draft `m7_colonial-intro` record was a
+   Workbench blockout of that GLB with no ground, sky or people; it was removed from the manifest in the art
+   reconciliation, and the opening uses the in-engine `MISSION_ART` capture. The in-engine captures are
+   recorded in PROVENANCE and are not a Blender-render claim.
 2. A real-GPU performance pass; the bench numbers are structural (SwiftShader).
 3. The Cusco valley composition keeps its old low water feature; no new terrain art was commissioned for
    this pass.

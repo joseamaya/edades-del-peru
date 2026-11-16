@@ -150,13 +150,12 @@ describe('Blender art manifest', () => {
     expect(issues.some((i) => i.id === asset.id && i.field === 'asset')).toBe(true);
   });
 
-  it('ships draft intro records for the remaining missions', () => {
-    const missions = ['m6b_guerra_civil', 'm7_tupac_amaru', 'm8_independencia'];
-    for (const missionId of missions) {
+  it('has no unreviewed render and no Workbench draft intro left', () => {
+    expect(ART_MANIFEST.assets.filter((a) => a.reviewed === false)).toEqual([]);
+    const drafts = ['m6b_guerra_civil', 'm7_tupac_amaru', 'm8_independencia'];
+    for (const missionId of drafts) {
       const intro = ART_MANIFEST.assets.find((a) => a.missionId === missionId && a.type === 'campaign-intro');
-      expect(intro, `${missionId} has no intro`).toBeDefined();
-      expect(intro!.reviewed).toBe(false);
-      expect(intro!.asset).toContain('/intro.webp');
+      expect(intro, `${missionId} still ships a removed draft intro`).toBeUndefined();
     }
   });
 
