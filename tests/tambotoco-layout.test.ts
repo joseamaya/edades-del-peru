@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { MAP_PROFILES } from '../src/model/defs/profiles';
+import { mTambotoco } from '../src/campaign/defs/missions/m_tambotoco';
+import { resolveMapProfile } from '../src/model/defs/profiles';
 import { getAuthoredSite } from '../src/model/defs/sites';
 import {
   TAMBOTOCO_INTICANCHA_HUTS,
@@ -9,8 +10,21 @@ import {
 } from '../src/model/defs/tambotocoLayout';
 import { TerrainData } from '../src/sim/TerrainData';
 
-const SITE = getAuthoredSite('tambotoco_site')!;
-const TERRAIN = new TerrainData(256, 128, 1200, MAP_PROFILES.andean_valley, undefined, SITE);
+const SITE = getAuthoredSite(mTambotoco.layout?.site?.id)!;
+const HEIGHTFIELD = SITE.heightField!;
+const PROFILE = resolveMapProfile({
+  period: mTambotoco.period,
+  civ: mTambotoco.playerCiv,
+  mapType: mTambotoco.map.type,
+});
+const TERRAIN = new TerrainData(
+  mTambotoco.map.size,
+  HEIGHTFIELD.size - 1,
+  mTambotoco.map.seed,
+  PROFILE,
+  mTambotoco.layout?.terrain,
+  SITE,
+);
 
 function huts(): { name: string; hut: AylluHut }[] {
   return [
@@ -38,7 +52,7 @@ describe('Tambotoco authored huts', () => {
   });
 
   it('does not overlap two hut footprints', () => {
-    const all = huts().map(({ name, hut }) => ({ name, hut }));
+    const all = huts();
     for (let i = 0; i < all.length; i++) {
       for (let j = i + 1; j < all.length; j++) {
         const a = all[i]!;

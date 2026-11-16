@@ -543,9 +543,9 @@ export class Mission {
         this.game.camera.focusOn(p.x, p.z);
         if (fx.reveal) {
           // A narrated look at the valley/Inticancha: show it explored even before a unit walks there,
-          // so the fogged site never becomes a black cut in the chapter-card beat.
+          // so the fogged site never becomes a black cut in the chapter-card beat. The next frame's
+          // `RuntimeController.updateFow` upload sends the change.
           this.game.fow.explore(p.x, p.z, fx.reveal);
-          this.game.fowTexture.upload();
         }
         break;
       }

@@ -38,6 +38,14 @@ describe('applyFow', () => {
     expect(fragment).not.toContain('gl_FragColor.a *= fow');
   });
 
+  it('keeps the same colour-only rule for transparent landscape overlays', () => {
+    const material = new THREE.MeshStandardMaterial({ transparent: true, opacity: 0.25 });
+    applyFow(material, createFowUniforms());
+    const { fragment } = runCompile(material);
+    expect(fragment).toContain('gl_FragColor.rgb *= fow');
+    expect(fragment).not.toContain('gl_FragColor.a *= fow');
+  });
+
   it('chains any pre-existing onBeforeCompile', () => {
     const material = new THREE.MeshStandardMaterial();
     let previousCalls = 0;

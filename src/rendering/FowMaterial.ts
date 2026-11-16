@@ -26,7 +26,8 @@ const patched = new WeakSet<THREE.Material>();
  * Only the colour is dimmed. Multiplying alpha as well made opaque landscape/site
  * meshes write alpha 0; the post-processed frame then showed them as white slabs
  * (SwiftShader, the backend used for the review captures). A dark RGB over the
- * black unexplored terrain is enough to hide them.
+ * black unexplored terrain is enough to hide them; transparent field/path overlays
+ * keep their alpha and rely on the same RGB dimming.
  */
 export function applyFow(material: THREE.Material, u: FowUniforms): void {
   // A second patch would declare the varyings twice and break the shader (a group can be decorated

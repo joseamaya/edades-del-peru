@@ -385,13 +385,13 @@ export class AylluSite {
     focus: { x: number; z: number },
     particles: Particles,
     lifeTurn: number,
-    visibleAt?: (x: number, z: number) => boolean,
+    visibleAt: (x: number, z: number) => boolean,
   ): void {
     const nearby = this.life.filter(
       (s) =>
         phaseOrder(this.plan, s.phase) <= phaseOrder(this.plan, this.phase) &&
         Math.hypot(s.x - focus.x, s.z - focus.z) < 55 &&
-        (visibleAt?.(s.x, s.z) ?? true),
+        visibleAt(s.x, s.z),
     );
     if (!nearby.length) return;
     const emit = (source: LifeSource, count: number): void => {

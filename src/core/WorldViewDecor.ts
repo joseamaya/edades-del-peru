@@ -292,7 +292,8 @@ export class WorldViewDecor {
         );
         ayllu.setPhase(this.game.sitePhase);
         // The site is fogged like every other cultural layer: the cave stays explored by the opening
-        // reveal, while Huanacaure and the valley hamlets stay dark until the player reaches them.
+        // reveal, while Huanacaure and the valley stay dark until reached or shown by the Act III/IV
+        // camera beats.
         applyFowToObject(ayllu.group, this.game.fowUniforms);
         this.game.aylluSite = ayllu;
       }
