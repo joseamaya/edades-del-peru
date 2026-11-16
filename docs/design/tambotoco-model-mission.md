@@ -213,11 +213,12 @@ dialogue.
    660k first-pass cap and the 360-call cap. The 2026-11-16 pass moved the renderer's shadow map from VSM to
    PCF (VSM also draws every shadow *receiver* into the map) and kept only the silhouette meshes of each
    rig in the shadow pass; on the same scene that took 66k triangles and 14 calls off the opening and 56k
-   triangles and 13 calls off the late view. Hardware high
-   quality (`--gpu`, Intel iGPU) measured **684,810 / 305** and **854,190 / 316** on the pre-kit site; it has
-   not been re-measured since the kit or the shadow change, and both numbers are over the caps. The
-   performance row is therefore **Partial**, not Met: the next pass is the hardware/LOD pass, not a doc
-   change. The full `yarn bench:check` chain now runs end to end. The mission starts with a small force
+   triangles and 13 calls off the late view. Hardware high quality (`--gpu`, Intel iGPU) now measures
+   **625,811 / 313** at the opening and **808,827 / 301** on the founded Inticancha, against
+   **691,941 / 327** and **864,833 / 314** on the same scene with VSM. The opening is still over the 600k
+   target and the late view over the 660k hardware cap, so the performance row is **Partial**, not Met: the
+   next pass is the hardware/LOD pass (B6), not a doc change. The full `yarn bench:check` chain runs end to
+   end. The mission starts with a small force
    (5 workers, 7 militia, 2 slingers, 1 scout) to keep the rig count down.
 2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry), now a modular,
    terrain-conformed kit; a Blender architecture kit could replace it later without touching the layout.

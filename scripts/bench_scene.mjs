@@ -72,11 +72,12 @@ const BUDGETS = {
   // Tambotoco opening: the ayllu site, eight nameplates and the hero rings/banners/tunic accents.
   // Measured 408,221/309 in software after the PCF shadow pass and the rig silhouette rule (474,351/323
   // with VSM on the same scene: the VSM draws every receiver into the shadow map); still over §11's
-  // 200-call target. The hardware view is the open performance item.
+  // 200-call target. Hardware high measured 625,811/313 (691,941/327 with VSM), over the 600k target.
   m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 340, kitTriangles: 0, kitDrawCalls: 0 },
   // The founded Inticancha (the `fundada` phase at victory) framed on the four canchas: 591,009/295
   // in software after the PCF shadow pass and the rig silhouette rule (647,015/308 with VSM on the same
-  // scene), now under the 620k late target. The hardware view is the open performance item.
+  // scene), now under the 620k late target. Hardware high measured 808,827/301 (864,833/314 with VSM),
+  // still over the 660k cap: the hardware/LOD pass is the open item (B6).
   m_tambotoco_late: { sceneTriangles: 660_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
   // Lima opening: the hueste with horses and artillery. First-pass cap measured ~763k / 839; tighten after
   // the unit-rig pass (art-direction §11 targets 200 calls).
