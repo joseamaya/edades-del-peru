@@ -165,8 +165,9 @@ valley wave and open the acequia in one step ({key:selectArmy}, right-click; car
    measures **684,810 / 305** and **854,190 / 316**, over both caps and over art-direction §11's
    200-call target; frame p50 is 30.2 ms at 1600×900 (33 fps) and 24.4 ms without the water refraction.
    The performance row is therefore **Partial**, not Met: the next pass is the hardware/LOD pass, not a
-   doc change. The mission starts with a small force (5 workers, 7 militia, 2 slingers, 1 scout) to keep
-   the rig count down.
+   doc change. `yarn bench:check` currently stops earlier at the pre-existing `m8_independencia` overrun;
+   the two Tambotoco commands pass individually. The mission starts with a small force (5 workers,
+   7 militia, 2 slingers, 1 scout) to keep the rig count down.
 2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry); a Blender architecture
    kit (cave, shrine, houses, terraces) is the next art pass.
 3. A manual 30–40 minute playtest without isolated attrition, checking that the eight nameplates stay
