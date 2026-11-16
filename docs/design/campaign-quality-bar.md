@@ -129,7 +129,7 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 | Docs        | Met                  | Dossier, `chavin-model-mission.md`, this table, `chavin-sacred-site.md`, PROVENANCE and README aligned.                                                                      |
 | Structure   | Met                  | Four acts, hidden objectives revealed per act, chapter cards with images, optional goals, documented decline.                                                                |
 | Opening     | Met                  | Three-beat narrated intro and briefing with the mission's own art; chapter-card and epilogue captures from `capture_chavin_intro.mjs`.                                       |
-| Art         | Pending human review | Authored intro render (`m2_chavin-intro`) is a draft; the kit and captures are exported with `reviewed: false`. A human review must record `reviewer`/`reviewedAt`.          |
+| Art         | Met (intro render)   | Approved `m2_chavin-intro` render; the kit and captures keep their own `reviewed: false` status.                                                                           |
 | Performance | Met                  | `bench_scene.mjs` re-run 2026-11-09 after the resize: opening 413,433 tris / 160 calls; late 462,835 / 223; within the 450k / 600k budgets.                                  |
 | Scale       | Met                  | 256 m map, painted ground every 2 m (128 over 256) and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                       |
 

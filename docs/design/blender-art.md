@@ -106,8 +106,8 @@ CyArk-derived Lanzón scan. The cleaned sources live in
 `art-src/blender/chavin/chavin_lod0_clean.blend` / `chavin_lod1_clean.blend`
 (LFS); the runtime GLBs are `src/assets/sites/chavin/chavin_site_lod0.glb` /
 `chavin_site_lod1.glb`. The reproducible export is
-`scripts/blender/export_chavin_site.py`; the campaign render is
-`art-src/blender/chavin/renders/chavin_hero.png`. The Lanzón in the game is a
+`scripts/blender/export_chavin_site.py`; the campaign intro render is
+`art-src/blender/site-intros/m2_chavin/hero.png`. The Lanzón in the game is a
 project-owned low-poly interpretation, not the scan. See
 `docs/design/chavin-sacred-site.md`.
 
