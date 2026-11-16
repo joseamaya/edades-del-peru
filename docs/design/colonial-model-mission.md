@@ -60,7 +60,7 @@ here and in the quality bar. The Sangarará chapel is a separate typological `co
 - Three narrated intro beats captured in engine by
   [`scripts/capture_colonial_intro.mjs`](../../scripts/capture_colonial_intro.mjs): the valley and the
   rebellion, Sangarará and the Cusco siege.
-- `MISSION_ART` (`m7_tupac_amaru` → `media/cusco/intro-valle.webp`) and the briefing use the valley capture in normal play; `?art=all` still previews the unreviewed `m7_colonial-intro` draft.
+- `MISSION_ART` (`m7_tupac_amaru` → `media/cusco/intro-valle.webp`) and the briefing use the valley capture in normal play; the draft `m7_colonial-intro` record was retired on 2026-11-16.
 - Victory: the army and Túpac withdraw when the relief breaks the siege; the epilogue
   (`media/cusco/intro-epilogo.webp`) tells the capture at Langui and the execution of 18 May 1781.
 - Defeat: Túpac dies, or the leadership is lost before the retreat.
@@ -91,8 +91,10 @@ invented acts were added.
 
 ## Open items
 
-1. Human art review of the reused `colonial_site` GLB and the draft `m7_colonial-intro` Blender record
-   (#343); the in-engine captures are recorded in PROVENANCE and are not a Blender-render claim.
+1. Human art review of the reused `colonial_site` GLB (#343). The draft `m7_colonial-intro` record was a
+   Workbench blockout of that GLB with no ground, sky or people; it was removed from the manifest in the art
+   reconciliation, and the opening uses the in-engine `MISSION_ART` capture. The in-engine captures are
+   recorded in PROVENANCE and are not a Blender-render claim.
 2. A real-GPU performance pass; the bench numbers are structural (SwiftShader).
 3. The Cusco valley composition keeps its old low water feature; no new terrain art was commissioned for
    this pass.
