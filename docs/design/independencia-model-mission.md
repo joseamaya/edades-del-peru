@@ -74,8 +74,9 @@ briefing, the chapter cards and the Codex.
 - Scale: `tests/campaign-scale.test.ts` enforces 256 m, 128² painted ground and the crossing band.
 - E2E: `campaign-playtest.spec.ts` (real orders, no cheats), `campaign-completable.spec.ts`,
   `save-campaign.spec.ts` (mid-Ayacucho save/load) and `hud-layout.spec.ts`.
-- Bench: `scripts/bench_scene.mjs` measures the opening (~590k tris / 621 calls; under the 600k triangle
-  target but over the 200-call target) and Ayacucho (~867k / 1,246; over both); `yarn bench:check`.
+- Bench: `scripts/bench_scene.mjs` measures the opening (567,865 tris / 603 calls; under the 625k first-pass
+  cap and over the 200-call target) and Ayacucho (808,151 / 959); `yarn bench:check`. The 2026-11-16 pass moved
+  the shadow map to PCFSoft and kept only each rig's silhouette in the shadow pass.
 - Evidence: `yarn record --mission=m8_independencia --mode=clip` and the intro/epilogue captures.
 - Save compatibility: `SAVE_VERSION` 12 rejects v11 m8 saves (their 192 m coordinates cannot be carried
   over); `REPLAY_VERSION` 39.

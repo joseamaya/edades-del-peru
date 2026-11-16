@@ -318,7 +318,7 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                 |
 | Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_independencia_intro.mjs`; `MISSION_ART` uses the Lima capture.    |
 | Art         | Pending human review | The reused Ayacucho GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                 |
-| Performance | Met                  | `bench_scene.mjs`: opening ~590k tris / 621 calls (under 600k, over 200 calls), Ayacucho ~867k / 1,246; within the recorded first-pass caps.  |
+| Performance | Met                  | `bench_scene.mjs` 2026-11-16, after the PCF shadow pass and the rig silhouette rule: opening 567,865 tris / 603 calls (under 625k/660, over 200 calls), Ayacucho 808,151 / 959 (under 920k/1,325); the caps were re-measured, not raised. |
 | Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                            |
 
 ## Campaign IV playable status (m8–m9)
@@ -426,7 +426,7 @@ The table separates what is implemented from the performance pass that is still 
 | Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                    |
 | Tests       | Met: `tests/tambotoco.test.ts` (cast, tags, huaca beats), scale, campaign path and the campaign E2E specs.                                                               |
 | Docs        | Met: dossier, `tambotoco-model-mission.md`, this table and the redesign status.                                                                                          |
-| Performance | Partial (measured 2026-11-16, real Inticancha framing): software `bench:check` opening 472,892 tris / 301 calls (within 600k/340) and founded Inticancha 648,082 / 313 (over 620k, under the 660k first-pass cap, 360 calls); hardware high 684,810 / 305 and 854,190 / 316 was measured on the pre-kit site and was not re-measured after the kit, which adds ≈6k/12k tris and ≈3 calls; still over art-direction §11's 200-call target. |
+| Performance | Partial (measured 2026-11-16, real Inticancha framing, after the PCF shadow pass and the rig silhouette rule): software `bench:check` opening 408,221 tris / 309 calls (within 600k/340) and founded Inticancha 591,009 / 295 (now under the 620k target and the 660k cap); hardware high 684,810 / 305 and 854,190 / 316 was measured on the pre-kit site and was not re-measured after the kit or the shadow change. Still over art-direction §11's 200-call target, so the row stays Partial until the hardware view is measured. |
 | Art         | Met: approved authored EEVEE intro render; the ayllu kit stays procedural; captures are in-engine and documented in PROVENANCE.                                          |
 | Structure   | Met: four acts with hidden objectives, three chapter cards and the documented foundation.                                                                                |
 | Opening     | Met: three narrated beats with in-engine captures, three act cards and the epilogue backdrop.                                                                            |

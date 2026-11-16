@@ -3,6 +3,7 @@ import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import { RIG_CLIP_STATES, RIG_VARIANT_CLIPS, type RigClipState, type RigVariant } from '../model/defs/modelAssets';
 import type { LoadedModelAsset } from './ModelAssets';
 import { applyRigVariant, type RigVariantHandle } from './rigVariants';
+import { limitShadowCasters } from './shadowCasters';
 
 /**
  * One animated instance of a shared rigged asset. The clone owns its skeleton
@@ -62,6 +63,9 @@ export class RigInstance {
       this.model.updateMatrixWorld(true);
       this.variant = applyRigVariant(this, variant);
     }
+    // A humanoid rig is ~14 materials; only its silhouette needs to cast. Variant dressing has already
+    // shown/hidden parts, so this is the point where "visible" means what the player sees.
+    limitShadowCasters(this.model);
   }
 
   get currentState(): RigClipState | null {

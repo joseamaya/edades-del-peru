@@ -762,9 +762,9 @@ ${FOW_DIM_GLSL}
 
     const mesh = new THREE.Mesh(geo, mat);
     mesh.receiveShadow = true;
-    // receive directional shadows: manual sampling of the VSM shadow map
+    // receive directional shadows: the shader samples the (PCF) shadow map by hand
     (mat as any).shadowMap = true;
-    mat.customProgramCacheKey = () => 'terrain-shadow-v5';
+    mat.customProgramCacheKey = () => 'terrain-shadow-v6';
     mat.onBeforeCompile = (shader: any) => {
       shader.vertexShader = shader.vertexShader.replace(
         'gl_Position = projectionMatrix * viewMatrix * wp;',
@@ -783,12 +783,19 @@ ${FOW_DIM_GLSL}
           sc.z += directionalLightShadows[0].shadowBias;
           float sh = 1.0;
           if (sc.x >= 0.0 && sc.x <= 1.0 && sc.y >= 0.0 && sc.y <= 1.0 && sc.z <= 1.0) {
-            vec2 vdist = texture2D(directionalShadowMap[0], sc.xy).rg;
-            float mean = vdist.x;
-            float variance = vdist.y * vdist.y;
-            float hard = step(mean, sc.z);
-            float v = clamp((variance / (variance + (sc.z - mean) * (sc.z - mean)) - 0.3) / 0.7, 0.0, 1.0);
-            sh = max(hard, v);
+            // 3x3 PCF over the packed depth map (three's PCFShadowMap layout), matching the
+            // renderer's PCFSoft pass instead of the old VSM variance sample.
+            const vec3 packF = vec3(256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0);
+            const vec4 unpackF = (255.0 / 256.0) / vec4(packF, 1.0);
+            vec2 texel = 1.0 / directionalLightShadows[0].shadowMapSize;
+            float sum = 0.0;
+            for (int dy = -1; dy <= 1; dy++) {
+              for (int dx = -1; dx <= 1; dx++) {
+                vec4 packed = texture2D(directionalShadowMap[0], sc.xy + vec2(float(dx), float(dy)) * texel);
+                sum += step(sc.z, dot(packed, unpackF));
+              }
+            }
+            sh = sum / 9.0;
           }
           lit *= mix(1.0, sh, directionalLightShadows[0].shadowIntensity);
         #endif`,

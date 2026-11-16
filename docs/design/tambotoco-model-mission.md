@@ -208,19 +208,16 @@ dialogue.
 ## Open items
 
 1. Performance (measured 2026-11-16; the mission is now in `bench:check`): software/SwiftShader (the
-   backend `bench:check` runs) measures **472,892 triangles / 301 draw calls** at the opening and
-   **648,082 / 313** on the founded Inticancha framed on the four canchas, over the 620k late target but
-   under the 660k first-pass cap and the 360-call cap. The modular kit costs about 6k triangles at the
-   opening and 12k late, with essentially no additional draw calls: the site still merges one mesh per phase.
-   Hardware high quality (`--gpu`, Intel iGPU) measured **684,810 / 305** and **854,190 / 316** on the
-   pre-kit site; it was not re-measured after the kit, which adds the same order of triangles. Both are
-   over the caps and
-   over art-direction §11's 200-call target; frame p50 was 30.2 ms at 1600×900 (33 fps) and 24.4 ms
-   without the water refraction.
-   The performance row is therefore **Partial**, not Met: the next pass is the hardware/LOD pass, not a
-   doc change. `yarn bench:check` currently stops earlier at the pre-existing `m8_independencia` overrun;
-   the two Tambotoco commands pass individually. The mission starts with a small force (5 workers,
-   7 militia, 2 slingers, 1 scout) to keep the rig count down.
+   backend `bench:check` runs) measures **408,221 triangles / 309 draw calls** at the opening and
+   **591,009 / 295** on the founded Inticancha framed on the four canchas — under the 620k late target, the
+   660k first-pass cap and the 360-call cap. The 2026-11-16 pass moved the renderer's shadow map from VSM to
+   PCFSoft (VSM also draws every shadow *receiver* into the map) and kept only the silhouette meshes of each
+   rig in the shadow pass; that took 65k triangles off the opening and 57k off the late view. Hardware high
+   quality (`--gpu`, Intel iGPU) measured **684,810 / 305** and **854,190 / 316** on the pre-kit site; it has
+   not been re-measured since the kit or the shadow change, and both numbers are over the caps. The
+   performance row is therefore **Partial**, not Met: the next pass is the hardware/LOD pass, not a doc
+   change. The full `yarn bench:check` chain now runs end to end. The mission starts with a small force
+   (5 workers, 7 militia, 2 slingers, 1 scout) to keep the rig count down.
 2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry), now a modular,
    terrain-conformed kit; a Blender architecture kit could replace it later without touching the layout.
 3. A manual 30–40 minute playtest without isolated attrition, checking that the eight nameplates stay

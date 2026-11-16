@@ -259,7 +259,7 @@ export class Sky {
     shadow.mapSize.set(size, size);
     shadow.map?.dispose();
     shadow.map = null;
-    // VSM keeps a second render target for the blur; three reallocates it with the map.
+    // VSM kept a second render target for its blur; dispose it defensively when the preset changes.
     const vsm = shadow as THREE.DirectionalLightShadow & { mapPass: THREE.WebGLRenderTarget | null };
     vsm.mapPass?.dispose();
     vsm.mapPass = null;

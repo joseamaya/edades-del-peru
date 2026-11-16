@@ -226,8 +226,7 @@ export class Wildlife {
             pivot.position.set(side * t.shoulderX, t.shoulderY, t.shoulderZ);
             const mesh = new THREE.Mesh(kit?.wing ?? t.wing, this.material);
             mesh.scale.x = side; // mirror the left wing
-            // Fliers neither cast nor receive shadows: under VSM a receiver is also drawn into the
-            // shadow map, i.e. two extra draws per wing for a speck in the sky.
+            // Fliers neither cast nor receive shadows: two extra draws per wing for a speck in the sky.
             mesh.castShadow = t.ground;
             mesh.receiveShadow = t.ground;
             pivot.add(mesh);

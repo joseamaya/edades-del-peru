@@ -26,7 +26,7 @@ export interface ModelAssetDefinition {
   readonly groundClearance?: number;
   /** Merge flat-coloured skinned primitives into one mesh/material (draw-call budget). */
   readonly consolidate?: boolean;
-  /** Tiny meshes that skip the VSM shadow pass (they cast no readable shadow). */
+  /** Tiny meshes that skip the shadow pass (they cast no readable shadow). */
   readonly shadowSkipMeshes?: readonly string[];
 }
 

@@ -252,8 +252,8 @@ low), now 32 / 44 / 60 (60 is the display cap). In Chrome at 1600×695 (2.3× th
 camera range (near 0.5, far 6000) its depth buffer was flat and it never found occlusion (frames with
 and without it were pixel-identical) while costing a second scene render that also redrew the shadow
 map. GPU time per frame at a fixed 1600×900 buffer (frames driven manually, so independent of vsync and
-window throttling): `main` 50.7 / 50.7 / 23.3 ms, now 17.8 / 14.9 / 11.3 ms (high / medium / low). The decisive cut was the shadow map: the VSM is redrawn
-and blurred twice every frame, and at 4096² it cost more than everything else (freezing it alone took
+window throttling): `main` 50.7 / 50.7 / 23.3 ms, now 17.8 / 14.9 / 11.3 ms (high / medium / low). The decisive cut was the shadow map: it is redrawn
+(and, with the VSM then in use, blurred twice) every frame, and at 4096² it cost more than everything else (freezing it alone took
 medium from 14 to 52 FPS). With the frustum fitted to the view, `SHADOW_MAP_SIZE` is 2048 on high and
 1024 on medium/low: at 1600×900 and the default zoom that is ≈ 9 texels per unit with 1024 (the old 4096
 over a fixed 440-unit box gave 9.3) and ≈ 18 with 2048; a close comparison showed only softer edges. SSAO was the next largest
@@ -272,7 +272,7 @@ frustum
 follows the view (`src/rendering/shadowFrame.ts`: the light-space box of the visible ground instead of
 a fixed ±220, which also sharpens the shadows) so off-screen casters leave the shadow pass. What remains is roughly units 50,
 the site 23, houses and centre 40 (both passes), resource nodes 24, the per-entity blob shadows, terrain,
-water, sky and the two VSM blur passes; the next steps would be one texture atlas for the worker body and
+water and sky; the next steps would be one texture atlas for the worker body and
 garments, or batching the blob shadows.
 
 - Repeated assets are **instanced or merged**; no per-object draw call for vegetation, props or fauna.

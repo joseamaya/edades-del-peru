@@ -15,6 +15,7 @@ import {
 import type { Unit } from '../entities/Unit';
 import { FishingNetFx } from './FishingNetFx';
 import { createRigAttireTools, type RigAttireTools } from './rigAttire';
+import { limitShadowCasters } from './shadowCasters';
 import { clamp } from '../util/math';
 import type { Resources } from '../core/types';
 
@@ -69,6 +70,8 @@ export class UnitView {
     this.heroDressed = true;
     this.view.group.scale.multiplyScalar(1.16);
     this.dressHero(commander);
+    // The hero's mantle and band are attached after the rig was built; re-pick the shadow silhouette.
+    if (this.rig) limitShadowCasters(this.rig.root);
   }
 
   /**
