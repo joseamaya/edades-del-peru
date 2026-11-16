@@ -24,9 +24,9 @@ export const MISSION_ART: Partial<Record<string, string>> = {
   m6_chimu_inca: publicAsset('media/chimu/intro-costa.webp'),
   m6b_guerra_civil: publicAsset('media/cusco-inca/intro-quipaipan.webp'),
   m8_independencia: publicAsset('media/independencia/intro-lima.webp'),
-  m_junta_cusco: publicAsset('media/junta/intro-cabildo.webp'),
+  m_junta_cusco: publicAsset('media/generated/campaigns/independencia/m_junta_cusco/intro.webp'),
   m_tambotoco: publicAsset('media/generated/campaigns/inca/m_tambotoco/intro.webp'),
-  m_lima: publicAsset('media/lima/intro-ciudad.webp'),
+  m_lima: publicAsset('media/generated/campaigns/virreinato/m_lima/intro.webp'),
   m7_tupac_amaru: publicAsset('media/cusco/intro-valle.webp'),
-  m9_guerra_pacifico: publicAsset('media/arica/intro-cuartel.webp'),
+  m9_guerra_pacifico: publicAsset('media/generated/campaigns/republica/m9_guerra_pacifico/intro.webp'),
 };

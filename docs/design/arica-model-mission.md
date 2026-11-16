@@ -70,8 +70,8 @@ recorded here and in the quality bar. The Morro is not invented as a new mesh.
 - `art-src/blender/site-intros/m9_guerra_pacifico/m9_guerra_pacifico.blend`, built by
   `scripts/blender/build_site_intro.py --mission=m9_guerra_pacifico`, stages the battery: earth-and-stone
   rampart, guns, gabions, magazine, the Peruvian flag, the Morro and a blockading warship.
-- The record `m9_guerra_pacifico-intro` replaces the retired `m9_arica-intro` draft and is pending human
-  review; the briefing keeps the in-engine capture until it is approved.
+- The record `m9_guerra_pacifico-intro` replaces the retired `m9_arica-intro` draft and was approved by a
+  recorded human review; `MISSION_ART` uses the generated WebP and the in-engine capture remains evidence.
 - Regenerate with `blender --background --python scripts/blender/build_site_intro.py -- --mission=m9_guerra_pacifico`.
 
 ## Tutorial
