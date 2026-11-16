@@ -365,3 +365,21 @@ export function commanderById(id: string | undefined): CommanderDef | undefined 
 export function commanderLabel(commander: CommanderDef): string {
   return commander.hero ? `★ ${commander.name}` : commander.name;
 }
+
+const NAME_PARTICLES = new Set(['de', 'del', 'la', 'las', 'los', 'y', 'van', 'von']);
+
+/**
+ * Compact field/HUD name for a chip: the last meaningful word. «Ayar Manco» → «Manco», «Mama Ocllo» →
+ * «Ocllo», «Túpac Amaru II» → «Amaru», «José de San Martín» → «Martín». The full name stays in the tooltip.
+ */
+export function commanderShortName(commander: CommanderDef): string {
+  const words = commander.name
+    .split(/\s+/)
+    .filter((word) => word && !NAME_PARTICLES.has(word.toLowerCase()) && !/^[IVX]+$/.test(word));
+  return words[words.length - 1] ?? commander.name;
+}
+
+/** Accent used by markers, chips and attire; the single fallback for every presentation surface. */
+export function commanderAccent(commander: CommanderDef): string {
+  return commander.accent ?? DEFAULT_HERO_ACCENT;
+}

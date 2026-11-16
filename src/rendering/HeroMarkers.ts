@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { Unit } from '../entities/Unit';
-import { COMMANDERS, commanderById, DEFAULT_HERO_ACCENT, type HeroCrest } from '../model/defs/commanders';
+import { COMMANDERS, commanderAccent, commanderById, type HeroCrest } from '../model/defs/commanders';
 
 const MAX_HEROES = Object.values(COMMANDERS).filter((commander) => commander.hero).length;
 const _dummy = new THREE.Object3D();
@@ -95,7 +95,7 @@ export class HeroMarkers {
       if (!commander?.hero) continue;
       heroes.push({
         unit,
-        accent: commander.accent ?? DEFAULT_HERO_ACCENT,
+        accent: commanderAccent(commander),
         shape: commander.crest ?? 'diamond',
       });
       if (heroes.length === MAX_HEROES) break;

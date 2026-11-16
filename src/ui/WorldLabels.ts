@@ -23,6 +23,9 @@ export interface WorldLabel {
   readonly group: string | null;
 }
 
+/** Vertical air between stacked plates of one group. */
+const LABEL_STACK_GAP = 3;
+
 const STYLE_ID = 'ed-world-labels-style';
 const CSS = `
 #ed-world-labels { position: fixed; inset: 0; pointer-events: none; z-index: 15; overflow: hidden; }
@@ -126,7 +129,7 @@ export class WorldLabelLayer {
       for (let pass = 0; pass < 8; pass++) {
         const hit = boxes.find((b) => b.group === p.label.group && x0 < b.x1 && x1 > b.x0 && y0 < b.y1 && y1 > b.y0);
         if (!hit) break;
-        const shift = y1 - hit.y0 + 1;
+        const shift = y1 - hit.y0 + LABEL_STACK_GAP;
         y0 -= shift;
         y1 -= shift;
         p.label.lift -= shift;

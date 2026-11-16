@@ -123,8 +123,11 @@ The legend is about eight siblings, so all eight are on the board from the start
 ## HUD and dialogue
 
 Mission dialogue is a left dock above the minimap, so a long historical line does not cover the party at
-1280x720. At 1700 px and above the HUD (top bar, objectives, tutorial, dialogue, cards, minimap and command
-bar) scales up instead of staying at 12 px labels on a 1920 panel. `tests/e2e/hud-layout.spec.ts` still
+1280x720. A selected party names its characters as portrait chips (short name, full name on hover, commander
+accent), instead of a wrapped paragraph; the party nameplates keep a 3 px gap when the layer spreads them.
+
+At 1700 px and above the HUD (top bar, objectives, tutorial, dialogue, cards, minimap and command bar) scales
+up instead of staying at 12 px labels on a 1920 panel. `tests/e2e/hud-layout.spec.ts` still
 checks the panels geometrically at 1280x720, 1600x900 and 1920x1080. Captures:
 `docs/media/tambotoco-hud-{1280,1600,1920}.webp` (native size), `node scripts/capture_hud_dialogue.mjs`.
 
