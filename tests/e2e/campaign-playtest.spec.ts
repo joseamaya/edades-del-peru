@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { TAMBOTOCO_HOLD, TAMBOTOCO_OUTLET } from '../../src/campaign/defs/missions/m_tambotoco';
+import type { HeritageBuildingId } from '../../src/model/defs/heritage';
+import { installHeritageClick, type HeritageClickWindow } from './heritage';
 
 /** Caral's Act III and IV objective ids, used by the real-command playtest. */
 const CARAL_ACTS_III_IV = [
@@ -1250,6 +1252,7 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
   test.setTimeout(240_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
+  await installHeritageClick(page);
   await page.goto('/?mission=m_tambotoco&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
@@ -1271,55 +1274,8 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       }
       dismissCard();
     };
-    // Select a monument on the map and press its HUD command, the way a player does, instead of calling
-    // `visitHeritage`/`toggleCanal` directly. `?noloop=1` stops the loop, so the HUD must be pumped once
-    // after the click for the panel to rebuild.
-    const clickHeritage = (id: string, label: RegExp) => {
-      let world: { x: number; y: number; z: number } | null = null;
-      const proxy = (g.siteDef?.heritageProxies ?? []).find((p: { id: string }) => p.id === id);
-      if (proxy) {
-        world = { x: proxy.x, y: g.terrain.getHeight(proxy.x, proxy.z) + (proxy.h ?? 4) * 0.6, z: proxy.z };
-      }
-      // `?noloop=1` means no frame rendered, so world matrices (and therefore picking) are stale.
-      g.scene.updateMatrixWorld(true);
-      if (!world) {
-        let owner: any = null;
-        g.scene.traverse((o: any) => {
-          if (!owner && o.userData?.heritageId === id) owner = o;
-        });
-        if (owner) {
-          // The acequia's id sits on the whole canal group; aim at its gate, not the group origin.
-          const target = owner.getObjectByName?.('canal_gate') ?? owner;
-          const box = new window.THREE.Box3().setFromObject(target);
-          const c = box.getCenter(new window.THREE.Vector3());
-          world = { x: c.x, y: c.y, z: c.z };
-        }
-      }
-      if (!world) throw new Error(`no geometry for heritage ${id}`);
-      // Frame the monument directly: the mission's intro/follow camera would ignore `moveTo`.
-      const groundY = g.terrain.getHeight(world.x, world.z);
-      const cam = g.camera.camera;
-      cam.position.set(world.x + 0.01, groundY + 36, world.z + 36);
-      cam.lookAt(world.x, groundY + 2, world.z);
-      cam.updateMatrixWorld();
-      const p = new window.THREE.Vector3(world.x, world.y, world.z).project(cam);
-      const x = (p.x * 0.5 + 0.5) * window.innerWidth;
-      const y = (-p.y * 0.5 + 0.5) * window.innerHeight;
-      const canvas = document.querySelector('#render-canvas') as HTMLCanvasElement;
-      canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: x, clientY: y, button: 0, bubbles: true }));
-      window.dispatchEvent(new MouseEvent('mouseup', { clientX: x, clientY: y, button: 0, bubbles: true }));
-      // The click sets the selection; force the command panel to rebuild for it.
-      g.hud.bottomKey = '';
-      g.hud.renderBottomIfChanged();
-      const button = [...document.querySelectorAll<HTMLButtonElement>('.ed-command')].find((b) =>
-        label.test(b.textContent ?? ''),
-      );
-      if (!button) {
-        const labels = [...document.querySelectorAll('.ed-command')].map((b) => b.textContent).join(' | ');
-        throw new Error(`no «${label}» command for ${id}; got: ${labels}`);
-      }
-      button.dispatchEvent(new PointerEvent('pointerdown', { button: 0, bubbles: true }));
-    };
+    const clickHeritage = (id: HeritageBuildingId, labelSource: string) =>
+      (window as unknown as HeritageClickWindow).__heritageClick(id, labelSource);
     const move = (ids: number[], x: number, z: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
     const gather = (ids: number[], entityId: number) =>
@@ -1391,12 +1347,12 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       // Inspect only once the card is active, or the hold would start during the travel loop.
       if (near && m.getObjectiveState('a2_huanacaure') === 'active') break;
     }
-    clickHeritage('tambotoco_huanacaure', /Visitar/);
+    clickHeritage('tambotoco_huanacaure', 'Visitar');
     step(2);
     const huanacaure = m.getObjectiveState('a2_huanacaure') as string;
 
     // The acequia is locked until the party has held Huanacaure through the alcabizas' wave.
-    clickHeritage('tambotoco_acequia', /Abrir compuerta/);
+    clickHeritage('tambotoco_acequia', 'Abrir compuerta');
     const gateLocked = g.isCanalOpen();
     const lockedAcequia = m.getObjectiveState('a3_acequia') as string;
     const holdHpBefore = [...g.units.values()]
@@ -1416,7 +1372,7 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       .reduce((sum: number, u: any) => sum + u.hp, 0);
     const holdDamage = holdHpBefore - holdHpAfter;
     const oleada = m.getObjectiveState('a3_oleada') as string;
-    clickHeritage('tambotoco_acequia', /Abrir compuerta/);
+    clickHeritage('tambotoco_acequia', 'Abrir compuerta');
     step(2);
     const acequia = m.getObjectiveState('a3_acequia') as string;
 
@@ -1524,6 +1480,7 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
   test.setTimeout(240_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
+  await installHeritageClick(page);
   await page.goto('/?mission=m_lima&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
@@ -1557,7 +1514,12 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
       );
     const build = (ids: number[], entityId: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'build', entityId }, clear: true }, false);
+    const clickHeritage = (id: HeritageBuildingId, labelSource: string) =>
+      (window as unknown as HeritageClickWindow).__heritageClick(id, labelSource);
 
+    // The tutorial is sequential: select the infantry first, or the `traza` step never shows.
+    const infantry = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'soldier') as any;
+    g.selectUnits([infantry.id]);
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker') as any;
     move([worker.id], 90, 152);
     for (let i = 0; i < Math.ceil(60 / dt) && !m.ended; i++) {
@@ -1566,9 +1528,11 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
       t += dt;
       if (Math.hypot(worker.pos.x - 90, worker.pos.z - 150) <= 14) break;
     }
-    g.visitHeritage('lima_plaza');
+    const tutorialBeforeVisit = g.tutorial?.toSave()?.stepId ?? null;
+    clickHeritage('lima_plaza', 'Visitar');
     step(2);
     const traza = m.getObjectiveState('a1_traza') as string;
+    const tutorialAfterVisit = g.tutorial?.toSave()?.stepId ?? null;
 
     const workers = [...g.units.values()]
       .filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead)
@@ -1620,6 +1584,8 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
     }
     return {
       traza,
+      tutorialBeforeVisit,
+      tutorialAfterVisit,
       cabildo,
       cerco,
       ruptura: m.getObjectiveState('a3_ruptura') as string,
@@ -1628,6 +1594,9 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
     };
   });
   expect(out.traza).toBe('completed');
+  // The plaza card was opened through the HUD, and that is the tutorial's `traza` step.
+  expect(out.tutorialBeforeVisit).toBe('traza');
+  expect(out.tutorialAfterVisit).toBe('cabildo');
   expect(out.cabildo).toBe('completed');
   expect(out.cerco).toBe('completed');
   expect(out.ruptura).toBe('completed');
