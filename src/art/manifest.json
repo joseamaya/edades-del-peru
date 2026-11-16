@@ -807,7 +807,7 @@
           "asset": "media/generated/campaigns/la-senda-del-sol/m6b_guerra_civil/intro-800.webp",
           "width": 800,
           "height": 450,
-          "bytes": 38940
+          "bytes": 34334
         }
       ],
       "sources": [
@@ -815,12 +815,12 @@
         "docs/historia/arquitectura.md",
         "docs/design/blender-art.md"
       ],
-      "promptVersion": "v1-blender-e69056d6",
+      "promptVersion": "v1-blender-336f07d7",
       "prompt": "Blender render: El Cusco de la guerra civil, 1532",
       "negativePrompt": "n/a (blender render)",
       "provider": "blender",
       "model": "eevee",
-      "generatedAt": "2026-11-16T13:20:00.979Z",
+      "generatedAt": "2026-11-16T13:26:31.307Z",
       "nature": "abstraction",
       "reviewed": false,
       "reviewer": null,
@@ -833,20 +833,20 @@
       "sourceWidth": 1600,
       "sourceHeight": 900,
       "crop": "cover-attention",
-      "bytes": 80672,
+      "bytes": 71998,
       "format": "webp",
-      "sha256": "a505c191863661236d68b11899cd6fcb36f8a0ec8df0f9fdf751d889e4d4e3fe",
+      "sha256": "3890a22fc70d0fea6be080ee16f1165cf2fa0f12b500329ab61913c900978fa4",
       "blender": {
         "sceneFile": "site-intros/m6b_guerra_civil/m6b_guerra_civil.blend",
         "sourceRender": "site-intros/m6b_guerra_civil/hero.png",
-        "sourceSha256": "ca6320c0bb62b029110709ad645d3b68077b05525ff57668154c1cfcb3792518",
+        "sourceSha256": "09692b42547109b57bfdd1027a17242a6cb96a28a1953e2e2c76b2870b9f6700",
         "sceneAssetId": null,
         "confidence": "Reconstrucción estilizada de la plaza del Cusco en la guerra civil: el ushnu, la kallanka y las dos facciones son una abstracción plausible, no un levantamiento ni un orden de batalla documentado. Las figuras usan el modelo estilizado compartido del proyecto.",
         "camera": "hero",
         "renderer": "eevee",
         "license": "project-owned",
         "author": "Miguel Amaya",
-        "renderedAt": "2026-11-16T07:21:00-05:00"
+        "renderedAt": "2026-11-16T08:00:00-05:00"
       }
     },
     {
