@@ -18,10 +18,14 @@ history.
 
 | Act             | Place                   | Player action                                        | Historical idea                                                 |
 | --------------- | ----------------------- | ---------------------------------------------------- | --------------------------------------------------------------- |
-| I · La cueva    | Tambotoco / Pacaritambo | Leave the cave, raise the first camp, hunt 120 food  | The peregrination starts as a movement of families, not an army |
+| I · La cueva    | Tambotoco / Pacaritambo | Leave the cave, raise the first camp, hunt 60 food   | The peregrination starts as a movement of families, not an army |
 | II · Huanacaure | Huanacaure hill         | Reach and visit the huaca                            | Ayar Uchu becomes stone; the huaca marks the route              |
 | III · El agua   | Cusco valley            | Hold Huanacaure through the wave, open the acequia, irrigate a farm (optional) | Water as political leverage (Sarmiento)                         |
 | IV · Inticancha | Cusco valley            | Build the communal store and lay out four canchas    | The ayllu settlement becomes the future Cusco                   |
+
+The four canchas accept a house centre within 6 m of the marked plot. Adjacent plots are 17–24 m apart, so
+6 m leaves a dead band at the midpoint; the earlier 9 m was wide enough for one house to satisfy two plots
+(the closest pair is 17.1 m). The radius also absorbs a tree, rock or unit offset on the uneven bank.
 
 Opening the acequia is the documented leverage made mechanical: its trigger fires a `truce` effect, so the
 valley ayllus join the player's team, their AI stops campaigning and their warriors return home. Without it
@@ -33,8 +37,8 @@ activates the acequia and the truce can fire. The wave is real pressure: the par
 an earlier autopilot run lost Ayar Manco's optional protect, the latest kept him. The Act IV card shows the traced plaza (`intro-traza`), not the founded settlement,
 and `fundada` fires on the victory tick.
 
-Optional: keep Ayar Manco alive, visit the hualla village and build one farm within 4.0 m of the acequia
-outlet (`a3_riego`). The 3.2 m building keepout leaves a legal, irrigated band at the bank; the canal's
+Optional: keep Ayar Manco alive, visit the hualla village (it yields 150 food and 100 wood; a game abstraction
+noted in the dossier) and build one farm within 4.0 m of the acequia outlet (`a3_riego`). The 3.2 m building keepout leaves a legal, irrigated band at the bank; the canal's
 `authoredCanalAt` reach is 4.5 m for this mission, so the farm receives the yield. Victory = Inticancha
 founded and four canchas built.
 
@@ -86,6 +90,9 @@ Workers, militia, slingers and a scout. Buildings: house, farm, storehouse, sawm
 fortress, walls, gate or towers, since the valley yields to the water, not to a siege. Without dwellings the
 party's cap would read «20/7», so a base-less start raises the cap to the party that left the cave. No market, silver, stable or artillery: the economy is an ayllu economy,
 and the only "engine" of the mission is water.
+
+The opening hunt is 60 food (about 90 s in the full recording); the optional hualla stop pays stores on the way
+to Inticancha, so Act IV starts with wood in hand.
 
 ## Characters
 

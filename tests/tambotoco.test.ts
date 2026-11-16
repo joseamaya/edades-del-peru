@@ -158,6 +158,39 @@ describe('Los hijos de Tambotoco', () => {
     expect(canchas.nodes).toHaveLength(4);
   });
 
+  it('keeps the opening hunt short and its title in step with the count', () => {
+    const caza = TAMBOTOCO.objectives.find((o) => o.id === 'a1_caza')!;
+    expect(caza.count).toBe(60);
+    expect(caza.title).toContain('60');
+  });
+
+  it('makes the optional hualla visit pay stores once and never gate victory', () => {
+    const goal = TAMBOTOCO.objectives.find((o) => o.id === 'a3_hualla')!;
+    expect(goal.optional).toBe(true);
+    const hualla = TAMBOTOCO.triggers.find((t) => t.id === 't_hualla')!;
+    expect(hualla.condition).toEqual({ type: 'objective', objectiveId: 'a3_hualla', state: 'completed' });
+    expect(hualla.effects).toContainEqual({ type: 'resources', player: 0, amount: { food: 150, wood: 100 } });
+    expect(hualla.effects.some((fx) => fx.type === 'dialogue')).toBe(true);
+    expect(hualla.repeat).toBeFalsy();
+  });
+
+  it('keeps each cancha house on its marked plot and never lets one house satisfy two', () => {
+    const canchas = TAMBOTOCO.objectives.find((o) => o.id === 'a4_canchas')!;
+    expect(canchas.radius).toBe(6);
+    const nodes = canchas.nodes ?? [];
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i]!;
+        const b = nodes[j]!;
+        const ax = a.x ?? a.dx ?? 0;
+        const az = a.z ?? a.dz ?? 0;
+        const bx = b.x ?? b.dx ?? 0;
+        const bz = b.z ?? b.dz ?? 0;
+        expect(Math.hypot(ax - bx, az - bz)).toBeGreaterThan(2 * (canchas.radius ?? 0));
+      }
+    }
+  });
+
   it('puts the optional farm inside the acequia reach and not on the plaza', () => {
     const size = TAMBOTOCO.map.size;
     const path = (TAMBOTOCO.layout?.canal?.path ?? []).map((p) => ({ x: p.x * size, z: p.z * size }));
