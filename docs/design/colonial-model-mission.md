@@ -60,7 +60,7 @@ here and in the quality bar. The Sangarará chapel is a separate typological `co
 - Three narrated intro beats captured in engine by
   [`scripts/capture_colonial_intro.mjs`](../../scripts/capture_colonial_intro.mjs): the valley and the
   rebellion, Sangarará and the Cusco siege.
-- `MISSION_ART` (`m7_tupac_amaru` → `media/cusco/intro-valle.webp`) and the briefing use the valley capture in normal play; `?art=all` still previews the unreviewed `m7_colonial-intro` draft.
+- `MISSION_ART` (`m7_tupac_amaru` → `media/cusco/intro-valle.webp`) and the briefing use the valley capture in normal play; the draft `m7_colonial-intro` record was retired on 2026-11-16.
 - Victory: the army and Túpac withdraw when the relief breaks the siege; the epilogue
   (`media/cusco/intro-epilogo.webp`) tells the capture at Langui and the execution of 18 May 1781.
 - Defeat: Túpac dies, or the leadership is lost before the retreat.

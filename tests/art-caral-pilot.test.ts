@@ -31,13 +31,7 @@ const EXPECTED = [
   'm9_guerra_pacifico-intro',
   'm_lima-intro',
   'm6_chimu-intro',
-  'm6b_guerra_civil-intro',
-  'm7_colonial-intro',
-  'm8_independencia-intro',
 ];
-/** Draft intros removed from the committed manifest in the 2026-11-16 art reconciliation. */
-const REMOVED_DRAFTS = new Set(['m6b_guerra_civil-intro', 'm7_colonial-intro', 'm8_independencia-intro']);
-const EXPECTED_COMMITTED = EXPECTED.filter((id) => !REMOVED_DRAFTS.has(id));
 const EXPECTED_META: Record<string, { civilization: string; period: number; region: string }> = {
   'm1_caral-intro': { civilization: 'caral', period: 0, region: 'central_coast' },
   'm2_chavin-intro': { civilization: 'chavin', period: 1, region: 'andean_valley' },
@@ -47,9 +41,6 @@ const EXPECTED_META: Record<string, { civilization: string; period: number; regi
   'm_tambotoco-intro': { civilization: 'inca', period: 5, region: 'high_andes' },
   'm_lima-intro': { civilization: 'hueste_indiana', period: 6, region: 'central_coast' },
   'm6_chimu-intro': { civilization: 'inca', period: 5, region: 'north_coast' },
-  'm6b_guerra_civil-intro': { civilization: 'inca', period: 5, region: 'high_andes' },
-  'm7_colonial-intro': { civilization: 'inca', period: 6, region: 'high_andes' },
-  'm8_independencia-intro': { civilization: 'patriotas', period: 7, region: 'andean_valley' },
   'm_junta_cusco-intro': { civilization: 'patriotas', period: 7, region: 'high_andes' },
   'm9_guerra_pacifico-intro': { civilization: 'republica', period: 8, region: 'south_coast' },
 };
@@ -94,7 +85,7 @@ describe('Blender campaign art', () => {
 
   it('has a valid committed manifest with the same pilot ids', () => {
     expect(validateManifestData(ART_MANIFEST)).toEqual([]);
-    expect(ART_MANIFEST.assets.map((asset) => asset.id).sort()).toEqual([...EXPECTED_COMMITTED].sort());
+    expect(ART_MANIFEST.assets.map((asset) => asset.id).sort()).toEqual([...EXPECTED].sort());
     for (const asset of ART_MANIFEST.assets) {
       expect(asset.provider).toBe('blender');
       if (asset.reviewed) expect(asset.reviewer).toBeTruthy();

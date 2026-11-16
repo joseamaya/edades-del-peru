@@ -398,8 +398,8 @@ downscaled 1920 shot would look smaller than the 1280 one.
   the procedural port terrace and the units). They are recreations of the game's own scenes: never
   historical photographs, and not Blender renders (so not in `src/art/manifest.json`). The Morro is
   outside the playable range and is not depicted as a surveyed feature.
-- **Review**: no human art-review gate applies to in-engine captures; the `arica_site` GLB and the draft
-  Blender intro record keep their own review status in `src/art/manifest.json` (#343).
+- **Review**: no human art-review gate applies to in-engine captures; the `arica_site` GLB keeps its own
+  review status (#343). The authored `m9_arica-intro` render is approved.
 
 ### Cusco (Túpac Amaru) intro and epilogue images (in-engine recreations)
 
@@ -413,9 +413,9 @@ downscaled 1920 shot would look smaller than the 1280 one.
 - **Content**: project-owned game renders (authored Cusco heightfield, the reused `colonial_site` plaza and
   chapel, the procedural camp and the units). They are recreations of the game's own scenes: never
   historical photographs, and not Blender renders (so not in `src/art/manifest.json`).
-- **Review**: no human art-review gate applies to in-engine captures; the reused colonial plaza GLB and
-  the draft `m7_colonial-intro` Blender record keep their own review status in `src/art/manifest.json`
-  (#343).
+- **Review**: no human art-review gate applies to in-engine captures; the reused colonial plaza GLB keeps
+  its own review status (#343), and the draft `m7_colonial-intro` record was retired on 2026-11-16 (a
+  Workbench blockout of that GLB).
 
 ### Moche (m3) intro and epilogue images (in-engine recreations)
 

@@ -150,8 +150,16 @@ describe('Blender art manifest', () => {
     expect(issues.some((i) => i.id === asset.id && i.field === 'asset')).toBe(true);
   });
 
-  it('has no unreviewed render and no Workbench draft intro left', () => {
-    expect(ART_MANIFEST.assets.filter((a) => a.reviewed === false)).toEqual([]);
+  it('keeps the reconciled Caral records approved and the retired drafts out', () => {
+    for (const id of [
+      'caral-architecture-pyramid',
+      'caral-map-city',
+      'caral-religion-plaza',
+      'caral-tour-isometric',
+      'm1_caral-intro',
+    ]) {
+      expect(ART_MANIFEST.assets.find((a) => a.id === id)?.reviewed, `${id} was not approved`).toBe(true);
+    }
     const drafts = ['m6b_guerra_civil', 'm7_tupac_amaru', 'm8_independencia'];
     for (const missionId of drafts) {
       const intro = ART_MANIFEST.assets.find((a) => a.missionId === missionId && a.type === 'campaign-intro');

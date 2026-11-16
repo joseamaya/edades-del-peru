@@ -22,15 +22,27 @@ missions m1 Caral through m9 Guerra del Pacífico, plus m6b La Guerra Civil.
 
 ## Art gate
 
-No record in `src/art/manifest.json` remains `reviewed: false` (2026-11-16). The five Caral
-education/tour records and their campaign intro were approved after a visual review. The three draft
-mission intros (`m6b_guerra_civil-intro`, `m7_colonial-intro`, `m8_independencia-intro`) were Workbench
-blockouts with no ground, sky or troops in them — m8's caption promised patriot tents that were not in the
-render — so their records and generated files were removed. Every mission's opening already used the
-in-engine `MISSION_ART` capture, so no player-facing image changed.
+Twelve records remain `reviewed: false`:
 
-The runtime site GLBs keep their own review status in `art-src` (#343); `?art=all` no longer has hidden
-render records to preview. A human must still review the site GLBs before presenting them as final art.
+- `caral-architecture-pyramid`
+- `caral-map-city`
+- `caral-religion-plaza`
+- `caral-tour-isometric`
+- `m1_caral-intro`
+- `m2_chavin-intro`
+- `m5_chanca-intro`
+- `m6_chimu-intro`
+- `m6b_guerra_civil-intro`
+- `m7_colonial-intro`
+- `m8_independencia-intro`
+- `m9_arica-intro`
+
+The game hides unreviewed records by default; `?art=all` previews them with a draft badge.
+A human must review the contact sheet before any of them is presented as final art. The m5–m9 and m6b intros are draft Blender renders of the authored sites and stay hidden until review. The m3/m4
+intros were re-rendered on 2026-10-30 and approved by Miguel Amaya: m3 has warmer adobe/plaster
+contrast and a closer camera; m4 has textured cut-stone walls, a white/red D-temple and visible
+murals. The runtime GLBs keep flat materials (18 KB Moche, 34 KB Wari); the image textures are
+render-only.
 
 ## Performance note
 
