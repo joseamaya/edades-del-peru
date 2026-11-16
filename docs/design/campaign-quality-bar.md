@@ -318,7 +318,7 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                 |
 | Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_independencia_intro.mjs`; `MISSION_ART` uses the Lima capture.    |
 | Art         | Pending human review | The reused Ayacucho GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                 |
-| Performance | Met                  | `bench_scene.mjs` 2026-11-16, after the PCF shadow pass and the rig silhouette rule: opening 567,865 tris / 603 calls (under 625k/660, over 200 calls), Ayacucho 808,151 / 959 (under 920k/1,325); the caps were re-measured, not raised. |
+| Performance | Met                  | `bench_scene.mjs` 2026-11-16, after the PCF shadow pass and the rig silhouette rule: opening 567,865 tris / 603 calls (under 625k/660, over 200 calls), Ayacucho 808,151 / 959 (under 920k/1,325); the caps were not raised; the scene now measures under them. |
 | Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                            |
 
 ## Campaign IV playable status (m8–m9)

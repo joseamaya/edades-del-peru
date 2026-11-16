@@ -43,6 +43,9 @@ async function main() {
     .click({ timeout: 5000 })
     .catch(() => {});
   await page.waitForTimeout(2000);
+  // The pair compares the 3D frame, not the HUD state (dialogue, objectives, minimap) which differs
+  // between the two builds.
+  await page.addStyleTag({ content: '#ui-root { display: none !important; }' });
   for (const view of VIEWS) {
     const png = path.join(reviewDir(), `shadow-${tag}-${view.name}.png`);
     await page.evaluate((height) => {
