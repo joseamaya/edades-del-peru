@@ -92,8 +92,9 @@ They advance on what the player does and never repeat the briefing.
   gate can be marked Met.
 - Intro render: `art-src/blender/site-intros/m2_chavin/m2_chavin.blend`, built by
   `scripts/blender/build_site_intro.py --mission=m2_chavin`, uses the Chavín heightmap and the site model
-  with masonry materials, the circular court and figures. The record `m2_chavin-intro` is a draft pending
-  human review; the briefing keeps the in-engine capture until it is approved. Regenerate with
+  with masonry materials, the circular court and figures. The record `m2_chavin-intro` was approved by a
+  recorded human review; `MISSION_ART` uses the generated WebP and the in-engine captures remain evidence.
+  Regenerate with
   `blender --background --python scripts/blender/build_site_intro.py -- --mission=m2_chavin`.
 
 ## Performance
@@ -105,7 +106,7 @@ They advance on what the player does and never repeat the briefing.
 
 ## Open items
 
-1. Human review of the Chavín kit and captures (`reviewed: false` today).
+1. Human review of the Chavín kit and captures (`reviewed: false` today); the intro render is approved.
 2. The kit is a source-derived simplification; the exact construction sequence is debated.
 3. Seasonal flood and the late-period details of the decline are not simulated.
 4. A manual 30–40 minute playtest is pending; the automated playtest reaches victory through the mission API (market/offerings use real commands).
