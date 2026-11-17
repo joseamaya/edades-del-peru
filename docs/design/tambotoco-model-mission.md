@@ -257,7 +257,7 @@ hero variant (E4). The pilot runs E0–E6 and does not rebuild the mission, its 
 
 ## Open items
 
-1. Performance (measured 2026-11-17; E3b numbers): software (SwiftShader) measures **424,392 triangles /
+1. Performance (measured 2026-11-17; E3b numbers): software (SwiftShader) measures **425,504 triangles /
    268 draw calls** at the opening and **633,390 / 356** on the founded Inticancha (vegetation kit 9,352/9 and
    34,306/12); the pre-E1 baseline was 436,880 / 265 and 608,324 / 347, E1 measured 437,976 / 264 and
    614,594 / 357, E2a 438,856 / 269 and 615,532 / 354, and E2b 430,488 / 269 and 613,692 / 354. E3a hardware
