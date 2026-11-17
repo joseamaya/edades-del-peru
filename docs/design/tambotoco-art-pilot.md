@@ -280,7 +280,7 @@ Recorded 2026-11-16:
 1. **Tambotoco is the reference scene**; Caral is the measured precedent.
 2. **The prototype includes a Tambotoco hero GLB and a common-unit variant**, both opt-in.
 3. **The primary validation scene is the hualla hamlet + acequia**; Inticancha is the secondary frame.
-4. **Changes are mission-scoped**; only B11 (terrain shadows) is a shared fix, with a regression capture.
+4. **Changes are mission-scoped**; only B11 (terrain shadows) is a shared visual fix, with a regression capture. Hiding zero-count kit meshes is a shared draw-call cleanup with no visual change.
 
 ## 13. Evidence log
 

@@ -111,7 +111,7 @@ function expectStableFootprint(
   const sizeA = a.getSize(new THREE.Vector3());
   const sizeB = b.getSize(new THREE.Vector3());
   for (const axis of ['x', 'y', 'z'] as const) {
-    expect(Math.abs(sizeB[axis] - sizeA[axis]) / sizeA[axis]).toBeLessThan(0.2);
+    expect(Math.abs(sizeB[axis] - sizeA[axis]) / sizeA[axis]).toBeLessThan(0.18);
   }
   const drift = b.getCenter(new THREE.Vector3()).distanceTo(a.getCenter(new THREE.Vector3()));
   expect(drift).toBeLessThan(Math.max(sizeA.x, sizeA.z) * 0.2);
