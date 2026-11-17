@@ -116,7 +116,7 @@ test('the cultural layers dim per fog zone (unexplored/explored/visible)', { tag
           : which === 'settlement'
             ? 'fields'
             : which === 'ayllu'
-              ? 'ayllu:inticancha'
+              ? 'ayllu:inticancha:stone'
               : null;
       let mesh: any = null;
       if (prefer) root.traverse((o: any) => (mesh ||= o.isMesh && o.name === prefer ? o : null));

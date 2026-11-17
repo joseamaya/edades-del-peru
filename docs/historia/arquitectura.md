@@ -46,6 +46,17 @@ usan el colonial o el republicano.
 > Fuentes generales del sistema andino: Moseley, M. E., _The Incas and their Ancestors_; Rowe/Lumbreras
 > para la periodización (ver [`fuentes.md`](./fuentes.md) y [`periodizacion.md`](./periodizacion.md)).
 
+### Killke y los ayllus del valle (Intermedio Tardío)
+
+La ocupación Killke del valle del Cusco (c. 1000–1400) es anterior al Estado inca. Para el sitio de
+Tambotoco se usa un lenguaje **doméstico**: piedra de campo con mortero de barro, muros de tierra o
+revoque, techos de paja, plantas irregulares, andenes y acequias. **No** se aplican la cantería pulida, los
+nichos, los vanos de doble jamba ni el ushnu imperiales. La forma exacta de una casa Killke no está
+documentada, así que las proporciones, la planta circular del qollqa y el trazado de las cuatro canchas son
+una **reconstrucción plausible** para el juego; la cueva, el monolito de Huanacaure y el vestuario de los
+Ayar son **estilizaciones**, no reconstrucciones. Fuentes: Bauer y Covey (2002), Covey (2006) y
+[`campanas/tambotoco.md`](./campanas/tambotoco.md).
+
 ---
 
 ## 2. Emblemas (estandartes y escudos)

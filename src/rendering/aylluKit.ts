@@ -18,21 +18,29 @@ import { conformWallGeometry } from './landscapeConform';
 
 export type Parts = THREE.BufferGeometry[];
 
+/**
+ * Surface families the kit merges by. Each family owns one material and one generated detail set;
+ * vertex colours carry the actual hue, so stone, plaster, earth, thatch and wood read as different
+ * materials without a texture per tint.
+ */
+export type SurfaceFamily = 'stone' | 'rock' | 'earth' | 'plaster' | 'thatch' | 'wood' | 'vegetation' | 'people';
+
 export const AYLLU = {
-  // Tints stay under art-direction §4's 0.8 albedo cap; the grain map multiplies them down again.
-  stone: new THREE.Color('#cfc4ad'),
-  darkStone: new THREE.Color('#a99e8a'),
-  plaster: new THREE.Color('#d0bb97'),
-  earth: new THREE.Color('#c9a67f'),
-  packedEarth: new THREE.Color('#d2b794'),
-  thatch: new THREE.Color('#e2c27c'),
-  thatchDark: new THREE.Color('#b99450'),
-  crop: new THREE.Color('#7f9745'),
+  // Tints stay under art-direction §4's 0.8 albedo cap; the detail map multiplies them down again.
+  stone: new THREE.Color('#c4b7a3'),
+  rock: new THREE.Color('#a99c88'),
+  darkStone: new THREE.Color('#948a78'),
+  plaster: new THREE.Color('#ddc9a4'),
+  earth: new THREE.Color('#b38a64'),
+  packedEarth: new THREE.Color('#c9ab84'),
+  thatch: new THREE.Color('#c8a45a'),
+  thatchDark: new THREE.Color('#8e6c3c'),
+  crop: new THREE.Color('#6f8f3d'),
   cropDry: new THREE.Color('#a3944d'),
-  mouth: new THREE.Color('#17130f'),
+  mouth: new THREE.Color('#120f0c'),
   cloth: new THREE.Color('#a0603c'),
   skin: new THREE.Color('#94694a'),
-  wood: new THREE.Color('#b08a5c'),
+  wood: new THREE.Color('#6b4a2f'),
 } as const;
 
 function lcg(seed: number): () => number {
@@ -43,21 +51,42 @@ function lcg(seed: number): () => number {
   };
 }
 
-let surfaces: { map: THREE.DataTexture; normalMap: THREE.DataTexture } | null = null;
+const SURFACE_OF = new Map<THREE.Color, SurfaceFamily>([
+  [AYLLU.stone, 'stone'],
+  [AYLLU.rock, 'rock'],
+  [AYLLU.darkStone, 'stone'],
+  [AYLLU.plaster, 'plaster'],
+  [AYLLU.earth, 'earth'],
+  [AYLLU.packedEarth, 'earth'],
+  [AYLLU.thatch, 'thatch'],
+  [AYLLU.thatchDark, 'thatch'],
+  [AYLLU.crop, 'vegetation'],
+  [AYLLU.cropDry, 'vegetation'],
+  [AYLLU.mouth, 'wood'],
+  [AYLLU.cloth, 'people'],
+  [AYLLU.skin, 'people'],
+  [AYLLU.wood, 'wood'],
+]);
 
-/**
- * One neutral grain texture for the whole kit, generated as data so it also builds headless.
- * Vertex colours carry the material hue; the map and normal map only break the flat faces.
- */
-export function aylluSurfaceTextures(): { map: THREE.DataTexture; normalMap: THREE.DataTexture } {
-  if (surfaces) return surfaces;
-  const size = 64;
-  const rng = lcg(1337);
-  let height = new Float32Array(size * size);
-  for (let i = 0; i < height.length; i++) height[i] = rng();
-  for (let pass = 0; pass < 2; pass++) {
-    const src = height;
-    const next = new Float32Array(src.length);
+function surfaceForColor(color: THREE.Color): SurfaceFamily {
+  return SURFACE_OF.get(color) ?? 'stone';
+}
+
+export interface SurfaceDetail {
+  readonly map: THREE.DataTexture;
+  readonly normalMap: THREE.DataTexture;
+  /** World metres covered by one texture repeat. */
+  readonly tile: number;
+  readonly roughness: number;
+  readonly normalScale: number;
+}
+
+const DETAIL_SIZE = 128;
+const DETAILS = new Map<SurfaceFamily, SurfaceDetail>();
+
+function smooth(height: Float32Array, size: number, passes: number): void {
+  for (let pass = 0; pass < passes; pass++) {
+    const src = height.slice();
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         let sum = 0;
@@ -66,24 +95,194 @@ export function aylluSurfaceTextures(): { map: THREE.DataTexture; normalMap: THR
             sum += src[((y + dy + size) % size) * size + ((x + dx + size) % size)]!;
           }
         }
-        next[y * size + x] = sum / 9;
+        height[y * size + x] = sum / 9;
       }
     }
-    height = next;
   }
+}
+
+function stoneHeight(rng: () => number, size: number): Float32Array {
+  const height = new Float32Array(size * size).fill(0.55);
+  const set = (x: number, y: number, v: number): void => {
+    height[(((y % size) + size) % size) * size + (((x % size) + size) % size)] = v;
+  };
+  const rowHeights = [22, 29, 24, 32, 26];
+  let y = 0;
+  let row = 0;
+  while (y < size) {
+    const course = rowHeights[row % rowHeights.length]!;
+    let x = (row * 13) % size;
+    // Horizontal joint.
+    for (let dx = 0; dx < size; dx++) set(x + dx, y, 0.32);
+    // Blocks of varying width, filled with a per-block shade and pitted noise.
+    while (x < size + 40) {
+      const width = 18 + Math.floor(rng() * 26);
+      const shade = 0.5 + rng() * 0.16;
+      for (let by = 2; by < course - 1; by++) {
+        for (let bx = 2; bx < width - 1; bx++) {
+          set(x + bx, y + by, shade + rng() * 0.12);
+        }
+      }
+      // Vertical joint.
+      for (let by = 0; by < course; by++) set(x + width - 1, y + by, 0.3);
+      x += width;
+    }
+    y += course;
+    row++;
+  }
+  // A few cracks and pitted stones keep the courses from looking printed.
+  for (let i = 0; i < 20; i++) {
+    let cx = Math.floor(rng() * size);
+    let cy = Math.floor(rng() * size);
+    for (let s = 0; s < 8 + rng() * 16; s++) {
+      set(cx, cy, 0.28);
+      cx += rng() > 0.5 ? 1 : 0;
+      cy += rng() > 0.4 ? 1 : 0;
+    }
+  }
+  smooth(height, size, 1);
+  return height;
+}
+
+function thatchHeight(rng: () => number, size: number): Float32Array {
+  const height = new Float32Array(size * size).fill(0.56);
+  for (let i = 0; i < 900; i++) {
+    let x = rng() * size;
+    let y = rng() * size;
+    const len = 10 + rng() * 26;
+    const dx = (rng() - 0.5) * 0.35;
+    const dy = -1;
+    const shade = 0.62 + rng() * 0.34;
+    for (let s = 0; s < len; s++) {
+      const px = ((Math.round(x) % size) + size) % size;
+      const py = ((Math.round(y) % size) + size) % size;
+      height[py * size + px] = Math.max(height[py * size + px]!, shade);
+      x += dx;
+      y += dy;
+    }
+  }
+  return height;
+}
+
+function plasterHeight(rng: () => number, size: number): Float32Array {
+  const height = new Float32Array(size * size);
+  for (let i = 0; i < height.length; i++) height[i] = 0.78 + rng() * 0.12;
+  smooth(height, size, 2);
+  for (let i = 0; i < 14; i++) {
+    let x = Math.floor(rng() * size);
+    let y = Math.floor(rng() * size);
+    for (let s = 0; s < 6 + rng() * 16; s++) {
+      height[((y + size) % size) * size + ((x + size) % size)] = 0.5;
+      x += rng() > 0.55 ? 1 : 0;
+      y += rng() > 0.3 ? 1 : 0;
+    }
+  }
+  return height;
+}
+
+function earthHeight(rng: () => number, size: number): Float32Array {
+  const height = new Float32Array(size * size);
+  for (let i = 0; i < height.length; i++) height[i] = 0.62 + rng() * 0.22;
+  smooth(height, size, 1);
+  for (let i = 0; i < 80; i++) {
+    const cx = rng() * size;
+    const cy = rng() * size;
+    const r = 0.7 + rng() * 1.8;
+    for (let y = -2; y <= 2; y++) {
+      for (let x = -2; x <= 2; x++) {
+        if (x * x + y * y > r * r) continue;
+        const px = ((Math.round(cx + x) % size) + size) % size;
+        const py = ((Math.round(cy + y) % size) + size) % size;
+        height[py * size + px] = 0.85;
+      }
+    }
+  }
+  return height;
+}
+
+function rockHeight(rng: () => number, size: number): Float32Array {
+  const height = new Float32Array(size * size);
+  for (let i = 0; i < height.length; i++) height[i] = 0.55 + rng() * 0.3;
+  smooth(height, size, 2);
+  // Fracture planes and pits: enough relief for a faceted boulder, no masonry courses.
+  for (let i = 0; i < 26; i++) {
+    const cx = rng() * size;
+    const cy = rng() * size;
+    const r = 2 + rng() * 8;
+    for (let y = -r; y <= r; y++) {
+      for (let x = -r; x <= r; x++) {
+        if (x * x + y * y > r * r) continue;
+        const px = ((Math.round(cx + x) % size) + size) % size;
+        const py = ((Math.round(cy + y) % size) + size) % size;
+        height[py * size + px] = Math.max(0.25, height[py * size + px]! - rng() * 0.25);
+      }
+    }
+  }
+  return height;
+}
+
+function woodHeight(rng: () => number, size: number): Float32Array {
+  const height = new Float32Array(size * size);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const grain = Math.sin(x * 0.22 + Math.sin(y * 0.04) * 2.1) * 0.5 + 0.5;
+      height[y * size + x] = 0.58 + grain * 0.16 + rng() * 0.05;
+    }
+  }
+  for (let i = 0; i < 5; i++) {
+    const cx = Math.floor(rng() * size);
+    const cy = Math.floor(rng() * size);
+    for (let y = -3; y <= 3; y++) {
+      for (let x = -3; x <= 3; x++) {
+        if (x * x + y * y > 9) continue;
+        const px = (((cx + x) % size) + size) % size;
+        const py = (((cy + y) % size) + size) % size;
+        height[py * size + px] = 0.36;
+      }
+    }
+  }
+  return height;
+}
+
+function heightSet(family: SurfaceFamily): Float32Array {
+  const rng = lcg(1337 + family.length * 97 + family.charCodeAt(0));
+  const size = DETAIL_SIZE;
+  switch (family) {
+    case 'stone':
+      return stoneHeight(rng, size);
+    case 'rock':
+      return rockHeight(rng, size);
+    case 'thatch':
+      return thatchHeight(rng, size);
+    case 'plaster':
+      return plasterHeight(rng, size);
+    case 'earth':
+      return earthHeight(rng, size);
+    case 'wood':
+      return woodHeight(rng, size);
+    default:
+      return new Float32Array(size * size).fill(0.8);
+  }
+}
+
+function buildDetail(family: SurfaceFamily): SurfaceDetail {
+  const size = DETAIL_SIZE;
+  const height = heightSet(family);
   const at = (x: number, y: number): number => height[((y + size) % size) * size + ((x + size) % size)]!;
   const albedo = new Uint8Array(size * size * 4);
   const normal = new Uint8Array(size * size * 4);
+  const normalStrength = family === 'thatch' ? 3.4 : family === 'stone' ? 3.0 : 2.0;
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const i = (y * size + x) * 4;
-      const grain = 168 + at(x, y) * 72;
-      albedo[i] = grain;
-      albedo[i + 1] = grain * 0.97;
-      albedo[i + 2] = grain * 0.92;
+      // Near-white detail: the material colour and the baked vertex tint carry the hue.
+      const v = Math.round((0.82 + at(x, y) * 0.18) * 255);
+      albedo[i] = v;
+      albedo[i + 1] = v;
+      albedo[i + 2] = v;
       albedo[i + 3] = 255;
-      const dx = (at(x + 1, y) - at(x - 1, y)) * 3;
-      const dy = (at(x, y + 1) - at(x, y - 1)) * 3;
+      const dx = (at(x + 1, y) - at(x - 1, y)) * normalStrength;
+      const dy = (at(x, y + 1) - at(x, y - 1)) * normalStrength;
       const length = Math.hypot(-dx, -dy, 1);
       normal[i] = ((-dx / length) * 0.5 + 0.5) * 255;
       normal[i + 1] = ((-dy / length) * 0.5 + 0.5) * 255;
@@ -93,7 +292,6 @@ export function aylluSurfaceTextures(): { map: THREE.DataTexture; normalMap: THR
   }
   const map = new THREE.DataTexture(albedo, size, size, THREE.RGBAFormat);
   map.wrapS = map.wrapT = THREE.RepeatWrapping;
-  map.repeat.set(6, 6);
   map.colorSpace = THREE.SRGBColorSpace;
   map.magFilter = THREE.LinearFilter;
   map.minFilter = THREE.LinearMipmapLinearFilter;
@@ -101,13 +299,70 @@ export function aylluSurfaceTextures(): { map: THREE.DataTexture; normalMap: THR
   map.needsUpdate = true;
   const normalMap = new THREE.DataTexture(normal, size, size, THREE.RGBAFormat);
   normalMap.wrapS = normalMap.wrapT = THREE.RepeatWrapping;
-  normalMap.repeat.set(6, 6);
   normalMap.magFilter = THREE.LinearFilter;
   normalMap.minFilter = THREE.LinearMipmapLinearFilter;
   normalMap.generateMipmaps = true;
   normalMap.needsUpdate = true;
-  surfaces = { map, normalMap };
-  return surfaces;
+  const tuning: Record<SurfaceFamily, { tile: number; roughness: number; normalScale: number }> = {
+    stone: { tile: 1.5, roughness: 0.95, normalScale: 0.5 },
+    rock: { tile: 2.2, roughness: 0.98, normalScale: 0.55 },
+    earth: { tile: 2.4, roughness: 0.95, normalScale: 0.4 },
+    plaster: { tile: 2.1, roughness: 0.9, normalScale: 0.28 },
+    thatch: { tile: 1.1, roughness: 0.86, normalScale: 0.6 },
+    wood: { tile: 1.3, roughness: 0.82, normalScale: 0.4 },
+    vegetation: { tile: 1, roughness: 1, normalScale: 0.2 },
+    people: { tile: 1, roughness: 0.9, normalScale: 0.2 },
+  };
+  return { map, normalMap, ...tuning[family] };
+}
+
+/** One generated detail set per surface family, shared by every phase and instance. */
+export function surfaceDetail(family: SurfaceFamily): SurfaceDetail {
+  let detail = DETAILS.get(family);
+  if (!detail) {
+    detail = buildDetail(family);
+    DETAILS.set(family, detail);
+  }
+  return detail;
+}
+
+/** A world-scale UV tile size for a geometry, applied once when it is painted. */
+function scaleSurfaceUv(geometry: THREE.BufferGeometry, family: SurfaceFamily): void {
+  const uv = geometry.getAttribute('uv');
+  if (!uv) return;
+  const scale = 1 / surfaceDetail(family).tile;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * scale, uv.getY(i) * scale);
+  uv.needsUpdate = true;
+}
+
+/** Rewrite BoxGeometry's per-face 0..1 UVs to world metres (paint divides by the family tile). */
+function boxUv(geometry: THREE.BufferGeometry, w: number, h: number, d: number): void {
+  const uv = geometry.getAttribute('uv');
+  if (!uv) return;
+  const dims: [number, number][] = [
+    [d, h],
+    [d, h],
+    [w, d],
+    [w, d],
+    [w, h],
+    [w, h],
+  ];
+  for (let face = 0; face < 6; face++) {
+    const [su, sv] = dims[face]!;
+    for (let i = 0; i < 4; i++) {
+      const index = face * 4 + i;
+      uv.setXY(index, uv.getX(index) * su, uv.getY(index) * sv);
+    }
+  }
+  uv.needsUpdate = true;
+}
+
+/** Rewrite a cylinder/cone/sphere's 0..1 UVs to world metres around and along the primitive. */
+function wrapUv(geometry: THREE.BufferGeometry, around: number, along: number): void {
+  const uv = geometry.getAttribute('uv');
+  if (!uv) return;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * around, uv.getY(i) * along);
+  uv.needsUpdate = true;
 }
 
 type HeightAt = (x: number, z: number) => number;
@@ -123,6 +378,8 @@ function shadeFor(geometry: THREE.BufferGeometry, salt: number): number {
 export function paint(geometry: THREE.BufferGeometry, color: THREE.Color, salt = 0): THREE.BufferGeometry {
   const flat = geometry.index ? geometry.toNonIndexed() : geometry;
   if (flat !== geometry) geometry.dispose();
+  const family = surfaceForColor(color);
+  scaleSurfaceUv(flat, family);
   const count = flat.getAttribute('position').count;
   const colors = new Float32Array(count * 3);
   const tint = color.clone().multiplyScalar(shadeFor(flat, salt));
@@ -132,6 +389,7 @@ export function paint(geometry: THREE.BufferGeometry, color: THREE.Color, salt =
     colors[i * 3 + 2] = tint.b;
   }
   flat.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  flat.userData.surface = family;
   return flat;
 }
 
@@ -147,6 +405,7 @@ export function box(
   ry = 0,
 ): void {
   const g = new THREE.BoxGeometry(w, h, d);
+  boxUv(g, w, h, d);
   if (ry) g.rotateY(ry);
   g.translate(x, y + h / 2, z);
   parts.push(paint(g, color));
@@ -164,6 +423,7 @@ export function cylinder(
   segments = 10,
 ): void {
   const g = new THREE.CylinderGeometry(rTop, rBottom, h, segments);
+  wrapUv(g, Math.PI * (rTop + rBottom), h);
   g.translate(x, y + h / 2, z);
   parts.push(paint(g, color));
 }
@@ -180,6 +440,7 @@ export function cone(
   ry = 0,
 ): void {
   const g = new THREE.ConeGeometry(r, h, segments);
+  wrapUv(g, Math.PI * 2 * r, h);
   if (ry) g.rotateY(ry);
   g.translate(x, y + h / 2, z);
   parts.push(paint(g, color));
@@ -187,11 +448,12 @@ export function cone(
 
 export function sphere(parts: Parts, color: THREE.Color, x: number, y: number, z: number, r: number): void {
   const g = new THREE.SphereGeometry(r, 6, 5);
+  wrapUv(g, Math.PI * 2 * r, Math.PI * r);
   g.translate(x, y, z);
   parts.push(paint(g, color));
 }
 
-export function rock(parts: Parts, x: number, y: number, z: number, r: number, color = AYLLU.stone, spin = 0): void {
+export function rock(parts: Parts, x: number, y: number, z: number, r: number, color = AYLLU.rock, spin = 0): void {
   const g = new THREE.DodecahedronGeometry(r, 0);
   g.scale(1, 0.8, 1);
   if (spin) g.rotateY(spin);
@@ -397,7 +659,7 @@ export function conformedDisc(
   lift = 0.05,
 ): number {
   const positions: number[] = [x, getHeight(x, z) + lift, z];
-  const uvs: number[] = [x / 2, z / 2];
+  const uvs: number[] = [x, z];
   for (let ring = 1; ring <= rings; ring++) {
     const r = (radius * ring) / rings;
     for (let s = 0; s < sectors; s++) {
@@ -405,7 +667,7 @@ export function conformedDisc(
       const px = x + Math.cos(a) * r;
       const pz = z + Math.sin(a) * r;
       positions.push(px, getHeight(px, pz) + lift, pz);
-      uvs.push(px / 2, pz / 2);
+      uvs.push(px, pz);
     }
   }
   const indices: number[] = [];
@@ -452,7 +714,7 @@ export function conformedFloor(
       const px = x + r.x;
       const pz = z + r.z;
       positions.push(px, getHeight(px, pz) + lift, pz);
-      uvs.push((w * i) / segments, (d * j) / segments);
+      uvs.push(px, pz);
     }
   }
   for (let j = 0; j < segments; j++) {
@@ -506,7 +768,16 @@ export function gableRoof(
   quad(parts, AYLLU.thatchDark, p1, p5, p6, p2, interior, 13);
   triangle(parts, AYLLU.thatch, p1, p4, p5, interior, 17);
   triangle(parts, AYLLU.thatch, p2, p3, p6, interior, 19);
+  // A visible roof edge: without a fascia the thatch planes read as a paper cut-out.
+  const fascia = (lx: number, lz: number, yaw: number): void => {
+    const r = rotate(lx, lz, ry);
+    box(parts, AYLLU.thatchDark, x + r.x, y - 0.12, z + r.z, w + overhang * 2, 0.16, 0.12, yaw);
+  };
+  fascia(0, hd, ry);
+  fascia(0, -hd, ry);
   box(parts, AYLLU.thatchDark, x, y + rise - 0.05, z, w + overhang * 2 + 0.1, 0.14, 0.26, ry);
+  // Exposed ridge poles, the detail that makes the roof read as a built thatch.
+  box(parts, AYLLU.wood, x, y + rise - 0.02, z, w + overhang * 2 + 0.5, 0.09, 0.1, ry);
   return y + rise;
 }
 
@@ -519,14 +790,15 @@ function doorway(
   base: number,
   depth: number,
   wall: number,
-  width = 0.74,
+  width = 0.82,
 ): void {
   const r = rotate(0, depth / 2 + 0.06, ry);
   const dx = x + r.x;
   const dz = z + r.z;
-  box(parts, AYLLU.mouth, dx, base, dz, width, wall * 0.62, 0.12, ry);
-  box(parts, AYLLU.darkStone, dx, base + wall * 0.62, dz, width + 0.4, 0.18, 0.3, ry);
-  box(parts, AYLLU.stone, dx, base - 0.14, dz, width + 0.3, 0.14, 0.5, ry);
+  const height = Math.max(1.15, wall * 0.78);
+  box(parts, AYLLU.mouth, dx, base, dz, width, height, 0.16, ry);
+  box(parts, AYLLU.darkStone, dx, base + height, dz, width + 0.46, 0.2, 0.34, ry);
+  box(parts, AYLLU.stone, dx, base - 0.16, dz, width + 0.34, 0.16, 0.56, ry);
 }
 
 export interface HouseResult {
@@ -577,16 +849,27 @@ function house(parts: Parts, h: AylluHut, ry: number, plinth: number): HouseResu
   const plastered = h.wallColor !== 'earth';
   box(parts, plastered ? AYLLU.plaster : AYLLU.earth, h.x, wallBase, h.z, h.w, h.wall, h.d, ry);
   // A dark course at the base and a light one under the eave break the single wall volume.
-  box(parts, AYLLU.darkStone, h.x, wallBase, h.z, h.w + 0.04, 0.18, h.d + 0.04, ry);
+  box(parts, AYLLU.darkStone, h.x, wallBase, h.z, h.w + 0.04, 0.28, h.d + 0.04, ry);
+  // Four fieldstone corner stones: the cheapest cue that the wall is laid, not extruded.
+  for (const [sx, sz] of [
+    [-1, -1],
+    [1, -1],
+    [-1, 1],
+    [1, 1],
+  ] as const) {
+    const r = rotate((sx * h.w) / 2, (sz * h.d) / 2, ry);
+    box(parts, AYLLU.stone, h.x + r.x, plinth, h.z + r.z, 0.34, 0.55, 0.34, ry + sx * sz * 0.08);
+  }
   const eave = wallBase + h.wall;
   box(parts, AYLLU.stone, h.x, eave - 0.12, h.z, h.w + 0.1, 0.12, h.d + 0.1, ry);
+  box(parts, AYLLU.thatchDark, h.x, eave - 0.1, h.z, h.w + 0.34, 0.1, h.d + 0.34, ry);
   doorway(parts, h.x, h.z, ry, wallBase, h.d, h.wall);
   if (h.w >= 3.4) {
     const r = rotate(h.w / 2 + 0.04, 0, ry);
-    box(parts, AYLLU.mouth, h.x + r.x, wallBase + h.wall * 0.45, h.z + r.z, 0.1, 0.36, 0.4, ry);
+    box(parts, AYLLU.mouth, h.x + r.x, wallBase + h.wall * 0.7, h.z + r.z, 0.12, 0.26, 0.34, ry);
   }
-  const rise = Math.max(0.55, h.wall * 0.52);
-  const top = gableRoof(parts, h.x, eave, h.z, h.w, h.d, ry, rise);
+  const rise = Math.max(0.95, h.wall * 0.62);
+  const top = gableRoof(parts, h.x, eave, h.z, h.w, h.d, ry, rise, 0.52);
   return { top, eave };
 }
 
@@ -594,19 +877,23 @@ function storehouse(parts: Parts, h: AylluHut, ry: number, plinth: number): Hous
   const radius = Math.min(h.w, h.d) / 2;
   const barrel = h.wall * 1.05;
   cylinder(parts, AYLLU.stone, h.x, plinth, h.z, radius * 0.93, radius, barrel, 10);
-  box(parts, AYLLU.darkStone, h.x, plinth, h.z, radius * 1.6, 0.16, radius * 1.6, ry);
+  // Corbel ring and a raised threshold: the silhouette of a granary, not a plain silo.
+  cylinder(parts, AYLLU.darkStone, h.x, plinth + barrel - 0.22, h.z, radius * 1.03, radius * 1.03, 0.22, 10);
+  box(parts, AYLLU.darkStone, h.x, plinth, h.z, radius * 1.7, 0.16, radius * 1.7, ry);
   const roofBase = plinth + barrel;
-  cone(parts, AYLLU.thatch, h.x, roofBase, h.z, radius + 0.45, h.wall * 0.85, 10, ry);
+  cone(parts, AYLLU.thatch, h.x, roofBase, h.z, radius + 0.5, h.wall * 0.62, 10, ry);
+  box(parts, AYLLU.thatchDark, h.x, roofBase - 0.06, h.z, radius * 2 + 1.0, 0.12, radius * 2 + 1.0, ry);
   const r = rotate(0, radius + 0.06, ry);
-  box(parts, AYLLU.mouth, h.x + r.x, plinth + 0.1, h.z + r.z, 0.62, barrel * 0.56, 0.12, ry);
-  box(parts, AYLLU.darkStone, h.x + r.x, plinth + 0.1 + barrel * 0.56, h.z + r.z, 0.9, 0.16, 0.26, ry);
-  return { top: roofBase + h.wall * 0.85, eave: roofBase };
+  box(parts, AYLLU.mouth, h.x + r.x, plinth + 0.1, h.z + r.z, 0.62, barrel * 0.46, 0.16, ry);
+  box(parts, AYLLU.darkStone, h.x + r.x, plinth + 0.1 + barrel * 0.46, h.z + r.z, 0.94, 0.18, 0.3, ry);
+  box(parts, AYLLU.stone, h.x + r.x, plinth - 0.04, h.z + r.z, 0.9, 0.14, 0.56, ry);
+  return { top: roofBase + h.wall * 0.62, eave: roofBase };
 }
 
 function shed(parts: Parts, h: AylluHut, ry: number, plinth: number): HouseResult {
   const hw = h.w / 2 - 0.12;
   const hd = h.d / 2 - 0.12;
-  const post = Math.max(1.5, h.wall * 1.05);
+  const post = Math.max(2.0, h.wall * 1.02);
   for (const [sx, sz] of [
     [-hw, -hd],
     [hw, -hd],
@@ -618,12 +905,14 @@ function shed(parts: Parts, h: AylluHut, ry: number, plinth: number): HouseResul
   }
   // A stone back and side at waist height keep the shed readable as a built volume, not a canopy.
   const back = rotate(0, -hd, ry);
-  box(parts, AYLLU.stone, h.x + back.x, plinth, h.z + back.z, h.w, 1.1, 0.26, ry);
+  box(parts, AYLLU.stone, h.x + back.x, plinth, h.z + back.z, h.w, 1.25, 0.28, ry);
   const side = rotate(-hw, 0, ry);
-  box(parts, AYLLU.stone, h.x + side.x, plinth, h.z + side.z, 0.26, 1.1, h.d, ry);
+  box(parts, AYLLU.stone, h.x + side.x, plinth, h.z + side.z, 0.28, 0.95, h.d, ry);
+  const beam = rotate(0, 0, ry);
+  box(parts, AYLLU.wood, h.x + beam.x, plinth + post - 0.18, h.z + beam.z, h.w, 0.14, 0.14, ry);
   const eave = plinth + post;
-  const rise = 0.8;
-  const top = gableRoof(parts, h.x, eave, h.z, h.w, h.d, ry, rise, 0.32);
+  const rise = 0.9;
+  const top = gableRoof(parts, h.x, eave, h.z, h.w, h.d, ry, rise, 0.34);
   return { top, eave };
 }
 
@@ -636,41 +925,41 @@ export function terracedField(parts: Parts, f: AylluField, getHeight: HeightAt):
   const depth = f.d / steps;
   for (let i = 0; i < steps; i++) {
     const cz = f.z - f.d / 2 + depth * (i + 0.5);
-    const top = slab(parts, AYLLU.earth, {
-      x: f.x,
-      z: cz,
-      w: f.w,
-      d: depth,
-      lift: 0.1,
-      burial: 0.9,
-      getHeight,
-    });
-    // The downhill face of each step, and a thin cap so the terrace edge catches the light.
+    // The plot follows the relief instead of sitting in a raised planter box; only the downhill edge
+    // gets a retaining face.
+    conformedFloor(parts, AYLLU.earth, f.x, cz, f.w, depth, 0, getHeight, 4, 0.08);
     const lip = cz + depth / 2;
-    slab(parts, AYLLU.darkStone, { x: f.x, z: lip, w: f.w, d: 0.36, top: top + 0.06, burial: 1.1, getHeight });
+    const face = conformWallGeometry({
+      x: f.x,
+      z: lip,
+      size: f.w,
+      yaw: 0,
+      height: 0.42,
+      depth: 0.32,
+      offset: 0.04,
+      getHeight,
+      segment: 1.2,
+    });
+    parts.push(paint(face, AYLLU.darkStone));
     const rows = Math.max(3, f.rows);
     for (let r = 0; r < rows; r++) {
       const rz = cz + (r - (rows - 1) / 2) * (depth / rows) * 0.86;
-      box(parts, r % 2 === 0 ? AYLLU.crop : AYLLU.cropDry, f.x, top + 0.03, rz, f.w * 0.86, 0.14, 0.3);
+      const top = getHeight(f.x, rz) + 0.08;
+      // A raised earth ridge with a strip of crop on top; the old flat boxes read as painted planks.
+      box(parts, AYLLU.earth, f.x, top + 0.02, rz, f.w * 0.86, 0.14, 0.26);
+      box(parts, r % 2 === 0 ? AYLLU.crop : AYLLU.cropDry, f.x, top + 0.16, rz, f.w * 0.84, 0.08, 0.2);
+      for (let c = 0; c < 3; c++) {
+        const cx = f.x + (c / 2 - 0.5) * f.w * 0.7;
+        const cz2 = rz + (c % 2 === 0 ? -0.05 : 0.05);
+        const cy = getHeight(cx, cz2) + 0.06;
+        cone(parts, AYLLU.crop, cx, cy + 0.18, cz2, 0.18, 0.48 + (c % 2) * 0.12, 5);
+      }
     }
-    // A few maize clumps break the corrugated board into a standing crop.
-    for (let c = 0; c < 5; c++) {
-      const cx = f.x + (c / 4 - 0.5) * f.w * 0.78;
-      const cz2 = cz + (c % 2 === 0 ? -1 : 1) * depth * 0.18;
-      cone(parts, AYLLU.crop, cx, top + 0.03, cz2, 0.22, 0.55, 5);
-    }
+    // A shallow irrigation furrow along the uphill edge.
+    box(parts, AYLLU.earth, f.x, getHeight(f.x, cz - depth / 2) + 0.04, cz - depth / 2 + 0.2, f.w * 0.9, 0.06, 0.22);
   }
-  for (const sx of [-f.w / 2, f.w / 2]) {
-    slab(parts, AYLLU.darkStone, {
-      x: f.x + sx,
-      z: f.z,
-      w: 0.3,
-      d: f.d,
-      lift: 0.18,
-      burial: 0.45,
-      getHeight,
-    });
-  }
+  rock(parts, f.x - f.w / 2 + 0.8, getHeight(f.x - f.w / 2 + 0.8, f.z), f.z - f.d / 2 + 0.6, 0.26);
+  rock(parts, f.x + f.w / 2 - 1.1, getHeight(f.x + f.w / 2 - 1.1, f.z), f.z + f.d / 2 - 0.5, 0.2);
 }
 
 /**
@@ -682,30 +971,52 @@ export function pavedPlaza(parts: Parts, x: number, z: number, radius: number, g
   // raising a platform the building would sink into.
   conformedDisc(parts, AYLLU.packedEarth, x, z, radius, getHeight, 6, 40, 0.12);
   for (const [ring, count, size] of [
-    [radius - 0.45, 34, 1.05],
-    [radius * 0.74, 24, 1.0],
-    [radius * 0.46, 16, 0.9],
+    [radius - 0.55, 34, 0.92],
+    [radius * 0.74, 24, 0.88],
+    [radius * 0.46, 16, 0.8],
   ] as const) {
     for (let i = 0; i < count; i++) {
-      const a = (i / count) * Math.PI * 2 + (ring === radius - 0.45 ? 0 : 0.18);
+      const a = (i / count) * Math.PI * 2 + (ring === radius - 0.55 ? 0 : 0.18);
       const px = x + Math.cos(a) * ring;
       const pz = z + Math.sin(a) * ring;
-      box(parts, AYLLU.stone, px, getHeight(px, pz) + 0.12, pz, size, 0.14, size * 0.64, -a);
+      // Set the flagstones into the paving instead of stacking them on top of it.
+      box(parts, AYLLU.stone, px, getHeight(px, pz) + 0.08, pz, size, 0.1, size * 0.62, -a);
     }
+  }
+  // A low kerb bounds the plaza and leaves the four cancha axes open.
+  for (let i = 0; i < 32; i++) {
+    if (i % 8 === 0) continue;
+    const a = (i / 32) * Math.PI * 2 + Math.PI / 32;
+    const px = x + Math.cos(a) * (radius + 0.2);
+    const pz = z + Math.sin(a) * (radius + 0.2);
+    box(parts, AYLLU.darkStone, px, getHeight(px, pz) + 0.04, pz, 0.92, 0.2, 0.28, -a);
+  }
+  // Four packed-earth axes tie the plaza to the canchas.
+  for (const [ax, az, w, d] of [
+    [0, -1, 1.4, 6.5],
+    [0, 1, 1.4, 6.5],
+    [-1, 0, 6.5, 1.4],
+    [1, 0, 6.5, 1.4],
+  ] as const) {
+    const px = x + ax * (radius + 3.1);
+    const pz = z + az * (radius + 3.1);
+    conformedFloor(parts, AYLLU.packedEarth, px, pz, w, d, 0, getHeight, 4, 0.08);
   }
   const altarZ = z - 4.6;
   const base = slab(parts, AYLLU.stone, {
     x,
     z: altarZ,
-    w: 3.2,
-    d: 3.2,
+    w: 3.4,
+    d: 3.4,
     top: getHeight(x, altarZ) + 0.3,
     burial: 0.7,
     getHeight,
   });
-  box(parts, AYLLU.darkStone, x, base, altarZ, 2.4, 0.5, 2.4);
-  box(parts, AYLLU.stone, x, base + 0.5, altarZ, 1.6, 0.35, 1.6);
-  box(parts, AYLLU.darkStone, x, base + 0.85, altarZ, 1.0, 1.0, 1.0, Math.PI / 4);
+  // Two low steps, a stone table and a small fire bowl: a founding-altar abstraction, not an ushnu.
+  box(parts, AYLLU.darkStone, x, base, altarZ, 2.8, 0.18, 2.8);
+  box(parts, AYLLU.stone, x, base + 0.18, altarZ, 2.4, 0.42, 2.4);
+  box(parts, AYLLU.darkStone, x, base + 0.6, altarZ, 1.6, 0.3, 1.6);
+  cylinder(parts, AYLLU.darkStone, x, base + 0.9, altarZ, 0.34, 0.42, 0.32, 8);
   return getHeight(x, z) + 0.12;
 }
 
@@ -722,7 +1033,7 @@ export function canchaPlot(
 ): number {
   const ry = Math.atan2(facing.x - x, facing.z - z);
   const { w, d } = AYLLU_CANCHA_SIZE;
-  const floor = conformedFloor(parts, AYLLU.stone, x, z, w, d, ry, getHeight, 4, 0.1);
+  const floor = conformedFloor(parts, AYLLU.packedEarth, x, z, w, d, ry, getHeight, 4, 0.1);
   const kerb = (lx: number, lz: number, size: number, yaw: number): void => {
     const r = rotate(lx, lz, ry);
     const g = conformWallGeometry({
@@ -730,8 +1041,8 @@ export function canchaPlot(
       z: z + r.z,
       size,
       yaw,
-      height: 0.34,
-      depth: 0.24,
+      height: 0.4,
+      depth: 0.26,
       offset: 0.06,
       getHeight,
       segment: 0.8,
@@ -741,15 +1052,11 @@ export function canchaPlot(
   kerb(0, -d / 2, w, ry);
   kerb(-w / 2, 0, d, ry - Math.PI / 2);
   kerb(w / 2, 0, d, ry - Math.PI / 2);
-  for (const [lx, lz] of [
-    [-1.1, 0.4],
-    [1.1, -0.5],
-  ] as const) {
-    const r = rotate(lx, lz, ry);
-    box(parts, AYLLU.stone, x + r.x, getHeight(x + r.x, z + r.z) + 0.1, z + r.z, 1.5, 0.12, 1.0, ry);
-  }
-  const bench = rotate(0, d / 2 - 0.8, ry);
-  box(parts, AYLLU.darkStone, x + bench.x, getHeight(x + bench.x, z + bench.z) + 0.18, z + bench.z, 2, 0.32, 0.46, ry);
+  // A stone threshold marks the opening to the plaza; it follows the ground so no end is buried.
+  const front = rotate(0, d / 2, ry);
+  conformedFloor(parts, AYLLU.stone, x + front.x, z + front.z, 1.7, 0.55, ry, getHeight, 2, 0.06);
+  const bench = rotate(0, -d / 2 + 0.8, ry);
+  box(parts, AYLLU.darkStone, x + bench.x, getHeight(x + bench.x, z + bench.z) + 0.18, z + bench.z, 2, 0.3, 0.44, ry);
   return floor;
 }
 
@@ -786,6 +1093,17 @@ export function villageDressing(
   box(parts, AYLLU.wood, rackX, rackY, rackZ - 0.55, 0.1, 1.3, 0.1);
   box(parts, AYLLU.wood, rackX, rackY, rackZ + 0.55, 0.1, 1.3, 0.1);
   box(parts, AYLLU.wood, rackX, rackY + 1.15, rackZ, 0.08, 0.08, 1.3);
+  // Woodpile, low yard wall and midden: the hamlet reads as a working household, not four boxes.
+  for (let i = 0; i < 4; i++) {
+    cylinder(parts, AYLLU.wood, x + 1.5 + (i % 2) * 0.22, yardTop + i * 0.14, z - 1.9, 0.1, 0.1, 1.1, 5);
+  }
+  for (const side of [-1, 1]) {
+    box(parts, AYLLU.darkStone, x + side * 2.3, yardTop, z - 1.4, 0.34, 0.55, 2.0, side * 0.08);
+  }
+  for (let i = 0; i < 4; i++) {
+    rock(parts, x - 1.2 + i * 0.28, yardTop - 0.1, z + 1.6 + (i % 2) * 0.2, 0.14 + (i % 3) * 0.04, AYLLU.darkStone);
+  }
+  box(parts, AYLLU.mouth, x - 0.7, yardTop - 0.02, z + 1.7, 0.9, 0.05, 0.7);
   return yardTop;
 }
 
@@ -863,15 +1181,26 @@ export function shrinePlatform(parts: Parts, x: number, z: number, getHeight: He
 
 /** Ayar Uchu's huaca: a tapered monolith with a carved niche, not a plain box. */
 export function shrineStone(parts: Parts, x: number, z: number, base: number): void {
-  cylinder(parts, AYLLU.darkStone, x, base, z, 0.92, 1.25, 6.4, 4);
-  box(parts, AYLLU.mouth, x, base + 1.4, z + 0.72, 1.0, 2.2, 0.22);
-  box(parts, AYLLU.stone, x, base + 3.6, z + 0.68, 1.5, 0.3, 0.3);
-  box(parts, AYLLU.stone, x, base + 6.3, z, 2.2, 0.3, 1.4);
+  slab(parts, AYLLU.darkStone, {
+    x,
+    z,
+    w: 2.4,
+    d: 2.2,
+    top: base + 0.35,
+    burial: 0.7,
+    getHeight: () => base,
+  });
+  cylinder(parts, AYLLU.rock, x, base + 0.35, z, 0.72, 1.15, 5.0, 6);
+  box(parts, AYLLU.mouth, x, base + 1.2, z + 0.95, 1.0, 1.9, 0.3);
+  box(parts, AYLLU.stone, x, base + 3.1, z + 0.9, 1.5, 0.3, 0.4);
+  box(parts, AYLLU.stone, x, base + 4.6, z, 1.9, 0.28, 1.35);
+  // A small offering ledge and two flanking stones, so the huaca belongs to the platform.
+  box(parts, AYLLU.darkStone, x, base + 0.35, z + 1.45, 1.4, 0.28, 0.7);
   for (const [ox, oz] of [
     [-1.9, 0.2],
     [1.9, 0.4],
   ] as const) {
-    rock(parts, x + ox, base, z + oz, 0.5, AYLLU.darkStone);
+    rock(parts, x + ox, base + 0.35, z + oz, 0.5, AYLLU.rock);
   }
 }
 
@@ -880,51 +1209,135 @@ export function caveMouth(parts: Parts, x: number, z: number, getHeight: HeightA
   const base = getHeight(x, z);
   // Two staggered rings of rock leave the mouth open; the dark recess is deeper than the lintel.
   const rocks: [number, number, number, number, number][] = [
-    [-4.6, -0.2, -0.6, 2.2, 0.3],
-    [-3.4, 1.3, -0.5, 1.8, -0.5],
-    [-1.9, 2.5, -0.5, 1.6, 0.8],
-    [1.9, 2.5, -0.5, 1.6, -0.7],
-    [3.4, 1.3, -0.5, 1.8, 0.4],
-    [4.6, -0.2, -0.6, 2.2, -0.2],
-    [-3.8, 0.3, -2.3, 2.1, 1.1],
-    [3.8, 0.3, -2.3, 2.1, -0.9],
-    [-1.9, 0.2, 1.2, 1.1, 0.5],
-    [1.9, 0.2, 1.2, 1.1, -0.4],
-    [0, 3.2, -2.4, 2.0, 0.2],
-    [-2.4, 0.6, 1.6, 0.8, -0.3],
-    [2.6, 0.5, 1.7, 0.7, 0.7],
+    [-5.0, -0.2, -0.6, 2.5, 0.3],
+    [-3.7, 1.4, -0.5, 2.0, -0.5],
+    [-2.1, 2.7, -0.6, 1.8, 0.8],
+    [2.1, 2.7, -0.6, 1.8, -0.7],
+    [3.7, 1.4, -0.5, 2.0, 0.4],
+    [5.0, -0.2, -0.6, 2.5, -0.2],
+    [-4.2, 0.3, -2.6, 2.3, 1.1],
+    [4.2, 0.3, -2.6, 2.3, -0.9],
+    [-2.0, 0.2, 1.3, 1.2, 0.5],
+    [2.0, 0.2, 1.3, 1.2, -0.4],
+    [0, 3.6, -2.8, 2.2, 0.2],
+    [-2.7, 0.6, 1.7, 0.9, -0.3],
+    [2.9, 0.5, 1.8, 0.8, 0.7],
+    [-5.6, 0.8, 1.1, 0.7, 1.4],
+    [5.7, 0.7, 1.0, 0.6, -1.2],
   ];
-  rocks.forEach(([dx, dy, dz, r, spin], i) =>
-    rock(parts, x + dx, base + dy - 0.4, z + dz, r, i % 3 === 0 ? AYLLU.darkStone : AYLLU.stone, spin),
-  );
-  box(parts, AYLLU.mouth, x, base - 0.2, z - 0.1, 3.6, 4.0, 2.2);
-  box(parts, AYLLU.darkStone, x, base + 3.6, z - 0.1, 5.8, 0.6, 2.4);
+  rocks.forEach(([dx, dy, dz, r, spin]) => rock(parts, x + dx, base + dy - 0.4, z + dz, r, AYLLU.rock, spin));
+  // A real arch-shaped void instead of a black rectangle: the shape is extruded into the hill.
+  const shape = new THREE.Shape();
+  shape.moveTo(-1.75, 0);
+  shape.lineTo(1.75, 0);
+  shape.lineTo(1.75, 1.55);
+  shape.absarc(0, 1.55, 1.75, 0, Math.PI, false);
+  shape.lineTo(-1.75, 0);
+  const opening = new THREE.ExtrudeGeometry(shape, { depth: 2.6, bevelEnabled: false, curveSegments: 10 });
+  opening.translate(x, base - 0.05, z - 2.6);
+  parts.push(paint(opening, AYLLU.mouth));
+  // The back wall keeps the tunnel from showing the sky through the hill.
+  box(parts, AYLLU.mouth, x, base - 0.2, z - 2.7, 3.8, 4.2, 0.3);
+  box(parts, AYLLU.rock, x, base + 3.35, z - 0.15, 4.6, 0.5, 1.0, 0.04);
+  box(parts, AYLLU.rock, x, base + 3.8, z - 0.25, 5.8, 0.35, 2.2, 0.02);
   slab(parts, AYLLU.stone, {
     x,
-    z: z + 2.4,
-    w: 3.8,
-    d: 3.2,
+    z: z + 2.5,
+    w: 4.2,
+    d: 3.4,
     lift: 0.08,
     burial: 0.8,
     getHeight,
   });
   box(parts, AYLLU.darkStone, x - 2.7, base, z + 2.4, 1.5, 0.6, 0.8, 0.25);
   box(parts, AYLLU.darkStone, x + 2.7, base, z + 2.4, 1.5, 0.6, 0.8, -0.25);
+  // Scree apron: the cave must meet the slope, not sit on it like a stage flat.
+  for (let i = 0; i < 9; i++) {
+    const a = (i / 9) * Math.PI * 2;
+    const r = 3.4 + (i % 3) * 0.8;
+    const px = x + Math.cos(a) * r;
+    const pz = z + 2.0 + Math.sin(a) * 1.2;
+    rock(parts, px, getHeight(px, pz) - 0.1, pz, 0.22 + (i % 3) * 0.08, AYLLU.rock, i);
+  }
 }
 
-/** Two or three villagers: enough to read a lived-in place at RTS distance. */
-export function villagers(parts: Parts, x: number, y: number, z: number, count: number): void {
-  const offsets: [number, number][] = [
-    [-0.6, 0.3],
-    [0.5, -0.4],
-    [0.1, 0.8],
+/**
+ * A worn footpath: an earth ribbon conformed step by step, irregular flagstones and a few curb stones.
+ * Small enough to follow the Pacaritambo slope without floating at either end.
+ */
+export function stonePath(
+  parts: Parts,
+  path: { readonly points: readonly { readonly x: number; readonly z: number }[]; readonly width: number },
+  getHeight: HeightAt,
+): void {
+  const { points, width } = path;
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = points[i]!;
+    const b = points[i + 1]!;
+    const dx = b.x - a.x;
+    const dz = b.z - a.z;
+    const len = Math.hypot(dx, dz);
+    if (len < 0.1) continue;
+    const steps = Math.max(1, Math.ceil(len / 1.3));
+    const yaw = Math.atan2(dx, dz);
+    const px = -dz / len;
+    const pz = dx / len;
+    for (let s = 0; s < steps; s++) {
+      const t = (s + 0.5) / steps;
+      const cx = a.x + dx * t;
+      const cz = a.z + dz * t;
+      // A thin earth strip under the stones keeps grass from growing between every slab.
+      conformedFloor(parts, AYLLU.packedEarth, cx, cz, width * 0.9, 1.3, yaw, getHeight, 2, 0.03);
+      const offset = ((s % 2) - 0.5) * width * 0.28;
+      const sx = cx + px * offset;
+      const sz = cz + pz * offset;
+      box(
+        parts,
+        s % 3 === 0 ? AYLLU.darkStone : AYLLU.stone,
+        sx,
+        getHeight(sx, sz) + 0.02,
+        sz,
+        0.68 + (s % 4) * 0.07,
+        0.07,
+        0.46 + (s % 3) * 0.05,
+        yaw + ((s % 5) - 2) * 0.06,
+      );
+      if (s % 2 === 0) {
+        for (const side of [-1, 1]) {
+          const rx = cx + px * side * (width * 0.5 + 0.15);
+          const rz = cz + pz * side * (width * 0.5 + 0.15);
+          rock(parts, rx, getHeight(rx, rz) - 0.08, rz, 0.13 + (s % 3) * 0.03, AYLLU.rock, s);
+        }
+      }
+    }
+  }
+}
+
+/** Two or three villagers: enough to read a lived-in place at RTS distance. */ export function villagers(
+  parts: Parts,
+  x: number,
+  y: number,
+  z: number,
+  count: number,
+): void {
+  const offsets: [number, number, number][] = [
+    [-0.6, 0.3, 0.2],
+    [0.5, -0.4, -0.4],
+    [0.1, 0.8, 0.9],
   ];
   for (let i = 0; i < count; i++) {
-    const [dx, dz] = offsets[i % offsets.length]!;
+    const [dx, dz, yaw] = offsets[i % offsets.length]!;
     const px = x + dx;
     const pz = z + dz;
-    cylinder(parts, AYLLU.cloth, px, y, pz, 0.16, 0.22, 0.9, 6);
-    sphere(parts, AYLLU.skin, px, y + 1.02, pz, 0.16);
-    cone(parts, AYLLU.cloth, px, y + 0.1, pz, 0.3, 0.5, 6);
+    // Shoulders, arms and hair give the static villager a human silhouette instead of a cone with a ball.
+    box(parts, AYLLU.cloth, px, y + 0.82, pz, 0.42, 0.22, 0.24, yaw);
+    for (const side of [-1, 1]) {
+      const r = rotate(side * 0.24, 0, yaw);
+      cylinder(parts, AYLLU.skin, px + r.x, y + 0.62, pz + r.z, 0.06, 0.05, 0.42, 5);
+    }
+    cone(parts, AYLLU.cloth, px, y + 0.1, pz, 0.3, 0.78, 6);
+    sphere(parts, AYLLU.skin, px, y + 1.33, pz, 0.16);
+    sphere(parts, AYLLU.mouth, px, y + 1.41, pz, 0.13);
+    box(parts, AYLLU.cloth, px, y + 1.28, pz, 0.3, 0.07, 0.3, yaw);
   }
 }

@@ -92,13 +92,35 @@ describe('the ayllu kit', () => {
     expect(range.max - range.min).toBeGreaterThan(0.9);
   });
 
+  it('merges each phase by surface family with a textured material', () => {
+    const parent = new THREE.Group();
+    const site = new AylluSite(parent, (x, z) => slope(x, z) + 4, 4, {
+      phases: ['cave', 'huanacaure', 'inticancha', 'fundada'],
+      initial: 'cave',
+    });
+    const cave = site.group.children.find((group) => group.name === 'ayllu:cave')!;
+    const families = cave.children.map((mesh) => mesh.name.split(':').pop());
+    expect(families).toEqual(
+      expect.arrayContaining(['stone', 'earth', 'plaster', 'thatch', 'wood', 'vegetation', 'people']),
+    );
+    for (const child of cave.children) {
+      const mesh = child as THREE.Mesh;
+      const material = mesh.material as THREE.MeshStandardMaterial;
+      expect(material.vertexColors, mesh.name).toBe(true);
+      const flat = mesh.name.endsWith(':people') || mesh.name.endsWith(':vegetation');
+      if (flat) expect(material.map, mesh.name).toBeNull();
+      else expect(material.map, mesh.name).not.toBeNull();
+    }
+    site.dispose();
+  });
+
   it('shows the site by phase and keeps the latest pieces for the founded settlement', () => {
     const parent = new THREE.Group();
     const site = new AylluSite(parent, (x, z) => slope(x, z) + 4, 4, {
       phases: ['cave', 'huanacaure', 'inticancha', 'fundada'],
       initial: 'cave',
     });
-    const phases = site.group.children.map((g) => g.children[0]?.name);
+    const phases = site.group.children.map((g) => g.name);
     expect(phases).toEqual(['ayllu:cave', 'ayllu:huanacaure', 'ayllu:inticancha', 'ayllu:fundada']);
     site.setPhase('cave');
     expect(site.group.children.filter((g) => g.visible)).toHaveLength(1);

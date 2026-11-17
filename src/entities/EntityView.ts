@@ -5,6 +5,7 @@ import { facingRotation } from '../util/math';
 import type { Unit } from './Unit';
 import type { Building } from './Building';
 import { damageStageFor, type DamageStage } from '../model/defs/damage';
+import { blobShadowPool, type BlobShadowPool } from '../rendering/BlobShadows';
 
 /** How far above a unit's model the health bar floats. */
 const HEALTH_BAR_LIFT = 1.2;
@@ -18,7 +19,9 @@ export class EntityView {
   private hpBg: THREE.Mesh;
   private hpFill: THREE.Mesh;
   private losRing: THREE.Mesh | null = null;
-  private blobShadow: THREE.Mesh | null = null;
+  private blobShadowId = -1;
+  private blobScale = 1;
+  private blobPool: BlobShadowPool | null = null;
   private damageStage: DamageStage = 0;
   private rubble: THREE.Group | null = null;
   private readonly originalColors = new Map<THREE.Material, THREE.Color>();
@@ -36,7 +39,6 @@ export class EntityView {
     this.pickProxy.userData.owner = owner;
     this.group.add(this.pickProxy);
     this.pickProxy.updateWorldMatrix(true, false);
-    this.addBlobShadow(radius);
   }
 
   private buildPickProxy(model: THREE.Group, radius: number, pickBounds: 'model' | 'radius'): THREE.Mesh {
@@ -57,39 +59,33 @@ export class EntityView {
     return mesh;
   }
 
-  /** AoE2-style contact shadow (soft radial blob) under the entity. */
-  private addBlobShadow(radius: number): void {
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = 128;
-    const ctx = canvas.getContext('2d')!;
-    const g = ctx.createRadialGradient(64, 64, 6, 64, 64, 64);
-    g.addColorStop(0, 'rgba(0,0,0,0.42)');
-    g.addColorStop(0.55, 'rgba(0,0,0,0.30)');
-    g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 128, 128);
-    const tex = new THREE.CanvasTexture(canvas);
-    const mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(radius * 2.4, radius * 2.4),
-      new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }),
-    );
-    mesh.rotation.x = -Math.PI / 2;
-    mesh.position.y = 0.02;
-    mesh.renderOrder = 1;
-    this.blobShadow = mesh;
-    this.group.add(mesh);
-  }
-
   setBlobScale(scale: number): void {
-    if (this.blobShadow) this.blobShadow.scale.set(scale, scale, 1);
+    this.blobScale = scale;
+    if (this.blobPool && this.blobShadowId >= 0) {
+      this.blobPool.setScale(this.blobShadowId, this.radius * scale);
+    }
   }
 
   attachTo(scene: THREE.Scene): void {
     scene.add(this.group);
+    if (this.blobPool && this.blobShadowId >= 0) this.blobPool.remove(this.blobShadowId);
+    this.blobPool = blobShadowPool(scene);
+    this.blobShadowId = this.blobPool.add();
+    this.blobPool.set(
+      this.blobShadowId,
+      this.group.position.x,
+      this.group.position.y,
+      this.group.position.z,
+      this.radius * this.blobScale,
+      this.group.visible,
+    );
   }
 
   setPosition(x: number, y: number, z: number): void {
     this.group.position.set(x, y, z);
+    if (this.blobPool && this.blobShadowId >= 0) {
+      this.blobPool.set(this.blobShadowId, x, y, z, this.radius * this.blobScale, this.group.visible);
+    }
   }
 
   setRotationY(yaw: number): void {
@@ -207,15 +203,7 @@ export class EntityView {
     this.damageStage = stage;
     const tint = stage === 2 ? 0.55 : stage === 1 ? 0.8 : 1;
     const skip = new Set<THREE.Object3D>();
-    for (const object of [
-      this.pickProxy,
-      this.hpBg,
-      this.hpFill,
-      this.ring,
-      this.losRing,
-      this.blobShadow,
-      this.rubble,
-    ]) {
+    for (const object of [this.pickProxy, this.hpBg, this.hpFill, this.ring, this.losRing, this.rubble]) {
       if (object) skip.add(object);
     }
     this.group.traverse((object) => {
@@ -281,10 +269,11 @@ export class EntityView {
     }
   }
 
-  /** Free the attachments (rings, health bar, shadow) created by the view. */
+  /** Free the attachments (rings, health bar, shadow slot) created by the view. */
   dispose(): void {
-    const blobMat = this.blobShadow?.material as THREE.MeshBasicMaterial | undefined;
-    blobMat?.map?.dispose();
+    if (this.blobPool && this.blobShadowId >= 0) this.blobPool.remove(this.blobShadowId);
+    this.blobPool = null;
+    this.blobShadowId = -1;
     const kill = (m: THREE.Mesh | null): void => {
       if (!m) return;
       m.geometry.dispose();
@@ -293,7 +282,6 @@ export class EntityView {
       else if (mat && 'dispose' in mat) (mat as THREE.Material).dispose();
       m.removeFromParent();
     };
-    kill(this.blobShadow);
     kill(this.ring);
     kill(this.losRing);
     kill(this.hpBg);

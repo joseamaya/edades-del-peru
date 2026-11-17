@@ -1043,8 +1043,11 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     walkableCorridor: { width: 8 },
     terrain: {
       ...DEFAULT_SITE_TERRAIN,
+      palette: 'cusco_valley',
+      pbr: { grass: 'puna_grass', dirt: 'dirt', sand: 'sand', rock: 'rock', snow: 'snow' },
       flatNormals: true,
       suppressSnow: true,
+      valleyHaze: true,
       moisture: { valleyHeight: 6.4, valleyRange: 3.2, bankStart: 0.12, bankRange: 0.1 },
       water: { deep: '#1c3a44', shallow: '#4f7a74', sheen: 0.12, foam: 0.1, fog: 0.22, refraction: 0.15 },
     },

@@ -70,14 +70,14 @@ const BUDGETS = {
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
   // Tambotoco opening: the ayllu site, eight nameplates and the hero rings/banners/tunic accents.
-  // Measured 408,221/309 in software after the PCF shadow pass and the rig silhouette rule (474,351/323
-  // with VSM on the same scene: the VSM draws every receiver into the shadow map); still over §11's
-  // 200-call target. Hardware high measured 625,811/313 (691,941/327 with VSM), over the 600k target.
-  m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 340, kitTriangles: 0, kitDrawCalls: 0 },
-  // The founded Inticancha (the `fundada` phase at victory) framed on the four canchas: 591,009/295
-  // in software after the PCF shadow pass and the rig silhouette rule (647,015/308 with VSM on the same
-  // scene), now under the 620k late target. Hardware high measured 808,827/301 (864,833/314 with VSM),
-  // still over the 660k cap: the hardware/LOD pass is the open item (B6).
+  // 2026-11-16 art pass: 479,416/264 on the Intel RPL-S (hardware high) and 436,666/265 in software.
+  // The site now merges per surface family (not one mesh for the whole 256 m phase), the blob shadows
+  // are one instanced draw, and the ground cover/water grid were trimmed; the opening drops from
+  // 625,811/313 (hardware, before this pass) with 4% headroom on both counters.
+  m_tambotoco: { sceneTriangles: 500_000, sceneDrawCalls: 280, kitTriangles: 0, kitDrawCalls: 0 },
+  // The founded Inticancha at victory. 2026-11-16: 651,452/352 hardware high and 608,204/346 in
+  // software, under the unchanged 660k/360 cap (the old hardware run was 808,827/301: the art pass
+  // trades triangles for calls but stays inside both counters).
   m_tambotoco_late: { sceneTriangles: 660_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
   // Lima opening: the hueste with horses and artillery. Software ~645k/624 (627–664k observed, the vegetation
   // kit varies between runs) after the PCF shadow pass and the rig silhouette rule (under the

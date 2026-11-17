@@ -68,9 +68,10 @@ export class Water {
     // On coastal maps the water extends beyond the map (sea/horizon).
     // On inland maps (andes/altiplano/jungle) it covers only the map (lakes and rivers).
     const span = inland ? size : size * 2.5;
-    // 128 segments: the shortest wave (~26 m) still gets ~7 vertices per wavelength across the 2.5x
-    // coastal span, at 40% of the triangles of the former 200x200 grid.
-    const geo = new THREE.PlaneGeometry(span, span, 128, 128);
+    // 128 segments for the coastal sea; inland rivers are narrow, so 64 keeps the same shoreline
+    // detail at a quarter of the triangles.
+    const segments = inland ? 64 : 128;
+    const geo = new THREE.PlaneGeometry(span, span, segments, segments);
     geo.rotateX(-Math.PI / 2);
 
     this.uniforms = {

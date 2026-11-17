@@ -67,12 +67,12 @@ test('the Chavín campaign and its Paracas rival use rigged infantry', async ({ 
   expect(out.soldier.belt).toBe(false);
   expect(out.soldier.tool).toBe(false);
   expect(out.soldier.hasAttack).toBe(true);
-  expect(out.soldier.attackClip).toBe('TreeChopping_Loop');
+  expect(out.soldier.attackClip).toBe('Sword_Regular_A');
 
   expect(out.ranged.variant).toMatch(/^chavin_ranged_[fm]$/);
   expect(out.ranged.sling).toBe(true);
   expect(out.ranged.hasAttack).toBe(true);
-  expect(out.ranged.attackClip).toBe('Punch_Jab');
+  expect(out.ranged.attackClip).toBe('OverhandThrow');
 
   expect(out.paracas.variant).toMatch(/^paracas_soldier_[fm]$/);
   expect(out.paracas.macana).toBe(true);

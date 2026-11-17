@@ -10,6 +10,36 @@ export const CANAL_BED_LIFT = 0.06;
 /** Height of the earth berms above the terrain (m). */
 export const CANAL_BANK_LIFT = 0.2;
 
+/**
+ * A small near-white streak texture for the flowing acequia. The water UVs run along the channel, so
+ * scrolling the map offset reads as visible flow even when the normal-map shimmer is too subtle.
+ */
+export function canalFlowTexture(): THREE.DataTexture {
+  const size = 64;
+  const data = new Uint8Array(size * size * 4);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const u = (x / size) * Math.PI * 2;
+      const v = (y / size) * Math.PI * 2;
+      const streak = 0.5 + 0.5 * Math.sin(v * 9 + Math.sin(u * 2 + v * 0.7) * 1.8);
+      const value = Math.round((0.82 + streak * 0.18) * 255);
+      const i = (y * size + x) * 4;
+      data[i] = value;
+      data[i + 1] = value;
+      data[i + 2] = value;
+      data[i + 3] = 255;
+    }
+  }
+  const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.magFilter = THREE.LinearFilter;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.generateMipmaps = true;
+  texture.needsUpdate = true;
+  return texture;
+}
+
 /** Ribbon geometries for an authored irrigation channel (no boxes). */
 export interface CanalMeshGeometry {
   bed: THREE.BufferGeometry;

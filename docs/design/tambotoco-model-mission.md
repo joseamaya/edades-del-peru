@@ -63,15 +63,38 @@ Painted ground is sampled at 128 × 128 over 256 m; the worker crosses in ≈2:2
 
 `tambotoco_site` is drawn by `AylluSite`: the cave mouth, the Huanacaure shrine, three valley hamlets and
 Inticancha, with smoke, fires, villagers and llamas. The kit is modular and terrain-conformed
-(`rendering/aylluKit.ts`): plastered houses with gable thatch roofs, round qollqas, open sheds, coursed
-stone plinths and retaining walls, a paved plaza at grade with flagstones, terraced fields with maize rows and
-a low altar. Every piece samples the ground it spans, so huts, canchas, terraces and fields
-sit on the Pacaritambo slope instead of floating; the fields and terraces also live on dry, gently sloping
-ground (`tests/tambotoco-layout.test.ts`). Inticancha grows in two phases: `inticancha` (Act IV) only traces
-the plaza, its ring and the four cancha plots for the player's store and houses; `fundada` (the four canchas
+(`rendering/aylluKit.ts`). The 2026-11-16 art pass split it into per-surface materials (stone, rock, earth,
+plaster, thatch, wood, crops and the static villagers) with generated PBR detail, world-scale UVs and one
+merged mesh per family and phase. Houses now have fieldstone footings, dark base courses, corner stones,
+deep-eave thatch roofs with exposed ridge poles, a lintelled door and a vent; qollqas have a corbel ring and
+a raised threshold; ramadas have a brush roof and a stone back; canchas are packed-earth enclosures with low
+walls and a threshold rather than empty pads; the plaza has a low kerb, four packed-earth axes and a stepped
+altar; fields follow the relief with a retaining face, ridges and standing crop. The cave mouth is an
+extruded arch in a rock ring with a scree apron, and Huanacaure's monolith is a shorter tapered huaca with a
+carved niche. A stone footpath network ties the shrine, the hamlets, the fields and Inticancha.
+
+Every piece samples the ground it spans, so huts, canchas, terraces and fields sit on the Pacaritambo slope
+instead of floating; the fields and terraces also live on dry, gently sloping ground
+(`tests/tambotoco-layout.test.ts`). Inticancha grows in two phases: `inticancha` (Act IV) only traces the
+plaza, its ring and the four cancha plots for the player's store and houses; `fundada` (the four canchas
 built) adds the houses, terraces, fields, people and fire, so the settlement never stands before the ayllus
 build it. The plaza and the plots stay walkable and buildable; the ring houses block from the `fundada`
 phase.
+
+The **acequia** is authored around the north-east perimeter of Inticancha, not through its plaza or canchas.
+Its water scrolls a ripple normal while the gate is open, the banks keep their dry colour, and the site's
+crop material shifts to a wet green (`AylluSite.setIrrigated`). The gate remains the Act III mechanic.
+
+### Site certainty
+
+| Element | Status | Basis |
+| --- | --- | --- |
+| Killke occupation, valley agriculture and canal irrigation | Documented (period) | Bauer & Covey 2002; Covey 2006; `docs/historia/campanas/tambotoco.md` |
+| Fieldstone/mud walls, thatch roofs, irregular plans | Plausible/inferred for Killke | Andean domestic construction; no imperial cut-stone or niches |
+| Round qollqas, four canchas, plaza with altar, terraced fields | Plausible reconstruction | Inticancha tradition and partial Cusco archaeology; game abstraction |
+| Cave arch, Huanacaure monolith shape, exact hut proportions | Stylized | The myth has no date or documented form; the scene is not a reconstruction |
+| Ayar clothing, headdresses, props, textile patterns | Presentation abstraction | `docs/historia/atuendos.md`; no documented likeness |
+
 
 - **Señorío del Cusco (Killke)**: the player; a new LATE_INTERMEDIATE civilization with a circular-plaza
   silhouette. No imperial Inca units or buildings.
@@ -101,15 +124,21 @@ The legend is about eight siblings, so all eight are on the board from the start
 - **In the party**: Ayar Manco, Ayar Auca, Ayar Cachi, Ayar Uchu, Mama Huaco, Mama Ocllo, Mama Ipacura and
   Mama Raua are tagged start units. Each hero keeps its declared **gender**: the four Ayar men use the male
   body, wrap and tunic; the four Mamas use the female body, skirt and tunic, including the three worker
-  Mamas. The unit-id split no longer decides a named character's body. Attire is the shared ayllu rig: the
-  commander accent tints the consolidated cloth material (tunic and skirt/wrap, lifted away from skin tone),
-  a procedural band rings the head and a cloth **hero mantle** (`CommanderDef.mantle`: long on the Mamas)
-  broadens the silhouette; the macana stays in hand. The accent is a presentation device to tell the eight
-  apart, **not** a claim about a specific garment, and a Blender outfit kit remains a later pass.
+  Mamas. The unit-id split no longer decides a named character's body. Attire is the shared ayllu rig with
+  a per-commander presentation layer (`CommanderDef.weapon/headdress/pattern/bulk`): the accent now fills the
+  tunic and mantle (a longer mantle for the Mamas), a grayscale weave pattern breaks the cloth, a band,
+  feather tuft, turban or bun changes the head silhouette, and the hero carries a staff, stone maul, sling or
+  digging stick. Ayar Cachi is visibly broader. These are **presentation abstractions**, not claims about a
+  documented Ayar costume; `docs/historia/atuendos.md` remains the source for the shared garments.
 - **Field markers**: every hero has a gold ring. Close in, a banner pole carries a **crest shape declared per commander**
   (`CommanderDef.crest`: diamond, tetrahedron, stone or spire) in the accent colour, so the eight do not
   read as eight identical diamonds. At the strategic zoom the banner and crest drop out and only the rings
   remain; the `★` nameplates finish fading just past that cutoff, so labels never pile up at map scale.
+- **Animation**: the shared worker GLB now ships `Sword_Regular_A` (macana/maul), `OverhandThrow` (sling) and
+  `Death01`; Andean soldiers and honderos use the combat clips and every `caral_worker` variant falls with the
+  death clip instead of freezing. Workers keep `Punch_Jab` for unarmed defence. Heroes override the attack
+  clip from their prop (sling → throw, digging stick → tool swing), so the eight read differently in combat
+  as well as in idle.
 - **In the briefing**: the eight portraits (Ayar Manco, Ayar Auca, Ayar Cachi, Ayar Uchu, Mama Huaco, Mama
   Ocllo, Mama Ipacura, Mama Raua) use the procedural stylized medallions, now with the commander accent in
   the gradient and frame and a gender silhouette (long hair and shoulder cloth for the Mamas); no new art
@@ -204,22 +233,27 @@ dialogue.
   medallions), `docs/media/tambotoco-heroes-close.webp` (Manco, Huaco, Ocllo and Cachi: male/female bodies,
   garments and three crest shapes) and `docs/media/tambotoco-heroes-far.webp` (strategic zoom: rings only,
   no plates or banners).
+- `node scripts/capture_ayllu_quality.mjs --tag=before|after [--sizes=1280x720,1600x900,1920x1080]`
+  captures cave, Huanacaure, hualla, acequia, Inticancha, valley, close, wide and (after only) the built
+  base at each resolution with the HUD hidden, seed 777, `fundada` and the gate open. The 2026-11-16
+  before/after sets are in `review/ayllu-quality-*` (gitignored); attach the PNGs to the PR. The same pass
+  is covered by `tests/ayllu-kit.test.ts` (surface families, phase groups, plinths) and
+  `tests/tambotoco-layout.test.ts`.
 
 ## Open items
 
-1. Performance (measured 2026-11-16; the mission is now in `bench:check`): software/SwiftShader (the
-   backend `bench:check` runs) measures **408,221 triangles / 309 draw calls** at the opening and
-   **591,009 / 295** on the founded Inticancha framed on the four canchas — under the 620k late target, the
-   660k first-pass cap and the 360-call cap. The 2026-11-16 pass moved the renderer's shadow map from VSM to
-   PCF (VSM also draws every shadow *receiver* into the map) and kept only the silhouette meshes of each
-   rig in the shadow pass; on the same scene that took 66k triangles and 14 calls off the opening and 56k
-   triangles and 13 calls off the late view. Hardware high quality (`--gpu`, Intel iGPU) now measures
-   **625,811 / 313** at the opening and **808,827 / 301** on the founded Inticancha, against
-   **691,941 / 327** and **864,833 / 314** on the same scene with VSM. The opening is still over the 600k
-   target and the late view over the 660k hardware cap, so the performance row is **Partial**, not Met: the
-   next pass is the hardware/LOD pass (B6), not a doc change. The full `yarn bench:check` chain runs end to
-   end. The mission starts with a small force
-   (5 workers, 7 militia, 2 slingers, 1 scout) to keep the rig count down.
+1. Performance (measured 2026-11-16 after the art pass; the mission is in `bench:check`): software
+   (SwiftShader) measures **436,666 triangles / 265 draw calls** at the opening and **608,204 / 346** on
+   the founded Inticancha; hardware high quality (`--gpu`, Intel RPL-S iGPU) measures **479,416 / 264** and
+   **651,452 / 352**. The opening cap is now **500k / 280** (ratcheted from 600k/340); the late cap stays
+   **660k / 360** and is met without raising it. The pass batched every entity contact shadow into one
+   instanced draw, merged the site by surface family per phase (instead of one mesh for the whole 256 m
+   site, which drew the cave and the valley together), cut the inland water grid to 64 and trimmed the
+   dry-puna ground cover to a fifth. Hardware triangles dropped from **625,811 / 808,827** (opening/late,
+   pre-pass) to **479,416 / 651,452**; the late calls are higher than the old 301 because the eight heroes
+   now carry readable props and the base has its cancha houses, but they remain inside the cap. The
+   performance row is **Met**. Run `node scripts/bench_scene.mjs --mission=m_tambotoco [--stage=late]
+   [--gpu] --assert`.
 2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry), now a modular,
    terrain-conformed kit; a Blender architecture kit could replace it later without touching the layout.
 3. A manual 30–40 minute playtest without isolated attrition, checking that the eight nameplates stay

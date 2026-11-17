@@ -75,6 +75,23 @@ describe('campaign commanders', () => {
       accents.add(commander.accent!);
     }
     expect(accents.size).toBe(8);
+    const weapons = new Set<string>();
+    const headdresses = new Set<string>();
+    const patterns = new Set<string>();
+    for (const id of ayars) {
+      const commander = commanderById(id)!;
+      expect(commander.weapon, id).toBeDefined();
+      expect(commander.headdress, id).toBeDefined();
+      expect(commander.pattern, id).toBeDefined();
+      weapons.add(commander.weapon!);
+      headdresses.add(commander.headdress!);
+      patterns.add(commander.pattern!);
+      expect(commander.bulk ?? 1, id).toBeGreaterThanOrEqual(1);
+      expect(commander.bulk ?? 1, id).toBeLessThanOrEqual(1.2);
+    }
+    expect(weapons.size).toBeGreaterThanOrEqual(4);
+    expect(headdresses.size).toBeGreaterThanOrEqual(3);
+    expect(patterns.size).toBeGreaterThanOrEqual(3);
   });
 
   it('the late-campaign missions carry portraits', () => {

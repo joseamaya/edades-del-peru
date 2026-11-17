@@ -120,10 +120,24 @@ export class RuntimeController {
     material.color.setHex(flowing ? 0x2f6f7a : 0x5c4a33);
     material.transparent = true;
     material.needsUpdate = true;
+    this.game.aylluSite?.setIrrigated(flowing);
     if (this.game.canalGate) {
       if (authored) this.game.canalGate.visible = !flowing;
       else this.game.canalGate.position.y = this.game.canalOpen ? 1.55 : 0.8;
     }
+  }
+
+  /** Scroll the acequia's ripples while the gate is open; visual only, no simulation state. */
+  updateCanalFlow(dt: number): void {
+    const water = this.game.canalWater;
+    if (!water || !this.game.canalOpen) return;
+    const material = water.material as THREE.MeshStandardMaterial;
+    const ripple = material.normalMap;
+    if (!ripple) return;
+    ripple.offset.x = (ripple.offset.x + dt * 0.22) % 1;
+    ripple.offset.y = (ripple.offset.y + dt * 0.05) % 1;
+    const flow = material.map;
+    if (flow) flow.offset.x = (flow.offset.x + dt * 0.16) % 1;
   }
 
   /** Train a unit in a completed building of player 0. */
@@ -864,6 +878,7 @@ export class RuntimeController {
     this.game.water.setSunDir(this.game.sky.sunDir);
     this.game.water.setDayFactor(this.game.sky.getDayFactor());
     this.game.water.update(realTime);
+    this.updateCanalFlow(d);
     this.game.terrain.setSunLight(this.game.sky.sunDir, this.game.sky.getSunColor());
     const hemi = this.game.sky.getHemi();
     this.game.terrain.setHemisphere(hemi.color, hemi.groundColor, hemi.intensity);

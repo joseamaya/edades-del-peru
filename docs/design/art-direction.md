@@ -218,6 +218,19 @@ same kit: `SettlementDressing` bakes them into one mesh per shared material and 
 for the sub-metre props and swaps LOD1 at 30 units; the procedural set stays as the fallback and keeps
 serving Chavín, whose ritual set has no kit yet.
 
+### Killke/ayllu highland kit (`m_tambotoco`)
+
+The Intermedio Tardío site uses a **domestic** language, not imperial Inca: fieldstone footings with mud
+mortar, earth/plaster walls, deep-eave thatch roofs with exposed ridge poles, round qollqas, open ramadas,
+packed-earth cancha enclosures, a low-altar plaza, terraced fields and stone footpaths. The kit is
+procedural and terrain-conformed (`src/rendering/aylluKit.ts`) and merges per surface family (stone, rock,
+earth, plaster, thatch, wood, crops, people) with generated PBR detail and world-scale UVs; a hero cave or
+monolith would be the only GLB candidates, and only if the procedural pass fails the QA gate. The palette is
+the mission-scoped `cusco_valley`: olive and ochre bands, `puna_grass`, sparse dry ground cover and a warm
+morning grade. No cut-stone, niches, double-jamb doors or ushnu. Certainty labels and sources live in
+[`tambotoco-model-mission.md`](./tambotoco-model-mission.md) and
+[`../historia/arquitectura.md`](../historia/arquitectura.md).
+
 ## 10. Light and atmosphere
 
 - **Default: morning**, low warm sun from the east/north-east, long soft shadows that model the steps of

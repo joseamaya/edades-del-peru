@@ -149,6 +149,21 @@ export class RigInstance {
     this.variant?.setNetInHand?.(inHand);
   }
 
+  /**
+   * Re-map one gameplay state to another clip for this instance. The Ayar use it to give a slinger a
+   * throw and a digging-stick bearer a tool swing without forking the shared rig or its variant table.
+   */
+  setClipOverride(state: RigClipState, clipName: string): void {
+    if (this.disposed) return;
+    const clip = this.asset.clipNames.get(clipName);
+    if (!clip) return;
+    this.actions.set(state, this.mixer.clipAction(clip));
+    if (this.current === state) {
+      this.current = null;
+      this.play(state, 0);
+    }
+  }
+
   update(dt: number): void {
     if (this.disposed) return;
     this.mixer.update(dt);

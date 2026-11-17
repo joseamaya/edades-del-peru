@@ -36,6 +36,11 @@ export type PortraitId = (typeof PORTRAIT_IDS)[number];
 /** Field-marker crest shape for heroes; presentation only, not a historical emblem. */
 export type HeroCrest = 'diamond' | 'tetra' | 'stone' | 'spire';
 
+/** Presentation-only silhouette fields; they do not claim a documented Ayar costume. */
+export type HeroWeapon = 'staff' | 'maul' | 'sling' | 'digging' | 'macana' | 'none';
+export type HeroHeaddress = 'band' | 'feathers' | 'turban' | 'bun';
+export type HeroPattern = 'plain' | 'stripes' | 'checks' | 'zigzag';
+
 /** Accent used when a hero has none declared (all current Ayar declare one). */
 export const DEFAULT_HERO_ACCENT = '#e0b84a';
 
@@ -66,6 +71,13 @@ export interface CommanderDef {
   crest?: HeroCrest;
   /** Hero mantle length; the Mamas wear the long cloth, everyone else the short one. */
   mantle?: 'short' | 'long';
+  /** Presentation-only silhouette props, chosen so the eight siblings read apart without new bodies. */
+  weapon?: HeroWeapon;
+  headdress?: HeroHeaddress;
+  /** Woven pattern on the hero cloth; an abstraction of Andean textile motifs, not a specific garment. */
+  pattern?: HeroPattern;
+  /** Multiplier on the hero's build (Cachi is broader, the Mamas slightly lighter). */
+  bulk?: number;
 }
 
 export const COMMANDERS: Record<PortraitId, CommanderDef> = {
@@ -222,6 +234,10 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     hero: true,
     accent: '#e0b84a',
     crest: 'spire',
+    weapon: 'staff',
+    headdress: 'band',
+    pattern: 'checks',
+    bulk: 1.04,
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -234,6 +250,9 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     hero: true,
     accent: '#4a9a5a',
     crest: 'diamond',
+    weapon: 'sling',
+    headdress: 'feathers',
+    pattern: 'zigzag',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -246,6 +265,10 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     hero: true,
     accent: '#c98a3a',
     crest: 'stone',
+    weapon: 'maul',
+    headdress: 'band',
+    pattern: 'stripes',
+    bulk: 1.12,
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -258,6 +281,9 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     hero: true,
     accent: '#4a7ab6',
     crest: 'tetra',
+    weapon: 'staff',
+    headdress: 'feathers',
+    pattern: 'checks',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -271,6 +297,9 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     accent: '#b64a3a',
     crest: 'tetra',
     mantle: 'long',
+    weapon: 'sling',
+    headdress: 'bun',
+    pattern: 'stripes',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -284,6 +313,9 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     accent: '#8a5aa8',
     crest: 'diamond',
     mantle: 'long',
+    weapon: 'digging',
+    headdress: 'bun',
+    pattern: 'zigzag',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -297,6 +329,9 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     accent: '#3a9a9a',
     crest: 'stone',
     mantle: 'long',
+    weapon: 'digging',
+    headdress: 'bun',
+    pattern: 'checks',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -310,6 +345,9 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     accent: '#c86a2a',
     crest: 'spire',
     mantle: 'long',
+    weapon: 'digging',
+    headdress: 'turban',
+    pattern: 'stripes',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
