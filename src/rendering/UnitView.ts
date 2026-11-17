@@ -101,7 +101,13 @@ export class UnitView {
     tools.show(female ? 'attire_skirt_f' : 'attire_wrap_m', true);
     // The hero's own headdress, sash and weapon replace the generic soldier kit; hiding it also
     // keeps the hero at a handful of draw calls at the strategic zoom.
-    for (const name of ['attire_headband', 'attire_andean_face_paint', 'attire_andean_shield', 'attire_andean_belt']) {
+    for (const name of [
+      'attire_headband',
+      'attire_andean_face_paint',
+      'attire_andean_shield',
+      'attire_andean_belt',
+      'attire_andean_manta',
+    ]) {
       tools.show(name, false);
     }
     tools.show('attire_andean_macana', commander.weapon === 'macana');
