@@ -17,6 +17,7 @@ import {
   type AylluHut,
 } from '../model/defs/tambotocoLayout';
 import {
+  ageSurface,
   aylluHut,
   canchaPlot,
   caveMouth,
@@ -39,6 +40,9 @@ const PHASE_CAVE = 'cave';
 const PHASE_SHRINE = 'huanacaure';
 const PHASE_INTICANCHA = 'inticancha';
 const PHASE_FOUNDED = 'fundada';
+
+/** Families without a generated detail map; they also drop out at strategic zoom. */
+const NO_DETAIL_FAMILIES: ReadonlySet<SurfaceFamily> = new Set(['crops', 'cropsWet', 'people']);
 
 /** Surface families that add nothing readable to the shadow silhouette (see `addPhase`). */
 const NO_SHADOW_FAMILIES: ReadonlySet<SurfaceFamily> = new Set(['crops', 'cropsWet', 'people', 'wood']);
@@ -191,7 +195,7 @@ export class AylluSite {
     let material = this.materials.get(family);
     if (material) return material;
     const detail = surfaceDetail(family);
-    const textured = family !== 'crops' && family !== 'cropsWet' && family !== 'people';
+    const textured = !NO_DETAIL_FAMILIES.has(family);
     material = new THREE.MeshStandardMaterial({
       vertexColors: true,
       roughness: detail.roughness,
@@ -233,6 +237,13 @@ export class AylluSite {
       const merged = mergeGeometries(geometries, false);
       geometries.forEach((g) => g.dispose());
       if (!merged) continue;
+      // Bake contact AO and macro colour variation into the merged surface: a single material and
+      // draw call per family, but the wall bases, roof edges and paved floors stop reading flat.
+      // The ground callback is essential: the site uses absolute terrain heights, so a fixed Y would
+      // never find the footing on the Pacaritambo slope.
+      if (!NO_DETAIL_FAMILIES.has(family)) {
+        ageSurface(merged, (x, z) => this.heightAt(x, z) - this.baseY);
+      }
       const mesh = new THREE.Mesh(merged, this.materialFor(family));
       mesh.name = `ayllu:${phase}:${family}`;
       mesh.userData.family = family;
@@ -255,7 +266,7 @@ export class AylluSite {
     for (const phase of this.phases) {
       for (const child of phase.group.children) {
         const family = child.userData.family as SurfaceFamily | undefined;
-        if (family === 'crops' || family === 'cropsWet' || family === 'people') child.visible = detail;
+        if (family && NO_DETAIL_FAMILIES.has(family)) child.visible = detail;
       }
     }
   }

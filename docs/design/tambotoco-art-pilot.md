@@ -2,8 +2,8 @@
 
 **Status:** Living · **Mission:** `m_tambotoco` (Los hijos de Tambotoco) · **Started:** 2026-11-16
 
-**Progress:** E0 (docs and baseline) and E1 (terrain shadows, palette and plaza) are implemented. E2–E6 are
-pending; E7 waits for a human approval of the reference captures.
+**Progress:** E0 (docs and baseline), E1 (terrain shadows, palette and plaza) and E2a (procedural architecture
+finish) are implemented. E2b–E6 are pending; E7 waits for a human approval of the reference captures.
 
 This is the pilot that makes Tambotoco the visual reference for the next campaigns. It implements the rules in
 [`art-direction.md`](./art-direction.md): audit, reference scene, asset inventory, performance ledger,
@@ -47,7 +47,7 @@ Baseline: `a0352d5`, seed 777, 1600×900, `sitePhase=fundada`, acequia open, HUD
 | **Landscape** | Flat olive ground with visible tiling, teal water ribbon, identical low-poly trees, neon crop rows, scattered rocks. | No terrain layers, no vegetation groups, no atmospheric depth. The Caral vegetation kit is coastal and does not cover the highlands. | `cusco_valley` palette and layers; highland vegetation kit; clustered placement; water/path pass. |
 | **Light and materials** | Ambient-heavy, weak contact shadows, no ground shadows, flat stone and plaster. | The custom terrain `ShaderMaterial` declared `lights: false`, so the ground never received directional shadows (B11). Materials have micro-detail but no macro scale and little roughness break. | **B11 fixed in E1** (terrain samples the shadow map, low morning sun); vertex AO and macro maps still open. |
 | **Presentation** | The opening and act cards are in-engine but framed as aerial views; Inticancha reads as the same disc with more props. | No shot grammar; the foundation lacks a reward moment. | Re-frame the three beats; wide/detail/hero shots; foundation phase + camera + life. |
-| **Performance** | Baseline software: 436,880 triangles / 265 calls (opening), 608,324 / 347 (founded). Hardware iGPU: 479,630 / 264 and 651,572 / 353. Caps: 500k/280 and 660k/360. E1 structural: **437,976 / 264** and **614,594 / 357**; frames high: 480,998/268 (41 FPS) and 657,556/360 (36 FPS). | Draw calls exceed the general ≤200 target; the late scene is close to the 660k cap. `dist` is 24.75 / 25 MB. | Opening is neutral; the late +10 calls are the low-sun casters. Do not raise caps; size ledger with offsets. |
+| **Performance** | Pre-E1 baseline: 436,880 triangles / 265 calls (opening), 608,324 / 347 (founded); E1: 437,976/264 and 614,594/357. Caps: 500k/280 and 660k/360. E2a structural: **438,856 / 269** and **615,532 / 354**; frames high: 481,606/268 (37 FPS) and 658,780/360 (33 FPS). | Draw calls exceed the general ≤200 target; the late frames sit at the 360 cap. `dist` is 24.75 / 25 MB. | E2a is within caps but leaves 3 FPS of headroom at late high; E2b–E4 must keep the quality governor and LODs honest. Do not raise caps; size ledger with offsets. |
 | **Documentation** | `art-direction.md` was Caral-first; `campaign-quality-bar.md` and `tambotoco-model-mission.md` gave different performance numbers; “Visuals: Met” certified presence, not quality. | No Tambotoco standard and no measurable visual gate. | This pilot, the rewritten art direction and the reconciled quality bar. |
 
 The 2026-11-16 kit pass was a real improvement: coursed stone, thatch houses, qollqas, terraced fields and a
@@ -211,11 +211,11 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
    Files: `src/rendering/Terrain.ts`, `src/core/Game.ts` (mission sun), `src/rendering/AylluSite.ts`
    (shadow-caster trim). Acceptance: ground shadows visible, no acne, bench green
    (437,976/264 opening; 614,594/357 late).
-2. **Palette, macro variation and vertex AO. — Partially done in E1.**
+2. **Palette, macro variation and vertex AO. — Done in E1/E2a.**
    Files: `src/model/defs/terrainPalettes.ts` (`cusco_valley`), `src/model/defs/sites.ts`
-   (`tambotoco_site.terrain`), `src/rendering/aylluKit.ts`, `src/rendering/GroundCover.ts`.
-   Done: stone, plaster, earth, thatch, crop and water palette; single-rim plaza. Still open: vertex AO,
-   macro scale and the ground-cover pass.
+   (`tambotoco_site.terrain`), `src/rendering/aylluKit.ts`, `src/rendering/AylluSite.ts`.
+   Done: stone, plaster, earth, thatch, crop and water palette; single-rim plaza; contact AO and macro
+   colour baked into the merged kit surfaces. Ground cover remains in E3.
 3. **Hero GLB + common variant.**
    Files: `scripts/build_ayllu_hero.mjs` (or Blender), `src/assets/models/ayllu_hero.glb`,
    `src/model/defs/modelAssets.ts`, `src/rendering/modelAssetRegistry.ts`, `src/rendering/UnitView.ts`,
@@ -229,9 +229,9 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
 
 ### P1 · The finish
 
-5. **Architecture material/geometry pass.** `aylluKit.ts` (stone, plaster, thatch, eaves, qollqa ring, cancha
-   walls, plaza kerb/altar), `AylluSite.ts` (life and phases). Acceptance: no box read at 28/54; ≤ 4
-   materials per building.
+5. **Architecture material/geometry pass. — Done in E2a.** `aylluKit.ts` (contact AO + macro colour,
+   battered walls, thatch eave, qollqa footing/vent), `AylluSite.ts` (baked into the merged surfaces). The
+   stone courses are E1's detail map. Acceptance: no box read at 28/54; ≤ 4 materials per building.
 6. **Water, paths and ford.** `Water.ts`, `Terrain.ts` paint paths, the bridge. Acceptance: cold water, soft
    banks, no ladder path.
 7. **Cave and monolith GLBs.** New Blender sources + `architectureKit.ts`/`AylluSite.ts`. Acceptance: the cave
@@ -250,7 +250,7 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
 | --- | --- | --- |
 | **E0** | This document, `art-direction.md`, `capture_art_pilot.mjs`, baseline set, quality-bar reconciliation | **Done (2026-11-16):** docs links and baseline set |
 | **E1** | B11, palette, water, plaza | **Partial (2026-11-16):** shadows on ground, low morning sun, straw/stone palette, single-rim plaza, bench 437,976/264 and 614,594/357; macro/AO and ground cover move to E2–E3 |
-| **E2** | Architecture materials/geometry; hero GLB decision | House/qollqa/plaza at 28/54; ≤ 4 materials |
+| **E2** | Architecture materials/geometry; hero GLB decision | **E2a done (2026-11-17):** AO/macro, battered walls, thatch eave, qollqa footing/vent; bench 438,856/269 and 615,532/354. Acceptance: no box read at 28/54; ≤4 materials per building. **E2b pending:** cave and huaca GLBs |
 | **E3** | Highland vegetation kit, rocks, paths | Groups, LODs, wind; no invented species |
 | **E4** | Hero + common unit | Manco distinct at 54; budget; other campaigns unchanged |
 | **E5** | Cinematic beats and foundation | Shot grammar; no new system |
@@ -292,6 +292,11 @@ Recorded 2026-11-16:
 | 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e1c-frames.json` | Intel RPL-S iGPU, high, postfx on: **41 FPS** opening (24.2 ms p50), hardware **480,998 / 268** |
 | 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e1c-late-frames.json` | Late: **36 FPS** (27.4 ms p50), frames **657,556 / 360** (at the cap, no raise) |
 | 2026-11-16 | `yarn shot m1-b11-before --url='/?play=1&mission=m1_caral&seed=777&fog=0&low=1&intro=0' --click` (baseline worktree) and `yarn shot m1-b11-after ...` | Non-pilot regression: the Caral ground receives the pyramid/tree/house shadows in `review/m1-b11-{before,after}_0.png`; no shader errors |
+| 2026-11-17 | `node scripts/capture_art_pilot.mjs --tag=e2a --quality=neutral --sizes=1600x900 --views=cave,shrine,hualla,close,inticancha,built` | E2a PNGs: contact AO/macro, battered walls, layered thatch eave, qollqa footing/vent; published as `docs/media/tambotoco-e2a-{close,hualla}-{before,after}.webp` |
+| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --assert --out=review/bench-scene-tambotoco-e2a.json` | Opening **438,856 tris / 269 calls** (cap 500k/280) |
+| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --assert --out=review/bench-scene-tambotoco-e2a-late.json` | Founded Inticancha **615,532 tris / 354 calls** (cap 660k/360) |
+| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e2a-frames.json` | Intel RPL-S iGPU, high: **37 FPS** opening (26.8 ms p50), **481,606 / 268** |
+| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e2a-late-frames.json` | Late: **33 FPS** (30.4 ms p50), **658,780 / 360** (at the cap) |
 | pending | `yarn art:pilot --tag=after --quality=neutral --sizes=1280x720,1600x900,1920x1080` | E6 evidence |
 | pending | `yarn art:pilot --tag=after --quality=final --sizes=1280x720,1600x900,1920x1080` | E6 evidence |
 
