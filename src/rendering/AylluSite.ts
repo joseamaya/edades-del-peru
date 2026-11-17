@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { isKnownPhase, phaseOrder, type SitePhasePlan } from '../model/defs/sitePhases';
 import {
   TAMBOTOCO_CAVE,
+  TAMBOTOCO_BRIDGES,
   TAMBOTOCO_CANCHAS,
   TAMBOTOCO_FIELDS,
   TAMBOTOCO_INTICANCHA,
@@ -23,6 +24,7 @@ import {
   retainingTerrace,
   shrinePlatform,
   shrineStone,
+  stoneBridge,
   stonePath,
   surfaceDetail,
   terracedField,
@@ -65,6 +67,7 @@ export class AylluSite {
   private readonly materials = new Map<SurfaceFamily, THREE.MeshStandardMaterial>();
   private readonly geometries: THREE.BufferGeometry[] = [];
   private phase = PHASE_CAVE;
+  private detailVisible = true;
 
   constructor(
     parent: THREE.Object3D,
@@ -104,7 +107,8 @@ export class AylluSite {
       villagers(caveParts, village.x, yard, village.z, 2);
       terracedField(caveParts, village.field, ground);
     }
-    for (const path of TAMBOTOCO_PATHS.slice(0, 4)) stonePath(caveParts, path, ground);
+    for (const path of TAMBOTOCO_PATHS.filter((p) => p.since === 'cave')) stonePath(caveParts, path, ground);
+    for (const bridge of TAMBOTOCO_BRIDGES) stoneBridge(caveParts, bridge, ground);
     this.addPhase(PHASE_CAVE, caveParts);
 
     // The huaca stone appears with the pilgrimage's arrival: the phase is the deed, not a label.
@@ -125,7 +129,8 @@ export class AylluSite {
     const plaza = TAMBOTOCO_INTICANCHA;
     const inticancha: Parts = [];
     pavedPlaza(inticancha, plaza.x, plaza.z, TAMBOTOCO_PLAZA_RADIUS, ground);
-    if (TAMBOTOCO_PATHS[4]) stonePath(inticancha, TAMBOTOCO_PATHS[4], ground);
+    const plazaPath = TAMBOTOCO_PATHS.find((p) => p.since === 'inticancha');
+    if (plazaPath) stonePath(inticancha, plazaPath, ground);
     for (const cancha of TAMBOTOCO_CANCHAS) {
       canchaPlot(inticancha, cancha.dx, cancha.dz, plaza, ground);
     }
@@ -176,7 +181,7 @@ export class AylluSite {
     let material = this.materials.get(family);
     if (material) return material;
     const detail = surfaceDetail(family);
-    const textured = family !== 'vegetation' && family !== 'people';
+    const textured = family !== 'crops' && family !== 'cropsWet' && family !== 'people';
     material = new THREE.MeshStandardMaterial({
       vertexColors: true,
       roughness: detail.roughness,
@@ -220,11 +225,25 @@ export class AylluSite {
       if (!merged) continue;
       const mesh = new THREE.Mesh(merged, this.materialFor(family));
       mesh.name = `ayllu:${phase}:${family}`;
+      mesh.userData.family = family;
       // Crops, the tiny merged villagers and flat paving add nothing to the shadow silhouette.
-      mesh.castShadow = castShadow && family !== 'vegetation' && family !== 'people';
+      mesh.castShadow = castShadow && family !== 'crops' && family !== 'cropsWet' && family !== 'people';
       mesh.receiveShadow = true;
       group.add(mesh);
       this.geometries.push(merged);
+    }
+  }
+
+  /** Strategic-zoom LOD: the tiny crop rows and static villagers vanish before the site reads as a blob. */
+  updateLod(zoom: number): void {
+    const detail = zoom < 82;
+    if (detail === this.detailVisible) return;
+    this.detailVisible = detail;
+    for (const phase of this.phases) {
+      for (const child of phase.group.children) {
+        const family = child.userData.family as SurfaceFamily | undefined;
+        if (family === 'crops' || family === 'cropsWet' || family === 'people') child.visible = detail;
+      }
     }
   }
 
@@ -279,8 +298,8 @@ export class AylluSite {
 
   /** Show the canal's effect on the crops: a visible wet-green shift when the acequia is flowing. */
   setIrrigated(wet: boolean): void {
-    const vegetation = this.materials.get('vegetation');
-    if (vegetation) vegetation.color.setHex(wet ? 0xd8f0c4 : 0xffffff);
+    const crops = this.materials.get('cropsWet');
+    if (crops) crops.color.setHex(wet ? 0xd8f0c4 : 0xffffff);
   }
 
   dispose(): void {

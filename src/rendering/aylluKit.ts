@@ -5,6 +5,7 @@ import {
   TAMBOTOCO_SHRINE_TIER_HEIGHT,
   type AylluField,
   type AylluHut,
+  type AylluPath,
 } from '../model/defs/tambotocoLayout';
 import { conformWallGeometry } from './landscapeConform';
 
@@ -23,7 +24,8 @@ export type Parts = THREE.BufferGeometry[];
  * vertex colours carry the actual hue, so stone, plaster, earth, thatch and wood read as different
  * materials without a texture per tint.
  */
-export type SurfaceFamily = 'stone' | 'rock' | 'earth' | 'plaster' | 'thatch' | 'wood' | 'vegetation' | 'people';
+export type SurfaceFamily =
+  'stone' | 'rock' | 'earth' | 'plaster' | 'thatch' | 'wood' | 'crops' | 'cropsWet' | 'people';
 
 export const AYLLU = {
   // Tints stay under art-direction §4's 0.8 albedo cap; the detail map multiplies them down again.
@@ -37,6 +39,9 @@ export const AYLLU = {
   thatchDark: new THREE.Color('#8e6c3c'),
   crop: new THREE.Color('#6f8f3d'),
   cropDry: new THREE.Color('#a3944d'),
+  // Distinct instances so only the canal-side field gets the wet-material tint; same base hue.
+  cropWet: new THREE.Color('#6f8f3d'),
+  cropWetDry: new THREE.Color('#a3944d'),
   mouth: new THREE.Color('#120f0c'),
   cloth: new THREE.Color('#a0603c'),
   skin: new THREE.Color('#94694a'),
@@ -51,6 +56,7 @@ function lcg(seed: number): () => number {
   };
 }
 
+// Keyed by object identity: crop and cropWet share a hue but must resolve to the dry/wet materials.
 const SURFACE_OF = new Map<THREE.Color, SurfaceFamily>([
   [AYLLU.stone, 'stone'],
   [AYLLU.rock, 'rock'],
@@ -60,8 +66,10 @@ const SURFACE_OF = new Map<THREE.Color, SurfaceFamily>([
   [AYLLU.packedEarth, 'earth'],
   [AYLLU.thatch, 'thatch'],
   [AYLLU.thatchDark, 'thatch'],
-  [AYLLU.crop, 'vegetation'],
-  [AYLLU.cropDry, 'vegetation'],
+  [AYLLU.crop, 'crops'],
+  [AYLLU.cropDry, 'crops'],
+  [AYLLU.cropWet, 'cropsWet'],
+  [AYLLU.cropWetDry, 'cropsWet'],
   [AYLLU.mouth, 'wood'],
   [AYLLU.cloth, 'people'],
   [AYLLU.skin, 'people'],
@@ -112,9 +120,7 @@ function stoneHeight(rng: () => number, size: number): Float32Array {
   while (y < size) {
     const course = rowHeights[row % rowHeights.length]!;
     let x = (row * 13) % size;
-    // Horizontal joint.
     for (let dx = 0; dx < size; dx++) set(x + dx, y, 0.32);
-    // Blocks of varying width, filled with a per-block shade and pitted noise.
     while (x < size + 40) {
       const width = 18 + Math.floor(rng() * 26);
       const shade = 0.5 + rng() * 0.16;
@@ -123,7 +129,6 @@ function stoneHeight(rng: () => number, size: number): Float32Array {
           set(x + bx, y + by, shade + rng() * 0.12);
         }
       }
-      // Vertical joint.
       for (let by = 0; by < course; by++) set(x + width - 1, y + by, 0.3);
       x += width;
     }
@@ -310,7 +315,8 @@ function buildDetail(family: SurfaceFamily): SurfaceDetail {
     plaster: { tile: 2.1, roughness: 0.9, normalScale: 0.28 },
     thatch: { tile: 1.1, roughness: 0.86, normalScale: 0.6 },
     wood: { tile: 1.3, roughness: 0.82, normalScale: 0.4 },
-    vegetation: { tile: 1, roughness: 1, normalScale: 0.2 },
+    crops: { tile: 1, roughness: 1, normalScale: 0.2 },
+    cropsWet: { tile: 1, roughness: 1, normalScale: 0.2 },
     people: { tile: 1, roughness: 0.9, normalScale: 0.2 },
   };
   return { map, normalMap, ...tuning[family] };
@@ -947,12 +953,21 @@ export function terracedField(parts: Parts, f: AylluField, getHeight: HeightAt):
       const top = getHeight(f.x, rz) + 0.08;
       // A raised earth ridge with a strip of crop on top; the old flat boxes read as painted planks.
       box(parts, AYLLU.earth, f.x, top + 0.02, rz, f.w * 0.86, 0.14, 0.26);
-      box(parts, r % 2 === 0 ? AYLLU.crop : AYLLU.cropDry, f.x, top + 0.16, rz, f.w * 0.84, 0.08, 0.2);
+      box(
+        parts,
+        r % 2 === 0 ? (f.irrigated ? AYLLU.cropWet : AYLLU.crop) : f.irrigated ? AYLLU.cropWetDry : AYLLU.cropDry,
+        f.x,
+        top + 0.16,
+        rz,
+        f.w * 0.84,
+        0.08,
+        0.2,
+      );
       for (let c = 0; c < 3; c++) {
         const cx = f.x + (c / 2 - 0.5) * f.w * 0.7;
         const cz2 = rz + (c % 2 === 0 ? -0.05 : 0.05);
         const cy = getHeight(cx, cz2) + 0.06;
-        cone(parts, AYLLU.crop, cx, cy + 0.18, cz2, 0.18, 0.48 + (c % 2) * 0.12, 5);
+        cone(parts, f.irrigated ? AYLLU.cropWet : AYLLU.crop, cx, cy + 0.18, cz2, 0.18, 0.48 + (c % 2) * 0.12, 5);
       }
     }
     // A shallow irrigation furrow along the uphill edge.
@@ -1265,11 +1280,30 @@ export function caveMouth(parts: Parts, x: number, z: number, getHeight: HeightA
  * A worn footpath: an earth ribbon conformed step by step, irregular flagstones and a few curb stones.
  * Small enough to follow the Pacaritambo slope without floating at either end.
  */
-export function stonePath(
+/** A small stone slab bridge over the acequia: two abutments, a deck and low parapets. */
+export function stoneBridge(
   parts: Parts,
-  path: { readonly points: readonly { readonly x: number; readonly z: number }[]; readonly width: number },
+  bridge: { readonly x: number; readonly z: number; readonly yaw: number; readonly w: number; readonly d: number },
   getHeight: HeightAt,
 ): void {
+  const { x, z, yaw, w, d } = bridge;
+  const at = (lx: number, lz: number): { x: number; z: number } => {
+    const r = rotate(lx, lz, yaw);
+    return { x: x + r.x, z: z + r.z };
+  };
+  const ends = [at(0, -d / 2), at(0, d / 2)];
+  const deckY = Math.max(...ends.map((p) => getHeight(p.x, p.z))) + 0.5;
+  box(parts, AYLLU.stone, x, deckY, z, w, 0.18, d, yaw);
+  for (const side of [-1, 1]) {
+    const p = at(side * (w / 2 + 0.12), 0);
+    box(parts, AYLLU.darkStone, p.x, deckY + 0.16, p.z, 0.22, 0.32, d, yaw);
+  }
+  for (const end of ends) {
+    box(parts, AYLLU.darkStone, end.x, getHeight(end.x, end.z) - 0.1, end.z, w + 0.4, 0.6, 0.8, yaw);
+  }
+}
+
+export function stonePath(parts: Parts, path: AylluPath, getHeight: HeightAt): void {
   const { points, width } = path;
   for (let i = 0; i < points.length - 1; i++) {
     const a = points[i]!;

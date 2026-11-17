@@ -5,7 +5,7 @@ import { applyGeneratedPbr } from './Biomes';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
-import { createRigAttireTools } from './rigAttire';
+import { createRigAttireTools, mergeColoredGeometry } from './rigAttire';
 import { consolidateRig } from './modelConsolidation';
 import {
   ANDEAN_SPECS,
@@ -15,28 +15,6 @@ import {
   type AndeanCulture,
   type AndeanRole,
 } from '../model/defs/andeanCharacters';
-
-/** Merge same-bone accessories into one vertex-coloured geometry. */
-function mergeColoredParts(pieces: [THREE.BufferGeometry, THREE.Color][]): THREE.BufferGeometry | null {
-  if (!pieces.length) return null;
-  const flat: THREE.BufferGeometry[] = [];
-  for (const [geometry, color] of pieces) {
-    const nonIndexed = geometry.index ? geometry.toNonIndexed() : geometry;
-    if (nonIndexed !== geometry) geometry.dispose();
-    const count = nonIndexed.getAttribute('position').count;
-    const colors = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      colors[i * 3] = color.r;
-      colors[i * 3 + 1] = color.g;
-      colors[i * 3 + 2] = color.b;
-    }
-    nonIndexed.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    flat.push(nonIndexed);
-  }
-  const merged = mergeGeometries(flat, false);
-  flat.forEach((geometry) => geometry.dispose());
-  return merged;
-}
 
 export interface CaralWorkerHandle extends RigVariantHandle {
   setCarrying(carrying: boolean, color?: number): void;
@@ -127,7 +105,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
         ]);
       }
     }
-    const merged = mergeColoredParts(pieces);
+    const merged = mergeColoredGeometry(pieces);
     if (merged) {
       const details = new THREE.Mesh(trackGeometry(merged), makeMaterial(0xffffff, 0.9));
       (details.material as THREE.MeshStandardMaterial).vertexColors = true;

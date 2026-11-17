@@ -92,6 +92,21 @@ export class EntityView {
     this.group.rotation.y = yaw;
   }
 
+  /** Hide/show the model and its contact shadow together (fog, garrison, death). */
+  setVisible(visible: boolean): void {
+    this.group.visible = visible;
+    if (this.blobPool && this.blobShadowId >= 0) {
+      this.blobPool.set(
+        this.blobShadowId,
+        this.group.position.x,
+        this.group.position.y,
+        this.group.position.z,
+        this.radius * this.blobScale,
+        visible,
+      );
+    }
+  }
+
   /** Face a unit's movement yaw; models are modelled facing +Z. */
   setFacing(yaw: number): void {
     this.group.rotation.y = facingRotation(yaw);

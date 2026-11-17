@@ -749,12 +749,12 @@ export class RuntimeController {
     for (const u of this.game.units.values()) {
       if (u.owner === 0) continue;
       const vis = this.game.fow.isVisible(u.pos.x, u.pos.z) || !this.game.settings.fogOfWar;
-      if (u.view) u.view.group.visible = vis;
+      if (u.view) u.view.setVisible(vis);
     }
     for (const b of this.game.buildings.values()) {
       if (b.owner === 0) continue;
       const vis = this.game.fow.isVisible(b.pos.x, b.pos.z) || !this.game.settings.fogOfWar;
-      if (b.view) b.view.group.visible = vis;
+      if (b.view) b.view.setVisible(vis);
     }
     this.game.revealOpeningWhileCinematic();
     this.game.fowTexture.upload();
@@ -790,8 +790,8 @@ export class RuntimeController {
     this.game.terrain.setFow(this.game.fowTexture.texture, on);
     this.game.fowUniforms.fowEnabled.value = on ? 1 : 0;
     if (!on) {
-      for (const u of this.game.units.values()) if (u.view) u.view.group.visible = true;
-      for (const b of this.game.buildings.values()) if (b.view) b.view.group.visible = true;
+      for (const u of this.game.units.values()) if (u.view) u.view.setVisible(true);
+      for (const b of this.game.buildings.values()) if (b.view) b.view.setVisible(true);
       for (const n of this.game.resourceNodes.values()) n.setVisibleEx(true);
       for (const grove of this.game.caralGroves) this.game.trees.setVisible(grove.slot, true);
     }
@@ -910,6 +910,7 @@ export class RuntimeController {
     // edge scrolling is off while the pointer is over a HUD panel or control
     this.game.camera.setPointerOverUi(this.game.isPointerOverUi());
     this.game.camera.update(d, realTime);
+    this.game.aylluSite?.updateLod(this.game.camera.getZoom());
     // Fit the shadow frustum and the terrain LOD to where the camera is this frame, not the last one.
     this.frameShadows();
     this.game.terrain.updateLod(this.game.camera.camera.position);

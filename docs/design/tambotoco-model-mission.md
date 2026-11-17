@@ -82,8 +82,13 @@ build it. The plaza and the plots stay walkable and buildable; the ring houses b
 phase.
 
 The **acequia** is authored around the north-east perimeter of Inticancha, not through its plaza or canchas.
-Its water scrolls a ripple normal while the gate is open, the banks keep their dry colour, and the site's
-crop material shifts to a wet green (`AylluSite.setIrrigated`). The gate remains the Act III mechanic.
+Its water scrolls a flow map while the gate is open, the banks keep their dry colour, and only the
+canal-side Inticancha field's crop material shifts to a wet green (`AylluSite.setIrrigated`); the hualla
+field upstream stays dry. The gate remains the Act III mechanic.
+
+- **Señorío del Cusco (Killke)**: the player; a new LATE_INTERMEDIATE civilization with a circular-plaza
+  silhouette. No imperial Inca units or buildings.
+- **Ayllus del valle**: a new LATE_INTERMEDIATE minor civilization; honderos, porras and village defenses.
 
 ### Site certainty
 
@@ -94,11 +99,6 @@ crop material shifts to a wet green (`AylluSite.setIrrigated`). The gate remains
 | Round qollqas, four canchas, plaza with altar, terraced fields | Plausible reconstruction | Inticancha tradition and partial Cusco archaeology; game abstraction |
 | Cave arch, Huanacaure monolith shape, exact hut proportions | Stylized | The myth has no date or documented form; the scene is not a reconstruction |
 | Ayar clothing, headdresses, props, textile patterns | Presentation abstraction | `docs/historia/atuendos.md`; no documented likeness |
-
-
-- **Señorío del Cusco (Killke)**: the player; a new LATE_INTERMEDIATE civilization with a circular-plaza
-  silhouette. No imperial Inca units or buildings.
-- **Ayllus del valle**: a new LATE_INTERMEDIATE minor civilization; honderos, porras and village defenses.
 
 The period locks the match to the Intermedio Tardío; no horses, firearms or imperial Inca technology.
 
@@ -126,9 +126,10 @@ The legend is about eight siblings, so all eight are on the board from the start
   body, wrap and tunic; the four Mamas use the female body, skirt and tunic, including the three worker
   Mamas. The unit-id split no longer decides a named character's body. Attire is the shared ayllu rig with
   a per-commander presentation layer (`CommanderDef.weapon/headdress/pattern/bulk`): the accent now fills the
-  tunic and mantle (a longer mantle for the Mamas), a grayscale weave pattern breaks the cloth, a band,
-  feather tuft, turban or bun changes the head silhouette, and the hero carries a staff, stone maul, sling or
-  digging stick. Ayar Cachi is visibly broader. These are **presentation abstractions**, not claims about a
+  tunic and mantle (a longer mantle for the Mamas), a grayscale weave pattern breaks the cloth, a band, feather tuft or turban changes the head silhouette, the hair itself is a procedural bun, braid pair
+  or topknot, and the hero carries a staff, stone maul, sling or digging stick (Mama Ipacura also carries the
+  party's back bundle). Ayar Cachi is visibly broader and Mama Ocllo/Mama Ipacura differ in hair, headdress
+  and burden, not only in accent hue. These are **presentation abstractions**, not claims about a
   documented Ayar costume; `docs/historia/atuendos.md` remains the source for the shared garments.
 - **Field markers**: every hero has a gold ring. Close in, a banner pole carries a **crest shape declared per commander**
   (`CommanderDef.crest`: diamond, tetrahedron, stone or spire) in the accent colour, so the eight do not
@@ -137,7 +138,7 @@ The legend is about eight siblings, so all eight are on the board from the start
 - **Animation**: the shared worker GLB now ships `Sword_Regular_A` (macana/maul), `OverhandThrow` (sling) and
   `Death01`; Andean soldiers and honderos use the combat clips and every `caral_worker` variant falls with the
   death clip instead of freezing. Workers keep `Punch_Jab` for unarmed defence. Heroes override the attack
-  clip from their prop (sling → throw, digging stick → tool swing), so the eight read differently in combat
+  clip from their prop (sling → `OverhandThrow`, digging stick → `TreeChopping_Loop` tool swing), so the eight read differently in combat
   as well as in idle.
 - **In the briefing**: the eight portraits (Ayar Manco, Ayar Auca, Ayar Cachi, Ayar Uchu, Mama Huaco, Mama
   Ocllo, Mama Ipacura, Mama Raua) use the procedural stylized medallions, now with the commander accent in
@@ -231,27 +232,29 @@ dialogue.
   coursed stone platforms, flagstones, thatch houses, qollqas and terraced fields.
 - `node scripts/capture_ayar_identity.mjs` → `docs/media/tambotoco-cast.webp` (the eight briefing
   medallions), `docs/media/tambotoco-heroes-close.webp` (Manco, Huaco, Ocllo and Cachi: male/female bodies,
-  garments and three crest shapes) and `docs/media/tambotoco-heroes-far.webp` (strategic zoom: rings only,
-  no plates or banners).
+  garments and three crest shapes), `docs/media/tambotoco-heroes-all.webp` (the eight siblings in two rows,
+  showing the hair, headdress, weave and prop splits) and `docs/media/tambotoco-heroes-far.webp` (strategic
+  zoom: rings only, no plates or banners).
 - `node scripts/capture_ayllu_quality.mjs --tag=before|after [--sizes=1280x720,1600x900,1920x1080]`
-  captures cave, Huanacaure, hualla, acequia, Inticancha, valley, close, wide and (after only) the built
-  base at each resolution with the HUD hidden, seed 777, `fundada` and the gate open. The 2026-11-16
+  captures cave, Huanacaure, hualla, acequia, Inticancha, valley, close, wide, the acequia bridge and (after only)
+  the built base at each resolution with the HUD hidden, seed 777, `fundada` and the gate open. The 2026-11-16
   before/after sets are in `review/ayllu-quality-*` (gitignored); attach the PNGs to the PR. The 1600×900
   after captures are published as `docs/media/tambotoco-quality-{cave,shrine,hualla,acequia,inticancha,built,
-  close,valley}.webp` (960×540, WebP q58). The same pass is covered by `tests/ayllu-kit.test.ts` (surface
+  close,valley}.webp` (960×540, WebP q58); the five `docs/media/tambotoco-quality-before-*.webp` frames were
+  captured with the same script from `origin/main` (84bc279) before this pass. The same pass is covered by `tests/ayllu-kit.test.ts` (surface
   families, phase groups, plinths) and `tests/tambotoco-layout.test.ts`.
 
 ## Open items
 
 1. Performance (measured 2026-11-16 after the art pass; the mission is in `bench:check`): software
-   (SwiftShader) measures **436,666 triangles / 265 draw calls** at the opening and **608,204 / 346** on
-   the founded Inticancha; hardware high quality (`--gpu`, Intel RPL-S iGPU) measures **479,416 / 264** and
-   **651,452 / 352**. The opening cap is now **500k / 280** (ratcheted from 600k/340); the late cap stays
+   (SwiftShader) measures **436,880 triangles / 265 draw calls** at the opening and **608,324 / 347** on
+   the founded Inticancha; hardware high quality (`--gpu`, Intel RPL-S iGPU) measures **479,630 / 264** and
+   **651,572 / 353**. The opening cap is now **500k / 280** (ratcheted from 600k/340); the late cap stays
    **660k / 360** and is met without raising it. The pass batched every entity contact shadow into one
    instanced draw, merged the site by surface family per phase (instead of one mesh for the whole 256 m
    site, which drew the cave and the valley together), cut the inland water grid to 64 and trimmed the
    dry-puna ground cover to a fifth. Hardware triangles dropped from **625,811 / 808,827** (opening/late,
-   pre-pass) to **479,416 / 651,452**; the late calls are higher than the old 301 because the eight heroes
+   pre-pass) to **479,630 / 651,572**; the late calls are higher than the old 301 because the eight heroes
    now carry readable props and the base has its cancha houses, but they remain inside the cap. The
    performance row is **Met**. Run `node scripts/bench_scene.mjs --mission=m_tambotoco [--stage=late]
    [--gpu] --assert`.

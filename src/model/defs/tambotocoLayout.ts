@@ -67,6 +67,8 @@ export interface AylluField {
   readonly w: number;
   readonly d: number;
   readonly rows: number;
+  /** Canal-side plot: its crop material shifts wet when the acequia opens. */
+  readonly irrigated?: boolean;
 }
 
 export interface AylluVillage {
@@ -116,9 +118,20 @@ export const TAMBOTOCO_VILLAGES: readonly AylluVillage[] = [
   },
 ];
 
+export interface AylluBridge {
+  readonly x: number;
+  readonly z: number;
+  readonly yaw: number;
+  readonly w: number;
+  readonly d: number;
+}
+
+/** The east footpath crosses the acequia on a small stone slab bridge. */
+export const TAMBOTOCO_BRIDGES: readonly AylluBridge[] = [{ x: 186, z: 177, yaw: 2.18, w: 2.3, d: 4.2 }];
+
 export const TAMBOTOCO_FIELDS: readonly AylluField[] = [
   { x: TAMBOTOCO_INTICANCHA.x - 22, z: TAMBOTOCO_INTICANCHA.z + 2, w: 12, d: 8, rows: 6 },
-  { x: TAMBOTOCO_INTICANCHA.x + 22, z: TAMBOTOCO_INTICANCHA.z + 2, w: 12, d: 8, rows: 6 },
+  { x: TAMBOTOCO_INTICANCHA.x + 22, z: TAMBOTOCO_INTICANCHA.z + 2, w: 12, d: 8, rows: 6, irrigated: true },
 ];
 
 /** Footpaths that tie the hamlets, the shrine and Inticancha together (visual only). */
@@ -126,10 +139,13 @@ export interface AylluPath {
   readonly points: readonly { readonly x: number; readonly z: number }[];
   /** Metres. */
   readonly width: number;
+  /** Site phase that raises the path; paths belong to the camp or to the founded Inticancha. */
+  readonly since: 'cave' | 'inticancha';
 }
 
 export const TAMBOTOCO_PATHS: readonly AylluPath[] = [
   {
+    since: 'cave',
     width: 1.5,
     points: [
       { x: 120, z: 106 },
@@ -139,6 +155,7 @@ export const TAMBOTOCO_PATHS: readonly AylluPath[] = [
     ],
   },
   {
+    since: 'cave',
     width: 1.3,
     points: [
       { x: 150, z: 160 },
@@ -147,6 +164,7 @@ export const TAMBOTOCO_PATHS: readonly AylluPath[] = [
     ],
   },
   {
+    since: 'cave',
     width: 1.3,
     points: [
       { x: 176, z: 184 },
@@ -155,6 +173,7 @@ export const TAMBOTOCO_PATHS: readonly AylluPath[] = [
     ],
   },
   {
+    since: 'cave',
     width: 1.3,
     points: [
       { x: 176, z: 196 },
@@ -163,6 +182,7 @@ export const TAMBOTOCO_PATHS: readonly AylluPath[] = [
     ],
   },
   {
+    since: 'inticancha',
     width: 1.2,
     points: [
       { x: 162, z: 190 },

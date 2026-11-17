@@ -596,6 +596,7 @@ export class Game {
       this.mapProfile.water.level,
       this.mapProfile.water.inland,
       this.siteDef?.heightField?.coast?.x ?? null,
+      this.siteDef?.terrain?.water?.grid ?? 128,
     );
     const waterPalette = this.siteDef?.terrain?.water;
     if (waterPalette) this.water.setPalette(waterPalette);
@@ -2411,7 +2412,7 @@ export class Game {
       const u = this.units.get(id);
       if (!u) continue;
       u.garrisonedIn = null;
-      if (u.view) u.view.group.visible = true;
+      if (u.view) u.view.setVisible(true);
       const ang = this.rng.float() * Math.PI * 2;
       const px = b.pos.x + Math.cos(ang) * (b.radius + 0.6);
       const pz = b.pos.z + Math.sin(ang) * (b.radius + 0.6);

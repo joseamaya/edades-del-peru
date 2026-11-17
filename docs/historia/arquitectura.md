@@ -51,7 +51,8 @@ usan el colonial o el republicano.
 La ocupación Killke del valle del Cusco (c. 1000–1400) es anterior al Estado inca. Para el sitio de
 Tambotoco se usa un lenguaje **doméstico**: piedra de campo con mortero de barro, muros de tierra o
 revoque, techos de paja, plantas irregulares, andenes y acequias. **No** se aplican la cantería pulida, los
-nichos, los vanos de doble jamba ni el ushnu imperiales. La forma exacta de una casa Killke no está
+nichos en los muros, los vanos de doble jamba ni el ushnu imperiales; el nicho del monolito de Huanacaure
+es una estilización del mito, no un nicho arquitectónico. La forma exacta de una casa Killke no está
 documentada, así que las proporciones, la planta circular del qollqa y el trazado de las cuatro canchas son
 una **reconstrucción plausible** para el juego; la cueva, el monolito de Huanacaure y el vestuario de los
 Ayar son **estilizaciones**, no reconstrucciones. Fuentes: Bauer y Covey (2002), Covey (2006) y

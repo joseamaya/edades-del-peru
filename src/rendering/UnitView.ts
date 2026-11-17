@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { EntityView } from '../entities/EntityView';
 import { commanderAccent, commanderById, type CommanderDef, type HeroPattern } from '../model/defs/commanders';
 import { acquireRig } from './ModelAssets';
@@ -15,7 +14,7 @@ import {
 } from '../model/defs/modelAssets';
 import type { Unit } from '../entities/Unit';
 import { FishingNetFx } from './FishingNetFx';
-import { createRigAttireTools, type RigAttireTools } from './rigAttire';
+import { createRigAttireTools, mergeColoredGeometry, type RigAttireTools } from './rigAttire';
 import { limitShadowCasters } from './shadowCasters';
 import { clamp } from '../util/math';
 import type { Resources } from '../core/types';
@@ -46,7 +45,6 @@ export class UnitView {
   private scene: THREE.Scene | null = null;
   private net: FishingNetFx | null = null;
   private heroAttire: RigAttireTools | null = null;
-  private heroPattern: THREE.Texture | null = null;
   private heroDressed = false;
 
   constructor(
@@ -113,7 +111,6 @@ export class UnitView {
     const tunic = root.getObjectByName(female ? 'attire_tunic_f' : 'attire_tunic_m') as THREE.Mesh | null;
     const clothMap = (tunic?.material as THREE.MeshStandardMaterial | undefined)?.map?.uuid;
     const pattern = heroPatternTexture(commander.pattern);
-    if (pattern) this.heroPattern = pattern;
     root.traverse((object) => {
       const mesh = object as THREE.SkinnedMesh;
       if (!mesh.isSkinnedMesh || mesh.name !== 'rig:consolidated') return;
@@ -139,8 +136,11 @@ export class UnitView {
     }
     const head = tools.bone('Head');
     if (head) {
-      const pieces: [THREE.BufferGeometry, THREE.Color][] = [[new THREE.TorusGeometry(0.1, 0.014, 6, 20), dark]];
+      const pieces: [THREE.BufferGeometry, THREE.Color][] = [];
       const headdress = commander.headdress ?? 'band';
+      if (headdress !== 'none') {
+        pieces.push([new THREE.TorusGeometry(0.1, 0.014, 6, 20), dark]);
+      }
       if (headdress === 'feathers') {
         for (let i = 0; i < 3; i++) {
           const feather = new THREE.ConeGeometry(0.038, 0.3 - i * 0.04, 5).translate((i - 1) * 0.07, 0.24, -0.02);
@@ -149,14 +149,30 @@ export class UnitView {
         }
       } else if (headdress === 'turban') {
         pieces.push([new THREE.CylinderGeometry(0.115, 0.11, 0.1, 12).translate(0, 0.17, 0), accent]);
-      } else if (headdress === 'bun') {
+      }
+      const hair = commander.hair ?? 'loose';
+      if (hair === 'bun') {
         const bun = new THREE.SphereGeometry(0.09, 8, 6);
         bun.scale(1, 0.8, 1);
         bun.translate(0, 0.12, -0.1);
         pieces.push([bun, new THREE.Color(0x2a1e16)]);
         pieces.push([new THREE.TorusGeometry(0.06, 0.012, 5, 12).rotateX(Math.PI / 2).translate(0, 0.14, -0.11), dark]);
+      } else if (hair === 'braids') {
+        for (const side of [-1, 1]) {
+          pieces.push([
+            new THREE.CylinderGeometry(0.025, 0.04, 0.52, 5).translate(side * 0.075, -0.16, -0.12),
+            new THREE.Color(0x2a1e16),
+          ]);
+          pieces.push([
+            new THREE.TorusGeometry(0.035, 0.01, 4, 8).rotateX(Math.PI / 2).translate(side * 0.075, -0.38, -0.12),
+            dark,
+          ]);
+        }
+      } else if (hair === 'topknot') {
+        pieces.push([new THREE.SphereGeometry(0.065, 7, 5).translate(0, 0.27, 0.02), new THREE.Color(0x2a1e16)]);
+        pieces.push([new THREE.TorusGeometry(0.05, 0.01, 4, 10).rotateX(Math.PI / 2).translate(0, 0.22, 0.02), dark]);
       }
-      const merged = mergeColored(pieces);
+      const merged = mergeColoredGeometry(pieces);
       if (merged) {
         const mesh = new THREE.Mesh(tools.track(merged), accessoryMaterial());
         mesh.name = 'attire_hero_head';
@@ -182,7 +198,11 @@ export class UnitView {
       ],
       [new THREE.BoxGeometry(0.09, 0.46, 0.025).rotateZ(0.62).translate(0, -0.02, 0.14), dark],
     ];
-    const torso = mergeColored(clothPieces);
+    if (commander.carryBundle) {
+      clothPieces.push([new THREE.BoxGeometry(0.26, 0.3, 0.16).translate(0, -0.08, -0.22), cream]);
+      clothPieces.push([new THREE.BoxGeometry(0.28, 0.06, 0.17).translate(0, 0.08, -0.22), dark]);
+    }
+    const torso = mergeColoredGeometry(clothPieces);
     if (torso) {
       const mesh = new THREE.Mesh(tools.track(torso), accessoryMaterial());
       mesh.name = 'attire_hero_cloth';
@@ -209,7 +229,7 @@ export class UnitView {
       propPieces.push([new THREE.CylinderGeometry(0.028, 0.034, 1.3, 6).translate(0, -0.35, 0), wood]);
       propPieces.push([new THREE.ConeGeometry(0.055, 0.22, 5).rotateX(Math.PI).translate(0, -1.0, 0), stone]);
     }
-    const prop = mergeColored(propPieces);
+    const prop = mergeColoredGeometry(propPieces);
     if (prop) {
       const mesh = new THREE.Mesh(tools.track(prop), accessoryMaterial());
       mesh.name = 'attire_hero_weapon';
@@ -379,42 +399,19 @@ export class UnitView {
     }
     this.heroAttire?.dispose();
     this.heroAttire = null;
-    this.heroPattern?.dispose();
-    this.heroPattern = null;
   }
-}
-
-/**
- * Merge a hero's accessories for one bone into a single vertex-coloured mesh. The head, torso and
- * hand each keep one draw call instead of one per feather, band, sash and weapon piece.
- */
-function mergeColored(pieces: [THREE.BufferGeometry, THREE.Color][]): THREE.BufferGeometry | null {
-  if (!pieces.length) return null;
-  const flat: THREE.BufferGeometry[] = [];
-  for (const [geometry, color] of pieces) {
-    const nonIndexed = geometry.index ? geometry.toNonIndexed() : geometry;
-    if (nonIndexed !== geometry) geometry.dispose();
-    const count = nonIndexed.getAttribute('position').count;
-    const colors = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      colors[i * 3] = color.r;
-      colors[i * 3 + 1] = color.g;
-      colors[i * 3 + 2] = color.b;
-    }
-    nonIndexed.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    flat.push(nonIndexed);
-  }
-  const merged = mergeGeometries(flat, false);
-  flat.forEach((geometry) => geometry.dispose());
-  return merged;
 }
 
 /**
  * A small grayscale weave for the hero cloth. The material colour is the commander accent, so the
  * pattern only changes value; it is an abstraction of Andean textile geometry, not a specific garment.
  */
+const HERO_PATTERNS = new Map<HeroPattern, THREE.DataTexture>();
+
 function heroPatternTexture(pattern: HeroPattern | undefined): THREE.DataTexture | null {
   if (!pattern || pattern === 'plain') return null;
+  const cached = HERO_PATTERNS.get(pattern);
+  if (cached) return cached;
   const size = 32;
   const data = new Uint8Array(size * size * 4);
   for (let y = 0; y < size; y++) {
@@ -447,5 +444,6 @@ function heroPatternTexture(pattern: HeroPattern | undefined): THREE.DataTexture
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.generateMipmaps = true;
   texture.needsUpdate = true;
+  HERO_PATTERNS.set(pattern, texture);
   return texture;
 }

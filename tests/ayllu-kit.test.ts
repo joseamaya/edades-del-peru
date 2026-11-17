@@ -101,16 +101,38 @@ describe('the ayllu kit', () => {
     const cave = site.group.children.find((group) => group.name === 'ayllu:cave')!;
     const families = cave.children.map((mesh) => mesh.name.split(':').pop());
     expect(families).toEqual(
-      expect.arrayContaining(['stone', 'earth', 'plaster', 'thatch', 'wood', 'vegetation', 'people']),
+      expect.arrayContaining(['stone', 'earth', 'plaster', 'thatch', 'wood', 'crops', 'people']),
     );
+    const crops = cave.children.find((child) => child.name.endsWith(':crops'))!;
+    site.updateLod(100);
+    expect(crops.visible).toBe(false);
+    site.updateLod(30);
+    expect(crops.visible).toBe(true);
     for (const child of cave.children) {
       const mesh = child as THREE.Mesh;
       const material = mesh.material as THREE.MeshStandardMaterial;
       expect(material.vertexColors, mesh.name).toBe(true);
-      const flat = mesh.name.endsWith(':people') || mesh.name.endsWith(':vegetation');
+      const flat = mesh.name.endsWith(':people') || mesh.name.endsWith(':crops') || mesh.name.endsWith(':cropsWet');
       if (flat) expect(material.map, mesh.name).toBeNull();
       else expect(material.map, mesh.name).not.toBeNull();
     }
+    site.dispose();
+  });
+
+  it('greens only the canal-side field material when the acequia opens', () => {
+    const parent = new THREE.Group();
+    const site = new AylluSite(parent, (x, z) => slope(x, z) + 4, 4, {
+      phases: ['cave', 'huanacaure', 'inticancha', 'fundada'],
+      initial: 'cave',
+    });
+    const materials = (site as unknown as { materials: Map<string, THREE.MeshStandardMaterial> }).materials;
+    const wet = materials.get('cropsWet')!;
+    const dry = materials.get('crops')!;
+    site.setIrrigated(true);
+    expect(wet.color.getHexString()).toBe('d8f0c4');
+    expect(dry.color.getHexString()).toBe('ffffff');
+    site.setIrrigated(false);
+    expect(wet.color.getHexString()).toBe('ffffff');
     site.dispose();
   });
 

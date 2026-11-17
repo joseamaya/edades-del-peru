@@ -9,6 +9,16 @@ import { launchChromium, withViteServer, reviewDir } from './lib.mjs';
  * Writes review/ayar-identity-*.png and the 960x540 WebP copies under docs/media/.
  */
 const HEROES = ['manco_capac', 'ayar_auca', 'mama_huaco', 'ayar_cachi'];
+const ALL_HEROES = [
+  'manco_capac',
+  'ayar_auca',
+  'ayar_cachi',
+  'ayar_uchu',
+  'mama_huaco',
+  'mama_ocllo',
+  'mama_ipacura',
+  'mama_raua',
+];
 const WEBP_DIR = path.resolve('docs/media');
 
 async function publish(png, name) {
@@ -88,6 +98,47 @@ async function main() {
   await page.screenshot({ path: group });
   console.log(group);
   await publish(group, 'tambotoco-heroes-close.webp');
+
+  await page.evaluate((ids) => {
+    const g = window.game;
+    g.loop.stop();
+    const heroes = ids.map((id) => [...g.units.values()].find((u) => u.tag === id)).filter(Boolean);
+    const base = g.playerCenter(0);
+    const c = g.findLandNear(base.x - 14, base.z + 18, 26);
+    heroes.forEach((u, i) => {
+      const x = c.x + ((i < 4 ? i : i - 4) - 1.5) * 2.0;
+      const z = c.z + (i < 4 ? -1.0 : 1.4);
+      u.clearOrders();
+      u.pos.set(x, g.terrain.getHeight(x, z), z);
+      u.view.setPosition(x, u.pos.y, z);
+      u.view.setRotationY(0.2);
+      u.rig?.play('idle', 0);
+      u.rig?.update(0.4);
+      u.view.setPosition(x, u.pos.y, z);
+    });
+    g.characterLabels?.setVisible(false);
+    g.heroMarkers?.sync(heroes, 30, g.camera.maxZoom);
+    // Evidence-only: the canopy can sit between the low camera and the two hero rows.
+    for (const name of [
+      'trees_trunk',
+      'trees_canopy_broad',
+      'trees_canopy_needle',
+      'trees_canopy_molle',
+      'trees_canopy_sauce',
+    ]) {
+      const object = g.scene.getObjectByName(name);
+      if (object) object.visible = false;
+    }
+    const y = g.terrain.getHeight(c.x, c.z);
+    const cam = g.camera.camera;
+    cam.position.set(c.x, y + 2.4, c.z + 8.5);
+    cam.lookAt(c.x, y + 1.0, c.z + 0.5);
+    g.renderer.render(g.scene, cam);
+  }, ALL_HEROES);
+  const all = path.join(out, 'ayar-identity-all.png');
+  await page.screenshot({ path: all });
+  console.log(all);
+  await publish(all, 'tambotoco-heroes-all.webp');
 
   if (errors.length) console.log('page errors:', errors.slice(0, 8));
   await browser.close();

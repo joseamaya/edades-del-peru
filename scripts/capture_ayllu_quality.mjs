@@ -22,15 +22,16 @@ const sizes = cliArg('sizes', '1280x720,1600x900,1920x1080')
     return { width: w, height: h, label: `${w}x${h}` };
   });
 const ALL_VIEWS = {
-  cave: { x: 40, z: 55, h: 24, title: 'Cueva de Tambotoco' },
-  shrine: { x: 120, z: 106, h: 40, title: 'Huanacaure' },
-  hualla: { x: 136, z: 166, h: 24, title: 'Aldea hualla' },
-  acequia: { x: 166, z: 178, h: 30, title: 'Acequia de los alcabizas' },
-  inticancha: { x: 168, z: 190, h: 34, title: 'Inticancha fundada' },
-  built: { x: 168, z: 190, h: 44, title: 'Inticancha con la base Killke' },
-  valley: { x: 160, z: 155, h: 58, title: 'Valle del Cusco' },
-  close: { x: 138, z: 163, h: 13, title: 'Detalle de aldea' },
-  wide: { x: 168, z: 190, h: 90, title: 'Lectura estratégica' },
+  cave: { x: 40, z: 55, h: 24 },
+  shrine: { x: 120, z: 106, h: 40 },
+  hualla: { x: 136, z: 166, h: 24 },
+  acequia: { x: 166, z: 178, h: 30 },
+  inticancha: { x: 168, z: 190, h: 34 },
+  built: { x: 168, z: 190, h: 44 },
+  bridge: { x: 186, z: 177, h: 18 },
+  valley: { x: 160, z: 155, h: 58 },
+  close: { x: 138, z: 163, h: 13 },
+  wide: { x: 168, z: 190, h: 90 },
 };
 const wanted = cliArg('views', Object.keys(ALL_VIEWS).join(','))
   .split(',')

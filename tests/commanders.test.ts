@@ -78,6 +78,7 @@ describe('campaign commanders', () => {
     const weapons = new Set<string>();
     const headdresses = new Set<string>();
     const patterns = new Set<string>();
+    const hairs = new Set<string>();
     for (const id of ayars) {
       const commander = commanderById(id)!;
       expect(commander.weapon, id).toBeDefined();
@@ -86,12 +87,19 @@ describe('campaign commanders', () => {
       weapons.add(commander.weapon!);
       headdresses.add(commander.headdress!);
       patterns.add(commander.pattern!);
+      expect(commander.hair, id).toBeDefined();
+      hairs.add(commander.hair!);
       expect(commander.bulk ?? 1, id).toBeGreaterThanOrEqual(1);
       expect(commander.bulk ?? 1, id).toBeLessThanOrEqual(1.2);
     }
     expect(weapons.size).toBeGreaterThanOrEqual(4);
     expect(headdresses.size).toBeGreaterThanOrEqual(3);
     expect(patterns.size).toBeGreaterThanOrEqual(3);
+    expect(hairs.size).toBeGreaterThanOrEqual(3);
+    const ocllo = commanderById('mama_ocllo')!;
+    const ipacura = commanderById('mama_ipacura')!;
+    expect([ocllo.hair, ocllo.headdress]).not.toEqual([ipacura.hair, ipacura.headdress]);
+    expect(ipacura.carryBundle).toBe(true);
   });
 
   it('the late-campaign missions carry portraits', () => {

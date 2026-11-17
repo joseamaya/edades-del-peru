@@ -67,9 +67,9 @@ plaster, thatch, wood, crops, people) with world-scale UVs; the cave is an arch 
 monolith was re-proportioned, canchas are enclosures, the plaza has a kerb and four axes, fields follow the
 relief and the acequia skirts Inticancha with flowing water and a wet-crop response. The site is merged per
 surface family per phase; contact shadows are one instanced draw; the inland water grid and the dry-puna
-ground cover were trimmed. Measured `bench_scene` (Intel RPL-S, high): opening **479,416/264**, late
-**651,452/352**, under the ratcheted 500k/280 opening cap and the unchanged 660k/360 late cap; software is
-436,666/265 and 608,204/346. The eight Ayar gained per-commander props, headdresses, weaves and combat clips;
+ground cover were trimmed. Measured `bench_scene` (Intel RPL-S, high): opening **479,630/264**, late
+**651,572/353**, under the ratcheted 500k/280 opening cap and the unchanged 660k/360 late cap; software is
+436,880/265 and 608,324/347. The eight Ayar gained per-commander props, headdresses, weaves and combat clips;
 `docs/design/tambotoco-model-mission.md` carries the site certainty table and the evidence commands.
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
