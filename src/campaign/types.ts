@@ -321,8 +321,13 @@ export type TriggerEffect =
   | { type: 'environment'; event: string }
   | { type: 'resources'; player?: 0 | 1; amount: Partial<Resources> }
   | { type: 'objective'; objectiveId: string; state: 'activate' | 'complete' | 'fail'; announce?: boolean }
-  /** Move the camera; `reveal` (metres) also marks that ground explored for a narrated look at a place. */
-  | { type: 'camera'; pos: MissionPoint; reveal?: number }
+  /**
+   * Move the camera; `reveal` (metres) also marks that ground explored for a narrated look at a place.
+   * `zoom` frames the authored point (the RTS camera uses it as the shot's subject, terrain height
+   * included) and glides over `seconds` instead of cutting; the flight does not hold the mission clock.
+   * Without `zoom` the effect keeps the old instant focus.
+   */
+  | { type: 'camera'; pos: MissionPoint; reveal?: number; zoom?: number; seconds?: number }
   | { type: 'victory' }
   | { type: 'defeat'; text: string }
   /**

@@ -20,6 +20,7 @@ import { commanderFor } from '../model/defs/commanders';
 import { unitBaseKind, unitClassFor } from '../model/defs/units';
 import { phaseOrder } from '../model/defs/sitePhases';
 import type { MissionSave } from '../game/saveTypes';
+import { CAMERA_PITCH } from '../core/cameraMath';
 
 /**
  * Mission controller: evaluates objectives and triggers every frame,
@@ -202,7 +203,8 @@ export class Mission {
   update(dt: number, t: number): void {
     if (this.ended || !this.started) return;
     void t;
-    // The title card and the opening camera flight are not gameplay time.
+    // The title card and the opening camera flight are not gameplay time. A mid-mission camera beat does
+    // not hold the clock: it is a framed look, not a pause.
     if (this.game.isCinematicActive()) return;
     this.timer += dt;
     this.updateHoldTimers(dt);
@@ -540,7 +542,23 @@ export class Mission {
         break;
       case 'camera': {
         const p = this.resolvePoint(fx.pos);
-        this.game.camera.focusOn(p.x, p.z);
+        if (fx.zoom === undefined && fx.seconds === undefined) this.game.camera.focusOn(p.x, p.z);
+        else {
+          // The RTS camera looks at sea level, so a subject on an elevated site projects above the screen
+          // centre. Aim `ground / tan(pitch)` short of it along the current yaw so the authored point is
+          // framed. `seconds` without `zoom` glides at the current framing.
+          const ground = this.game.terrain?.getHeight(p.x, p.z) ?? 0;
+          const lift = ground / Math.tan(CAMERA_PITCH);
+          const yaw = this.game.camera.getYaw();
+          const zoom = fx.zoom ?? this.game.camera.getZoom();
+          this.game.camera.flyTo(
+            p.x - Math.sin(yaw) * lift,
+            p.z - Math.cos(yaw) * lift,
+            zoom,
+            fx.seconds ?? 1.8,
+            false,
+          );
+        }
         if (fx.reveal) {
           // A narrated look at the valley/Inticancha: show it explored even before a unit walks there,
           // so the fogged site never becomes a black cut in the chapter-card beat. The next frame's

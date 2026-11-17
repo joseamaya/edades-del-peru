@@ -1,10 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import pkg from '../package.json';
 import { MISSIONS } from '../src/campaign/defs/campaign';
-import { TAMBOTOCO_HOLD, TAMBOTOCO_OUTLET, TAMBOTOCO_WAVE } from '../src/campaign/defs/missions/m_tambotoco';
+import {
+  TAMBOTOCO_CANAL_GATE,
+  TAMBOTOCO_HOLD,
+  TAMBOTOCO_OUTLET,
+  TAMBOTOCO_WAVE,
+} from '../src/campaign/defs/missions/m_tambotoco';
 import { getEducational } from '../src/campaign/defs/educational';
 import { tutorialForMission } from '../src/campaign/defs/tutorials';
 import { canalIrrigationAt } from '../src/model/defs/canal';
+import {
+  TAMBOTOCO_INTICANCHA as TAMBOTOCO_INTICANCHA_LAYOUT,
+  TAMBOTOCO_SHRINE,
+} from '../src/model/defs/tambotocoLayout';
 import { getAuthoredSite } from '../src/model/defs/sites';
 import { commanderById } from '../src/model/defs/commanders';
 import { unitTrainableInPeriod } from '../src/model/defs/units';
@@ -62,6 +71,48 @@ describe('Los hijos de Tambotoco', () => {
     for (const id of HIDDEN_OBJECTIVE_IDS) {
       expect(activated.has(id), id).toBe(true);
     }
+  });
+
+  it('frames the narrated beats with a hero/detail/wide shot grammar', () => {
+    const cameras = (triggerId: string) => {
+      const trigger = TAMBOTOCO.triggers.find((t) => t.id === triggerId)!;
+      return trigger.effects.filter((fx) => fx.type === 'camera');
+    };
+    const shot = (triggerId: string) => {
+      const [fx] = cameras(triggerId);
+      expect(fx, triggerId).toBeDefined();
+      if (fx?.type !== 'camera') throw new Error(`${triggerId} has no camera effect`);
+      return fx;
+    };
+
+    // Detail: the huaca is framed where the pilgrimage arrives, and the ground is revealed before the card closes.
+    const huanacaure = shot('t_caza');
+    expect(huanacaure.pos).toEqual({ dx: TAMBOTOCO_SHRINE.x, dz: TAMBOTOCO_SHRINE.z });
+    expect(huanacaure.zoom).toBe(34);
+    expect(huanacaure.reveal).toBe(45);
+
+    // Wide: the wave's approach, not the far valley.
+    const valley = shot('t_huanacaure');
+    expect(valley.pos).toEqual({ dx: TAMBOTOCO_WAVE.x, dz: TAMBOTOCO_WAVE.z });
+    expect(valley.zoom).toBeGreaterThan(huanacaure.zoom!);
+
+    // Detail: the stone plug that the wave unlocks.
+    const gate = shot('t_oleada');
+    expect(gate.pos).toEqual({ dx: TAMBOTOCO_CANAL_GATE.x + 1, dz: TAMBOTOCO_CANAL_GATE.z + 1 });
+    expect(gate.zoom).toBe(36);
+    expect(gate.reveal).toBe(45);
+
+    // Wide: the traced Inticancha.
+    const traced = shot('t_acequia');
+    expect(traced.pos).toEqual({ dx: TAMBOTOCO_INTICANCHA_LAYOUT.x, dz: TAMBOTOCO_INTICANCHA_LAYOUT.z });
+    expect(traced.zoom).toBeGreaterThan(huanacaure.zoom!);
+
+    // Hero: the foundation reward, with the stone rising and the ritual dust.
+    const foundation = shot('t_inticancha');
+    expect(foundation.zoom).toBe(29);
+    expect(foundation.seconds).toBeGreaterThanOrEqual(2);
+    const effects = TAMBOTOCO.triggers.find((t) => t.id === 't_inticancha')!.effects;
+    expect(effects.some((fx) => fx.type === 'memory' && fx.tag === 'ayar_auca')).toBe(true);
   });
 
   it('makes the defended intake the gate to the water', () => {

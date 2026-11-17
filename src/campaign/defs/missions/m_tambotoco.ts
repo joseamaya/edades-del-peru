@@ -12,15 +12,29 @@ import { TAMBOTOCO_LANDSCAPE } from '../../../model/defs/landscape';
 // Los hijos de Tambotoco: the cave, the Huanacaure huaca, the valley and Inticancha.
 const TAMBOTOCO_TAMBO_QUIRO = { x: 70, z: 91 } as const;
 const TAMBOTOCO_ENEMY = { x: 212, z: 200 } as const;
-/** The canal intake (gate) and outlet (optional farm anchor), in world metres. */
+/** The stone plug sits at the canal's first point; the post-wave cue frames the gate, not the field intake. */
+export const TAMBOTOCO_CANAL_GATE = { x: 152, z: 160 } as const;
+/** Canal anchor for props/placement (the stone plug is `TAMBOTOCO_CANAL_GATE`), in world metres. */
 const TAMBOTOCO_INTAKE = { x: 158, z: 176 } as const;
 export const TAMBOTOCO_OUTLET = { x: 182, z: 194 } as const;
 /** The valley sortie starts on the Huanacaure approach, not at the far enemy base. */
 export const TAMBOTOCO_WAVE = { x: 142, z: 126 } as const;
 /** The defended ring south of the huaca; the wave marches here. */
 export const TAMBOTOCO_HOLD = { x: TAMBOTOCO_HUANACAURE.x, z: TAMBOTOCO_HUANACAURE.z + 12 } as const;
-/** Ground radius (m) revealed by the narrated Act III/IV camera beats. */
+/** Ground radius (m) revealed by the narrated camera beats. */
 const TAMBOTOCO_CAMERA_REVEAL = 45;
+/**
+ * Shot grammar for the narrated beats. The RTS camera's closest framing is 28 m, so a detail shot uses
+ * 32–34, a hero shot the 28–30 floor and a wide shot 46–52. The flight is presentation only: it does not
+ * stall the mission clock.
+ */
+const TAMBOTOCO_SHOT = {
+  huanacaure: { zoom: 34, seconds: 2.0 },
+  valley: { zoom: 46, seconds: 2.4 },
+  gate: { zoom: 36, seconds: 1.8 },
+  inticancha: { zoom: 48, seconds: 2.4 },
+  foundation: { zoom: 29, seconds: 2.2 },
+} as const;
 
 export const mTambotoco: MissionDef = {
   id: 'm_tambotoco',
@@ -101,7 +115,7 @@ export const mTambotoco: MissionDef = {
       z: TAMBOTOCO_INTAKE.z / 256,
       width: 1.6,
       path: [
-        { x: 152 / 256, z: 160 / 256 },
+        { x: TAMBOTOCO_CANAL_GATE.x / 256, z: TAMBOTOCO_CANAL_GATE.z / 256 },
         { x: 156 / 256, z: 168 / 256 },
         { x: 162 / 256, z: 174 / 256 },
         // The channel skirts Inticancha on its north-east perimeter: it must not cross the plaza ring,
@@ -354,6 +368,13 @@ export const mTambotoco: MissionDef = {
       id: 't_caza',
       condition: { type: 'objective', objectiveId: 'a1_caza', state: 'completed' },
       effects: [
+        // Act II opens on the destination: a detail shot of the huaca, revealed so it never reads as a black cut.
+        {
+          type: 'camera',
+          pos: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z },
+          reveal: TAMBOTOCO_CAMERA_REVEAL,
+          ...TAMBOTOCO_SHOT.huanacaure,
+        },
         {
           type: 'act',
           kicker: 'Acto II · La peregrinación',
@@ -389,7 +410,12 @@ export const mTambotoco: MissionDef = {
           text: 'El valle del Cusco ya tiene ayllus: huallas, sauaseray y alcabizas. La tradición cuenta que los recién llegados quitaron el agua a los alcabizas para obligarlos a ceder tierras. El agua es la palanca.',
         },
         // Hold the camera on the wave/ring, not the far valley: the player must see what is coming.
-        { type: 'camera', pos: { dx: 130, dz: 128 }, reveal: TAMBOTOCO_CAMERA_REVEAL },
+        {
+          type: 'camera',
+          pos: { dx: TAMBOTOCO_WAVE.x, dz: TAMBOTOCO_WAVE.z },
+          reveal: TAMBOTOCO_CAMERA_REVEAL,
+          ...TAMBOTOCO_SHOT.valley,
+        },
         { type: 'objective', objectiveId: 'a3_oleada', state: 'activate', announce: true },
         { type: 'objective', objectiveId: 'a3_hualla', state: 'activate', announce: true },
         {
@@ -430,8 +456,14 @@ export const mTambotoco: MissionDef = {
           duration: 8,
           text: 'La toma resiste. Los alcabizas ya no pueden cerrar el paso del agua: abre la compuerta y llévala a tus campos.',
         },
-        // Point the camera at the intake so the unlocked gate is the next thing the player sees.
-        { type: 'camera', pos: { dx: TAMBOTOCO_INTAKE.x, dz: TAMBOTOCO_INTAKE.z }, reveal: TAMBOTOCO_CAMERA_REVEAL },
+        // Point the camera at the stone plug so the unlocked gate is the next thing the player sees. The plug
+        // is a bar across the channel: aim a metre downstream so it sits in frame with the water.
+        {
+          type: 'camera',
+          pos: { dx: TAMBOTOCO_CANAL_GATE.x + 1, dz: TAMBOTOCO_CANAL_GATE.z + 1 },
+          reveal: TAMBOTOCO_CAMERA_REVEAL,
+          ...TAMBOTOCO_SHOT.gate,
+        },
         { type: 'objective', objectiveId: 'a3_acequia', state: 'activate', announce: true },
       ],
     },
@@ -461,6 +493,7 @@ export const mTambotoco: MissionDef = {
           type: 'camera',
           pos: { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z },
           reveal: TAMBOTOCO_CAMERA_REVEAL,
+          ...TAMBOTOCO_SHOT.inticancha,
         },
         { type: 'objective', objectiveId: 'a4_inticancha', state: 'activate', announce: true },
         { type: 'objective', objectiveId: 'a3_riego', state: 'activate', announce: true },
@@ -471,16 +504,24 @@ export const mTambotoco: MissionDef = {
       condition: { type: 'objective', objectiveId: 'a4_inticancha', state: 'completed' },
       effects: [
         {
-          type: 'dialogue',
-          speaker: 'Memoria de los Ayar',
-          duration: 8,
-          text: 'Ayar Auca se convierte en piedra en el sitio y le da nombre. Inticancha se ordena en cuatro canchas: el valle ya tiene un centro.',
-        },
-        {
           type: 'memory',
           tag: 'ayar_auca',
           pos: { dx: TAMBOTOCO_INTICANCHA.x + 6, dz: TAMBOTOCO_INTICANCHA.z + 6 },
           label: 'Piedra de Ayar Auca',
+        },
+        // The foundation's reward beat: a hero shot of the plaza and the new store. The stone's own raise
+        // already fires the ritual dust, so no second burst is queued here.
+        {
+          type: 'camera',
+          pos: { dx: TAMBOTOCO_INTICANCHA.x + 3, dz: TAMBOTOCO_INTICANCHA.z + 3 },
+          reveal: TAMBOTOCO_CAMERA_REVEAL,
+          ...TAMBOTOCO_SHOT.foundation,
+        },
+        {
+          type: 'dialogue',
+          speaker: 'Memoria de los Ayar',
+          duration: 8,
+          text: 'Ayar Auca se convierte en piedra en el sitio y le da nombre. Inticancha se ordena en cuatro canchas: el valle ya tiene un centro.',
         },
         { type: 'objective', objectiveId: 'a4_canchas', state: 'activate', announce: true },
       ],
