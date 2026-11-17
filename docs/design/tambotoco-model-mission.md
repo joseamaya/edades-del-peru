@@ -257,13 +257,13 @@ hero variant (E4). The pilot runs E0–E6 and does not rebuild the mission, its 
 
 ## Open items
 
-1. Performance (measured 2026-11-17; E3b numbers): software (SwiftShader) measures **425,504 triangles /
+1. Performance (measured 2026-11-17; E4 numbers): software (SwiftShader) measures **425,052 triangles /
    273 draw calls** at the opening and **632,910 / 356** on the founded Inticancha (vegetation kit 9,352/9 and
    34,306/12); the pre-E1 baseline was 436,880 / 265 and 608,324 / 347, E1 measured 437,976 / 264 and
    614,594 / 357, E2a 438,856 / 269 and 615,532 / 354, and E2b 430,488 / 269 and 613,692 / 354. E3b hardware
-   (`--gpu`, Intel RPL-S iGPU, high) measures **450,354 / 269** opening and **658,738 / 359** late in frames mode
+   (`--gpu`, Intel RPL-S iGPU, high) measures **450,654 / 269** opening and **659,158 / 359** late in frames mode
    (the scene pass; the complete render adds the shadow/refraction passes; structural late 632,910 / 356).
-   Frame time at high quality with post-processing on: **38 FPS** opening and **33 FPS** late (26.5 / 30.2 ms p50).
+   Frame time at high quality with post-processing on: **39 FPS** opening and **33 FPS** late (25.5 / 30.2 ms p50).
    The opening cap is now **500k / 280** (ratcheted from 600k/340); the late cap stays
    **660k / 360** and is met without raising it. The pass batched every entity contact shadow into one
    instanced draw, merged the site by surface family per phase (instead of one mesh for the whole 256 m

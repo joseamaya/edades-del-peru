@@ -31,12 +31,20 @@ import { SIEGE_VARIANTS, siegeVariantFor, type SiegeRigVariant } from './siegeCh
 
 /** Registered rigged models. Add the id here and to the rendering registry. */
 export type ModelAssetId =
-  'ual_mannequin' | 'quaternius_alpaca' | 'caral_worker' | 'mounted_rig' | 'siege_rig' | 'vehicle_rig';
+  | 'ual_mannequin'
+  | 'quaternius_alpaca'
+  | 'caral_worker'
+  | 'tambotoco_hero'
+  | 'mounted_rig'
+  | 'siege_rig'
+  | 'vehicle_rig';
 
 /** CC0 Quaternius mannequin: pipeline fixture kept for the model tests, not shipped in `dist`. */
 export const MANNEQUIN_ASSET_ID: ModelAssetId = 'ual_mannequin';
 /** Finished Caral worker asset (CC0 body/hair/clips + project-authored cotton cloth). */
 export const CARAL_WORKER_ASSET_ID: ModelAssetId = 'caral_worker';
+/** Male-only Tambotoco hero (same CC0 body/skeleton/clips, hero outfit). */
+export const TAMBOTOCO_HERO_ASSET_ID: ModelAssetId = 'tambotoco_hero';
 /** `?rig=1` now previews the shipped worker instead of the 1.9 MB mannequin fixture. */
 export const RIG_DEMO_ASSET_ID: ModelAssetId = CARAL_WORKER_ASSET_ID;
 const MOUNTED_RIG_ASSET_ID: ModelAssetId = 'mounted_rig';
@@ -252,11 +260,15 @@ export function unitModelAsset(
   civ: CivId,
   id = 0,
   gender?: PersonGender,
+  tag = '',
 ): RigModelChoice | null {
   // A named commander passes its declared gender; anonymous units keep the deterministic id split.
   const unitGender = gender ?? genderForId(id);
   const baseKind = unitBaseKind(kind);
-  if (baseKind !== kind) return unitModelAsset(baseKind, era, civ, id, gender);
+  if (baseKind !== kind) return unitModelAsset(baseKind, era, civ, id, gender, tag);
+  if (tag === 'manco_capac' && civ === CivId.INCA_KILLKE) {
+    return { asset: TAMBOTOCO_HERO_ASSET_ID, variant: 'inca_killke_soldier_m' };
+  }
   if (civ === CivId.HUESTE_INDIANA) return unitModelAsset(kind, era, CivId.REALISTAS, id, gender);
   if (civ === CivId.CARAL && era === Era.FORMATIVE) {
     const female = unitGender === 'female';
@@ -349,6 +361,7 @@ export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly C
       if (choice) ids.add(choice.asset);
     }
   }
+  if (civs.includes(CivId.INCA_KILLKE)) ids.add(TAMBOTOCO_HERO_ASSET_ID);
   ids.add('quaternius_alpaca');
   return [...ids];
 }

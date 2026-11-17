@@ -52,7 +52,7 @@ export class UnitView {
     ctx: BuildContext,
   ) {
     // `Unit.gender` already resolves a tagged commander before the id split.
-    const choice = unitModelAsset(unit.kind, unit.era, ctx.civ.id, unit.id, unit.gender);
+    const choice = unitModelAsset(unit.kind, unit.era, ctx.civ.id, unit.id, unit.gender, unit.tag ?? '');
     this.rig = choice ? acquireRig(choice.asset, choice.variant) : null;
     const model = this.rig
       ? this.rig.root
@@ -138,6 +138,13 @@ export class UnitView {
         if (!mesh?.isMesh) continue;
         mesh.scale.multiplyScalar(1.25);
         tint(name, dark);
+      }
+    }
+    if (commander.id === 'manco_capac') {
+      // The audit asks for 6.5–7 heads and slightly larger head/hands; the shared body is ~8 heads.
+      for (const name of ['Head', 'hand_l', 'hand_r']) {
+        const bone = tools.bone(name);
+        if (bone) bone.scale.multiplyScalar(1.12);
       }
     }
     const head = tools.bone('Head');

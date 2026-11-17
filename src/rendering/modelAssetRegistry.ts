@@ -7,6 +7,7 @@ import { CARAL_WORKER_SHADOW_SKIP_MESHES, type ModelAssetId, type RigClipState }
  */
 import alpacaUrl from '../assets/models/quaternius_alpaca.glb?url';
 import caralWorkerUrl from '../assets/models/caral_worker.glb?url';
+import tambotocoHeroUrl from '../assets/models/tambotoco_hero.glb?url';
 import mountedRigUrl from '../assets/models/mounted_rig.glb?url';
 import siegeRigUrl from '../assets/models/siege_rig.glb?url';
 import vehicleRigUrl from '../assets/models/vehicle_rig.glb?url';
@@ -94,6 +95,25 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
       gather: 'Farm_Harvest',
       build: 'Push_Loop',
       attack: 'Punch_Jab',
+    },
+    deathClip: 'Death01',
+  },
+  /**
+   * Tambotoco hero: male-only derivation of the Caral worker with the Killke outfit and the
+   * combat/death clips. Built by `scripts/build_caral_worker.mjs --hero`.
+   */
+  tambotoco_hero: {
+    url: tambotocoHeroUrl,
+    scale: 1,
+    yawOffset: 0,
+    ground: true,
+    groundClearance: 0.01,
+    shadowSkipMeshes: CARAL_WORKER_SHADOW_SKIP_MESHES,
+    clips: {
+      idle: 'Idle_Loop',
+      walk: 'Walk_Loop',
+      walk_carry: 'Walk_Loop',
+      attack: 'Sword_Regular_A',
     },
     deathClip: 'Death01',
   },

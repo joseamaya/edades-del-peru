@@ -6,7 +6,7 @@ import { cliArg, launchChromium, reviewDir, withViteServer, waitForHighlandKits 
  * Art-direction pilot captures for `m_tambotoco` (docs/design/tambotoco-art-pilot.md).
  * Usage: node scripts/capture_art_pilot.mjs [--tag=before|after] [--quality=neutral|final]
  *        [--sizes=1280x720,1600x900,1920x1080]
- *        [--views=cave,shrine,hualla,acequia,ford,bank,path,inticancha,built,close,wide,hero]
+ *        [--views=cave,shrine,hualla,acequia,ford,bank,path,inticancha,built,close,wide,hero,hero54]
  *
  * `neutral` isolates materials and silhouettes (post-processing off); `final` is the player-facing
  * look (post-processing and the player's quality preset). Fog of war is off in both so the scene is
@@ -45,6 +45,7 @@ const VIEWS = {
   trees: { x: 202, z: 228, h: 18 },
   wide: { x: 168, z: 190, h: 90 },
   hero: { hero: true },
+  hero54: { hero: true, h: 54 },
 };
 
 const wanted = cliArg('views', Object.keys(VIEWS).join(','))
@@ -133,36 +134,46 @@ async function main() {
           await page.waitForTimeout(900);
         }
         if (view.hero) {
-          await page.evaluate(() => {
-            const g = window.game;
-            g.loop.stop();
-            const hero = [...g.units.values()].find((u) => u.tag === 'manco_capac');
-            const worker = [...g.units.values()].find((u) => u.owner === 0 && !u.dead && !u.tag && u.kind === 'worker');
-            const c = g.findLandNear(138, 157, 12);
-            const place = (u, dx, dz, rotY) => {
-              if (!u) return;
-              const x = c.x + dx;
-              const z = c.z + dz;
-              u.clearOrders();
-              u.pos.set(x, g.terrain.getHeight(x, z), z);
-              u.view.setPosition(x, u.pos.y, z);
-              u.view.setRotationY(rotY);
-              u.rig?.play('idle', 0);
-              u.rig?.update(0.4);
-              u.view.setPosition(x, u.pos.y, z);
-            };
-            place(hero, -0.9, 0, 0.2);
-            place(worker, 0.9, 0.45, -0.2);
-            g.characterLabels?.setVisible(false);
-            g.heroMarkers?.sync(g.units.values(), 30, g.camera.maxZoom);
-            const y = g.terrain.getHeight(c.x, c.z);
-            const cam = g.camera.camera;
-            cam.position.set(c.x + 1.2, y + 2.2, c.z + 7.0);
-            cam.lookAt(c.x, y + 1.0, c.z);
-            // The loop is stopped, so the shadow map must be refreshed for this camera before the shot.
-            g.runtime.frameShadows();
-            g.renderer.render(g.scene, cam);
-          });
+          await page.evaluate(
+            ({ h }) => {
+              const g = window.game;
+              g.loop.stop();
+              const hero = [...g.units.values()].find((u) => u.tag === 'manco_capac');
+              const worker = [...g.units.values()].find(
+                (u) => u.owner === 0 && !u.dead && !u.tag && u.kind === 'worker',
+              );
+              const c = g.findLandNear(138, 157, 12);
+              const place = (u, dx, dz, rotY) => {
+                if (!u) return;
+                const x = c.x + dx;
+                const z = c.z + dz;
+                u.clearOrders();
+                u.pos.set(x, g.terrain.getHeight(x, z), z);
+                u.view.setPosition(x, u.pos.y, z);
+                u.view.setRotationY(rotY);
+                u.rig?.play('idle', 0);
+                u.rig?.update(0.4);
+                u.view.setPosition(x, u.pos.y, z);
+              };
+              place(hero, -0.9, 0, 0.2);
+              place(worker, 0.9, 0.45, -0.2);
+              g.characterLabels?.setVisible(false);
+              g.heroMarkers?.sync(g.units.values(), 30, g.camera.maxZoom);
+              const y = g.terrain.getHeight(c.x, c.z);
+              const cam = g.camera.camera;
+              if (h) {
+                g.camera.moveTo(c.x, c.z, true);
+                g.camera.setHeight(h);
+              } else {
+                cam.position.set(c.x + 1.2, y + 2.2, c.z + 7.0);
+                cam.lookAt(c.x, y + 1.0, c.z);
+              }
+              // The loop is stopped, so the shadow map must be refreshed for this camera before the shot.
+              g.runtime.frameShadows();
+              g.renderer.render(g.scene, cam);
+            },
+            { h: view.h },
+          );
         } else {
           await page.evaluate(({ x, z, h }) => {
             const g = window.game;
