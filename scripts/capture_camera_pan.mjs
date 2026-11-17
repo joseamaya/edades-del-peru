@@ -4,7 +4,7 @@ import { execFileSync } from 'child_process';
 import { launchChromium, withViteServer, cliArg, reviewDir } from './lib.mjs';
 
 /**
- * Evidence GIF for the edge-scroll band. The game loop is stopped and the camera is driven with
+ * Evidence animation for the edge-scroll band. The game loop is stopped and the camera is driven with
  * fixed 1/60 s steps, so the capture is deterministic and shows the same travel on any GPU.
  *
  * Usage: node scripts/capture_camera_pan.mjs [--tag=after] [--frames=40] [--width=800]

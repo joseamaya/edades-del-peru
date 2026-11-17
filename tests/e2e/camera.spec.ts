@@ -297,13 +297,55 @@ test('F follows the selected unit and pressing it again releases the camera', as
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'd' }));
     for (let i = 0; i < 60; i++) g.update(1 / 60, i / 60);
     window.dispatchEvent(new KeyboardEvent('keyup', { key: 'd' }));
+    const releasedAfterPan = g.camera.isFollowing(u.id);
+    const panned = g.camera.getTarget();
+
+    // Following again, then middle-dragging: the drag is a manual pan too.
+    tapF();
+    for (let i = 0; i < 10; i++) g.update(1 / 60, i / 60);
+    g.renderer.domElement.dispatchEvent(
+      new MouseEvent('mousedown', { button: 1, clientX: 640, clientY: 360, bubbles: true }),
+    );
+    window.dispatchEvent(new MouseEvent('mousemove', { clientX: 720, clientY: 360, bubbles: true }));
+    window.dispatchEvent(new MouseEvent('mouseup', { button: 1, clientX: 720, clientY: 360, bubbles: true }));
+    const releasedByDrag = g.camera.isFollowing(u.id);
+
+    // The edge band releases the follow only when it actually pans (after the delay).
+    g.camera.updateMouse(640, 360);
+    g.update(1 / 60, 0);
+    tapF();
+    for (let i = 0; i < 10; i++) g.update(1 / 60, i / 60);
+    g.camera.updateMouse(1, 300);
+    for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
+    const releasedByEdge = g.camera.isFollowing(u.id);
+    // Leave the band before re-engaging, or the still-held edge would release the next follow too.
+    g.camera.updateMouse(640, 360);
+    g.update(1 / 60, 0);
+
+    // The minimap moves the camera through `moveTo`.
+    tapF();
+    for (let i = 0; i < 10; i++) g.update(1 / 60, i / 60);
+    g.camera.moveTo(g.settings.mapSize / 2, g.settings.mapSize / 2, true);
+    const releasedByMinimap = g.camera.isFollowing(u.id);
+
+    // A removed unit releases the follow instead of pinning the camera to its last position.
+    tapF();
+    for (let i = 0; i < 10; i++) g.update(1 / 60, i / 60);
+    g.units.delete(u.id);
+    g.update(1 / 60, 0);
+    const releasedByDeath = g.camera.isFollowing(u.id);
+
     return {
       unit: { x: u.pos.x, z: u.pos.z },
       following,
       followed,
       released,
-      releasedAfterPan: g.camera.isFollowing(u.id),
-      panned: g.camera.getTarget(),
+      releasedAfterPan,
+      panned,
+      releasedByDrag,
+      releasedByEdge,
+      releasedByMinimap,
+      releasedByDeath,
     };
   });
   expect(out.following).toBe(true);
@@ -312,6 +354,10 @@ test('F follows the selected unit and pressing it again releases the camera', as
   expect(out.released).toBe(false);
   expect(out.releasedAfterPan).toBe(false);
   expect(Math.abs(out.panned.x - out.unit.x)).toBeGreaterThan(5);
+  expect(out.releasedByDrag).toBe(false);
+  expect(out.releasedByEdge).toBe(false);
+  expect(out.releasedByMinimap).toBe(false);
+  expect(out.releasedByDeath).toBe(false);
 });
 
 test('losing focus clears held keys and the middle drag', async ({ page }) => {

@@ -67,8 +67,9 @@ describe('edge scrolling', () => {
   });
 
   it('keeps the top band narrower than the sides', () => {
-    expect(edgeVector(400, rect.top + 12, rect, 18, 10)).toEqual({ x: 0, y: 0 });
-    expect(Math.abs(edgeVector(rect.left + 12, 300, rect, 18).x)).toBeCloseTo(1, 6);
+    const band = { sides: 18, top: 10, bottom: 18 };
+    expect(edgeVector(400, rect.top + 12, rect, band)).toEqual({ x: 0, y: 0 });
+    expect(Math.abs(edgeVector(rect.left + 12, 300, rect, band).x)).toBeCloseTo(1, 6);
   });
 
   it('normalizes a corner (not faster than an edge)', () => {

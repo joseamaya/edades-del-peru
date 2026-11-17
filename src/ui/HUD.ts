@@ -535,7 +535,7 @@ const CSS = /* css */ `
   .ed-dmg { position: absolute; left: 0; top: 0; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,0.95); pointer-events: none; white-space: nowrap; will-change: transform, opacity; }
   #ed-cursor { position: absolute; pointer-events: none; z-index: 62; display: none; font-size: 22px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.85)); }
   /* Top-left, clear of the objectives/tutorial column: a burst of alerts used to cover the goals. */
-  #ed-alerts { position: absolute; top: 56px; left: 12px; width: 244px; display: flex; flex-direction: column; gap: 6px; z-index: 57; pointer-events: none; }
+  #ed-alerts { position: absolute; top: 56px; left: var(--bar-gap); width: 244px; display: flex; flex-direction: column; gap: 6px; z-index: 57; pointer-events: none; }
   .ed-alert { pointer-events: auto; cursor: pointer; background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 6px 9px; font-size: 12px; color: var(--text); box-shadow: 0 4px 16px rgba(0,0,0,0.5); animation: alert-in 0.2s ease; }
   .ed-alert.warn { border-left-color: var(--red); }
   @keyframes alert-in { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
@@ -551,7 +551,7 @@ const CSS = /* css */ `
     .ed-topbtn, .speed-btn { font-size: 14px; }
     .speed-btn { width: 30px; height: 30px; }
     #ed-alerts { top: 66px; width: 290px; }
-    #ed-right-column { top: 66px; right: 16px; width: 300px; gap: 10px; }
+    #ed-right-column { top: 66px; right: var(--bar-gap); width: 300px; gap: 10px; }
     #ed-objectives { padding: 12px 14px; min-height: 120px; }
     #ed-objectives .obj { font-size: 14px; }
     #ed-objectives details.obj-archive > summary { font-size: 12px; }

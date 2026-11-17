@@ -935,8 +935,8 @@ export class InputController {
             this.game.hud?.showToast(t('hud.camera.released'), 'info');
           } else {
             this.game.camera.follow(u.id);
-            const p = this.game.players[0];
-            const name = unitDisplayName(u.kind, p.civ, p.era);
+            const owner = this.game.players[u.owner];
+            const name = unitDisplayName(u.kind, owner?.civ, u.era);
             this.game.hud?.showToast(t('hud.camera.following', { unit: name }), 'info');
           }
         }
@@ -1045,6 +1045,8 @@ export class InputController {
     window.removeEventListener('mousemove', this.onWindowMouseMove);
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
+    window.removeEventListener('blur', this.onBlur);
+    document.removeEventListener('visibilitychange', this.onVisibility);
     if (this.hoverRaf) cancelAnimationFrame(this.hoverRaf);
   }
 }

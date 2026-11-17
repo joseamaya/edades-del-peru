@@ -427,8 +427,9 @@ Definition of Done and the building audit see
   `W`/arriba = north and the main map matches the north-up minimap; Z/X rotation is optional
   (`settings.rotateCamera`). Edge scrolling is a **plateau** (full speed anywhere inside the band, zero outside) and
   every pan vector is **normalized** (a diagonal is not faster than an axis). The band is **18 px** on the left,
-  right and bottom edges and **10 px** on top, where the 46 px bar and its controls start 10 px from the screen
-  edge; the HUD panels sit `--bar-gap` (18 px) from the edge so the band stays clear. The **wheel zooms toward the ground point under
+  right and bottom edges and **10 px** on top, where the 46–54 px bar and its controls start 8–10 px from the
+  screen edge and remain guarded by the pointer-over-UI check; the HUD panels sit `--bar-gap` (18 px) from the
+  edge so the band stays clear. The **wheel zooms toward the ground point under
   the cursor** (`groundOffsetAtNdc`: exact ray/plane `y=0` intersection, perspective included; anchored on the
   previous _desired_ zoom so repeated wheel events telescope), and the **middle-drag applies the ground-offset
   difference between successive cursor positions** (pitch/perspective corrected) with the target **snapped while
@@ -446,12 +447,14 @@ Definition of Done and the building audit see
   the very top is part of the top band, while its buttons keep `pointer-events:auto` and remain guarded by the
   pointer-over-UI check. It starts after a **0.15 s** delay and ramps to full speed over 0.2 s (`edgeSpeedFactor`),
   and it can be turned off from Options (`settings.edgeScroll`, persisted in `peru-settings`). `F` follows the
-  selected unit and **toggles off**; any manual pan (WASD/arrows, edge, middle drag) or minimap move releases the
-  follow, and a dead unit clears it. Losing focus (`blur`/`visibilitychange`) drops held keys, the drag flag and
+  selected unit and **toggles off**; any manual pan (WASD/arrows, edge, middle drag) or map move (`moveTo`, which
+  includes the minimap and save restore) releases the follow, and a dead unit clears it. Losing focus (`blur`/`visibilitychange`) drops held keys, the drag flag and
   the edge timer, so alt-tab cannot leave the camera drifting or the drag armed. Tuning lives in `CAMERA_CONFIG`;
   the pure math is unit-tested (`tests/camera.test.ts`), the wiring in `tests/e2e/camera.spec.ts`. The **camera
   speed** option (Baja/Normal/Alta, `settings.cameraSpeed` → `CAMERA_SPEED_SCALE`) scales the keyboard/edge speed
-  only (the middle-drag is direct manipulation).
+  only (the middle-drag is direct manipulation). Evidence: `docs/media/camera-edge-{before,after}.webp`
+  (`node scripts/capture_camera_pan.mjs --tag=after` on this branch; the before pair was captured from a
+  worktree at `origin/main` with the same script).
 - **Campaign intro (visual only)**: `Mission.start` calls `Game.playIntro()` from the briefing's onStart
   callback, which frames an overview and runs `RTSCamera.flyTo(x, z, zoom, seconds)` down to the player base;
   for the authored Caral site it settles at `CARAL_SITE_CAMERA.height` so the valley, base and city share the opening.

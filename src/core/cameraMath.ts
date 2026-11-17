@@ -15,15 +15,20 @@ export interface Vec2 {
   y: number;
 }
 
+/** Distance in pixels from each screen edge at which edge scrolling runs at full speed. */
+export interface EdgeBand {
+  readonly sides: number;
+  readonly top: number;
+  readonly bottom: number;
+}
+
 /** Centralized camera tuning: no scattered magic numbers. */
 export const CAMERA_CONFIG = {
-  /** Distance from the left/right/bottom edge (px) at which edge scrolling runs at full speed. */
-  edgeZone: 18,
   /**
-   * The top bar is 46 px tall and its buttons start at 10 px, so the top band stays narrower: a
-   * wider top zone would pan while the pointer is over the bar background on the way to a control.
+   * The side/bottom panels sit 18 px in (`--bar-gap`) so the band is clear. The top bar is 46–54 px
+   * tall and its controls start 8–10 px in, so the top band stays narrower.
    */
-  edgeZoneTop: 10,
+  edgeBand: { sides: 18, top: 10, bottom: 18 } satisfies EdgeBand,
   /** Delay before edge scrolling starts (s), so reaching a HUD panel does not pan by accident. */
   edgeDelay: 0.15,
   /** Time to reach full edge-scroll speed after the delay (s). */
@@ -74,9 +79,10 @@ export function edgeFactor(pos: number, min: number, max: number, zoneMin: numbe
  * Edge-scroll vector for a pointer at (px, py) inside `rect`: full speed inside the bands and
  * normalized so a corner is not faster than an edge.
  */
-export function edgeVector(px: number, py: number, rect: Rect, zone: number, topZone = zone, bottomZone = zone): Vec2 {
-  const fx = edgeFactor(px, rect.left, rect.right, zone);
-  const fy = edgeFactor(py, rect.top, rect.bottom, topZone, bottomZone);
+export function edgeVector(px: number, py: number, rect: Rect, band: number | EdgeBand): Vec2 {
+  const zones: EdgeBand = typeof band === 'number' ? { sides: band, top: band, bottom: band } : band;
+  const fx = edgeFactor(px, rect.left, rect.right, zones.sides);
+  const fy = edgeFactor(py, rect.top, rect.bottom, zones.top, zones.bottom);
   const len = Math.hypot(fx, fy);
   if (len < 1e-6) return { x: 0, y: 0 };
   const mag = Math.min(1, len);

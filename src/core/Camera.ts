@@ -262,7 +262,6 @@ export class RTSCamera {
 
   focusOn(x: number, z: number): void {
     this.moveTo(x, z);
-    if (this.followId !== null) this.followId = null;
   }
 
   follow(id: number | null): void {
@@ -316,23 +315,16 @@ export class RTSCamera {
     // HUD panel is drawn: real controls still block it through `pointerOverUi`, and the delay keeps a
     // pass-through on the way to a button from panning.
     const rect = this.canvas.getBoundingClientRect();
-    const ev = edgeVector(
-      this.lastMouseX,
-      this.lastMouseY,
-      rect,
-      CAMERA_CONFIG.edgeZone,
-      CAMERA_CONFIG.edgeZoneTop,
-      CAMERA_CONFIG.edgeZone,
-    );
+    const ev = edgeVector(this.lastMouseX, this.lastMouseY, rect, CAMERA_CONFIG.edgeBand);
     if (ev.x === 0 && ev.y === 0) {
       this.edgeHeldSeconds = 0;
       return;
     }
-    // Reaching the border is a manual pan: stop following the selected unit.
-    this.followId = null;
     this.edgeHeldSeconds += dt;
     const factor = edgeSpeedFactor(this.edgeHeldSeconds, CAMERA_CONFIG.edgeDelay, CAMERA_CONFIG.edgeRampTime);
     if (factor <= 0) return;
+    // The band actually moved the camera: a real pan, so stop following the selected unit.
+    this.followId = null;
     const w = rotateToWorld(ev.x, ev.y, this.yaw);
     const speed = this.zoom * CAMERA_CONFIG.edgeSpeed * this.speedScale * factor;
     this.desiredTarget.x += w.x * speed * dt;

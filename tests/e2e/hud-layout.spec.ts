@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { MISSIONS } from '../../src/campaign/defs/campaign';
+import { CAMERA_CONFIG } from '../../src/core/cameraMath';
 
 /**
  * Geometric check of the in-match HUD: the persistent panels must never cover each other at the
@@ -221,6 +222,28 @@ function violations(state: State): string[] {
   return found;
 }
 
+/** Side/bottom panels must leave the camera's edge-scroll band clickable. */
+function bandViolations(state: State, width: number, height: number): string[] {
+  const gap = CAMERA_CONFIG.edgeBand.sides;
+  const found: string[] = [];
+  for (const id of [
+    'ed-bottom',
+    'ed-minimap-wrap',
+    'ed-objectives',
+    'ed-tutorial',
+    'ed-help',
+    'ed-help-open',
+    'ed-dialogue',
+  ]) {
+    const box = state[id];
+    if (!box) continue;
+    if (box.x < gap - 1) found.push(`${id} starts at x=${box.x}`);
+    if (box.x + box.w > width - gap + 1) found.push(`${id} ends at x=${box.x + box.w}`);
+    if (box.y + box.h > height - gap + 1) found.push(`${id} ends at y=${box.y + box.h}`);
+  }
+  return found;
+}
+
 /** The objectives panel must end above the command bar. */
 function objectivesFit(state: State): string[] {
   const found: string[] = [];
@@ -287,6 +310,15 @@ for (const { width, height, missions } of RESOLUTIONS) {
         expect(violations(snap.helpOpen), 'shortcuts open over a long objective list').toEqual([]);
         expect(objectivesFit(snap.archive), 'expanded objectives reach the command bar').toEqual([]);
         expect(objectivesFit(snap.helpOpen), 'objectives reach the command bar with the shortcuts open').toEqual([]);
+
+        for (const [label, state] of [
+          ['start', snap.initial],
+          ['dialogue', snap.dialogue],
+          ['build', snap.build],
+          ['shortcuts open', snap.helpOpen],
+        ] as const) {
+          expect(bandViolations(state, width, height), `edge band clear (${label})`).toEqual([]);
+        }
 
         // The real Act IV goal stays wholly visible, even with the archive open.
         const fit = await page.evaluate(() => {
