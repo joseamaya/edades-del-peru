@@ -140,13 +140,6 @@ export class UnitView {
         tint(name, dark);
       }
     }
-    if (commander.id === 'manco_capac') {
-      // The audit asks for 6.5–7 heads and slightly larger head/hands; the shared body is ~8 heads.
-      for (const name of ['Head', 'hand_l', 'hand_r']) {
-        const bone = tools.bone(name);
-        if (bone) bone.scale.multiplyScalar(1.12);
-      }
-    }
     const head = tools.bone('Head');
     if (head) {
       const pieces: [THREE.BufferGeometry, THREE.Color][] = [];

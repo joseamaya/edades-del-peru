@@ -412,6 +412,9 @@ export class Terrain {
       splatMap: { value: this.splatTexture },
       flatNormals: { value: style?.flatNormals ? 1 : 0 },
       terrainDetail: { value: 1 },
+      macroBlend: { value: this.palette.macro?.blend ?? 0.65 },
+      macroAo: { value: this.palette.macro?.ao ?? 0.7 },
+      groundContrast: { value: this.palette.macro?.contrast ?? 1.12 },
       waterLevel: { value: waterLevel },
       time: { value: 0 },
       sunDir: { value: new THREE.Vector3(0.5, 0.8, 0.4).normalize() },
@@ -481,6 +484,9 @@ export class Terrain {
         uniform sampler2D splatMap;
         uniform float flatNormals;
         uniform float terrainDetail;
+        uniform float macroBlend;
+        uniform float macroAo;
+        uniform float groundContrast;
         uniform float waterLevel;
         uniform vec3 sunDir;
         uniform vec3 sunColor;
@@ -658,9 +664,11 @@ ${FOW_DIM_GLSL}
               snowFarTex.rgb * snowTint * snowWeight;
             aoFar = grassFarTex.a * grassWeight + dirtFarTex.a * dirtWeight + sandFarTex.a * sandWeight + rockFarTex.a * rockWeight + snowFarTex.a * snowWeight;
           }
-          vec3 ground = mix(groundNear, groundFar, macro * 0.65 * terrainDetail);
-          ground *= mix(1.0, mix(aoNear, aoFar, macro * 0.65 * terrainDetail), 0.7);
-          ground = (ground - 0.5) * 1.12 + 0.5; // contrast
+          // Keep the macro mask for tiling breakup, but soften its large light/dark blotches: at
+          // 1920x1080 the high-contrast near/far AO blend read as turf patches on the hamlet slope.
+          vec3 ground = mix(groundNear, groundFar, macro * macroBlend * terrainDetail);
+          ground *= mix(1.0, mix(aoNear, aoFar, macro * macroBlend * terrainDetail), macroAo);
+          ground = (ground - 0.5) * groundContrast + 0.5;
           col = mix(col, ground, textureMix);
           col *= groundTint;
           col = mix(col, col * vec3(0.55, 0.52, 0.45), shore * 0.6);

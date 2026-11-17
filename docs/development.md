@@ -421,6 +421,10 @@ Definition of Done and the building audit see
   `{key:buildFarm}` from `settings.hotkeys` instead of literal V/G. The field-card delivery button uses
   `SelectionController.deliveryGate` (a worker near the site and enough stock) and is disabled with the amount and
   the reason appended when it cannot run.
+- **Hero model chain**: `yarn models:hero` builds the male-only base hero, runs
+  `scripts/blender/build_tambotoco_hero_sculpt.py` to bake the head/hand proportions and shoulder/waist taper,
+  then meshopt-encodes with `simplify_caral_worker.mjs --hero` (which keeps the longer tunic). Blender is a
+  local authoring tool, not a CI dependency; the GLB is committed.
 - **Mission camera cues**: the `camera` trigger effect accepts optional `zoom`/`seconds`; a zoomed cue calls
   `Camera.flyTo(..., holdClock=false)`, so it frames a place without stalling the mission clock. Only the
   opening flight (`playIntro`) keeps `holdClock` true. The RTS camera looks at sea level, so `Mission` aims a

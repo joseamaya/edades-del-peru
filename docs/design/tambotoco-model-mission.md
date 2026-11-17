@@ -225,6 +225,8 @@ dialogue.
 
 - E6 reference set: `docs/media/tambotoco-e6-{hualla,acequia,inticancha}-{before,after,final}.webp` (960×540;
   approved 2026-11-17).
+- E7 production pass: `docs/media/tambotoco-e7-*` and `yarn record --mission=m_tambotoco --mode=full --speed=3`
+  (`review/`; the 3X recording is the review artifact).
 - `node scripts/shots_evidence.mjs --scene=tambotoco-cave` → `docs/media/tambotoco-cave.webp`: the cave
   with fog on, at the opening hold.
 - `node scripts/shots_evidence.mjs --scene=tambotoco-heroes` → `docs/media/tambotoco-heroes.webp` (close)
@@ -260,19 +262,18 @@ The 2026-11-16 kit pass is the baseline; the next pass is the art-direction pilo
 palette (E1), architecture finish with contact AO/macro colour and battered walls (E2a), cave and Huanacaure
 huaca GLBs with a procedural fallback (E2b), highland molle/pacay kit and an ichu ground-cover stand (E3a) and an opt-in Tambotoco
 hero variant (E4) and the presentation pass (E5). The pilot runs E0–E6 and does not rebuild the mission, its
-layout or its economy; the E6 reference captures were approved on 2026-11-17. Production (E7) is a separate
-decision.
+layout or its economy; the E6 reference captures were approved on 2026-11-17. The E7 production pass was delivered on 2026-11-17 (baked hero proportions, `cusco_valley`-scoped terrain
+macro, Inticancha yard and Huanacaure offerings).
 
 ## Open items
 
-1. Performance (measured 2026-11-17; E5 numbers): software (SwiftShader) measures **425,324 triangles /
-   273 draw calls** at the opening (the E4b sample read 425,052/268 on the same scene; the animated
-   shadow-frustum edge moves 272 tris / 5 calls) and **633,330 / 356** on the founded Inticancha (vegetation kit 9,352/9 and
+1. Performance (measured 2026-11-17; E7 numbers): software (SwiftShader) measures **425,328 triangles /
+   269 draw calls** at the opening and **634,134 / 357** on the founded Inticancha (vegetation kit 9,352/9 and
    34,306/12); the pre-E1 baseline was 436,880 / 265 and 608,324 / 347, E1 measured 437,976 / 264 and
    614,594 / 357, E2a 438,856 / 269 and 615,532 / 354, and E2b 430,488 / 269 and 613,692 / 354. E3b hardware
-   (`--gpu`, Intel RPL-S iGPU, high) measures **450,654 / 269** opening and **659,158 / 359** late in frames mode
-   (the scene pass; the complete render adds the shadow/refraction passes; structural late 633,330 / 356).
-   Frame time at high quality with post-processing on: **36 FPS** opening and **34 FPS** late (27.8 / 29.4 ms p50; iGPU run variance, the scene counts are identical to E4b).
+   (`--gpu`, Intel RPL-S iGPU, high) measures **450,930 / 270** opening and **659,962 / 360** late in frames mode
+   (the scene pass; the late frames rides the call cap; structural late 634,134 / 357).
+   Frame time at high quality with post-processing on: **39 FPS** opening and **33 FPS** late (25.6 / 30.1 ms p50).
    The opening cap is now **500k / 280** (ratcheted from 600k/340); the late cap stays
    **660k / 360** and is met without raising it. The pass batched every entity contact shadow into one
    instanced draw, merged the site by surface family per phase (instead of one mesh for the whole 256 m

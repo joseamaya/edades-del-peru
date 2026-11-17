@@ -6,7 +6,7 @@ import { cliArg, launchChromium, reviewDir, withViteServer, waitForHighlandKits 
  * Art-direction pilot captures for `m_tambotoco` (docs/design/tambotoco-art-pilot.md).
  * Usage: node scripts/capture_art_pilot.mjs [--tag=before|after] [--quality=neutral|final]
  *        [--sizes=1280x720,1600x900,1920x1080]
- *        [--views=cave,shrine,hualla,acequia,ford,bank,path,inticancha,built,close,wide,hero,hero54]
+ *        [--views=cave,shrine,shrineClose,hualla,acequia,ford,bank,path,inticancha,inticanchaClose,built,close,trees,wide,hero,hero54]
  *
  * `neutral` isolates materials and silhouettes (post-processing off); `final` is the player-facing
  * look (post-processing and the player's quality preset). Fog of war is off in both so the scene is
@@ -36,12 +36,14 @@ const sizes = cliArg('sizes', '1280x720,1600x900,1920x1080')
 const VIEWS = {
   cave: { x: 40, z: 55, h: 24 },
   shrine: { x: 120, z: 106, h: 40 },
+  shrineClose: { x: 120, z: 108, h: 30 },
   hualla: { x: 144, z: 170, h: 50 },
   acequia: { x: 166, z: 178, h: 36 },
   ford: { x: 153, z: 190, h: 40 },
   bank: { x: 152, z: 210, h: 10 },
   path: { x: 52, z: 78, h: 10 },
   inticancha: { x: 168, z: 190, h: 38 },
+  inticanchaClose: { x: 162, z: 195, h: 28 },
   built: { x: 168, z: 190, h: 44, built: true },
   close: { x: 138, z: 163, h: 13 },
   trees: { x: 202, z: 228, h: 18 },
@@ -144,7 +146,9 @@ async function main() {
               const worker = [...g.units.values()].find(
                 (u) => u.owner === 0 && !u.dead && !u.tag && u.kind === 'worker',
               );
-              const c = g.findLandNear(138, 157, 12);
+              // South of the hualla, on the flat between the hamlet and its field: the new yard props no longer sit
+              // between the camera and the hero.
+              const c = g.findLandNear(138, 170, 12);
               const place = (u, dx, dz, rotY) => {
                 if (!u) return;
                 const x = c.x + dx;
@@ -166,6 +170,8 @@ async function main() {
               if (h) {
                 g.camera.moveTo(c.x, c.z, true);
                 g.camera.setHeight(h);
+                // The loop is stopped: snap the damped zoom/target so the strategic frame is the one rendered.
+                g.camera.update(10, 10);
               } else {
                 cam.position.set(c.x + 1.2, y + 2.2, c.z + 7.0);
                 cam.lookAt(c.x, y + 1.0, c.z);
