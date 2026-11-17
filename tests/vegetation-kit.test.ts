@@ -10,11 +10,13 @@ import {
   KIT_PROPS_ANDES,
   KIT_TREE_VARIANTS,
   KIT_TREE_VARIANTS_ANDES,
+  VEGETATION_PACKS,
   partsFromScene,
   type VegetationKitId,
 } from '../src/rendering/vegetationKit';
 import { KIT_LOD0_RADIUS, KIT_LOD0_RADIUS_LOW, kitLod0RadiusFor, kitLodFor } from '../src/rendering/TreeInstances';
 import { PROP_IDS } from '../src/model/defs/props';
+import type { VegetationPack } from '../src/model/defs/profiles';
 
 // Per-species LOD0/LOD1 triangle budgets, docs/design/art-direction.md §7.
 const BUDGETS: Record<VegetationKitId, [number, number]> = {
@@ -28,7 +30,7 @@ const BUDGETS: Record<VegetationKitId, [number, number]> = {
   pacay: [1100, 320],
   ichu: [220, 60],
 };
-/** Bark + leaf cards; the pacae/pacay add hanging pods. */
+/** Bark + leaf cards; only the Caral pacae adds hanging pods. */
 const MAX_PARTS: Partial<Record<VegetationKitId, number>> = { pacae: 3 };
 const CARAL_IDS: VegetationKitId[] = ['huarango', 'sauce', 'cana_brava', 'carrizo', 'totora', 'pacae'];
 const ANDES_IDS: VegetationKitId[] = ['molle', 'pacay', 'ichu'];
@@ -44,14 +46,14 @@ interface KitManifest {
   lods: Record<'LOD0' | 'LOD1', { file: string; triangles: number; draw_calls: number; bounds: { size: number[] } }>;
 }
 
-function manifest(id: VegetationKitId, pack: 'caral' | 'andes'): KitManifest {
+function manifest(id: VegetationKitId, pack: VegetationPack): KitManifest {
   const file = path.resolve(
     `art-src/blender/exports/${pack === 'caral' ? 'caral/vegetation' : 'tambotoco/vegetation'}/${pack}_${id}_manifest.json`,
   );
   return JSON.parse(fs.readFileSync(file, 'utf8')) as KitManifest;
 }
 
-function glbUrl(id: VegetationKitId, lod: 0 | 1, pack: 'caral' | 'andes'): URL {
+function glbUrl(id: VegetationKitId, lod: 0 | 1, pack: VegetationPack): URL {
   return new URL(
     `../src/assets/vegetation/${pack === 'caral' ? 'caral' : 'andes'}/${pack}_${id}_lod${lod}.glb`,
     import.meta.url,
@@ -90,6 +92,31 @@ function triangles(parts: { geometry: THREE.BufferGeometry }[]): number {
   return parts.reduce((n, p) => n + (p.geometry.index?.count ?? p.geometry.getAttribute('position').count) / 3, 0);
 }
 
+/** Union bounds of a baked kit; both LODs share the pivot, so size and centre must nearly match. */
+function kitBounds(parts: { geometry: THREE.BufferGeometry }[]): THREE.Box3 {
+  const box = new THREE.Box3();
+  for (const part of parts) {
+    part.geometry.computeBoundingBox();
+    box.union(part.geometry.boundingBox!);
+  }
+  return box;
+}
+
+function expectStableFootprint(
+  near: { geometry: THREE.BufferGeometry }[],
+  far: { geometry: THREE.BufferGeometry }[],
+): void {
+  const a = kitBounds(near);
+  const b = kitBounds(far);
+  const sizeA = a.getSize(new THREE.Vector3());
+  const sizeB = b.getSize(new THREE.Vector3());
+  for (const axis of ['x', 'y', 'z'] as const) {
+    expect(Math.abs(sizeB[axis] - sizeA[axis]) / sizeA[axis]).toBeLessThan(0.2);
+  }
+  const drift = b.getCenter(new THREE.Vector3()).distanceTo(a.getCenter(new THREE.Vector3()));
+  expect(drift).toBeLessThan(Math.max(sizeA.x, sizeA.z) * 0.2);
+}
+
 describe('vegetation kit mapping', () => {
   it('draws the huarango (Prosopis) as the algarrobo tree and the riverbank willow as sauce', () => {
     expect(KIT_TREE_VARIANTS).toEqual({ algarrobo: 'huarango', sauce: 'sauce' });
@@ -97,6 +124,11 @@ describe('vegetation kit mapping', () => {
 
   it('draws the highland molle and pacay and keeps the shared willow', () => {
     expect(KIT_TREE_VARIANTS_ANDES).toEqual({ molle: 'molle', pacay: 'pacay', sauce: 'sauce' });
+  });
+
+  it('scopes the near-canopy shadow rule to the highland pack', () => {
+    expect(VEGETATION_PACKS.andes.nearLeafShadows).toBe(true);
+    expect(VEGETATION_PACKS.caral.nearLeafShadows).toBe(false);
   });
 
   it('only maps known props', () => {
@@ -146,21 +178,7 @@ describe.each(CARAL_IDS)('%s kit GLB', (id) => {
   it('keeps the far LOD footprint close to the near one so the swap does not pop', () => {
     // Clumps legitimately thin out at LOD1; trees and the pacae shrub keep their silhouette.
     if (!['huarango', 'sauce', 'pacae'].includes(id)) return;
-    const near = partsFromScene(lod0.scene);
-    const far = partsFromScene(lod1.scene);
-    const size = (parts: { geometry: THREE.BufferGeometry }[]): THREE.Vector3 => {
-      const box = new THREE.Box3();
-      for (const part of parts) {
-        part.geometry.computeBoundingBox();
-        box.union(part.geometry.boundingBox!);
-      }
-      return box.getSize(new THREE.Vector3());
-    };
-    const a = size(near);
-    const b = size(far);
-    for (const axis of ['x', 'y', 'z'] as const) {
-      expect(Math.abs(b[axis] - a[axis]) / a[axis]).toBeLessThan(0.2);
-    }
+    expectStableFootprint(partsFromScene(lod0.scene), partsFromScene(lod1.scene));
   });
 
   it('bakes into at most two parts per LOD within budget, at game scale', () => {
@@ -214,21 +232,7 @@ describe.each(ANDES_IDS)('%s andes kit GLB', (id) => {
 
   it('keeps the far LOD footprint close to the near one for trees', () => {
     if (id === 'ichu') return;
-    const near = partsFromScene(lod0.scene);
-    const far = partsFromScene(lod1.scene);
-    const size = (parts: { geometry: THREE.BufferGeometry }[]): THREE.Vector3 => {
-      const box = new THREE.Box3();
-      for (const part of parts) {
-        part.geometry.computeBoundingBox();
-        box.union(part.geometry.boundingBox!);
-      }
-      return box.getSize(new THREE.Vector3());
-    };
-    const a = size(near);
-    const b = size(far);
-    for (const axis of ['x', 'y', 'z'] as const) {
-      expect(Math.abs(b[axis] - a[axis]) / a[axis]).toBeLessThan(0.2);
-    }
+    expectStableFootprint(partsFromScene(lod0.scene), partsFromScene(lod1.scene));
   });
 
   it('bakes into at most three parts per LOD within budget, at game scale', () => {

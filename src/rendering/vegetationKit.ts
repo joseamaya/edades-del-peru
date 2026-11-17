@@ -21,7 +21,7 @@ import ichuLod1 from '../assets/vegetation/andes/andes_ichu_lod1.glb?url';
 import { loadStaticGltf } from './StaticModel';
 import { preserveAlphaCoverage } from './alphaCoverage';
 import { dequantize } from './mergeStatic';
-import type { GeographicRegion, TreeVariant } from '../model/defs/profiles';
+import type { GeographicRegion, TreeVariant, VegetationPack } from '../model/defs/profiles';
 import type { PropId } from '../model/defs/props';
 
 /**
@@ -33,7 +33,7 @@ export type VegetationKitId =
   'huarango' | 'sauce' | 'cana_brava' | 'carrizo' | 'totora' | 'pacae' | 'molle' | 'pacay' | 'ichu';
 
 /** A regional kit set; the mission chooses its pack explicitly (`MapOverrides.vegetationKit`). */
-export type VegetationPack = 'caral' | 'andes';
+export type { VegetationPack };
 
 const VEGETATION_KIT_URLS: Record<VegetationKitId, { lod0: string; lod1: string }> = {
   huarango: { lod0: huarangoLod0, lod1: huarangoLod1 },
@@ -78,6 +78,18 @@ export const KIT_PROPS: Partial<Record<PropId, VegetationKitId>> = {
 export const KIT_PROPS_ANDES: Partial<Record<PropId, VegetationKitId>> = {
   totora: 'totora',
   carrizo: 'carrizo',
+};
+
+export interface VegetationPackDef {
+  trees: Partial<Record<TreeVariant, VegetationKitId>>;
+  props: Partial<Record<PropId, VegetationKitId>>;
+  /** Dense pack: only the near leaf cards cast, keeping the shared shadow pass inside its cap. */
+  nearLeafShadows: boolean;
+}
+
+export const VEGETATION_PACKS: Record<VegetationPack, VegetationPackDef> = {
+  caral: { trees: KIT_TREE_VARIANTS, props: KIT_PROPS, nearLeafShadows: false },
+  andes: { trees: KIT_TREE_VARIANTS_ANDES, props: KIT_PROPS_ANDES, nearLeafShadows: true },
 };
 
 export interface KitPart {

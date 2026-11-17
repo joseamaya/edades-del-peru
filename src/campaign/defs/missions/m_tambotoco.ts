@@ -54,12 +54,12 @@ export const mTambotoco: MissionDef = {
   mapOverrides: {
     culturalLandscape: TAMBOTOCO_LANDSCAPE,
     // Tambotoco is a highland valley: the andes pack replaces the generic broad/needle trees with
-    // molle and pacay, keeps the riverbank willow and raises the puna ground cover.
+    // molle and pacay, keeps the riverbank willow and shifts the puna mix towards ichu at the E2b budget.
     vegetationKit: 'andes',
     vegetation: {
       density: 0.22,
-      groundCover: 0.7,
-      groundCoverWeights: { grass: 0.7, ichu: 1.6, fern: 0, pebble: 0.15, gravel: 0.15 },
+      groundCover: 0.2,
+      groundCoverWeights: { grass: 0.7, ichu: 1.6, pebble: 0.15, gravel: 0.15 },
       variants: { molle: 0.55, pacay: 0.25, sauce: 0.2, broad: 0, needle: 0 },
     },
     resources: { tree: 0.22 },

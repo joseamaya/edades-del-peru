@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import { cliArg, launchChromium, reviewDir, withViteServer } from './lib.mjs';
+import { cliArg, launchChromium, reviewDir, withViteServer, waitForHighlandKits } from './lib.mjs';
 
 /**
  * Art-direction pilot captures for `m_tambotoco` (docs/design/tambotoco-art-pilot.md).
@@ -97,16 +97,7 @@ async function main() {
           { timeout: 20_000 },
         )
         .catch(() => {});
-      await page
-        .waitForFunction(
-          () => {
-            const trees = window.game?.trees;
-            return !!trees?.hasKit?.('molle') && !!trees?.hasKit?.('pacay') && !!trees?.hasKit?.('sauce');
-          },
-          null,
-          { timeout: 20_000 },
-        )
-        .catch(() => {});
+      await waitForHighlandKits(page);
       await page.waitForTimeout(2600);
       await page.addStyleTag({ content: '#ui-root { display: none !important; }' });
 

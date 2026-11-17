@@ -48,7 +48,7 @@ Baseline: `a0352d5`, seed 777, 1600×900, `sitePhase=fundada`, acequia open, HUD
 | **Landscape** | Flat olive ground with visible tiling, teal water ribbon, identical low-poly trees, neon crop rows, scattered rocks. | No terrain layers, no vegetation groups, no atmospheric depth. The Caral vegetation kit is coastal and does not cover the highlands. | `cusco_valley` palette and layers; highland vegetation kit; clustered placement; water/path pass. |
 | **Light and materials** | Ambient-heavy, weak contact shadows, no ground shadows, flat stone and plaster. | The custom terrain `ShaderMaterial` declared `lights: false`, so the ground never received directional shadows (B11). Materials have micro-detail but no macro scale and little roughness break. | **B11 fixed in E1** (terrain samples the shadow map, low morning sun); vertex AO and macro maps still open. |
 | **Presentation** | The opening and act cards are in-engine but framed as aerial views; Inticancha reads as the same disc with more props. | No shot grammar; the foundation lacks a reward moment. | Re-frame the three beats; wide/detail/hero shots; foundation phase + camera + life. |
-| **Performance** | Pre-E1 baseline: 436,880/265 and 608,324/347. Caps: 500k/280 and 660k/360. E3a structural: **425,784 / 268** and **639,598 / 359** (kit 12,544/9 and 43,154/15). High-quality frames: 602,924/272 (32 FPS) and 817,022/366 (30 FPS); frames mode includes the post-processing/refraction passes, so the structural caps are the gate. `dist` is 23.22 / 25 MB. | Draw calls exceed the general ≤200 target; the late high frame is at the 30 FPS integrated target and the governor steps down. `dist` has 1.78 MB of headroom. | The andes kit adds 12.5k/43.2k kit triangles; the high-quality late frame is over the structural count in frames mode (not the structural gate). E3b–E4 must keep the governor, LOD radius and kit caps honest. Do not raise scene caps. |
+| **Performance** | Pre-E1 baseline: 436,880/265 and 608,324/347. Caps: 500k/280 and 660k/360. E3a structural: **425,066 / 271** and **634,794 / 356** (kit 11,554/7 and 38,350/12). High-quality frames: 475,434/270 (34 FPS) and 685,660/362 (33 FPS); frames mode includes the post-processing/refraction passes, so the structural caps are the gate. `dist` is 23.22 / 25 MB. | Draw calls exceed the general ≤200 target. High quality runs at 33 FPS late on the iGPU, so the governor steps down below its 45 FPS window; low/medium stay above 30. `dist` has 1.78 MB of headroom. | The andes kit adds 11.6k/38.4k kit triangles; the high-quality late frame is over the structural count in frames mode (not the structural gate). E3b–E4 must keep the governor, LOD radius and kit caps honest. Do not raise scene caps. |
 | **Documentation** | `art-direction.md` was Caral-first; `campaign-quality-bar.md` and `tambotoco-model-mission.md` gave different performance numbers; “Visuals: Met” certified presence, not quality. | No Tambotoco standard and no measurable visual gate. | This pilot, the rewritten art direction and the reconciled quality bar. |
 
 The 2026-11-16 kit pass was a real improvement: coursed stone, thatch houses, qollqas, terraced fields and a
@@ -174,8 +174,8 @@ The pilot is approved only when all of these are true:
 | Huts, qollqas, canchas, terraces, fields, plaza | Procedural `aylluKit` | Implemented | Existing scene caps | Material/geometry pass; keep the procedural fallback |
 | Cave mouth and rock ring | Blender GLB (E2b) | Implemented, procedural fallback | LOD0 1,802 / LOD1 342 | `tambotocoHeroKit` + `AylluSite`; source in `art-src` |
 | Huanacaure monolith | Blender GLB (E2b) | Implemented, procedural fallback | LOD0 288 / LOD1 104 | Tapered huaca with a carved niche; fallback kept |
-| Highland trees and shrubs | Blender vegetation kit | **Implemented (E3a)** | Molle 1.5k/400, pacay 1.1k/320, ichu 220/60 | Molle/pacay/sauce trees; ichu ground cover remains procedural; reeds shared |
-| Ground cover | Procedural | Partial | Existing | Add puna/ichu; keep the dry-puna trim |
+| Highland trees and shrubs | Blender vegetation kit | **Implemented (E3a)** | Molle 1.5k/400, pacay 1.1k/320, ichu 220/60 | Molle/pacay/sauce trees; ichu GLB built and budgeted but not attached; reeds shared |
+| Ground cover | Procedural | Partial | Existing | Ichu-heavy species mix on the E2b instance budget |
 | Rock outcrops | Blender prop kit | Partial (Caral granodiorite) | 300 / — | Build an andes stone kit; instance |
 | Water | `Water.ts` shader | Implemented | Existing | Cold palette, depth gradient, soft banks |
 | Paths | Terrain paint + stones | Implemented | Existing | Embedded stone, soft edges; remove the ladder look |
@@ -223,7 +223,7 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
    `src/rendering/rigAttire.ts`, `src/model/defs/commanders.ts`, `PROVENANCE.md`.
    Acceptance: Manco distinct at 54; ≤ 40 draws / 40k; other campaigns unchanged.
 4. **Highland vegetation kit.**
-   Files: `scripts/blender/build_highland_vegetation_kit.py`, `src/assets/vegetation/andes/*`,
+   Files: `scripts/blender/build_andes_vegetation_kit.py`, `src/assets/vegetation/andes/*`,
    `src/rendering/vegetationKit.ts`, `src/rendering/vegetationKitLoader.ts`,
    `src/rendering/TreeInstances.ts`, `src/rendering/Props.ts`, `src/model/defs/profiles.ts`.
    Acceptance: groups, LODs, wind, no invented species.
@@ -254,7 +254,7 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
 | **E0** | This document, `art-direction.md`, `capture_art_pilot.mjs`, baseline set, quality-bar reconciliation | **Done (2026-11-16):** docs links and baseline set |
 | **E1** | B11, palette, water, plaza | **Partial (2026-11-16):** shadows on ground, low morning sun, straw/stone palette, single-rim plaza, bench 437,976/264 and 614,594/357; macro/AO and ground cover move to E2–E3 |
 | **E2** | Architecture materials/geometry; hero GLB decision | **E2a done (2026-11-17):** AO/macro, battered walls, thatch eave, qollqa footing/vent; bench 438,856/269 and 615,532/354. Acceptance: no box read at 28/54; ≤4 materials per building. **E2b done (2026-11-17):** cave and huaca GLBs, fallback and LODs; bench 430,488/269 and 613,692/354 |
-| **E3** | Highland vegetation kit, rocks, paths | **E3a done (2026-11-17):** molle/pacay/ichu kit (1,362/360, 1,048/316, 144/42 tris), andes pack, 18 m LOD0 radius, robust ground cover; bench **425,784/268** and **639,598/359** (kit 12,544/9 and 43,154/15). Acceptance: no invented species (inferred, sourced), LOD1 footprint stable. **E3b pending:** water soft banks/ford, embedded-stone paths, rocks |
+| **E3** | Highland vegetation kit, rocks, paths | **E3a done (2026-11-17):** molle/pacay/ichu kit (1,362/360, 1,048/316, 144/42 tris), andes pack, 18 m LOD0 radius, ichu-heavy ground-cover mix at the E2b budget; bench **425,066/271** and **634,794/356** (kit 11,554/7 and 38,350/12). Acceptance: no invented species (inferred, sourced), LOD1 footprint stable. **E3b pending:** water soft banks/ford, embedded-stone paths, rocks |
 | **E4** | Hero + common unit | Manco distinct at 54; budget; other campaigns unchanged |
 | **E5** | Cinematic beats and foundation | Shot grammar; no new system |
 | **E6** | 3 × 3 validation, bench, provenance, docs, review | `yarn verify:fast`, `bench:check`, `art:validate`, `dist:check`, human approval |
@@ -309,11 +309,11 @@ Recorded 2026-11-16:
 | 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e2b-late-frames.json` | Late: **34 FPS** (29.2 ms p50), **656,940 / 360** (at the cap) |
 | 2026-11-17 | `blender --background --python scripts/blender/build_andes_vegetation_kit.py` | Molle LOD0 1,362 / 360 tris, pacay 1,048 / 316, ichu 144 / 42; manifests in `art-src/blender/exports/tambotoco/vegetation/` |
 | 2026-11-17 | `yarn art:models --only=…andes…` | Six GLBs, **≈216 KB** total after meshopt |
-| 2026-11-17 | `yarn art:pilot --tag=e3a6 --quality=neutral --sizes=1600x900 --views=wide,trees,hualla` | E3a PNGs; published as `docs/media/tambotoco-e3a-{wide-before,wide-after,trees-after}.webp` |
-| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --assert --out=review/bench-scene-tambotoco-e3a-final.json` | Opening **425,784 tris / 268 calls** (cap 500k/280); kit 12,544/9 |
-| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --assert --out=review/bench-scene-tambotoco-e3a-late-final.json` | Founded Inticancha **639,598 tris / 359 calls** (cap 660k/360); kit 43,154/15 |
-| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e3a-frames3.json` | Intel RPL-S iGPU, high: **32 FPS** opening (30.8 ms p50); frames mode 602,924 / 272 |
-| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e3a-late-frames3.json` | Late: **30 FPS** (33.8 ms p50); frames mode 817,022 / 366 |
+| 2026-11-17 | `yarn art:pilot --tag=e3a7 --quality=neutral --sizes=1600x900 --views=wide,trees,hualla` | E3a PNGs; published as `docs/media/tambotoco-e3a-{wide,trees}-{before,after}.webp` |
+| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --assert --out=review/bench-scene-tambotoco-e3a-final.json` | Opening **425,066 tris / 271 calls** (cap 500k/280); kit 11,554/7 |
+| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --assert --out=review/bench-scene-tambotoco-e3a-late-final.json` | Founded Inticancha **634,794 tris / 356 calls** (cap 660k/360); kit 38,350/12 |
+| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e3a-frames3.json` | Intel RPL-S iGPU, high: **34 FPS** opening (29.8 ms p50); frames mode 475,434 / 270 |
+| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e3a-late-frames3.json` | Late: **33 FPS** (30.2 ms p50); frames mode 685,660 / 362 |
 | pending | `yarn art:pilot --tag=after --quality=neutral --sizes=1280x720,1600x900,1920x1080` | E6 evidence |
 | pending | `yarn art:pilot --tag=after --quality=final --sizes=1280x720,1600x900,1920x1080` | E6 evidence |
 

@@ -286,8 +286,8 @@ Targets for the default view at 1600×900:
 `scripts/bench_scene.mjs` are **500k triangles / 280 draw calls** at the opening and **660k / 360** in the
 late founded settlement. The pilot must stay inside them. Prefer a neutral pass; a measured increase is
 acceptable only when it buys a visible improvement and the frame-time target still holds. E3a: opening
-**425,784 / 268** (vegetation kit 12,544/9) and late **639,598 / 359** structural (kit 43,154/15);
-**32 / 30 FPS** at high quality on the integrated GPU, frames mode over the structural count late because it
+**425,066 / 271** (vegetation kit 11,554/7) and late **634,794 / 356** structural (kit 38,350/12);
+**34 / 33 FPS** at high quality on the integrated GPU, frames mode over the structural count late because it
 includes the post-processing/refraction passes. Do not raise a cap to hide a regression.
 
 Asset budgets:
@@ -309,6 +309,8 @@ Implementation rules:
 - Shadow casters are limited to the silhouette; tiny eyes, crops, people and flat paving do not cast.
 - `yarn bench:check` keeps the structural budgets; `bench_scene.mjs --mission=m_tambotoco --assert` is the
   scene gate. New categories are added when a kit lands.
+- The structural bench runs on SwiftShader, which disables ground cover; `--gpu --frames` is the runtime
+  check that includes ground cover, post-processing and refraction. Read both before claiming a cap is met.
 - `yarn dist:check` keeps `dist/` under 25 MB and the entry chunk under 600 KB gzip. New assets need a size
   ledger with offsets, not just an addition.
 

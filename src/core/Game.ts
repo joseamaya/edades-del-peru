@@ -86,6 +86,7 @@ import {
   resolveMapProfile,
   type HistoricalMapProfile,
   type GeographicRegion,
+  type VegetationPack,
 } from '../model/defs/profiles';
 import { resolveColorGrade } from '../model/defs/grades';
 import type { SettlementPlan } from '../model/defs/settlementPlan';
@@ -333,6 +334,14 @@ export class Game {
   private readonly forceCinematic: boolean;
   /** True when the renderer is a software rasterizer (safe profile applied). */
   private softwareFallback = false;
+  /** Regional vegetation pack of the current map; drives the kit LOD radius. */
+  private vegetationPack: VegetationPack | null = null;
+
+  /** LOD0 radius for a quality preset; a dense pack keeps its shorter radius through governor steps. */
+  kitLod0RadiusFor(quality: GameSettings['quality']): number {
+    if (this.vegetationPack === 'andes') return KIT_LOD0_RADIUS_ANDES;
+    return kitLod0RadiusFor(quality === 'low' || this.usesSoftwareRenderer);
+  }
 
   /** True when the renderer fell back to the software-safe profile. */
   get usesSoftwareRenderer(): boolean {
@@ -630,11 +639,9 @@ export class Game {
       }
     }
     if (!this.headless) {
-      const vegetationPack =
-        this.mapProfile.vegetationKit ?? (isCoastalRegion(this.mapProfile.region) ? 'caral' : null);
-      const lowQuality = this.softwareFallback || this.settings.quality === 'low';
-      this.trees.kitLod0Radius = vegetationPack === 'andes' ? KIT_LOD0_RADIUS_ANDES : kitLod0RadiusFor(lowQuality);
-      void attachVegetationKit(this.trees, this.props, vegetationPack);
+      this.vegetationPack = this.mapProfile.vegetationKit ?? (isCoastalRegion(this.mapProfile.region) ? 'caral' : null);
+      this.trees.kitLod0Radius = this.kitLod0RadiusFor(this.settings.quality);
+      void attachVegetationKit(this.trees, this.props, this.vegetationPack);
     }
     this.wildlife = new Wildlife(this.scene);
     this.fow = new Fow(s.mapSize, 128);

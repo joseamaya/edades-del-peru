@@ -167,9 +167,11 @@ slot is absent (offline / without assets).
 - **Content**: project-owned procedural geometry and a generated leaf-cluster atlas; no third-party scans
   or textures. Molle LOD0 1,362 / LOD1 360 triangles; pacay 1,048 / 316; ichu 144 / 42. Total game copies
   ≈216 KB.
-- **Confidence**: **inferred**. Molle (_Schinus molle_), pacay (_Inga feuillei_) and ichu are plausible
-  Andean-valley species; their exact forms, leaf atlas and placement are a game reconstruction, not a
-  botanical survey or a documented individual.
+- **Confidence**: **inferred**. The species set comes from the pilot's plausible highland list
+  (`docs/design/tambotoco-art-pilot.md` §3) and the puna context in `docs/historia/mapas.md` (ichu);
+  no period source names molle or pacay for this valley. Molle (_Schinus molle_), pacay (_Inga feuillei_)
+  and ichu are real Andean species; their exact forms, leaf atlas and placement are a game reconstruction,
+  not a botanical survey or a documented individual.
 - **Runtime**: `MapOverrides.vegetationKit: 'andes'` in `m_tambotoco` selects the highland tree set
   (`molle`, `pacay`, and the shared Caral willow for `sauce`); the loader is `vegetationKitLoader.ts`.
   The ichu GLB is built and budget-verified, but the visible ground cover still uses the procedural
@@ -185,12 +187,14 @@ slot is absent (offline / without assets).
 ### Tambotoco E3a highland vegetation captures (in-engine evidence)
 
 - **Location**: `docs/media/tambotoco-e3a-wide-{before,after}.webp` and
-  `docs/media/tambotoco-e3a-trees-after.webp`, 960x540 WebP q58, ~70 KB.
+  `docs/media/tambotoco-e3a-trees-{before,after}.webp`, 960x540 WebP q58, ~88 KB.
 - **Source**: captured from the game by `scripts/capture_art_pilot.mjs` at 1600x900, seed 777, HUD hidden,
-  site at `fundada`, fog of war off. The `before` wide is the E2b scene; the `after` is the andes kit.
-  Regenerate with `yarn art:pilot --tag=e3a6 --quality=neutral --sizes=1600x900 --views=wide,trees,hualla`.
+  site at `fundada`, fog of war off. `before` is the E2b scene at `ae9e489`; `after` is the andes kit.
+  Regenerate the after set with
+  `yarn art:pilot --tag=e3a7 --quality=neutral --sizes=1600x900 --views=wide,trees,hualla`; the before
+  trees use the same view and script checked out at `ae9e489`.
 - **Content**: in-engine shots of the game's own scene. The highland tree kit is project-owned and
-  `confidence: inferred`; the ichu ground cover is procedural.
+  `confidence: inferred`; the ichu ground cover is the procedural instancer at the E2b budget.
 - **Review**: no human art-review gate applies to in-engine captures; the kit is reviewed through this PR.
 
 ### Caral fauna kit (deer, riparian bird)

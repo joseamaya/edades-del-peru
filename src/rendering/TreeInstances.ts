@@ -10,8 +10,6 @@ export type { TreeVariant };
 
 const MAX = 700;
 const VARIANTS: TreeVariant[] = ['broad', 'needle', 'frond', 'algarrobo', 'molle', 'sauce', 'pacay'];
-/** Kits whose near canopy is the only shadow caster (dense pack, shared scene cap). */
-const HIGHLAND_KIT_IDS: ReadonlySet<KitModel['id']> = new Set(['molle', 'pacay', 'ichu']);
 const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
 const _m = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
@@ -328,16 +326,16 @@ export class TreeInstances {
    * Draw `variant` with a Blender kit model instead of the procedural trunk and cards. Instances
    * are packed every update (only visible trees are drawn) and split by distance into LOD0/LOD1.
    */
-  attachKit(variant: TreeVariant, model: KitModel): void {
+  attachKit(variant: TreeVariant, model: KitModel, nearLeafShadows = false): void {
     // Kit models are session-cached by the loader; the instancer only owns its meshes.
     if (this.disposed || this.kits.has(variant)) return;
     const meshes = model.lods.map((parts, lod) =>
       parts.map((part) => {
         const mesh = new THREE.InstancedMesh(part.geometry, part.material, MAX);
         mesh.count = 0;
-        // The highland pack is denser; only its near leaf cards cast. That keeps the shadow pass
-        // inside the scene cap while the canopy still anchors each tree. Caral kits are unchanged.
-        mesh.castShadow = HIGHLAND_KIT_IDS.has(model.id) ? part.leaf && lod === 0 : true;
+        // A dense pack casts from its near canopy only: the far LOD and the trunks were most of the
+        // added shadow cost, and the canopy still anchors each tree. Sparse packs keep every caster.
+        mesh.castShadow = nearLeafShadows ? part.leaf && lod === 0 : true;
         mesh.receiveShadow = !part.leaf;
         mesh.frustumCulled = false;
         mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);

@@ -38,7 +38,6 @@ CONFIDENCE = {'molle': 'inferred', 'pacay': 'inferred', 'ichu': 'inferred'}
 SOURCES = [
     'docs/design/tambotoco-art-pilot.md',
     'docs/historia/mapas.md',
-    'docs/historia/arquitectura.md',
 ]
 
 
@@ -49,23 +48,14 @@ def parse_args():
     return parser.parse_args(argv)
 
 
-def srgb_linear(value):
-    raw = value.lstrip('#')
-    out = []
-    for i in (0, 2, 4):
-        c = int(raw[i : i + 2], 16) / 255
-        out.append(c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4)
-    return tuple(out)
-
-
 def build_materials():
     molle_tex = caral.leaf_texture('TEX-Andes_MolleLeaf', 256, 30, 1.8, 0.5, 21)
     pacay_tex = caral.leaf_texture('TEX-Andes_PacayLeaf', 256, 18, 2.1, 0.5, 22)
     return {
-        'bark': caral.mat_basic('MAT-Andes_Bark', srgb_linear('#5a4a38'), 0.95),
-        'molle_leaf': caral.mat_cards('MAT-Andes_MolleLeaf', srgb_linear('#8a9a58'), molle_tex),
-        'pacay_leaf': caral.mat_cards('MAT-Andes_PacayLeaf', srgb_linear('#7f9a4a'), pacay_tex),
-        'ichu': caral.mat_basic('MAT-Andes_Ichu', srgb_linear('#b9a96a'), 0.9),
+        'bark': caral.mat_basic('MAT-Andes_Bark', slice_kit.hex_rgb('#5a4a38'), 0.95),
+        'molle_leaf': caral.mat_cards('MAT-Andes_MolleLeaf', slice_kit.hex_rgb('#8a9a58'), molle_tex),
+        'pacay_leaf': caral.mat_cards('MAT-Andes_PacayLeaf', slice_kit.hex_rgb('#7f9a4a'), pacay_tex),
+        'ichu': caral.mat_basic('MAT-Andes_Ichu', slice_kit.hex_rgb('#b9a96a'), 0.9),
     }
 
 
@@ -103,7 +93,7 @@ def pacay(mats, lod):
     """Pacay: multi-stemmed valley tree with a broad crown and hanging pods (~3 people)."""
     rng = random.Random(22)
     kit = slice_kit.new_kit()
-    stems = 3 if lod == 0 else 3
+    stems = 3
     tips = []
     for k in range(stems):
         ang = k / stems * math.tau + rng.uniform(-0.25, 0.25)
@@ -115,7 +105,7 @@ def pacay(mats, lod):
         for side in (-1, 1):
             ang2 = ang + side * rng.uniform(0.5, 0.9)
             branch = tip + Vector((math.cos(ang2) * 1.3, math.sin(ang2) * 1.3, 1.1))
-            slice_kit.ktube(kit, [tuple(tip), tuple(branch)] if lod == 0 else [tuple(tip), tuple(branch)], 0.06, 0.025, 4, 0)
+            slice_kit.ktube(kit, [tuple(tip), tuple(branch)], 0.06, 0.025, 4, 0)
             tips.append(branch)
     blobs = []
     for tip in tips:

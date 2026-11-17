@@ -1,8 +1,8 @@
 import { RNG, weightedPick } from '../../util/rng';
-import type { GeographicRegion, HistoricalMapProfile } from './profiles';
+import type { GeographicRegion, GroundCoverSpecies, HistoricalMapProfile } from './profiles';
 
 /** Low ground cover species; all are historical Andean/coastal/Amazonian ground flora or gravel. */
-export type GroundCoverSpecies = 'grass' | 'ichu' | 'fern' | 'pebble' | 'gravel';
+export type { GroundCoverSpecies };
 
 export const GROUND_COVER_SPECIES: readonly GroundCoverSpecies[] = ['grass', 'ichu', 'fern', 'pebble', 'gravel'];
 

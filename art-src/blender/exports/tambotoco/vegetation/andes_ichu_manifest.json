@@ -10,8 +10,7 @@
   "confidence": "inferred",
   "sources": [
     "docs/design/tambotoco-art-pilot.md",
-    "docs/historia/mapas.md",
-    "docs/historia/arquitectura.md"
+    "docs/historia/mapas.md"
   ],
   "budget": {
     "LOD0": 220,

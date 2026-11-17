@@ -17,8 +17,11 @@ export type SoilKind = 'sandy' | 'loam' | 'clay' | 'peaty' | 'rocky';
 /** Tree/foliage variant (shared with the instancing manager). */
 export type TreeVariant = 'broad' | 'needle' | 'frond' | 'algarrobo' | 'molle' | 'sauce' | 'pacay';
 
-/** Low ground-cover species; kept in sync with `model/defs/groundCover.ts`. */
-export type GroundCoverWeightId = 'grass' | 'ichu' | 'fern' | 'pebble' | 'gravel';
+/** Low ground-cover species; the authoritative list is `GROUND_COVER_SPECIES` in `groundCover.ts`. */
+export type GroundCoverSpecies = 'grass' | 'ichu' | 'fern' | 'pebble' | 'gravel';
+
+/** Regional Blender vegetation pack; the mission chooses one explicitly. */
+export type VegetationPack = 'caral' | 'andes';
 
 /** Documented fruit shrub that replaces the generic berry bush on authored scenarios. */
 export type BerryShrubId = 'pacae';
@@ -107,10 +110,10 @@ export interface HistoricalMapProfile {
     /** Optional multiplier on the low ground-cover budget (0 = none; default 1). */
     groundCover?: number;
     /** Mission-scoped species mix on top of the regional weights. */
-    groundCoverWeights?: Partial<Record<GroundCoverWeightId, number>>;
+    groundCoverWeights?: Partial<Record<GroundCoverSpecies, number>>;
   };
   /** Regional Blender vegetation pack; omitted derives it from `region`. */
-  vegetationKit?: 'caral' | 'andes';
+  vegetationKit?: VegetationPack;
   /** A documented fruit shrub for the food nodes; omitted keeps the generic berry bush. */
   berryShrub?: BerryShrubId;
   /** A Blender kit outcrop for stone nodes; omitted keeps the procedural quarry. */
