@@ -10,7 +10,9 @@ import { cliArg, launchChromium, reviewDir, withViteServer, waitForHighlandKits 
  *
  * `neutral` isolates materials and silhouettes (post-processing off); `final` is the player-facing
  * look (post-processing and the player's quality preset). Fog of war is off in both so the scene is
- * visible; exploration is covered by the mission evidence captures. Every scene view uses seed 777,
+ * visible; exploration is covered by the mission evidence captures. Every scene view uses seed 777 and
+ * aims at the ground under the authored point (the RTS camera looks at sea level, so an elevated site
+ * would otherwise sit at the top edge),
  * the site at `fundada`, the acequia open and the HUD hidden, so two runs differ only in the code.
  * The `hero` view stages Ayar Manco and a worker at the hualla hamlet for a close presentation
  * check; it is captured last because it stops the simulation loop.
@@ -34,12 +36,12 @@ const sizes = cliArg('sizes', '1280x720,1600x900,1920x1080')
 const VIEWS = {
   cave: { x: 40, z: 55, h: 24 },
   shrine: { x: 120, z: 106, h: 40 },
-  hualla: { x: 136, z: 166, h: 24 },
-  acequia: { x: 166, z: 178, h: 30 },
+  hualla: { x: 144, z: 170, h: 50 },
+  acequia: { x: 166, z: 178, h: 36 },
   ford: { x: 153, z: 190, h: 40 },
   bank: { x: 152, z: 210, h: 10 },
   path: { x: 52, z: 78, h: 10 },
-  inticancha: { x: 168, z: 190, h: 34 },
+  inticancha: { x: 168, z: 190, h: 38 },
   built: { x: 168, z: 190, h: 44, built: true },
   close: { x: 138, z: 163, h: 13 },
   trees: { x: 202, z: 228, h: 18 },
@@ -177,8 +179,11 @@ async function main() {
         } else {
           await page.evaluate(({ x, z, h }) => {
             const g = window.game;
+            // The RTS camera looks at sea level; aim `ground / tan(pitch)` short of the authored point so
+            // the elevated hamlet/settlement is framed instead of sitting at the top edge.
+            const ground = g.terrain.getHeight(x, z);
             g.camera.follow(null);
-            g.camera.moveTo(x, z, true);
+            g.camera.moveTo(x, z - ground / Math.tan(0.9), true);
             g.camera.setHeight(h);
           }, view);
         }

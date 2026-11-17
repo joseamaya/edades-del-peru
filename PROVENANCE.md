@@ -438,6 +438,29 @@ slot is absent (offline / without assets).
   and the huaca are abstractions, never historical photographs.
 - **Review**: no human art-review gate applies to in-engine captures; the ayllu site is procedural.
 
+### Tambotoco E6 reference captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e6-{hualla,acequia,inticancha}-{before,after,final}.webp` (960x540 WebP
+  q58; nine files, ~215 KB in total) and `docs/media/tambotoco-e6-3x3-{before,after,final}.webp` (the 3 x 3
+  review sheets at 1920x1182 WebP q62, ~398 KB).
+- **Source**: captured from the game by the art-pilot harness on the three approved cameras
+  (`hualla`, `acequia`, `inticancha`) at 1280x720, 1600x900 and 1920x1080:
+  `yarn art:pilot --tag=e6 --quality=neutral --sizes=1280x720,1600x900,1920x1080 --views=hualla,acequia,inticancha`
+  and the same with `--quality=final`. The `before` set uses the same harness copied into a worktree at
+  `a0352d5` (the harness itself postdates the baseline; only the script is copied, because that commit has no
+  `art:pilot` package entry) with
+  `node scripts/capture_art_pilot.mjs --tag=e6-before --quality=neutral --sizes=1280x720,1600x900,1920x1080 --views=hualla,acequia,inticancha`.
+  `node scripts/publish_tambotoco_e6.mjs` resizes the 1600x900 representatives of each camera and quality to
+  960x540, and `node scripts/compare_tambotoco_e6.mjs` composes the 3 x 3 sheets; the full set was reviewed as
+  `review/e6-{before-neutral,after-neutral,after-final}.webp`.
+  The harness aims at the ground under each authored point (`ground / tan(pitch)`), so before and after share
+  the exact cameras.
+- **Content**: project-owned in-engine renders of the authored Tambotoco terrain, the ayllu site and the
+  units. They are recreations of the game's own scenes: never historical photographs and not a claim that the
+  Ayar myth happened.
+- **Review**: the project owner approved the 3 x 3 set on 2026-11-17 after reviewing the before/after contact
+  sheets. No Blender review gate applies to in-engine captures; the ayllu site is procedural.
+
 ### Tambotoco ayllu kit captures (in-engine evidence)
 
 - **Location**: `docs/media/tambotoco-kit-{before,after}.webp` (Inticancha) and

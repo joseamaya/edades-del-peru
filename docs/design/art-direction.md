@@ -383,8 +383,8 @@ certainty"; the historical basis is [`../historia/campanas/tambotoco.md`](../his
 4. **E3 · Landscape.** Highland vegetation kit, clustering, rocks, water and paths.
 5. **E4 · Characters.** Tambotoco hero GLB and a common-unit variant; proportions, textiles and headdresses.
 6. **E5 · Presentation. — Done in E5.** Hero cave, detail Huanacaure, wide valley, wide traced Inticancha and a hero foundation beat; the intro/card/epilogue captures were re-shot.
-7. **E6 · Validation and approval.** 3 cameras × 3 resolutions, bench, provenance, docs and human review.
-8. **E7 · Production.** Only after E6 is approved: the cave, camp, Huanacaure, hamlets, acequia, fields,
+7. **E6 · Validation and approval. — Done in E6.** 3 cameras × 3 resolutions, bench, provenance, docs and human review (approved 2026-11-17).
+8. **E7 · Production.** A separate decision after the E6 approval: the cave, camp, Huanacaure, hamlets, acequia, fields,
    Inticancha and the eight Ayar.
 
 **Standardization.** After the pilot, future campaigns share the quality bar, the pipeline, the palette
