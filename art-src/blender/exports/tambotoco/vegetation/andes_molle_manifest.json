@@ -9,8 +9,7 @@
   "collision": "none in the GLB; visual-only vegetation",
   "confidence": "inferred",
   "sources": [
-    "docs/design/tambotoco-art-pilot.md",
-    "docs/historia/mapas.md"
+    "docs/design/tambotoco-art-pilot.md"
   ],
   "budget": {
     "LOD0": 1500,

@@ -105,16 +105,17 @@ function kitBounds(parts: { geometry: THREE.BufferGeometry }[]): THREE.Box3 {
 function expectStableFootprint(
   near: { geometry: THREE.BufferGeometry }[],
   far: { geometry: THREE.BufferGeometry }[],
+  tolerance = 0.18,
 ): void {
   const a = kitBounds(near);
   const b = kitBounds(far);
   const sizeA = a.getSize(new THREE.Vector3());
   const sizeB = b.getSize(new THREE.Vector3());
   for (const axis of ['x', 'y', 'z'] as const) {
-    expect(Math.abs(sizeB[axis] - sizeA[axis]) / sizeA[axis]).toBeLessThan(0.18);
+    expect(Math.abs(sizeB[axis] - sizeA[axis]) / sizeA[axis]).toBeLessThan(tolerance);
   }
   const drift = b.getCenter(new THREE.Vector3()).distanceTo(a.getCenter(new THREE.Vector3()));
-  expect(drift).toBeLessThan(Math.max(sizeA.x, sizeA.z) * 0.2);
+  expect(drift).toBeLessThan(Math.max(sizeA.x, sizeA.z) * tolerance);
 }
 
 describe('vegetation kit mapping', () => {
@@ -230,7 +231,7 @@ describe.each(ANDES_IDS)('%s andes kit GLB', (id) => {
 
   it('keeps the far LOD footprint close to the near one for trees', () => {
     if (id === 'ichu') return;
-    expectStableFootprint(partsFromScene(lod0.scene), partsFromScene(lod1.scene));
+    expectStableFootprint(partsFromScene(lod0.scene), partsFromScene(lod1.scene), 0.14);
   });
 
   it('bakes into at most three parts per LOD within budget, at game scale', () => {

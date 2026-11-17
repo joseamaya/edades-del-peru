@@ -35,10 +35,11 @@ SOURCE_BLEND = os.path.join(ROOT, 'art-src', 'blender', 'scenes', 'tambotoco_veg
 # Per-species triangle budgets (LOD0, LOD1).
 BUDGETS = {'molle': (1500, 400), 'pacay': (1100, 320), 'ichu': (220, 60)}
 CONFIDENCE = {'molle': 'inferred', 'pacay': 'inferred', 'ichu': 'inferred'}
-SOURCES = [
-    'docs/design/tambotoco-art-pilot.md',
-    'docs/historia/mapas.md',
-]
+SOURCES = {
+    'molle': ['docs/design/tambotoco-art-pilot.md'],
+    'pacay': ['docs/design/tambotoco-art-pilot.md'],
+    'ichu': ['docs/design/tambotoco-art-pilot.md', 'docs/historia/mapas.md'],
+}
 
 
 def parse_args():
@@ -175,7 +176,7 @@ def main():
             'pivot': 'clump base at origin' if asset == 'ichu' else 'trunk base at origin',
             'collision': 'none in the GLB; visual-only vegetation',
             'confidence': CONFIDENCE[asset],
-            'sources': SOURCES,
+            'sources': SOURCES[asset],
             'budget': {'LOD0': BUDGETS[asset][0], 'LOD1': BUDGETS[asset][1]},
             'reviewed': False,
             'lods': {},
