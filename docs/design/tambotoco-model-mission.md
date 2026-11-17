@@ -255,18 +255,18 @@ waits for a human approval of the reference captures.
 
 ## Open items
 
-1. Performance (measured 2026-11-16; E1 numbers): software (SwiftShader) measures **431,312 triangles /
-   261 draw calls** at the opening and **605,084 / 357** on the founded Inticancha; the pre-E1 baseline was
-   436,880 / 265 and 608,324 / 347. E1 hardware (`--gpu`, Intel RPL-S iGPU, high) measures **474,334 / 265**
-   opening and **648,332 / 363** in frames mode (post-processing included; structural late 605,084 / 357).
-   Frame time at high quality with post-processing on: **41 FPS** opening and **35 FPS** late (24.1 / 28.8 ms
+1. Performance (measured 2026-11-16; E1 numbers): software (SwiftShader) measures **437,976 triangles /
+   264 draw calls** at the opening and **614,594 / 357** on the founded Inticancha; the pre-E1 baseline was
+   436,880 / 265 and 608,324 / 347. E1 hardware (`--gpu`, Intel RPL-S iGPU, high) measures **480,998 / 268**
+   opening and **657,556 / 360** late in frames mode (post-processing included; structural late 614,594 / 357).
+   Frame time at high quality with post-processing on: **41 FPS** opening and **36 FPS** late (24.2 / 27.4 ms
    p50). The opening cap is now **500k / 280** (ratcheted from 600k/340); the late cap stays
    **660k / 360** and is met without raising it. The pass batched every entity contact shadow into one
    instanced draw, merged the site by surface family per phase (instead of one mesh for the whole 256 m
    site, which drew the cave and the valley together), cut the inland water grid to 64 and trimmed the
    dry-puna ground cover to a fifth. The 2026-11-16 art pass dropped hardware triangles from
-   **625,811 / 808,827** (opening/late, pre-pass) to **479,630 / 651,572**; E1 lowers the opening to
-   474,334 and trims the flat shadow casters. The late calls are higher than the old 301 because the eight
+   **625,811 / 808,827** (opening/late, pre-pass) to **479,630 / 651,572**; E1 measures **480,998** opening
+   in frames mode and trims the flat shadow casters. The late calls are higher than the old 301 because the eight
    heroes now carry readable props and the base has its cancha houses, but they remain inside the cap. The
    performance row is **Met**. Run `node scripts/bench_scene.mjs --mission=m_tambotoco [--stage=late]
    [--gpu] --assert`.

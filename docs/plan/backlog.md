@@ -27,7 +27,7 @@ GitHub issue or PR, link it here instead of copying the discussion. The live mis
 | B4 | `m8_independencia` model-mission rebuild | Merged (`d52bb32`) |
 | B9 | Caral art-review line in the quality bar | Fixed in this PR |
 | B8 | Character bible and asset-pipeline cookbook | Done in this PR: `docs/design/characters.md` and `docs/design/asset-pipeline.md` |
-| B11 | Terrain receives directional shadows | Closed 2026-11-16 (E1): the terrain material declares `lights: true` and samples the PCF shadow map; E1 bench 431,312/261 and 605,084/357, within caps. |
+| B11 | Terrain receives directional shadows | Closed 2026-11-16 (E1): the terrain material declares `lights: true` and samples the PCF shadow map; E1 structural bench 437,976/264 and 614,594/357, within caps. |
 
 ## Rules for the queue
 

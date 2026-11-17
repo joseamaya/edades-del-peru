@@ -727,13 +727,13 @@ Definition of Done and the building audit see
   saturated (classic RTS style). `settings.cinematic` (toggle in Options) re-enables the set via
   `PostFX.setCinematic`. Tone `NeutralToneMapping` + `exposure 1.0`. Do not re-enable fog or raise exposure
   without checking that buildings are not washed out.
-- **The terrain does not receive directional shadows** (`Terrain.ts`): it is a `ShaderMaterial` with
-  `lights: false`, so three never binds the shadow uniforms and the old hand-written `terrain_shadow_hook`
-  multiplied by a `shadowIntensity` that stayed 0. The hook was removed on 2026-11-16 (no pixel changed);
-  ground contact comes from the splat/paved shading and the entities' blob shadows. Real terrain shadows
-  need `lights: true` plus a PCF sample, and are tracked in the backlog. Evidence for the pass that
-  exposed it: `docs/media/m8-shadow-{before,after}-{opening,close}.webp`
-  (`node scripts/capture_shadow_pass.mjs --tag=before|after`).
+- **The terrain receives directional shadows** (`Terrain.ts`, B11, E1): the custom `ShaderMaterial` declares
+  `lights: true` and samples `directionalShadowMap[0]` with the same PCF settings as the rest of the scene.
+  Its uniform object must include `THREE.UniformsLib.lights`; without those placeholders three tries to wire
+  light uniforms that do not exist and the render throws. The old hand-written `terrain_shadow_hook` was
+  removed on 2026-11-16; the terrain now uses the real shadow map. Flat earth/rock/wood pieces do not cast, so
+  the low-sun shadow pass stays within budget. Evidence: `review/art-pilot-*` and
+  `node scripts/bench_scene.mjs --mission=m_tambotoco --assert`.
 - **The terrain material weights are a CPU splatmap** (`src/rendering/terrainSplat.ts`): a deterministic
   512² RGBA texture (grass, dirt, sand, rock) built once per match from `TerrainData`; snow stays procedural by
   height. `Terrain` uploads it as a `DataTexture`. Keep the generation pure and seed-stable; #304 paints

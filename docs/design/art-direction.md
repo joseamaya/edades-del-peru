@@ -160,13 +160,17 @@ the engine. Do not rebuild the whole site as one GLB.
 ### 4.4 Light and materials
 
 - **Default: morning.** Low warm sun from the east/north-east (30–35° elevation), long soft shadows that model
-  the terraces and roof eaves.
+  the roof eaves and the walls, with directional shading that models the relief.
 - **Sun and ambient:** directional sun + hemisphere; hemisphere intensity 0.35–0.5; exposure 1.0–1.1. Avoid
-  the flat "ambient fill" look where every face has the same value.
+  the flat "ambient fill" look where every face has the same value. A mission may set an explicit
+  `timeOfDayValue` (0 night .. 1 day) when the named preset is not the right sun height; it is the initial
+  default and the player's time-of-day option still overrides it.
 - **Shadows:** PCF; 2048 high, 1024 medium/low; radius ~2; the frustum follows the view. Limit shadow casters
   to the silhouette. The terrain **receives** directional shadows: the custom `ShaderMaterial` declares
-  `lights: true` and samples `directionalShadowMap[0]` with the same PCF settings (B11, E1). Flat earth, rock
-  and wood pieces no longer cast, so the low-sun shadow pass stays within budget.
+  `lights: true` and samples `directionalShadowMap[0]` with the same PCF settings (B11, E1). The late
+  Inticancha phases exclude the plaster/earth/rock/wood families from the shadow pass (floors, paving, wall
+  plaster and loose rock); roofs and stone keep casting, and the cave/shrine phases keep their rock and earth
+  shadows.
 - **AO:** bake vertex AO into kit geometry (0.65–1.0 in bases and corners) and use slope/valley shading on the
   terrain. Do not add SSAO: it was removed because its cost was high and its effect invisible with the camera
   range.
@@ -219,8 +223,12 @@ colour and ritual accents. Keep albedo luminance between ~0.2 and 0.8: no pure b
 | Packed earth, shadow    | Darker brown                      | `#7a6650`              |
 | Field soil              | Dry / wet                         | `#6b5642` / `#5c4a38`  |
 | Fieldstone              | Warm grey                         | `#8a8174` / `#6e675d`  |
+| Rock / outcrop          | Warm grey-brown                   | `#8a7c6b`              |
+| Earth wall / packed floor | Dry earth / packed              | `#8a7358` / `#a08a6a`  |
 | Mortar / plaster        | Pale earth                        | `#9a8c76` / `#b49a78`  |
 | Thatch                  | Straw, weathered                  | `#b49b6a` / `#8c774d`  |
+| Crops                   | Muted green / wet                 | `#6f7c3f` / `#5f7a3c`  |
+| Terrain bands           | Valley / slope / loma             | `#6b7444` / `#8f8660` / `#a09368` |
 | Wood                    | Dark warm brown                   | `#6a5238`              |
 | Water                   | Deep / shallow                    | `#2c4748` / `#4e6b65`  |
 | Sky / haze              | Cool grey-blue morning            | `#c6d0d2` / `#b7c1be`  |
@@ -276,8 +284,11 @@ Targets for the default view at 1600×900:
 
 **Mission caps are ratified, not raised to hide a regression.** The current Tambotoco caps in
 `scripts/bench_scene.mjs` are **500k triangles / 280 draw calls** at the opening and **660k / 360** in the
-late founded settlement. The pilot must be budget-neutral or better; if a new asset pushes a cap, something
-else is removed, merged or LOD'd in the same PR.
+late founded settlement. The pilot must stay inside them. Prefer a neutral pass; a measured increase is
+acceptable only when it buys a visible improvement and the frame-time target still holds. E1: opening
+**437,976 / 264** (neutral against 436,880 / 265); late **614,594 / 357** structural, because the low sun
+adds shadow casters; **36 FPS** at high quality on the integrated GPU. Do not raise a cap to hide a
+regression.
 
 Asset budgets:
 
@@ -342,6 +353,11 @@ Every visual decision about a culture carries one of three labels:
 - **Stylized:** a presentation abstraction with no documented form (the cave arch, the Huanacaure monolith
   shape, the Ayar clothing and headdresses, the exact hut proportions).
 
+These visual labels map to the provenance contract in [`asset-pipeline.md`](./asset-pipeline.md) and the
+manifest `confidence` values: **documented → documented**, **plausible → inferred**, **stylized → assumed**.
+The manifest stays the machine-readable source of truth; a table or dossier may use either vocabulary, but
+the mapping must be explicit.
+
 Rules:
 
 - Do not use imperial Inca architecture, clothing or technology for a pre-imperial society.
@@ -357,8 +373,9 @@ certainty"; the historical basis is [`../historia/campanas/tambotoco.md`](../his
 
 1. **E0 · Document and baseline.** This guide, [`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md), the
    capture script and the before set. No gameplay change.
-2. **E1 · Light, shadow, terrain and materials.** B11 (terrain receives shadows), `cusco_valley` palette,
-   water, macro variation and vertex AO.
+2. **E1 · Light, shadow, palette and plaza.** B11 (terrain receives shadows), the low morning sun,
+   `cusco_valley` palette, water and the single-rim plaza. Macro variation, vertex AO and ground cover
+   continue in E2–E3.
 3. **E2 · Architecture.** Stone, plaster, thatch, eaves, qollqa, cancha and plaza; decide the hero GLB pieces.
 4. **E3 · Landscape.** Highland vegetation kit, clustering, rocks, water and paths.
 5. **E4 · Characters.** Tambotoco hero GLB and a common-unit variant; proportions, textiles and headdresses.

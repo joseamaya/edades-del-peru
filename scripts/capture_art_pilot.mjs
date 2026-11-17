@@ -6,7 +6,7 @@ import { cliArg, launchChromium, reviewDir, withViteServer } from './lib.mjs';
  * Art-direction pilot captures for `m_tambotoco` (docs/design/tambotoco-art-pilot.md).
  * Usage: node scripts/capture_art_pilot.mjs [--tag=before|after] [--quality=neutral|final]
  *        [--sizes=1280x720,1600x900,1920x1080]
- *        [--views=hualla,acequia,inticancha,built,close,wide,hero]
+ *        [--views=cave,shrine,hualla,acequia,inticancha,built,close,wide,hero]
  *
  * `neutral` isolates materials and silhouettes (post-processing off); `final` is the player-facing
  * look (post-processing and the player's quality preset). Fog of war is off in both so the scene is
@@ -32,6 +32,8 @@ const sizes = cliArg('sizes', '1280x720,1600x900,1920x1080')
   });
 
 const VIEWS = {
+  cave: { x: 40, z: 55, h: 24 },
+  shrine: { x: 120, z: 106, h: 40 },
   hualla: { x: 136, z: 166, h: 24 },
   acequia: { x: 166, z: 178, h: 30 },
   inticancha: { x: 168, z: 190, h: 34 },
@@ -47,9 +49,10 @@ const wanted = cliArg('views', Object.keys(VIEWS).join(','))
   .filter(Boolean);
 for (const name of wanted) if (!VIEWS[name]) throw new Error(`unknown view ${name}`);
 // The hero view stops the loop, so it always runs last.
-const views = wanted
-  .map((name) => ({ name, ...VIEWS[name] }))
-  .sort((a, b) => Number(Boolean(a.hero)) - Number(Boolean(b.hero)));
+// `built` spawns a base, so it runs after the clean scene views (and before the hero close-up,
+// which stops the loop). Otherwise its buildings contaminate every later frame.
+const viewRank = (view) => (view.hero ? 2 : view.built ? 1 : 0);
+const views = wanted.map((name) => ({ name, ...VIEWS[name] })).sort((a, b) => viewRank(a) - viewRank(b));
 
 // Fog of war is off in both modes: the comparison is about materials and light, not exploration.
 // `neutral` isolates the materials (no post-processing); `final` is the player-facing grade.
@@ -88,12 +91,21 @@ async function main() {
       await page.waitForTimeout(2600);
       await page.addStyleTag({ content: '#ui-root { display: none !important; }' });
 
-      const spawnBuilt = views.some((v) => v.built);
-      await page.evaluate(
-        ({ spawnBuilt }) => {
-          const g = window.game;
-          g.setSitePhase('fundada');
-          if (spawnBuilt) {
+      await page.evaluate(() => {
+        const g = window.game;
+        g.setSitePhase('fundada');
+        // Evidence bypass: the pilot shows the hydraulic system open and irrigated.
+        g.canalOpen = true;
+        g.updateCanalVisual();
+        g.refreshFarmYields?.();
+      });
+      await page.waitForTimeout(1500);
+
+      let builtSpawned = false;
+      for (const view of views) {
+        if (view.built && !builtSpawned) {
+          await page.evaluate(() => {
+            const g = window.game;
             g.spawnScriptedBuilding('mill', 0, 168, 190);
             for (const [x, z] of [
               [156, 190],
@@ -103,17 +115,10 @@ async function main() {
             ]) {
               g.spawnScriptedBuilding('house', 0, x, z);
             }
-          }
-          // Evidence bypass: the pilot shows the hydraulic system open and irrigated.
-          g.canalOpen = true;
-          g.updateCanalVisual();
-          g.refreshFarmYields?.();
-        },
-        { spawnBuilt },
-      );
-      await page.waitForTimeout(1500);
-
-      for (const view of views) {
+          });
+          builtSpawned = true;
+          await page.waitForTimeout(900);
+        }
         if (view.hero) {
           await page.evaluate(() => {
             const g = window.game;
@@ -137,21 +142,12 @@ async function main() {
             place(worker, 0.9, 0.45, -0.2);
             g.characterLabels?.setVisible(false);
             g.heroMarkers?.sync(g.units.values(), 30, g.camera.maxZoom);
-            // Evidence-only: a canopy can sit between the low camera and the pair.
-            for (const name of [
-              'trees_trunk',
-              'trees_canopy_broad',
-              'trees_canopy_needle',
-              'trees_canopy_molle',
-              'trees_canopy_sauce',
-            ]) {
-              const object = g.scene.getObjectByName(name);
-              if (object) object.visible = false;
-            }
             const y = g.terrain.getHeight(c.x, c.z);
             const cam = g.camera.camera;
             cam.position.set(c.x + 1.2, y + 2.2, c.z + 7.0);
             cam.lookAt(c.x, y + 1.0, c.z);
+            // The loop is stopped, so the shadow map must be refreshed for this camera before the shot.
+            g.runtime.frameShadows();
             g.renderer.render(g.scene, cam);
           });
         } else {

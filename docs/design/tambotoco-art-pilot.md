@@ -47,7 +47,7 @@ Baseline: `a0352d5`, seed 777, 1600×900, `sitePhase=fundada`, acequia open, HUD
 | **Landscape** | Flat olive ground with visible tiling, teal water ribbon, identical low-poly trees, neon crop rows, scattered rocks. | No terrain layers, no vegetation groups, no atmospheric depth. The Caral vegetation kit is coastal and does not cover the highlands. | `cusco_valley` palette and layers; highland vegetation kit; clustered placement; water/path pass. |
 | **Light and materials** | Ambient-heavy, weak contact shadows, no ground shadows, flat stone and plaster. | The custom terrain `ShaderMaterial` declared `lights: false`, so the ground never received directional shadows (B11). Materials have micro-detail but no macro scale and little roughness break. | **B11 fixed in E1** (terrain samples the shadow map, low morning sun); vertex AO and macro maps still open. |
 | **Presentation** | The opening and act cards are in-engine but framed as aerial views; Inticancha reads as the same disc with more props. | No shot grammar; the foundation lacks a reward moment. | Re-frame the three beats; wide/detail/hero shots; foundation phase + camera + life. |
-| **Performance** | Baseline software: 436,880 triangles / 265 calls (opening), 608,324 / 347 (founded). Hardware iGPU: 479,630 / 264 and 651,572 / 353. Caps: 500k/280 and 660k/360. E1: **431,312 / 261** and **605,084 / 357**. | Draw calls exceed the general ≤200 target; the late scene is close to the 660k cap. `dist` is 24.75 / 25 MB. | Budget-neutral pass; merge/atlas/LOD; do not raise caps; size ledger with offsets. |
+| **Performance** | Baseline software: 436,880 triangles / 265 calls (opening), 608,324 / 347 (founded). Hardware iGPU: 479,630 / 264 and 651,572 / 353. Caps: 500k/280 and 660k/360. E1 structural: **437,976 / 264** and **614,594 / 357**; frames high: 480,998/268 (41 FPS) and 657,556/360 (36 FPS). | Draw calls exceed the general ≤200 target; the late scene is close to the 660k cap. `dist` is 24.75 / 25 MB. | Opening is neutral; the late +10 calls are the low-sun casters. Do not raise caps; size ledger with offsets. |
 | **Documentation** | `art-direction.md` was Caral-first; `campaign-quality-bar.md` and `tambotoco-model-mission.md` gave different performance numbers; “Visuals: Met” certified presence, not quality. | No Tambotoco standard and no measurable visual gate. | This pilot, the rewritten art direction and the reconciled quality bar. |
 
 The 2026-11-16 kit pass was a real improvement: coursed stone, thatch houses, qollqas, terraced fields and a
@@ -126,10 +126,10 @@ The script is `scripts/capture_art_pilot.mjs` (`yarn art:pilot`). It hides the H
 site to `fundada` and opens the acequia.
 
 ```bash
-# Materials and silhouettes: fog off, post-processing off
+# Materials and silhouettes: low preset (no post-processing, 1024 shadows, pixel ratio 1), fog off
 yarn art:pilot --tag=before --quality=neutral --sizes=1280x720,1600x900,1920x1080
 
-# Player-facing look: post-processing on, the player's quality preset
+# Player-facing look: the player's quality preset and post-processing, fog off
 yarn art:pilot --tag=after --quality=final --sizes=1280x720,1600x900,1920x1080
 ```
 
@@ -139,8 +139,9 @@ exploration. The mission evidence captures (`shots_evidence.mjs`) cover the fog 
 - **Before** is captured from the base commit (`a0352d5` or the current `main` at the start of the branch) in
   a clean worktree.
 - **After** is captured on the branch with the same views, seed and resolution.
-- Views: `hualla`, `acequia`, `inticancha`, `built`, `close`, `wide`, `hero`. The `hero` view stops the loop
-  and always runs last.
+- `neutral` is a stable material comparison, not the shipped quality; `final` is the look gate.
+- Views: `cave`, `shrine`, `hualla`, `acequia`, `inticancha`, `built`, `close`, `wide`, `hero`. `built` runs
+  after the clean scene views so its spawned base does not contaminate them; `hero` runs last and stops the loop.
 - Output: `review/art-pilot-<tag>-<quality>-<size>-<view>.png` and a JSON summary. `review/` is gitignored; a
   path alone is not evidence. Attach the PNGs to the PR.
 - Publish 960×540 WebP copies under `docs/media/` only after the human review, and record them in
@@ -209,7 +210,7 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
 1. **Terrain receives directional shadows (B11). — Done in E1.**
    Files: `src/rendering/Terrain.ts`, `src/core/Game.ts` (mission sun), `src/rendering/AylluSite.ts`
    (shadow-caster trim). Acceptance: ground shadows visible, no acne, bench green
-   (431,312/261 opening; 605,084/357 late).
+   (437,976/264 opening; 614,594/357 late).
 2. **Palette, macro variation and vertex AO. — Partially done in E1.**
    Files: `src/model/defs/terrainPalettes.ts` (`cusco_valley`), `src/model/defs/sites.ts`
    (`tambotoco_site.terrain`), `src/rendering/aylluKit.ts`, `src/rendering/GroundCover.ts`.
@@ -248,7 +249,7 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
 | Stage | Content | Gate |
 | --- | --- | --- |
 | **E0** | This document, `art-direction.md`, `capture_art_pilot.mjs`, baseline set, quality-bar reconciliation | **Done (2026-11-16):** docs links and baseline set |
-| **E1** | B11, palette, macro/AO, water, ground cover | **Done (2026-11-16):** shadows on ground, straw/stone palette, plaza rim; bench 431k/261 and 605k/357 |
+| **E1** | B11, palette, water, plaza | **Partial (2026-11-16):** shadows on ground, low morning sun, straw/stone palette, single-rim plaza, bench 437,976/264 and 614,594/357; macro/AO and ground cover move to E2–E3 |
 | **E2** | Architecture materials/geometry; hero GLB decision | House/qollqa/plaza at 28/54; ≤ 4 materials |
 | **E3** | Highland vegetation kit, rocks, paths | Groups, LODs, wind; no invented species |
 | **E4** | Hero + common unit | Manco distinct at 54; budget; other campaigns unchanged |
@@ -286,10 +287,11 @@ Recorded 2026-11-16:
 | 2026-11-16 | `yarn art:pilot --tag=before --quality=neutral --sizes=1600x900` | Baseline PNGs in `review/art-pilot-before-neutral-1600x900-*.png`; includes the `hero` staging |
 | 2026-11-16 | `yarn art:pilot --tag=e1b --quality=neutral --sizes=1600x900 --views=hualla,close,inticancha` | E1 PNGs: long ground shadows, straw thatch, warm stone, single-rim plaza |
 | 2026-11-16 | `yarn art:pilot --tag=e1b --quality=final --sizes=1600x900 --views=hualla,close,inticancha,hero` | Player-facing grade (fog of war off) |
-| 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --assert --out=review/bench-scene-tambotoco-e1.json` | Opening **431,312 tris / 261 calls** (cap 500k/280) |
-| 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --assert --out=review/bench-scene-tambotoco-e1-late.json` | Founded Inticancha **605,084 tris / 357 calls** (cap 660k/360) |
-| 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e1-frames.json` | Intel RPL-S iGPU, high, postfx on: **41 FPS** opening (24.1 ms p50), hardware **474,334 / 265** |
-| 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e1-late-frames.json` | Late: **35 FPS** (28.8 ms p50); structural **605,084 / 357** (under cap); the frames-mode 363 count includes the postfx passes |
+| 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --assert --out=review/bench-scene-tambotoco-e1c.json` | Opening **437,976 tris / 264 calls** (cap 500k/280) |
+| 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --assert --out=review/bench-scene-tambotoco-e1c-late.json` | Founded Inticancha **614,594 tris / 357 calls** (cap 660k/360) |
+| 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e1c-frames.json` | Intel RPL-S iGPU, high, postfx on: **41 FPS** opening (24.2 ms p50), hardware **480,998 / 268** |
+| 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e1c-late-frames.json` | Late: **36 FPS** (27.4 ms p50), frames **657,556 / 360** (at the cap, no raise) |
+| 2026-11-16 | `yarn shot m1-b11-before --url='/?play=1&mission=m1_caral&seed=777&fog=0&low=1&intro=0' --click` (baseline worktree) and `yarn shot m1-b11-after ...` | Non-pilot regression: the Caral ground receives the pyramid/tree/house shadows in `review/m1-b11-{before,after}_0.png`; no shader errors |
 | pending | `yarn art:pilot --tag=after --quality=neutral --sizes=1280x720,1600x900,1920x1080` | E6 evidence |
 | pending | `yarn art:pilot --tag=after --quality=final --sizes=1280x720,1600x900,1920x1080` | E6 evidence |
 
