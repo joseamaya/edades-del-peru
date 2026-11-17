@@ -131,14 +131,15 @@ export const TERRAIN_PALETTES: Record<TerrainPaletteId, TerrainPalette> = {
   // Cusco basin in the Intermedio Tardío: olive and ochre instead of the wet green valley used by
   // Chavín/Recuay. Mission-scoped through tambotoco_site so the shared andean_valley profile is untouched.
   cusco_valley: {
+    // Less yellow and less washed out than the old wash: the puna reads olive, the earth ochre.
     materials: {
-      grass: '#e8d8a8',
-      dirt: '#e0c8a0',
-      sand: '#eedcb8',
-      rock: '#d8d0c0',
+      grass: '#d8d8b0',
+      dirt: '#d8c8a8',
+      sand: '#e0d8b8',
+      rock: '#d0ccc0',
       snow: '#ffffff',
     },
-    bands: { valley: '#6f7d42', slope: '#958a60', loma: '#ad9d6c', summit: '#cdc4ae' },
+    bands: { valley: '#6b7444', slope: '#8f8660', loma: '#a09368', summit: '#c8c0aa' },
     textureMix: 0.82,
   },
   high_andes: {

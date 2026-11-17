@@ -394,51 +394,59 @@ export class Terrain {
     const albedo = (slot: keyof typeof pbr, fallback: THREE.Texture): THREE.Texture => pbr[slot]?.albedo ?? fallback;
     const surface = (slot: keyof typeof pbr): THREE.Texture => pbr[slot]?.surface ?? flatSurface;
     this.pbrExtra = [flatSurface];
+    // `lights: true` makes three wire the scene's light and shadow state into this material, so its
+    // uniform object must contain the lights placeholders. The custom textures keep their references
+    // (only the empty lights block is cloned).
+    const uniforms = {
+      ...THREE.UniformsUtils.merge([THREE.UniformsLib.lights]),
+      grass: { value: albedo('grass', tex.grass) },
+      dirt: { value: albedo('dirt', tex.dirt) },
+      sand: { value: albedo('sand', tex.sand) },
+      rock: { value: albedo('rock', tex.rock) },
+      snow: { value: albedo('snow', tex.snow) },
+      grassSurface: { value: surface('grass') },
+      dirtSurface: { value: surface('dirt') },
+      sandSurface: { value: surface('sand') },
+      rockSurface: { value: surface('rock') },
+      snowSurface: { value: surface('snow') },
+      splatMap: { value: this.splatTexture },
+      flatNormals: { value: style?.flatNormals ? 1 : 0 },
+      terrainDetail: { value: 1 },
+      waterLevel: { value: waterLevel },
+      time: { value: 0 },
+      sunDir: { value: new THREE.Vector3(0.5, 0.8, 0.4).normalize() },
+      sunColor: { value: new THREE.Color(1, 0.96, 0.88) },
+      ambientColor: { value: new THREE.Color(0.08, 0.09, 0.1) },
+      skyColor: { value: new THREE.Color(0xcdd6e6) },
+      groundColor: { value: new THREE.Color(0x55664a) },
+      hemiIntensity: { value: 0.4 },
+      fogColor: { value: new THREE.Color(0.78, 0.85, 0.92) },
+      fogDensity: { value: 0.0 },
+      cloudShadow: { value: 1.0 },
+      cameraPos: { value: new THREE.Vector3() },
+      mapSize: { value: this.size },
+      fowMap: { value: null as THREE.Texture | null },
+      fowEnabled: { value: 0 },
+      snowLine: { value: this.profile.elevation.snowLine },
+      grassTint: { value: paletteColor(this.palette.materials.grass) },
+      dirtTint: { value: paletteColor(this.palette.materials.dirt) },
+      sandTint: { value: paletteColor(this.palette.materials.sand) },
+      rockTint: { value: paletteColor(this.palette.materials.rock) },
+      snowTint: { value: paletteColor(this.palette.materials.snow) },
+      textureMix: { value: this.palette.textureMix },
+      groundTint: { value: paletteColor(this.profile.groundTint ?? '#ffffff') },
+      fogCapBoost: { value: this.palette.fogCapBoost ?? 0 },
+      suppressSnow: { value: this.suppressSnow ? 1 : 0 },
+      valleyHaze: { value: this.valleyHaze ? 1 : 0 },
+      seasonDry: { value: 0 },
+      seasonWet: { value: 0 },
+    };
     const mat = new THREE.ShaderMaterial({
-      uniforms: {
-        grass: { value: albedo('grass', tex.grass) },
-        dirt: { value: albedo('dirt', tex.dirt) },
-        sand: { value: albedo('sand', tex.sand) },
-        rock: { value: albedo('rock', tex.rock) },
-        snow: { value: albedo('snow', tex.snow) },
-        grassSurface: { value: surface('grass') },
-        dirtSurface: { value: surface('dirt') },
-        sandSurface: { value: surface('sand') },
-        rockSurface: { value: surface('rock') },
-        snowSurface: { value: surface('snow') },
-        splatMap: { value: this.splatTexture },
-        flatNormals: { value: style?.flatNormals ? 1 : 0 },
-        terrainDetail: { value: 1 },
-        waterLevel: { value: waterLevel },
-        time: { value: 0 },
-        sunDir: { value: new THREE.Vector3(0.5, 0.8, 0.4).normalize() },
-        sunColor: { value: new THREE.Color(1, 0.96, 0.88) },
-        ambientColor: { value: new THREE.Color(0.08, 0.09, 0.1) },
-        skyColor: { value: new THREE.Color(0xcdd6e6) },
-        groundColor: { value: new THREE.Color(0x55664a) },
-        hemiIntensity: { value: 0.4 },
-        fogColor: { value: new THREE.Color(0.78, 0.85, 0.92) },
-        fogDensity: { value: 0.0 },
-        cloudShadow: { value: 1.0 },
-        cameraPos: { value: new THREE.Vector3() },
-        mapSize: { value: this.size },
-        fowMap: { value: null as THREE.Texture | null },
-        fowEnabled: { value: 0 },
-        snowLine: { value: this.profile.elevation.snowLine },
-        grassTint: { value: paletteColor(this.palette.materials.grass) },
-        dirtTint: { value: paletteColor(this.palette.materials.dirt) },
-        sandTint: { value: paletteColor(this.palette.materials.sand) },
-        rockTint: { value: paletteColor(this.palette.materials.rock) },
-        snowTint: { value: paletteColor(this.palette.materials.snow) },
-        textureMix: { value: this.palette.textureMix },
-        groundTint: { value: paletteColor(this.profile.groundTint ?? '#ffffff') },
-        fogCapBoost: { value: this.palette.fogCapBoost ?? 0 },
-        suppressSnow: { value: this.suppressSnow ? 1 : 0 },
-        valleyHaze: { value: this.valleyHaze ? 1 : 0 },
-        seasonDry: { value: 0 },
-        seasonWet: { value: 0 },
-      },
+      uniforms,
+      lights: true,
       vertexShader: /* glsl */ `
+        #include <common>
+        #include <shadowmap_pars_vertex>
         attribute vec3 color;
         varying vec3 vColor;
         varying vec3 vWorldPos;
@@ -448,14 +456,18 @@ export class Terrain {
         void main() {
           vColor = color;
           vUv = uv;
-          vec4 wp = modelMatrix * vec4(position, 1.0);
-          vWorldPos = wp.xyz;
-          vHeight = wp.y;
+          vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+          vWorldPos = worldPosition.xyz;
+          vHeight = worldPosition.y;
+          vec3 transformedNormal = normalMatrix * normal;
           vNormal = normalize(mat3(modelMatrix) * normal);
-          gl_Position = projectionMatrix * viewMatrix * wp;
+          gl_Position = projectionMatrix * viewMatrix * worldPosition;
+          #include <shadowmap_vertex>
         }
       `,
       fragmentShader: /* glsl */ `
+        #include <common>
+        #include <shadowmap_pars_fragment>
         uniform sampler2D grass;
         uniform sampler2D dirt;
         uniform sampler2D sand;
@@ -696,14 +708,27 @@ ${FOW_DIM_GLSL}
           if (rockTriplanarBlend > 0.001) N = normalize(mix(N, rockTriplanarNormal, rockTriplanarBlend));
           float ndl = max(dot(N, sunDir), 0.0);
           vec3 hemi = mix(groundColor, skyColor, 0.5 + 0.5 * N.y) * hemiIntensity;
-          vec3 lit = col * (ambientColor + hemi + sunColor * ndl * cloudShadow * 1.15);
+          // The shadow map is bound because the material declares lights: true; outside the fitted
+          // frustum getShadow returns 1.0, so the far terrain keeps its lighting.
+          float shadow = 1.0;
+          #if defined( USE_SHADOWMAP ) && NUM_DIR_LIGHT_SHADOWS > 0
+            shadow = getShadow(
+              directionalShadowMap[0],
+              directionalLightShadows[0].shadowMapSize,
+              directionalLightShadows[0].shadowIntensity,
+              directionalLightShadows[0].shadowBias,
+              directionalLightShadows[0].shadowRadius,
+              vDirectionalShadowCoord[0]
+            );
+          #endif
+          vec3 lit = col * (ambientColor + hemi + sunColor * ndl * cloudShadow * 1.15 * shadow);
           // weak specular highlight modulated by roughness
           vec3 V = normalize(cameraPos - vWorldPos);
           vec3 Hv = normalize(sunDir + V);
           float shin = mix(12.0, 90.0, 1.0 - clamp(rough, 0.0, 1.0));
           float spec = pow(max(dot(N, Hv), 0.0), shin) * (1.0 - clamp(rough, 0.0, 1.0)) * 0.22;
-          lit += sunColor * spec * cloudShadow;
-          lit *= 0.7 + 0.35 * ndl * cloudShadow;
+          lit += sunColor * spec * cloudShadow * shadow;
+          lit *= 0.7 + 0.35 * ndl * cloudShadow * shadow;
 
           // atmospheric fog (aerial perspective)
           float dist = distance(cameraPos, vWorldPos);
@@ -734,11 +759,11 @@ ${FOW_DIM_GLSL}
       `,
     });
 
-    // The terrain is a ShaderMaterial with `lights: false`, so three never binds the shadow uniforms:
-    // a hand-written shadow sample here would compile and then do nothing (the old `terrain_shadow_hook`
-    // multiplied by a `shadowIntensity` that stayed 0). Ground contact comes from the paved/splat shading
-    // and the entities' blob shadows; real terrain shadows are tracked in the backlog.
+    // B11: the terrain now declares `lights: true` and samples the directional shadow map with the same
+    // PCF settings as the rest of the scene. The custom sun/ambient terms are unchanged, so the terrain
+    // keeps its authored response while casters (huts, trees, people) land on the ground.
     const mesh = new THREE.Mesh(geo, mat);
+    mesh.receiveShadow = true;
     return mesh;
   }
 

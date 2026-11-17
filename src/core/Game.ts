@@ -589,6 +589,7 @@ export class Game {
     // No atmospheric fog over the board: classic RTS look, sharp.
     this.scene.fog = null;
     this.setTimeOfDay(s.timeOfDay);
+    if (this.missionDef?.timeOfDayValue !== undefined) this.sky.setTimeOfDay(this.missionDef.timeOfDayValue);
     this.water = new Water(
       this.scene,
       this.terrain.heightMap,

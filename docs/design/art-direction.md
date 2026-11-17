@@ -1,328 +1,413 @@
 # Art direction: stylized realism
 
-Style guide for the visual quality target of Edades del Perú. **Caral (`m1_caral`) is the reference
-scene**: every rule below is stated for Caral first and becomes the template for the other missions.
+**Status:** Living · **Reference scene:** `m_tambotoco` (Los hijos de Tambotoco)
 
-This guide sets the **target and the rules**. [`visual-language.md`](./visual-language.md) remains the
-implementation map (which code owns terrain, materials, vegetation, colour). Historical facts and their
-certainty live in [`docs/historia/campanas/caral.md`](../historia/campanas/caral.md); the mission design is
-[`caral-model-mission.md`](./caral-model-mission.md).
+This guide sets the visual target and the rules. [`visual-language.md`](./visual-language.md) is the
+implementation map (which code owns terrain, materials, vegetation and colour).
+[`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md) is the pilot's audit, scene spec, asset inventory and
+backlog. Historical facts and their certainty live in the dossiers under [`../historia/`](../historia/).
 
-Status: **adopted direction, implemented progressively**. Caral is the reference scene; values marked _target_
-are verified as each model mission closes, not assumed measurements.
+Tambotoco replaces Caral as the reference scene. Caral remains the **precedent**: it proved the kit,
+provenance and performance pipeline, and its measured lessons are kept in §11. The change does not discard
+Caral's art; it promotes the mission that has to carry the next campaigns.
 
 ## 1. Decision
 
-The game uses **stylized realism**: believable materials and light, simplified and art-directed so the
-scene reads clearly from the RTS camera. It is the approach Relic described for Age of Empires IV, where
+The game uses **stylized realism**: believable materials and light, simplified and art-directed so the scene
+reads clearly from the RTS camera. The position is the one Relic described for Age of Empires IV, where
 readability at both far and near camera distances was the first visual priority
 ([Windows Central](https://www.windowscentral.com/age-empires-4-success-graphics),
 [GamePressure](https://www.gamepressure.com/newsroom/age-of-empires-4-takes-flak-for-visuals-devs-respond/z13167)).
 
 What it means here:
 
-- **Real materials, simplified.** PBR (albedo, roughness, normal) with low-frequency colour variation and
-  painted macro shading; no photographic noise at small scale.
+- **Real materials, simplified.** PBR (albedo, roughness, normal) with low-frequency colour variation,
+  painted macro shading and a shared roughness language. No photographic noise at small scale.
 - **Proportions tuned for the camera.** Heights and silhouettes are exaggerated relative to footprints so
   buildings, trees and people read at the default zoom.
-- **One material language.** Terrain, vegetation, buildings, people and fauna share the same texel density,
-  roughness range and lighting response.
+- **One material language.** Terrain, vegetation, buildings, people and fauna share texel density, roughness
+  range and lighting response.
+- **Identity by shape first.** A civilization is recognisable by its architecture and silhouette before its
+  colour. Colour supports identity; it does not replace it.
+- **Detail is layered.** The first read is silhouette, the second is material, the third is props. An asset
+  that only works at close range fails the RTS test.
 
 What it is not:
 
 - not **photoreal** (scans everywhere, micro-detail, film grain);
 - not **flat low-poly** (untextured vertex colours, perfect CAD edges);
-- not **hand-painted** (brush strokes, painted light baked into albedo).
+- not **hand-painted** (brush strokes, painted light baked into albedo);
+- not **imperial Inca as a default**. Killke and the valley ayllus use a domestic fieldstone, earth and thatch
+  language; cut-stone, niches, double-jamb doors and the ushnu are imperial and do not belong in this pilot.
 
-## 2. The problem this guide fixes
+## 2. Reference principles
 
-Measured in `m1_caral` (seed 3000, 1600×900, `main` @ `b18b45f`, Intel integrated GPU):
+The three references are studied for design principles, never for assets, proportions or UI.
 
-| Area        | Today                                                            | Rule broken           |
-| ----------- | ---------------------------------------------------------------- | --------------------- |
-| Coherence   | Photographic ground scan + flat low-poly trees + block buildings | One material language |
-| Vegetation  | 142 generic `broad` trees that read as palms                     | Regional species, §7  |
-| Fauna       | 3 animals (pelicans) on the whole map                            | Living world, §8      |
-| Ground      | Uniform sand with dense grey pebbles                             | Terrain layers, §5    |
-| Sea         | Flat tropical turquoise                                          | Humboldt palette, §4  |
-| City        | Clean volumes, empty plazas, outline-only houses                 | Living city, §9       |
-| Scale       | Pyramid ≈ 4 people tall (estimated)                              | Scale rules, §3       |
-| Performance | ~17 FPS, ~314 draw calls and ~0.8 M triangles per frame          | Budgets, §11          |
+| Reference                | Take                                                                                                  | Do not take                                                     |
+| ------------------------ | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Age of Empires IV        | Material honesty, directional light, layered detail, readability at both strategic and close cameras. | Exact proportions, assets, interface, colour grading.           |
+| 0 A.D.                   | Modular architecture, civilization differentiation by silhouette, resource and settlement composition. | Historical claims beyond the source dossiers.                   |
+| Age of Empires II DE     | Unit and building readability from a high camera, player-colour contrast, map composition.            | Sprite-era simplification or copied art.                        |
+
+Comparison against commercial RTS references is done with **local** screenshots only; third-party images are
+never committed to the repository.
 
 ## 3. Camera and scale
 
-**Reference views.** Every asset and scene is judged in these captures (UI hidden, 1600×900, fixed seed):
+**Reference views.** Every asset and scene is judged in these captures (HUD hidden, fixed seed, 1600×900
+unless a resolution sweep is being recorded):
 
-| View    | Camera height        | Purpose                                |
-| ------- | -------------------- | -------------------------------------- |
-| Close   | 28 (min zoom)        | Material and detail quality            |
-| Default | 54 (mission opening) | The view players live in; readability  |
-| Wide    | max zoom             | Landscape composition and the transect |
+| View    | Camera height        | Purpose                               |
+| ------- | -------------------- | ------------------------------------- |
+| Close   | 28 (min zoom)        | Material and detail quality           |
+| Default | 54 (mission opening) | The view players live in; readability |
+| Wide    | max zoom             | Landscape composition and silhouette  |
 
-**Scale rules.**
+**Scale rules.** A person is **1.86 units** tall. Everything is measured in "people" (P). Compress footprints
+more than heights: real monuments are too large for an RTS map, but height keeps them monumental.
 
-- A person is **1.86 units** tall. Everything is measured in "people" (P).
-- **Compress footprints more than heights.** Real monuments are too large for an RTS map; keep height
-  closer to reality than width so they still feel monumental.
+| Element                | Target                                 | Basis                                              |
+| ---------------------- | -------------------------------------- | -------------------------------------------------- |
+| Hut wall               | 2.4–2.8 units (1.3–1.5 P)              | Killke/ayllu domestic construction; plausible      |
+| Door                   | 0.9 × 1.8 units                        | Human scale                                        |
+| Thatch overhang        | 0.5–0.8 units                          | Deep-eave roof that reads from above               |
+| Qollqa                 | 2.2–3.0 units tall, 1.6–2.0 m diameter | Round storehouse; plausible reconstruction         |
+| Plaza radius           | 6 units                                | Authored Inticancha plot                           |
+| Terrace step           | 0.8–1.2 units                          | Andean andén; readable from the strategic camera   |
+| Molle / pacay          | 3–4 P                                  | Highland tree silhouette                           |
+| Smallest readable prop | ≥ 0.4 units                            | From `visual-language.md`                          |
 
-| Element                 | Real                        | Today                                     | _Target_                                |
-| ----------------------- | --------------------------- | ----------------------------------------- | --------------------------------------- |
-| Pyramid Mayor height    | ~28–29 m (≈16 P)            | ≈4 P (estimated from the 0.25 site scale) | **7–9 P**                               |
-| Pyramid Mayor footprint | ~150 × 110 m (sources vary) | ≈37 units (estimated, same scale)         | 40–55 units (map permitting)            |
-| Quincha house wall      | ~2–2.5 m                    | —                                         | 1.3–1.5 P                               |
-| Huarango tree           | 8–12 m                      | —                                         | 3–4 P                                   |
-| Smallest readable prop  | —                           | —                                         | ≥ 0.4 units (from `visual-language.md`) |
+No asset is accepted because it looks good at close range. It must read at 54 first.
 
-- The map grows to **256–288 units** to hold the coast–valley–terrace transect (decided after a
-  performance test, §11). Max zoom must show the whole valley width.
+## 4. The five pillars
 
-## 4. Palette
+### 4.1 Characters and units
+
+- **Proportions:** 6.5–7 heads tall, not the 8+ heroic proportion of the current CC0 bodies. Head and hands
+  are +10–15 % relative to a realistic body so faces and gestures survive the RTS zoom.
+- **Silhouette layers:** body, garment, headdress/prop. Each Ayar sibling must be identifiable by at least
+  **two** layers at the default zoom, not by accent colour alone. Ayar Manco, Ayar Cachi and Mama Huaco are
+  the first acceptance cases.
+- **Hero treatment:** a hero is a presentation variant of a role rig, not a new skeleton. Unique garments and
+  headdresses are opt-in per mission and must not change the shared rig used by other campaigns.
+- **Common units:** three variants per role (tunic colour, headwear, mantle) so a group does not read as
+  clones. Variation is deterministic and presentation-only.
+- **Materials:** woven cotton/wool with a visible weave and roughness break; skin is matte
+  (roughness 0.55–0.70), never glossy. No metal before 1532.
+- **Faces:** stylized, painted features; no portrait claim. The likeness rules in
+  [`characters.md`](./characters.md) still apply.
+- **Animation:** shared clips; `idle`, `walk`, `attack` and `death` are mandatory for a fielded role. Work and
+  interaction use the licensed clip set. No per-hero clip and no gameplay timing baked into a GLB.
+- **Budgets:** hero ≤ 40 draw calls / 40k triangles; common unit ≤ 25 draw calls / 25k triangles. These are
+  ceilings, not targets to fill.
+
+### 4.2 Architecture
+
+The Tambotoco site uses a **domestic Killke/ayllu language**, not imperial Inca (see
+[`../historia/arquitectura.md`](../historia/arquitectura.md) §1):
+
+- fieldstone footings with mud mortar; earth or plaster walls;
+- deep-eave thatch roofs with exposed ridge poles;
+- round qollqas with a corbel ring and raised threshold;
+- packed-earth canchas with low walls and a threshold;
+- a plaza with a low kerb, four axes and a stepped altar;
+- irregular plans; no CAD-perfect edges.
+
+**Rules:**
+
+- 3–5 readable masses per building. Detail lives in material and props, not in geometry noise.
+- Edges are slightly bevelled and irregular. No polished ashlar, niches, double-jamb doors or ushnu.
+- Maximum 4 materials per building; maximum 8 materials and 12 draw calls per kit.
+- LOD0 ≤ 5k triangles and LOD1 ≤ 1.5k per piece; the far LOD switches before the asset drops below ~40 px.
+- Every piece is terrain-conformed and samples the ground it spans. Nothing floats.
+
+**Procedural or Blender?** Use the cheapest tool that passes the quality gate:
+
+| Element                                             | Authoring                         | Why                                                       |
+| --------------------------------------------------- | --------------------------------- | --------------------------------------------------------- |
+| Cave mouth, rock ring, Huanacaure monolith          | Blender GLB                       | Hero silhouettes; the procedural versions read as blobs   |
+| Inticancha hero house, altar, plaza furniture       | Blender GLB or hybrid modules      | Unique forms that carry the foundation moment             |
+| Ayar headdresses, props, garments                   | Blender GLB + runtime accessories | Identity at close range; shared skeleton                  |
+| Highland trees, shrubs, reeds                       | Blender GLB kit                   | Organic silhouettes and wind; two LODs                    |
+| Repeated huts, qollqas, canchas, terraces, fields   | Procedural                        | Variation, terrain-conformity and per-material merging    |
+| Paths, ground cover, wear, decals                   | Terrain paint / procedural        | Cheap, continuous and easy to revise                      |
+| Stone outcrops and quarry props                     | Blender GLB kit                   | Readable material break; instanced                        |
+
+**Hybrid is the preferred production path** for a kit: author modules in Blender, assemble and conform them in
+the engine. Do not rebuild the whole site as one GLB.
+
+### 4.3 Landscape
+
+- **Layers (6–8):** puna grass, dry earth, rock, terrace soil, wet silt, gravel, beaten path and crop soil.
+  Blend by height, slope, moisture and authored masks.
+- **Transitions:** 2–6 units wide, soft and geographic. Sea → beach → wetland is Caral's transect; Tambotoco's
+  is cave ridge → dry slope → valley grass → stream → terraced fields → Inticancha.
+- **Macro variation:** one detail scale (1–2 m) plus one macro scale (32–64 m). The macro layer is what breaks
+  tiling at the default zoom; the current kit only has micro detail.
+- **Vegetation:** grow in groups that read as groves, hedgerows and riparian bands, never an even scatter.
+  Every tree is instanced with wind and at least two LODs. Species need a source or a plausible label; do not
+  invent a species for a mission.
+- **Rocks:** only where slope or the dossier justifies them; cluster them and keep fields and plazas clear.
+- **Water:** cold Humboldt/Andean palette, depth gradient, soft banks, foam only at fords and drops. No flat
+  turquoise ribbon.
+- **Paths:** embedded stone and compacted earth with soft edges. A path is not a ladder of floating blocks.
+- **Fauna:** llamas, birds and other source-backed animals; at least one group visible in each zone at default
+  zoom. No invented species.
+- **Composition:** every zone has a purpose: approach, camp, shrine, valley, foundation. A map is not a
+  uniform surface with objects scattered on it.
+
+### 4.4 Light and materials
+
+- **Default: morning.** Low warm sun from the east/north-east (30–35° elevation), long soft shadows that model
+  the roof eaves and the walls, with directional shading that models the relief.
+- **Sun and ambient:** directional sun + hemisphere; hemisphere intensity 0.35–0.5; exposure 1.0–1.1. Avoid
+  the flat "ambient fill" look where every face has the same value. A mission may set an explicit
+  `timeOfDayValue` (0 night .. 1 day) when the named preset is not the right sun height; it is the initial
+  default and the player's time-of-day option still overrides it.
+- **Shadows:** PCF; 2048 high, 1024 medium/low; radius ~2; the frustum follows the view. Limit shadow casters
+  to the silhouette. The terrain **receives** directional shadows: the custom `ShaderMaterial` declares
+  `lights: true` and samples `directionalShadowMap[0]` with the same PCF settings (B11, E1). The late
+  Inticancha phases exclude the plaster/earth/rock/wood families from the shadow pass (floors, paving, wall
+  plaster and loose rock); roofs and stone keep casting, and the cave/shrine phases keep their rock and earth
+  shadows.
+- **AO:** bake vertex AO into kit geometry (0.65–1.0 in bases and corners) and use slope/valley shading on the
+  terrain. Do not add SSAO: it was removed because its cost was high and its effect invisible with the camera
+  range.
+- **Post-processing:** keep the existing chain (bloom, vignette, chromatic aberration, colour grade, FXAA).
+  No new expensive pass without a measured frame-time justification. The grade protects stone and plaster
+  contrast; it does not flatten it.
+- **Texture scales:** detail 1–2 m, macro 32–64 m; break tiling with a second, larger sample.
+- **Texel density:** buildings and units ~128 px per unit; props 64–128 px per unit; terrain via macro +
+  detail. Textures in WebP/KTX2 within the `dist` budget.
+
+Surface language for the Tambotoco kit:
+
+| Surface  | Roughness | Normal | Notes                                                         |
+| -------- | --------- | ------ | ------------------------------------------------------------- |
+| Stone    | 0.88–0.96 | 0.3–0.5 | Coursed fieldstone; warm grey, never cold uniform grey        |
+| Rock     | 0.92–0.98 | 0.4–0.6 | Outcrops and cliff faces; larger scale than wall stone        |
+| Earth    | 0.92–0.98 | 0.2–0.4 | Packed plaza and cancha; macro mottling, no flat fill         |
+| Plaster  | 0.85–0.92 | 0.2–0.3 | Mud/plaster walls; darker at the base, lighter at the top     |
+| Thatch   | 0.80–0.90 | 0.4–0.6 | Straw, not mustard; weathered tips and a darker eave shadow   |
+| Wood     | 0.70–0.85 | 0.3–0.4 | Ridge poles, lintels, ramada posts                            |
+| Cloth    | 0.85–0.95 | weave  | Cotton/wool; visible weave, no plastic specular               |
+| Skin     | 0.55–0.70 | none   | Matte; shared palette from `people.ts`                        |
+| Crops    | 0.95–1.00 | 0.1–0.2 | Muted green with visible soil; no neon rows                   |
+| Water    | 0.05–0.15 | waves  | Cold depth gradient; foam only at fords                       |
+
+### 4.5 Presentation
+
+- **Shot grammar:** three narrated beats (the cave, Huanacaure, the valley), each with 2–3 shots:
+  establishing wide, material detail, hero medium. The strategic camera remains the primary gameplay view.
+- **Inticancha:** the foundation is the visual reward of the mission. It uses a phase change, a camera beat,
+  fire/smoke, people and the traced plaza becoming a settlement. It must not look like the same disc with
+  more props.
+- **Implementation:** the existing `CinematicPlayer` and mission beats. No new cinematic engine and no
+  gameplay camera takeover beyond the authored beats.
+- **Evidence:** cinematic frames are captured at 1600×900 and 1920×1080, with the same seed as the gameplay
+  captures.
+
+## 5. Palette
 
 Environment colours are **desaturated and mid-value**; saturation is reserved for interactables, player
-colour and ritual accents. Keep albedo luminance between ~0.2 and ~0.8: no pure black, no pure white.
+colour and ritual accents. Keep albedo luminance between ~0.2 and 0.8: no pure black, no pure white.
 
-**Caral environment** (art decision, not a measured colour):
+**Cusco valley v1** (art decision, to be validated in-engine; not a measured colour):
 
-| Band                  | Reads as                                                          | Swatch                        |
-| --------------------- | ----------------------------------------------------------------- | ----------------------------- |
-| Sea                   | Cold Humboldt water: grey-green to deep blue-green, not turquoise | `#3f5f5c` → `#24413f`         |
-| Wet sand / river silt | Darker, cool brown                                                | `#7a6a55`                     |
-| Desert terrace        | Warm pale ochre                                                   | `#c2a77f`                     |
-| Rocky hills           | Grey-brown                                                        | `#8a7c6b`                     |
-| Riparian forest       | Dark olive green                                                  | `#4d5a34`                     |
-| Huarango / fields     | Grey-green, light olive                                           | `#7d8656`                     |
-| Lomas (winter)        | Pale green over sand                                              | `#9aa478`                     |
-| Sky, morning haze     | Warm grey-blue                                                    | `#cdd3d2` (current `skyTint`) |
+| Band                    | Reads as                          | Swatch                 |
+| ----------------------- | --------------------------------- | ---------------------- |
+| Puna grass, valley      | Olive, desaturated                | `#6e7448` / `#8a8258`  |
+| Loma / dry slope        | Warm grey-green                   | `#9c9166`              |
+| Dry earth / plaza       | Warm ochre-brown                  | `#a08a6a`              |
+| Packed earth, shadow    | Darker brown                      | `#7a6650`              |
+| Field soil              | Dry / wet                         | `#6b5642` / `#5c4a38`  |
+| Fieldstone              | Warm grey                         | `#8a8174` / `#6e675d`  |
+| Rock / outcrop          | Warm grey-brown                   | `#8a7c6b`              |
+| Earth wall / packed floor | Dry earth / packed              | `#8a7358` / `#a08a6a`  |
+| Mortar / plaster        | Pale earth                        | `#9a8c76` / `#b49a78`  |
+| Thatch                  | Straw, weathered                  | `#b49b6a` / `#8c774d`  |
+| Crops                   | Muted green / wet                 | `#6f7c3f` / `#5f7a3c`  |
+| Terrain bands           | Valley / slope / loma             | `#6b7444` / `#8f8660` / `#a09368` |
+| Wood                    | Dark warm brown                   | `#6a5238`              |
+| Water                   | Deep / shallow                    | `#2c4748` / `#4e6b65`  |
+| Sky / haze              | Cool grey-blue morning            | `#c6d0d2` / `#b7c1be`  |
+| Sun                     | Warm morning                      | `#ffe9c9`              |
+| Ritual / interaction    | Fire orange; hero gold            | `#d97a2e` / `#c9a24a`  |
 
-**Caral plaster by construction period** (documented colours; the assignment per phase is _inferred_):
+Rules:
 
-| Phase  | Plaster            | Swatch                |
-| ------ | ------------------ | --------------------- |
-| Early  | White              | `#e6dccb`             |
-| Middle | Yellow ochre       | `#c99a55`             |
-| Late   | Yellow / red bands | `#d6b14e` / `#9c4a32` |
+- Use the player colour on banners and unit accents, not on the environment. A red player must not repaint the
+  valley.
+- Ritual accents are rare: one fire, one gold ring, one Spondylus note. If everything glows, nothing does.
+- The palette is period- and region-scoped. Caral's coastal palette is not reused for the highlands, and the
+  highland palette is not reused for the coast.
 
-Ritual accents: sacred-fire orange, cotton white, Spondylus pink-red. Use them sparingly so they draw the eye.
-
-## 5. Terrain
-
-- **Layers** (6–8, blended by height, slope, moisture and authored masks): dry sand, wet sand, river silt,
-  field soil, terrace gravel, rock, lomas green, wetland mud.
-- **Transitions tell the geography**: sea → beach → wetland → riparian forest → fields → huarango terrace →
-  desert terrace → rocky hills. Each boundary is soft (blend width 2–6 units), never a hard line.
-- **Break tiling** with a macro colour map and a second, larger-scale detail sample; no repeat should be
-  visible at default zoom.
-- **Scatter discipline**: loose rocks only where the slope or the hills justify them; target ≤ 1 visible
-  rock cluster per 10×10 units on the terrace and none on fields or plazas.
-- **Decals** for paths, canal banks, wet edges and worn plaza floors.
-- The engine owns the heightfield (see [`caral-sacred-city.md`](./caral-sacred-city.md)); Blender may be
-  used to sculpt a reference heightmap.
-
-## 6. Water
-
-- **Sea**: waves visible at default zoom, a foam line on the beach, depth gradient from silt-green
-  shallows to deep blue-green, Humboldt palette (§4). The existing Gerstner/fresnel/foam shader
-  (`Water.ts`) is the base; tune colour and foam, do not replace it.
-- **River Supe**: mostly dry bed with damp patches and springs; the seasonal flood raises a narrow, silty,
-  fast channel.
-- **Wetlands (oconales)**: shallow still water with totora and reed clumps breaking the surface.
-
-## 7. Vegetation
-
-Only species from the dossier, built as a **Blender kit** with shared materials:
-
-| Species                              | Zone                  | Notes                          | _Budget_ (LOD0 / LOD1 tris) |
-| ------------------------------------ | --------------------- | ------------------------------ | --------------------------- |
-| Huarango (_Prosopis_)                | Terraces, valley edge | Wide crown, twisted dark trunk | 1500 / 400                  |
-| Sauce (willow)                       | Riverbank             | Tall, drooping                 | 1200 / 350                  |
-| Pacae / guaba                        | Terraces, valley edge | Multi-stem shrub, edible pods  | 1100 / 320                  |
-| Caña brava                           | Riverbank             | Dense clumps, plume tips       | 600 / 150                   |
-| Carrizo                              | Riverbank, wetland    | Lower clumps                   | 400 / 120                   |
-| Cola de caballo                      | Wet ground            | Ground cover                   | 200 / —                     |
-| Totora / junco                       | Wetland               | Clumps in water                | 400 / 120                   |
-| Lomas herbs                          | Lomas                 | Seasonal ground cover          | 200 / —                     |
-| Crops (cotton, gourd, squash, beans) | Fields                | Read as rows from default zoom | 300 / 80                    |
-
-- **No palms and no generic `broad`/`frond` trees on the Supe map.**
-- Trees grow in **groups that read as forests** (riparian band, huarango grove), not evenly scattered
-  singles. The Act III approach adds small algarrobo and willow groups at the valley edge; they are
-  visual-only and keep clear of the city, camp and resource nodes.
-- Every tree is instanced with **wind sway** in the vertex shader and at least two LODs.
-
-_Status (kit v1)_: huarango, sauce, pacae, caña brava, carrizo and totora ship as LOD0/LOD1 GLBs
-(`scripts/blender/build_caral_vegetation_kit.py`, `src/assets/vegetation/caral/`). `TreeInstances` draws
-the `algarrobo` and `sauce` variants with them, packing only visible trees and switching to LOD1 beyond
-45 units from the camera focus (25 on low quality); `Props` draws totora and the m1 riverbank
-canes. `PropKitInstances` draws the Caral food nodes as instanced pacae shrubs (LOD1 beyond 30 units,
-upright on the terrain and bending per instance); the generic berry bush is disabled on that map. Wind
-sway is still the CPU canopy rotation for trees, not a vertex shader. Missing: cola de caballo, lomas
-herbs and the field crops (cotton, gourd, squash, beans) as kit models.
-
-## 8. Fauna
-
-Only species supported by a source; add new ones only with a citation.
-
-| Species      | Zone                    | Source                                                | Behaviour                         |
-| ------------ | ----------------------- | ----------------------------------------------------- | --------------------------------- |
-| Deer         | Riparian forest         | Shady (venados)                                       | Small groups, flee from units     |
-| Rodents      | Riparian forest, fields | Shady (roedores)                                      | Brief appearances                 |
-| Birds        | Riparian forest         | Shady (aves)                                          | Flocks that lift and settle       |
-| Pelicans     | Coast                   | Existing wildlife set; **needs a citation** for Caral | Flights along the shore           |
-| Fish schools | Fishing spots           | Áspero fishing record                                 | Visible shimmer at resource nodes |
-
-_Status (fauna kit v1)_: deer and a generic riparian bird ship as Blender GLBs
-(`scripts/blender/build_caral_fauna_kit.py`); in m1 `planCaralValleyFauna` places deer groups on dry
-riverside ground and bird flocks that lift and settle over the water. Deer do not flee from units yet, and
-rodents are not modelled.
-
-_Target_: at least one animal group visible in each zone at default zoom; 15–30 animals per map,
-within the existing per-animal budget (4 draw calls, 5000 triangles; `yarn bench:check`).
-
-## 9. Architecture and the living city
-
-- **Shape language for Caral**: horizontal stepped platforms, sunken circles, low quincha boxes. Edges are
-  slightly bevelled and irregular, never CAD-perfect.
-- **Three to five readable masses** per monument (from `visual-language.md`); detail lives in material and
-  props, not in geometry noise.
-- **Life is part of the art**:
-  - smoke behind houses;
-  - fire on the sacred-fire altars;
-  - people crossing plazas;
-  - fair tents during festivals;
-  - refuse heaps and cooking pits beside dwellings.
-- **Construction states** (phased pyramid, scaffold-free shicra piles, sealed state) follow the
-  [mission design](./caral-model-mission.md).
-
-_Status (architecture kit v1)_: `scripts/blender/build_caral_architecture_kit.py` builds the Pyramid Mayor in
-use (ochre plaster, summit enclosure, sacred-fire altar; 13.5 units ≈ 7.3 P tall on a 43 × 39 footprint) and in
-three construction phases (foundation with retaining walls and shicra piles, partial fill, finished white
-platform), a smaller white pyramid fitted to each heritage footprint, the sunken circular plaza, common and
-elite quincha houses, an Áspero fishing house, a fair tent, the Act III construction camp (two cane
-ramadas, three shicra heaps and a dressed-stone yard; no scaffolding or ramp, which the dossier lists as
-undocumented), the five smaller complexes in a phase-1 construction state and the staked future plazas:
-8 materials, LOD0 ≤ 5k / LOD1 ≤ 1.5k triangles per piece. A `SiteCrew` of worker rigs carries shicra bags
-at ground level; it is presentation-only and shrinks with the phase. Detail pass: bevelled masses, terraces with set-stone courses in relief under a
-plastered upper wall and coping, stairs with real treads and risers between side walls, a parapet or
-summit enclosure, a sunken plaza with stone-faced coursed walls, stairs cut through the rim and a ring
-floor without fans; the Pyramid Mayor has 6 terraces (16.2 units ≈ 8.7 P). Surfaces reuse the shared
-tileable PBR sets plus a 9 KB plaster detail set on world-scale UVs, so the kit adds no per-building
-texture. m1 bakes the city (`src/model/defs/caralCity.ts`) into one mesh per material and LOD,
-replacing the ruins GLB once it has loaded (the ruins stay the fallback). The sealed state (act IV) is not
-modelled yet. Reference views: `node scripts/shots_reference_views.mjs --focus=site`.
-
-_Status (props kit v1)_: the granodiorite outcrop ships as LOD0/LOD1 GLBs
-(`scripts/blender/build_caral_props_kit.py`, `src/assets/props/caral/`); `PropKitInstances` draws every
-Caral stone node with one instanced mesh, tilted to the terrain. The seven household pieces of an Áspero
-base (hearth, drying rack, basket, gourds/mates, stone bench, windbreak and cotton on its mat) ship in the
-same kit: `SettlementDressing` bakes them into one mesh per shared material and LOD, skips the shadow pass
-for the sub-metre props and swaps LOD1 at 30 units; the procedural set stays as the fallback and keeps
-serving Chavín, whose ritual set has no kit yet.
-
-### Killke/ayllu highland kit (`m_tambotoco`)
-
-The Intermedio Tardío site uses a **domestic** language, not imperial Inca: fieldstone footings with mud
-mortar, earth/plaster walls, deep-eave thatch roofs with exposed ridge poles, round qollqas, open ramadas,
-packed-earth cancha enclosures, a low-altar plaza, terraced fields and stone footpaths. The kit is
-procedural and terrain-conformed (`src/rendering/aylluKit.ts`) and merges per surface family (stone, rock,
-earth, plaster, thatch, wood, crops, people) with generated PBR detail and world-scale UVs; a hero cave or
-monolith would be the only GLB candidates, and only if the procedural pass fails the QA gate. The palette is
-the mission-scoped `cusco_valley`: olive and ochre bands, `puna_grass`, sparse dry ground cover and a warm
-morning grade. No cut-stone, niches, double-jamb doors or ushnu. Certainty labels and sources live in
-[`tambotoco-model-mission.md`](./tambotoco-model-mission.md) and
-[`../historia/arquitectura.md`](../historia/arquitectura.md).
-
-## 10. Light and atmosphere
-
-- **Default: morning**, low warm sun from the east/north-east, long soft shadows that model the steps of
-  the pyramids.
-- **Aerial perspective** over the valley; light haze in the floodplain, stronger fade on the hills.
-- **Ambient occlusion** on (screen-space at medium quality and above; baked vertex AO as a fallback).
-- The period grade in `grades.ts` stays, but must not flatten stone or plaster contrast.
-
-## 11. Performance budgets
-
-Targets for the default view at 1600×900:
-
-| Tier                                 | Target                 |
-| ------------------------------------ | ---------------------- |
-| Mid-range discrete GPU, high quality | 60 FPS                 |
-| Integrated GPU, low/medium quality   | ≥ 30 FPS (today ~17)   |
-| Draw calls per frame                 | ≤ 200 (today ~314)     |
-| Triangles per frame                  | ≤ 600 k (today ~0.8 M) |
-
-_Status (m1, opening view, shadow pass included)_: ~497k triangles / ~414 draw calls, within the triangle
-target. Steps: procedural tree meshes drawn only up to the highest used slot, a 128×128 water grid and
-shadow-free fliers (877k → 685k), then a distance LOD for the terrain mesh (`src/rendering/terrainLod.ts`:
-4×4-cell blocks further than 75 units from the camera are drawn as crack-free fans over the same
-full-resolution vertices, so heights, colours, normals and the simulation's height field are unchanged;
-the terrain draws ~38k instead of 131k triangles per pass at zoom 54). `yarn bench:check` ratchets the m1
-scene and the vegetation/fauna kit (`scripts/bench_scene.mjs`).
-
-_Status (FPS, real integrated GPU)_: on an Intel UHD (Raptor Lake-S) in an 895×682 browser pane, m1
-opening view, governor pinned per preset: `main` before this work 16 / 16 / 48 FPS (high / medium /
-low), now 32 / 44 / 60 (60 is the display cap). In Chrome at 1600×695 (2.3× the pixels): `main` 13 / 13 /
-41, now 23 / 29 / 60, steady while panning or at zoom 120. The SSAO pass was then removed: with the
-camera range (near 0.5, far 6000) its depth buffer was flat and it never found occlusion (frames with
-and without it were pixel-identical) while costing a second scene render that also redrew the shadow
-map. GPU time per frame at a fixed 1600×900 buffer (frames driven manually, so independent of vsync and
-window throttling): `main` 50.7 / 50.7 / 23.3 ms, now 17.8 / 14.9 / 11.3 ms (high / medium / low). The decisive cut was the shadow map: it is redrawn
-(and, with the VSM then in use, blurred twice) every frame, and at 4096² it cost more than everything else (freezing it alone took
-medium from 14 to 52 FPS). With the frustum fitted to the view, `SHADOW_MAP_SIZE` is 2048 on high and
-1024 on medium/low: at 1600×900 and the default zoom that is ≈ 9 texels per unit with 1024 (the old 4096
-over a fixed 440-unit box gave 9.3) and ≈ 18 with 2048; a close comparison showed only softer edges. SSAO was the next largest
-cost; it has since been removed (see below).
-
-_Status (draw calls)_: ~203 per frame (414 before). Resource nodes merge their rocks, blocks and berries
-per material; the authored site merges its non-heritage meshes per material (`src/rendering/mergeStatic.ts`);
-fauna is one InstancedMesh per species and part; procedural canopies of unused or kit-drawn variants are
-hidden; each dressed worker merges its hair, eyebrows, sash and headband into one skinned mesh and its
-garments into another (`consolidateRig` in `src/rendering/modelConsolidation.ts`: colours baked into
-vertices, every glTF skin re-expressed on one skeleton), and its tool is one vertex-coloured mesh, so a
-worker is 5 draw calls instead of 10; the authored site's heritage pick volumes are no longer drawn
-(two invisible transparent passes each); flat-shaded procedural parts merge with the smooth parts of
-the same texture using faceted normals (a Caral house is 4 materials instead of 5); the sun's shadow
-frustum
-follows the view (`src/rendering/shadowFrame.ts`: the light-space box of the visible ground instead of
-a fixed ±220, which also sharpens the shadows) so off-screen casters leave the shadow pass. What remains is roughly units 50,
-the site 23, houses and centre 40 (both passes), resource nodes 24, the per-entity blob shadows, terrain,
-water and sky; the next steps would be one texture atlas for the worker body and
-garments, or batching the blob shadows.
-
-- Repeated assets are **instanced or merged**; no per-object draw call for vegetation, props or fauna.
-- Every model has **LOD0/LOD1**; the far LOD switches before the asset drops below ~40 px on screen.
-- Texel density: buildings and units ~128 px per unit; props 64–128 px per unit; terrain via macro +
-  detail maps. Textures in WebP/KTX2 within the existing `dist` budget (`yarn dist:check`).
-- `yarn bench:check` keeps the structural budgets; add new categories (vegetation, buildings) when the
-  kits land.
-
-## 12. Quality gate
+## 6. Asset quality gate
 
 An asset or scene is accepted only when:
 
-1. it is captured in the three reference views (§3) with the same seed and resolution, before and after;
+1. it is captured in the three reference views (§3), with the same seed and resolution, before and after;
 2. it passes the checklist below;
-3. its historical elements cite the dossier and carry a certainty label (documented / inferred / assumed);
-4. renders and models go through the provenance gate (`reviewed: false` until a human approves them).
+3. its historical elements cite the dossier and carry a certainty label (documented / plausible / stylized);
+4. its source, licence and hash are recorded in [`../../PROVENANCE.md`](../../PROVENANCE.md);
+5. it is seen inside the mission, not only in a Blender or GIMP viewport.
 
 Checklist:
 
 - [ ] Reads at default zoom: silhouette clear, function recognizable.
 - [ ] Same material language as its neighbours (no photo-vs-flat clash).
-- [ ] Palette within §4; saturation only where interaction or ritual needs it.
-- [ ] Terrain transitions soft and geographic; no visible tiling.
+- [ ] Palette within §5; saturation only where interaction or ritual needs it.
+- [ ] Terrain transitions soft and geographic; no visible tiling at 54.
+- [ ] Ground receives directional shadows; no floating props.
 - [ ] No anachronism and no species, structure or person without a source.
-- [ ] Within the performance budgets (§11) and `yarn bench:check`.
+- [ ] Within the performance budgets (§7) and `yarn bench:check`.
+- [ ] Provenance recorded and the RTS capture attached to the PR.
 
-Comparison against commercial RTS references is done with **local** screenshots only; third-party
-images are never committed to the repository.
+**Severity:**
 
-## 13. Rollout
+- **Blocker:** wrong history, unlicensed asset, unreadable silhouette at 54, floating geometry, a missing
+  source.
+- **Major:** material clash, tiling, wrong palette band, over-budget draw calls, flat lighting.
+- **Minor:** micro-detail, texture noise, a prop that only shows at close range. Fix after the majors.
 
-1. **Vertical slice** (one corner of the valley): river with riparian forest, wetland edge, three fields,
-   three quincha houses, the first phase of the Pyramid Mayor, deer and birds, morning light. Must meet
-   §11 and §12 before anything else is produced.
-2. Vegetation and fauna kits for the whole Supe map.
-3. Terrain layers, sea and the enlarged transect map.
-4. Pyramid phases, quincha kit, altars and fair tents.
-5. Áspero.
-6. Apply the same rules to the next mission and record what had to change.
+## 7. Performance and budgets
+
+Targets for the default view at 1600×900:
+
+| Tier                                 | Target                  |
+| ------------------------------------ | ----------------------- |
+| Mid-range discrete GPU, high quality | 60 FPS                  |
+| Integrated GPU, low/medium quality   | ≥ 30 FPS                |
+| Draw calls per frame (general)       | ≤ 200                   |
+| Triangles per frame                  | ≤ 600k                  |
+
+**Mission caps are ratified, not raised to hide a regression.** The current Tambotoco caps in
+`scripts/bench_scene.mjs` are **500k triangles / 280 draw calls** at the opening and **660k / 360** in the
+late founded settlement. The pilot must stay inside them. Prefer a neutral pass; a measured increase is
+acceptable only when it buys a visible improvement and the frame-time target still holds. E1: opening
+**437,976 / 264** (neutral against 436,880 / 265); late **614,594 / 357** structural, because the low sun
+adds shadow casters; **36 FPS** at high quality on the integrated GPU. Do not raise a cap to hide a
+regression.
+
+Asset budgets:
+
+| Asset                        | LOD0           | LOD1           | Materials / draws      |
+| ---------------------------- | -------------- | -------------- | ---------------------- |
+| Building piece               | ≤ 5k triangles | ≤ 1.5k         | ≤ 4 materials          |
+| Architecture kit             | ≤ 25k total    | ≤ 8k total     | ≤ 8 materials, 12 draws |
+| Hero character               | ≤ 40k          | —              | ≤ 40 draws             |
+| Common unit                  | ≤ 25k          | —              | ≤ 25 draws             |
+| Tree / shrub                 | ≤ 1.5k         | ≤ 400          | 2 materials            |
+| Small prop                   | ≤ 300          | —              | 1 material             |
+| Terrain texture pack         | —              | —              | WebP/KTX2, `dist` gate |
+
+Implementation rules:
+
+- Repeated assets are instanced or merged; no per-object draw call for vegetation, props or fauna.
+- Every model has LOD0/LOD1; the far LOD switches before the asset drops below ~40 px.
+- Shadow casters are limited to the silhouette; tiny eyes, crops, people and flat paving do not cast.
+- `yarn bench:check` keeps the structural budgets; `bench_scene.mjs --mission=m_tambotoco --assert` is the
+  scene gate. New categories are added when a kit lands.
+- `yarn dist:check` keeps `dist/` under 25 MB and the entry chunk under 600 KB gzip. New assets need a size
+  ledger with offsets, not just an addition.
+
+## 8. Pipeline
+
+```text
+reference / concept
+        ↓
+Blender (3D) or GIMP (2D)
+        ↓
+export (GLB or PNG)            .blend / .xcf stay in Git LFS
+        ↓
+place the game copy            src/assets/... for 3D, art-src for render sources
+        ↓
+ingest command                 yarn art:models / art:textures / art:blender
+        ↓
+manifest and/or PROVENANCE
+        ↓
+human review                   yarn art:review (renders only)
+        ↓
+game integration               StaticModel / modelAssets / architectureKit / vegetationKit
+        ↓
+RTS capture + bench            yarn art:pilot / bench_scene --assert
+```
+
+- **Blender is a local authoring tool, not a CI dependency.** CI must pass without Blender or GIMP.
+- **Procedural first, Blender for hero assets and modules that fail the QA gate.** The engine keeps the
+  fallback; a missing GLB never breaks a mission.
+- **GIMP** is for texture retouching and 2D UI art; `.xcf` sources stay in LFS and the exported PNG hash is
+  updated when a render is retouched.
+- The full commands and failure modes are in [`asset-pipeline.md`](./asset-pipeline.md); the Blender render
+  gate is in [`blender-art.md`](./blender-art.md).
+
+## 9. Cultural identity and certainty
+
+Every visual decision about a culture carries one of three labels:
+
+- **Documented:** there is a source for the form or material (Killke occupation, valley agriculture, canal
+  irrigation).
+- **Plausible:** a reconstruction from related Andean domestic practice (fieldstone/mud walls, thatch,
+  irregular plans, round qollqas).
+- **Stylized:** a presentation abstraction with no documented form (the cave arch, the Huanacaure monolith
+  shape, the Ayar clothing and headdresses, the exact hut proportions).
+
+These visual labels map to the provenance contract in [`asset-pipeline.md`](./asset-pipeline.md) and the
+manifest `confidence` values: **documented → documented**, **plausible → inferred**, **stylized → assumed**.
+The manifest stays the machine-readable source of truth; a table or dossier may use either vocabulary, but
+the mapping must be explicit.
+
+Rules:
+
+- Do not use imperial Inca architecture, clothing or technology for a pre-imperial society.
+- Do not invent names, dates, battles or species. A game abstraction is labelled as such.
+- The myth is a myth: Tambotoco is a **Leyenda**, not a dated event. The epilogue keeps the disagreement
+  between Sarmiento and Garcilaso.
+- A render or portrait is never presented as a historical photograph.
+
+The Tambotoco certainty table is in [`tambotoco-model-mission.md`](./tambotoco-model-mission.md) §"Site
+certainty"; the historical basis is [`../historia/campanas/tambotoco.md`](../historia/campanas/tambotoco.md).
+
+## 10. Rollout
+
+1. **E0 · Document and baseline.** This guide, [`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md), the
+   capture script and the before set. No gameplay change.
+2. **E1 · Light, shadow, palette and plaza.** B11 (terrain receives shadows), the low morning sun,
+   `cusco_valley` palette, water and the single-rim plaza. Macro variation, vertex AO and ground cover
+   continue in E2–E3.
+3. **E2 · Architecture.** Stone, plaster, thatch, eaves, qollqa, cancha and plaza; decide the hero GLB pieces.
+4. **E3 · Landscape.** Highland vegetation kit, clustering, rocks, water and paths.
+5. **E4 · Characters.** Tambotoco hero GLB and a common-unit variant; proportions, textiles and headdresses.
+6. **E5 · Presentation.** The three beats and the Inticancha foundation.
+7. **E6 · Validation and approval.** 3 cameras × 3 resolutions, bench, provenance, docs and human review.
+8. **E7 · Production.** Only after E6 is approved: the cave, camp, Huanacaure, hamlets, acequia, fields,
+   Inticancha and the eight Ayar.
+
+**Standardization.** After the pilot, future campaigns share the quality bar, the pipeline, the palette
+method and the performance gate — not the same look. Each campaign defines its own regional palette,
+architecture kit, vegetation kit and cast variants.
+
+## 11. Caral precedent
+
+Caral proved the production path and the performance limits; it remains the reference for the coastal
+Preceramic language.
+
+- The Caral architecture kit, vegetation kit, prop kit and fauna kit are the template for Tambotoco's Blender
+  pipeline.
+- The shadow map, not the geometry, was the largest frame cost. The current policy (view-fitted frustum,
+  2048/1024, PCF, casters only) came from that measurement. SSAO was removed after it proved invisible at the
+  camera range.
+- Merging by material, instancing and LOD cut the opening from ~414 to ~203 draw calls and ~685k to ~497k
+  triangles in the Caral pass. The same discipline applies here.
+- The Caral measured details and implementation status stay in
+  [`visual-language.md`](./visual-language.md) §"Caral visual pilot" and
+  [`caral-model-mission.md`](./caral-model-mission.md).
+
+## 12. See also
+
+[`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md) · [`visual-language.md`](./visual-language.md) ·
+[`asset-pipeline.md`](./asset-pipeline.md) · [`characters.md`](./characters.md) ·
+[`tambotoco-model-mission.md`](./tambotoco-model-mission.md) ·
+[`campaign-quality-bar.md`](./campaign-quality-bar.md) · [`../historia/arquitectura.md`](../historia/arquitectura.md) ·
+[`../historia/atuendos.md`](../historia/atuendos.md) · [`../../PROVENANCE.md`](../../PROVENANCE.md)

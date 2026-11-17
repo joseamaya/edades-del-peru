@@ -132,6 +132,7 @@ ingestion writes the generated provenance copy under `public/media/generated/PRO
 | `yarn art:textures --terrain` | Verify/download the CC0 terrain sources and pack `_albedo`/`_surface` |
 | `yarn art:validate` | Validate the render manifest and assets |
 | `yarn art:review` | Record the human approval/rejection of a render |
+| `yarn art:pilot` | Capture the Tambotoco art-direction pilot before/after (`--tag`, `--quality`, `--sizes`, `--views`) |
 | `yarn bench:check` | Check rig/fauna/mounted/siege/tank/vehicle/mixed structural budgets |
 | `yarn dist:check` | Verify `dist/` and the entry chunk budget |
 

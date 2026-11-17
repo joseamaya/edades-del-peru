@@ -40,6 +40,16 @@ const PHASE_SHRINE = 'huanacaure';
 const PHASE_INTICANCHA = 'inticancha';
 const PHASE_FOUNDED = 'fundada';
 
+/** Surface families that add nothing readable to the shadow silhouette (see `addPhase`). */
+const NO_SHADOW_FAMILIES: ReadonlySet<SurfaceFamily> = new Set(['crops', 'cropsWet', 'people', 'wood']);
+/** The late Inticancha phases also drop plaster, earth and loose rock to stay inside the 360-call cap. */
+const NO_SHADOW_FAMILIES_LATE: ReadonlySet<SurfaceFamily> = new Set([
+  ...NO_SHADOW_FAMILIES,
+  'earth',
+  'rock',
+  'plaster',
+]);
+
 interface LifeSource {
   readonly x: number;
   readonly z: number;
@@ -226,8 +236,11 @@ export class AylluSite {
       const mesh = new THREE.Mesh(merged, this.materialFor(family));
       mesh.name = `ayllu:${phase}:${family}`;
       mesh.userData.family = family;
-      // Crops, the tiny merged villagers and flat paving add nothing to the shadow silhouette.
-      mesh.castShadow = castShadow && family !== 'crops' && family !== 'cropsWet' && family !== 'people';
+      // Crops, villagers and wood add nothing to the shadow silhouette. The late Inticancha phases
+      // also drop plaster/earth/rock; the cave and shrine keep their rock and earth shadows.
+      const noShadow =
+        phase === PHASE_INTICANCHA || phase === PHASE_FOUNDED ? NO_SHADOW_FAMILIES_LATE : NO_SHADOW_FAMILIES;
+      mesh.castShadow = castShadow && !noShadow.has(family);
       mesh.receiveShadow = true;
       group.add(mesh);
       this.geometries.push(merged);

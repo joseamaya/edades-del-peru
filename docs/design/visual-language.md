@@ -4,6 +4,12 @@ Art direction for Edades del Perú. It fixes how terrain, architecture, material
 vegetation and colour read on screen so that **a player can recognise the period,
 the region and the civilization without reading the mission name**.
 
+The current reference scene is **Tambotoco** (`m_tambotoco`): the target rules live in
+[`art-direction.md`](./art-direction.md) and the pilot audit, asset inventory and backlog in
+[`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md). The **Caral visual pilot** below remains the
+implementation precedent and the measured performance baseline; it is no longer the scene that sets the
+standard.
+
 This is an implementation-facing document: it names the code that owns each
 decision and links the historical claims to [`docs/historia/`](../historia/).
 Where a value is a gameplay abstraction rather than a reconstruction it is marked
@@ -460,7 +466,9 @@ structures or anachronistic materials.
 ## See also
 
 - [`art-direction.md`](./art-direction.md) — the stylized-realism quality target, palette, budgets and
-  quality gate, with Caral as the reference scene.
+  quality gate, with Tambotoco as the reference scene.
+- [`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md) — the current pilot audit, reference scene, asset
+  inventory and staged plan.
 - [`caral-sacred-city.md`](./caral-sacred-city.md) — the source-backed Caral
   scenario set-piece (Upper/Lower halves, six pyramids, river valley).
 - [`cultural-landscape.md`](./cultural-landscape.md) — design proposal for a

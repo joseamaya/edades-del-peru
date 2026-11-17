@@ -135,6 +135,9 @@ export const mTambotoco: MissionDef = {
     ],
   },
   timeOfDay: 'morning',
+  // 0.5 is noon in Sky; 0.34 is a low mid-morning sun (~31°) from the east. The cave ring, the eaves
+  // and the walls cast; the late phases drop flat earth/rock to keep the draw-call cap.
+  timeOfDayValue: 0.34,
   startingEra: Era.TAHUANTINSUYO,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
   unitSpeedScale: 0.75,

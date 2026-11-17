@@ -17,6 +17,7 @@ The map is deliberately a router, not a summary. Detailed rules live in the docu
 | Check a historical fact, name or date | [`historia/README.md`](./historia/README.md) and the matching dossier |
 | Model something in Blender or retouch in GIMP | [`design/asset-pipeline.md`](./design/asset-pipeline.md), then [`design/authoring-tools.md`](./design/authoring-tools.md) and [`design/blender-art.md`](./design/blender-art.md) |
 | Design a named character or audit the cast | [`design/characters.md`](./design/characters.md) |
+| Set or audit the visual direction | [`design/art-direction.md`](./design/art-direction.md), then [`design/tambotoco-art-pilot.md`](./design/tambotoco-art-pilot.md) |
 | Understand the engine, subsystems or a code trap | [`development.md`](./development.md) |
 | Contribute code, docs or tests | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) and [`../AGENTS.md`](../AGENTS.md) |
 | Check an asset licence or provenance | [`../PROVENANCE.md`](../PROVENANCE.md) |
@@ -52,8 +53,8 @@ indexed document, and every new document must state its status near the top.
 
 The main living documents are the GDD, this map, the ADR index, `design/campaign-quality-bar.md`,
 `design/model-mission-pattern.md`, `design/characters.md`, `design/asset-pipeline.md`,
-`design/art-direction.md`, `design/visual-language.md`, `development.md` and the historical dossiers. The ADR
-records themselves are **Accepted** and immutable.
+`design/art-direction.md`, `design/tambotoco-art-pilot.md`, `design/visual-language.md`, `development.md` and
+the historical dossiers. The ADR records themselves are **Accepted** and immutable.
 
 ## Document index
 
@@ -89,7 +90,8 @@ and new records change.
 | [`design/characters.md`](./design/characters.md) | Cast, likeness certainty, hero treatment and animation minimums | Living |
 | [`design/asset-pipeline.md`](./design/asset-pipeline.md) | Start-here route for Blender/GIMP assets, ingest commands, provenance and review | Living |
 | [`design/campaign-redesign.md`](./design/campaign-redesign.md) | Approved structure for the Tahuantinsuyo, Virreinato, Independencia and República chapters | Approved (partially implemented) |
-| [`design/art-direction.md`](./design/art-direction.md) | Stylized-realism rules: camera, palette, terrain, light, budgets | Living |
+| [`design/art-direction.md`](./design/art-direction.md) | Stylized-realism rules: camera, palette, characters, architecture, landscape, light, budgets (Tambotoco reference) | Living |
+| [`design/tambotoco-art-pilot.md`](./design/tambotoco-art-pilot.md) | Pilot audit, reference scene, asset inventory, size ledger, backlog and staged plan | Living |
 | [`design/visual-language.md`](./design/visual-language.md) | Silhouettes, materials, emblems, rigged models and set-pieces | Living |
 | [`design/cultural-landscape.md`](./design/cultural-landscape.md) | Cultural-landscape layer: data model, rendering and integration | Living |
 | [`design/menu-ux.md`](./design/menu-ux.md) | Onboarding, campaign flow and menu behaviour | Living |
