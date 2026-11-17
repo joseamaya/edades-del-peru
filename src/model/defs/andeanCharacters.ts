@@ -214,9 +214,10 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
   collas_lupaca: GENERAL_ANDEAN_SPEC,
   huanca: GENERAL_ANDEAN_SPEC,
   // Killke ayllus: a plain tunic, short manta and sling; no imperial gear or metal.
-  inca_killke: { ...GENERAL_ANDEAN_SPEC, shield: false, manta: 'short' },
-  // Valley ayllus: the same plain kit, with the green/earth civ palette.
-  ayllus: { ...GENERAL_ANDEAN_SPEC, shield: false, manta: 'short' },
+  // Killke/ayllu honderos and porras (tambotoco-model-mission.md): plain tunic, short manta and the
+  // documented rodela (atuendos.md); no imperial helmet, maskapaycha or metal. Presentation abstraction.
+  inca_killke: { ...GENERAL_ANDEAN_SPEC, manta: 'short' },
+  ayllus: { ...GENERAL_ANDEAN_SPEC, manta: 'short' },
 };
 
 function andeanCultureForCiv(civ: CivId): AndeanCulture | null {
@@ -230,7 +231,11 @@ export function andeanCultureForEra(civ: CivId, era: Era): AndeanCulture | null 
 
 export function andeanCultureForVariant(variant: string): AndeanCulture | null {
   if (variant.startsWith('inca_chasqui_')) return null;
-  return ANDEAN_CULTURES.find((culture) => variant.startsWith(`${culture}_`)) ?? null;
+  // Longest prefix wins: `inca_killke_*` also starts with `inca_`.
+  return (
+    [...ANDEAN_CULTURES].sort((a, b) => b.length - a.length).find((culture) => variant.startsWith(`${culture}_`)) ??
+    null
+  );
 }
 
 export function andeanRoleForVariant(variant: string): AndeanRole | null {

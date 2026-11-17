@@ -10,6 +10,7 @@ import {
 } from '../src/model/defs/modelAssets';
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
 import { CIVS } from '../src/model/defs/civs';
+import { andeanCultureForVariant, andeanPalette, andeanRoleForVariant } from '../src/model/defs/andeanCharacters';
 import { getPeriod } from '../src/model/defs/periods';
 import { unitTrainableInPeriod } from '../src/model/defs/units';
 import { MOUNTED_SPECS } from '../src/model/defs/mountedCharacters';
@@ -210,6 +211,14 @@ describe('rigged model assets', () => {
     expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.REALISTAS])).toContain('caral_worker');
   });
 
+  it('resolves the longest Andean culture prefix and its palette', () => {
+    expect(andeanCultureForVariant('inca_killke_soldier_f')).toBe('inca_killke');
+    expect(andeanRoleForVariant('inca_killke_soldier_f')).toBe('soldier');
+    expect(andeanPalette('inca_killke').primary).toBe(0xb08a4a);
+    expect(andeanCultureForVariant('ayllus_worker_m')).toBe('ayllus');
+    expect(andeanCultureForVariant('inca_chasqui_m')).toBeNull();
+  });
+
   it('gives the Killke señorío and the valley ayllus their own variants', () => {
     expect(unitModelAsset(UnitKind.WORKER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 1)?.variant).toBe(
       'inca_killke_worker_m',
@@ -226,7 +235,7 @@ describe('rigged model assets', () => {
     expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 3, 'female')?.variant).toBe(
       'inca_killke_soldier_f',
     );
-    // The Killke señorío shares the Chanca kit, and the recursion must carry the override.
+    // The Killke señorío has its own variant, and the recursion must carry the override.
     expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 3, 'female')?.asset).toBe(
       'caral_worker',
     );

@@ -113,6 +113,11 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 | Formativo (Caral/Chavín) | taparrabos + manta simple | cinta de tela | porra/macana de piedra | — | — |
 | Estados Regionales (Moche/Nazca/Recuay/Tiahuanaco/Wari) | uncu/túnica con tocapu | casco cónico (metal) o diadema + orejeras | porra + lanza/honda | túnica acolchada, backflap (Moche), disco pectoral (Wari) | rodela |
 | Tahuantinsuyo (Inca/Chanca/Chimú/Chincha) | uncu ajedrezado + canesú rojo | llawt'u + maskapaycha (élite), diadema+orejeras | porra + honda (sierra); arco (aux. selva) | casco acolchado | rodela |
+
+- **Killke y ayllus del valle (Intermedio Tardío, presentación)**: uncu simple, manta corta y **rodela**;
+  sin maskapaycha ni metal imperial. Los honderos y porras son la abstracción de juego del señorío
+  (`docs/design/tambotoco-model-mission.md`); no hay una prenda Killke documentada pieza por pieza.
+
 | Virreinato (Realistas) | casaca/chupa azul, divisa roja | morrión/bicornio | fusil/arcabuz + sable/lanza | cuera (frontera) | — |
 | República (Patriotas/Guerra del Pacífico) | guerrera/dormán azul, pantalón | kepí (chacó en gala) | fusil Comblain/Peabody-Martini + bayoneta | — | — |
 | Contemporáneo (Perú) | uniforme de campaña | casco | fusil de asalto | chaleco | — |

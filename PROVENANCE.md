@@ -200,7 +200,7 @@ slot is absent (offline / without assets).
 ### Tambotoco E4a Killke/ayllu variants (in-engine evidence)
 
 - **Location**: `docs/media/tambotoco-e4a-hero-{before,after}.webp`, 960x540 WebP q58, ~36 KB.
-- **Source**: `yarn art:pilot --tag=e4a --quality=neutral --sizes=1600x900 --views=hero` on this branch;
+- **Source**: `yarn art:pilot --tag=e4a2 --quality=neutral --sizes=1600x900 --views=hero` on this branch;
   `before` is `d32c526` (E3b, Chanca proxy). The `hero` view stages Ayar Manco and a worker at the hualla.
 - **Content**: both figures use the same CC0 `caral_worker` asset; E4a selects the Killke and valley-ayllu
   palettes/garments instead of the Chanca proxy. No new mesh, body or clip is added.
