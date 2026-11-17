@@ -3,10 +3,12 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { isKnownPhase, phaseOrder, type SitePhasePlan } from '../model/defs/sitePhases';
 import {
   TAMBOTOCO_CAVE,
+  TAMBOTOCO_BRIDGES,
   TAMBOTOCO_CANCHAS,
   TAMBOTOCO_FIELDS,
   TAMBOTOCO_INTICANCHA,
   TAMBOTOCO_INTICANCHA_HUTS,
+  TAMBOTOCO_PATHS,
   TAMBOTOCO_PLAZA_RADIUS,
   TAMBOTOCO_SHRINE,
   TAMBOTOCO_SHRINE_HUTS,
@@ -16,17 +18,20 @@ import {
 } from '../model/defs/tambotocoLayout';
 import {
   aylluHut,
-  aylluSurfaceTextures,
   canchaPlot,
   caveMouth,
   pavedPlaza,
   retainingTerrace,
   shrinePlatform,
   shrineStone,
+  stoneBridge,
+  stonePath,
+  surfaceDetail,
   terracedField,
   villageDressing,
   villagers,
   type Parts,
+  type SurfaceFamily,
 } from './aylluKit';
 import type { Particles } from './Particles';
 
@@ -59,9 +64,10 @@ export class AylluSite {
   readonly group = new THREE.Group();
   private readonly phases: PhaseGroup[] = [];
   private readonly life: LifeSource[] = [];
-  private readonly material: THREE.MeshStandardMaterial;
+  private readonly materials = new Map<SurfaceFamily, THREE.MeshStandardMaterial>();
   private readonly geometries: THREE.BufferGeometry[] = [];
   private phase = PHASE_CAVE;
+  private detailVisible = true;
 
   constructor(
     parent: THREE.Object3D,
@@ -71,7 +77,6 @@ export class AylluSite {
   ) {
     this.group.name = 'ayllu_site';
     parent.add(this.group);
-    this.material = this.createMaterial();
     const ground = (x: number, z: number): number => this.heightAt(x, z) - baseY;
 
     const caveParts: Parts = [];
@@ -102,6 +107,8 @@ export class AylluSite {
       villagers(caveParts, village.x, yard, village.z, 2);
       terracedField(caveParts, village.field, ground);
     }
+    for (const path of TAMBOTOCO_PATHS.filter((p) => p.since === 'cave')) stonePath(caveParts, path, ground);
+    for (const bridge of TAMBOTOCO_BRIDGES) stoneBridge(caveParts, bridge, ground);
     this.addPhase(PHASE_CAVE, caveParts);
 
     // The huaca stone appears with the pilgrimage's arrival: the phase is the deed, not a label.
@@ -119,15 +126,17 @@ export class AylluSite {
     // Inticancha in two steps. Act IV only traces it (paved plaza, altar and the four cancha plots) for
     // the player's store and houses; the living settlement (houses, terraces, fields, people, fire)
     // appears once the four canchas stand, never before the ayllus have built anything.
-    const inticancha: Parts = [];
-    const founded: Parts = [];
     const plaza = TAMBOTOCO_INTICANCHA;
+    const inticancha: Parts = [];
     pavedPlaza(inticancha, plaza.x, plaza.z, TAMBOTOCO_PLAZA_RADIUS, ground);
+    const plazaPath = TAMBOTOCO_PATHS.find((p) => p.since === 'inticancha');
+    if (plazaPath) stonePath(inticancha, plazaPath, ground);
     for (const cancha of TAMBOTOCO_CANCHAS) {
       canchaPlot(inticancha, cancha.dx, cancha.dz, plaza, ground);
     }
-    this.addPhase(PHASE_INTICANCHA, inticancha);
+    this.addPhase(PHASE_INTICANCHA, inticancha, false);
 
+    const founded: Parts = [];
     for (const terrace of TAMBOTOCO_TERRACES) retainingTerrace(founded, terrace, ground);
     for (const f of TAMBOTOCO_FIELDS) terracedField(founded, f, ground);
     for (const h of TAMBOTOCO_INTICANCHA_HUTS) this.hut(founded, h, ground, PHASE_FOUNDED);
@@ -167,33 +176,75 @@ export class AylluSite {
     });
   }
 
-  /** One material for the whole kit; the generated grain and normal break the flat faces. */
-  private createMaterial(): THREE.MeshStandardMaterial {
-    const { map, normalMap } = aylluSurfaceTextures();
-    return new THREE.MeshStandardMaterial({
+  /** One material per surface family; the generated detail set breaks the flat faces. */
+  private materialFor(family: SurfaceFamily): THREE.MeshStandardMaterial {
+    let material = this.materials.get(family);
+    if (material) return material;
+    const detail = surfaceDetail(family);
+    const textured = family !== 'crops' && family !== 'cropsWet' && family !== 'people';
+    material = new THREE.MeshStandardMaterial({
       vertexColors: true,
-      roughness: 0.93,
+      roughness: detail.roughness,
       metalness: 0,
-      map,
-      normalMap,
-      normalScale: new THREE.Vector2(0.45, 0.45),
+      map: textured ? detail.map : null,
+      normalMap: textured ? detail.normalMap : null,
+      normalScale: new THREE.Vector2(detail.normalScale, detail.normalScale),
     });
+    this.materials.set(family, material);
+    return material;
   }
 
-  private addPhase(phase: string, parts: Parts): void {
-    if (!parts.length) return;
-    const merged = mergeGeometries(parts, false);
-    parts.forEach((g) => g.dispose());
-    if (!merged) return;
-    const mesh = new THREE.Mesh(merged, this.material);
-    mesh.name = `ayllu:${phase}`;
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
+  /** One group per phase; the meshes inside are split by place so frustum culling can drop them. */
+  private phaseGroup(phase: string): THREE.Group {
+    const existing = this.phases.find((entry) => entry.phase === phase);
+    if (existing) return existing.group;
     const group = new THREE.Group();
-    group.add(mesh);
+    group.name = `ayllu:${phase}`;
     this.group.add(group);
-    this.geometries.push(merged);
     this.phases.push({ phase, group });
+    return group;
+  }
+
+  /**
+   * Merge one place of one phase per surface family. A single merged mesh per phase had a bounding
+   * box across the whole 256 m site, so the cave drew the valley hamlets and the shadow pass with it.
+   */
+  private addPhase(phase: string, parts: Parts, castShadow = true): void {
+    if (!parts.length) return;
+    const byFamily = new Map<SurfaceFamily, THREE.BufferGeometry[]>();
+    for (const geometry of parts) {
+      const family = (geometry.userData.surface as SurfaceFamily | undefined) ?? 'stone';
+      const bucket = byFamily.get(family);
+      if (bucket) bucket.push(geometry);
+      else byFamily.set(family, [geometry]);
+    }
+    const group = this.phaseGroup(phase);
+    for (const [family, geometries] of byFamily) {
+      const merged = mergeGeometries(geometries, false);
+      geometries.forEach((g) => g.dispose());
+      if (!merged) continue;
+      const mesh = new THREE.Mesh(merged, this.materialFor(family));
+      mesh.name = `ayllu:${phase}:${family}`;
+      mesh.userData.family = family;
+      // Crops, the tiny merged villagers and flat paving add nothing to the shadow silhouette.
+      mesh.castShadow = castShadow && family !== 'crops' && family !== 'cropsWet' && family !== 'people';
+      mesh.receiveShadow = true;
+      group.add(mesh);
+      this.geometries.push(merged);
+    }
+  }
+
+  /** Strategic-zoom LOD: the tiny crop rows and static villagers vanish before the site reads as a blob. */
+  updateLod(zoom: number): void {
+    const detail = zoom < 82;
+    if (detail === this.detailVisible) return;
+    this.detailVisible = detail;
+    for (const phase of this.phases) {
+      for (const child of phase.group.children) {
+        const family = child.userData.family as SurfaceFamily | undefined;
+        if (family === 'crops' || family === 'cropsWet' || family === 'people') child.visible = detail;
+      }
+    }
   }
 
   /** Show the pieces whose phase has been reached; the order is the site plan's, not the engine's. */
@@ -227,12 +278,12 @@ export class AylluSite {
         y: source.y,
         z: source.z,
         count,
-        color: source.kind === 'fire' ? 0xff8a2a : 0x9a958a,
+        color: source.kind === 'fire' ? 0xff8a2a : 0x9a9488,
         kind: source.kind,
         speed: source.kind === 'fire' ? 0.45 : 0.7,
-        life: source.kind === 'fire' ? 0.9 : 3,
-        size: source.kind === 'fire' ? 0.7 : 1.2,
-        grow: source.kind === 'fire' ? 1 : 1.5,
+        life: source.kind === 'fire' ? 0.8 : 4,
+        size: source.kind === 'fire' ? 0.5 : 0.7,
+        grow: source.kind === 'fire' ? 1 : 1.3,
         spread: source.kind === 'fire' ? 0.3 : 0.5,
       });
     };
@@ -240,15 +291,22 @@ export class AylluSite {
     for (const source of nearby) if (source.kind === 'fire') emit(source, 1);
     const smokes = nearby.filter((s) => s.kind === 'smoke');
     if (smokes.length) {
-      emit(smokes[lifeTurn % smokes.length]!, 2);
+      emit(smokes[lifeTurn % smokes.length]!, 1);
       emit(smokes[(lifeTurn + 1) % smokes.length]!, 1);
     }
+  }
+
+  /** Show the canal's effect on the crops: a visible wet-green shift when the acequia is flowing. */
+  setIrrigated(wet: boolean): void {
+    const crops = this.materials.get('cropsWet');
+    if (crops) crops.color.setHex(wet ? 0xd8f0c4 : 0xffffff);
   }
 
   dispose(): void {
     this.group.removeFromParent();
     for (const g of this.geometries) g.dispose();
     this.geometries.length = 0;
-    this.material.dispose();
+    for (const material of this.materials.values()) material.dispose();
+    this.materials.clear();
   }
 }

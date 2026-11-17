@@ -87,7 +87,9 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
           pectoral: visible(unit, 'attire_andean_pectoral'),
           backplate: visible(unit, 'attire_andean_backplate'),
           strap: visible(unit, 'attire_andean_pectoral_strap'),
-          facePaint: visible(unit, 'attire_andean_face_paint'),
+          facePaint:
+            visible(unit, 'attire_andean_face_paint') ||
+            !!unit?.rig?.root.getObjectByName('attire_headband')?.userData.facePaint,
           sash: visible(unit, 'attire_andean_sash'),
           hasAttack: unit?.rig?.hasState('attack') ?? false,
           attackClip: unit?.rig?.currentClipName ?? null,

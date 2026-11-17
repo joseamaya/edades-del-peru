@@ -76,14 +76,14 @@ test('the Moche campaign uses rigged infantry instead of primitives', async ({ p
   expect(out.soldier.carry).toBe(false);
   expect(out.soldier.sash).toBe(false);
   expect(out.soldier.hasAttack).toBe(true);
-  expect(out.soldier.attackClip).toBe('TreeChopping_Loop');
+  expect(out.soldier.attackClip).toBe('Sword_Regular_A');
 
   expect(out.ranged.variant).toMatch(/^moche_ranged_[fm]$/);
   expect(out.ranged.sling).toBe(true);
   expect(out.ranged.helmet).toBe(false);
   expect(out.ranged.tool).toBe(false);
   expect(out.ranged.hasAttack).toBe(true);
-  expect(out.ranged.attackClip).toBe('Punch_Jab');
+  expect(out.ranged.attackClip).toBe('OverhandThrow');
 
   expect(out.worker.variant).toMatch(/^moche_worker_[fm]$/);
   expect(out.worker.tool).toBe(true);

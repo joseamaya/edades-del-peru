@@ -1802,7 +1802,7 @@ export class Unit {
       if (bld.garrisonedIds.length < capacity) {
         bld.garrisonUnit(this.id, this.owner);
         this.garrisonedIn = bld.id;
-        if (this.view) this.view.group.visible = false;
+        if (this.view) this.view.setVisible(false);
         this.finishOrder();
       } else {
         // building full: stay nearby waiting
@@ -1985,7 +1985,7 @@ export class Unit {
     if (s.tag) this.tag = s.tag;
     this.view?.setPosition(this.pos.x, this.pos.y, this.pos.z);
     this.view?.setFacing(this.yaw);
-    if (this.view) this.view.group.visible = this.garrisonedIn === null;
+    if (this.view) this.view.setVisible(this.garrisonedIn === null);
     this.view?.updateHealth(this.hp / this.maxHp);
   }
 }

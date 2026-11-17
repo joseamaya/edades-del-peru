@@ -201,6 +201,16 @@ describe('historical architecture profiles', () => {
     }
   });
 
+  it('keeps Killke and the valley ayllus on domestic fieldstone, not imperial Inca masonry', () => {
+    for (const civ of [CivId.INCA_KILLKE, CivId.AYLLUS]) {
+      const p = archProfileFor(civ, Era.TAHUANTINSUYO);
+      expect(p.wall, civ).toBe('fieldstone');
+      expect(p.roof, civ).toBe('thatch');
+      expect(p.foundation, civ).toBe('terrace');
+      expect(p.ornament.niches, civ).not.toBe(true);
+    }
+  });
+
   it('keeps every coetaneous pre-Hispanic pair distinct in silhouette or structure', () => {
     const pre = CIVS.filter((c) => c.periods.some((p) => getPeriod(p).level < Era.VICEROYALTY));
     const sig = (civId: CivId, level: Era): string => {

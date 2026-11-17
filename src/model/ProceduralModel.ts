@@ -33,6 +33,7 @@ type TexKind =
   | 'cutstone'
   | 'megalith'
   | 'fieldstone'
+  | 'plaster'
   | 'thatch'
   | 'flatstone'
   | 'flatmetal'
@@ -103,6 +104,7 @@ const TEX_DEFAULTS: Record<TexKind, { roughness: number; metalness: number }> = 
   cutstone: { roughness: 0.9, metalness: 0.05 },
   megalith: { roughness: 0.95, metalness: 0.05 },
   fieldstone: { roughness: 0.95, metalness: 0.03 },
+  plaster: { roughness: 0.9, metalness: 0 },
   thatch: { roughness: 0.98, metalness: 0 },
   flatstone: { roughness: 0.92, metalness: 0.03 },
   flatmetal: { roughness: 0.45, metalness: 0.6 },
@@ -125,6 +127,7 @@ const TEX_GEN: Partial<Record<TexKind, string>> = {
   cutstone: 'wall_cutstone',
   megalith: 'wall_megalith',
   fieldstone: 'wall_fieldstone',
+  plaster: 'plaster_detail',
   concrete: 'wall_concrete',
   thatch: 'roof_thatch',
   flatstone: 'roof_flatstone',
@@ -1424,6 +1427,8 @@ function andeanWall(b: Builder): string {
   // Caral's plastered stone reads light and sandy, not the darker adobe of the
   // later north-coast huacas (sources: caral.md, arquitectura.md).
   if (b.civId === CivId.CARAL && b.context.caralSetpiece) return mixHex(p, '#d8c8a8', 0.86);
+  // Killke and the valley ayllus share the ayllu kit's warm fieldstone/plaster language.
+  if (b.civId === CivId.INCA_KILLKE || b.civId === CivId.AYLLUS) return mixHex(p, '#d2c2a6', 0.65);
   switch (b.arch.wall) {
     case 'megalithic':
       return mixHex(p, '#b4aca0', 0.78);
@@ -1457,13 +1462,15 @@ function andeanTex(b: Builder): TexKind {
   // Chavín's carved stone reads better with the lighter procedural stone map
   // than with the near-black megalith AI texture. Caral uses the same light
   // stone for its plastered platforms and houses.
+  if (b.civId === CivId.INCA_KILLKE || b.civId === CivId.AYLLUS) return 'plaster';
   if (b.civId === CivId.CHAVIN || (b.civId === CivId.CARAL && b.context.caralSetpiece)) return 'stone';
   return WALL_TEX[b.arch.wall];
 }
 
 /** Foundation texture: terraces are always fieldstone, else the wall material. */
 function foundationTex(b: Builder): TexKind {
-  return b.arch.foundation === 'terrace' ? 'fieldstone' : andeanTex(b);
+  if (b.arch.foundation !== 'terrace') return andeanTex(b);
+  return b.civId === CivId.INCA_KILLKE || b.civId === CivId.AYLLUS ? 'stone' : 'fieldstone';
 }
 
 /** Facade texture from the architecture profile for the colonial/republican builders. */

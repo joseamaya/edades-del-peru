@@ -81,14 +81,16 @@ const ANDEAN_NON_WORKER_CLIPS: Partial<Record<RigClipState, string | null>> = {
   walk: 'Walk_Loop',
   gather: null,
   build: null,
-  attack: 'Punch_Jab',
+  attack: 'Sword_Regular_A',
 };
 
 const ANDEAN_CLIP_OVERRIDES: Record<AndeanRole, Partial<Record<RigClipState, string | null>>> = {
-  worker: { attack: 'TreeChopping_Loop' },
-  scout: ANDEAN_NON_WORKER_CLIPS,
-  soldier: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'TreeChopping_Loop' },
-  ranged: ANDEAN_NON_WORKER_CLIPS,
+  // A worker has no war club: the existing jab is the least-wrong unarmed defence.
+  worker: { attack: 'Punch_Jab' },
+  scout: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'Punch_Jab' },
+  soldier: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'Sword_Regular_A' },
+  // A slinger throws: the old Punch_Jab made every hondero punch the air.
+  ranged: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'OverhandThrow' },
   amauta: { ...ANDEAN_NON_WORKER_CLIPS, attack: null },
 };
 

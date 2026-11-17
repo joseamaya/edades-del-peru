@@ -101,6 +101,8 @@ export interface HistoricalMapProfile {
   vegetation: {
     density: number;
     variants: Partial<Record<TreeVariant, number>>;
+    /** Optional multiplier on the low ground-cover budget (0 = none; default 1). */
+    groundCover?: number;
   };
   /** A documented fruit shrub for the food nodes; omitted keeps the generic berry bush. */
   berryShrub?: BerryShrubId;

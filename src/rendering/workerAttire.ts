@@ -5,7 +5,7 @@ import { applyGeneratedPbr } from './Biomes';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
-import { createRigAttireTools } from './rigAttire';
+import { createRigAttireTools, mergeColoredGeometry } from './rigAttire';
 import { consolidateRig } from './modelConsolidation';
 import {
   ANDEAN_SPECS,
@@ -83,7 +83,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     tintGarment(male ? 'attire_wrap_m' : 'attire_skirt_f', palette.secondary);
   }
 
-  const bandMat = makeMaterial(palette ? palette.accent : chasqui ? 0xc8a040 : scout ? 0x9a5a3a : 0x8a3b2a, 0.9);
+  const bandColor = new THREE.Color(palette ? palette.accent : chasqui ? 0xc8a040 : scout ? 0x9a5a3a : 0x8a3b2a);
   const woodMat = makeMaterial(0x6b4a2f, 0.9);
   const stoneMat = makeMaterial(0x8a8f94, 0.85);
   const carryMat = makeMaterial(0x8a6a3a, 0.95);
@@ -92,22 +92,27 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
 
   const head = bone('Head');
   if (head) {
-    const band = new THREE.Mesh(trackGeometry(new THREE.TorusGeometry(0.098, 0.011, 6, 20)), bandMat);
-    band.name = 'attire_headband';
-    band.rotation.x = Math.PI / 2;
-    band.position.set(0, 0.16, 0);
-    head.add(band);
-    enableShadows(band);
-  }
-
-  if (spec?.facePaint && (role === 'soldier' || role === 'ranged') && head) {
-    const paintMat = makeMaterial(0x6a2a22, 0.9);
-    for (const side of [-1, 1]) {
-      const mark = new THREE.Mesh(trackGeometry(new THREE.BoxGeometry(0.026, 0.012, 0.006)), paintMat);
-      mark.name = 'attire_andean_face_paint';
-      mark.position.set(side * 0.034, 0.035, 0.1);
-      head.add(mark);
-      enableShadows(mark);
+    // Band + face paint in one vertex-coloured mesh: the old two-to-four head attachments were
+    // separate draws on every Andean unit.
+    const pieces: [THREE.BufferGeometry, THREE.Color][] = [
+      [new THREE.TorusGeometry(0.098, 0.011, 6, 20).rotateX(Math.PI / 2).translate(0, 0.16, 0), bandColor],
+    ];
+    if (spec?.facePaint && (role === 'soldier' || role === 'ranged')) {
+      for (const side of [-1, 1]) {
+        pieces.push([
+          new THREE.BoxGeometry(0.026, 0.012, 0.006).translate(side * 0.034, 0.035, 0.1),
+          new THREE.Color(0x6a2a22),
+        ]);
+      }
+    }
+    const merged = mergeColoredGeometry(pieces);
+    if (merged) {
+      const details = new THREE.Mesh(trackGeometry(merged), makeMaterial(0xffffff, 0.9));
+      (details.material as THREE.MeshStandardMaterial).vertexColors = true;
+      details.name = 'attire_headband';
+      details.userData.facePaint = !!(spec?.facePaint && (role === 'soldier' || role === 'ranged'));
+      head.add(details);
+      enableShadows(details);
     }
   }
 

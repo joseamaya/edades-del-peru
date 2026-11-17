@@ -87,6 +87,9 @@ export const LANDSCAPE: Record<GeographicRegion, CulturalLandscapeProfile> = {
     settlementShape: 'riverside',
     provenance: 'docs/historia/mapas.md (Chavín/Recuay/Huanca: andenes y valle; abstracción: muros)',
   },
+  // Tambotoco's ayllu fields, roads and terraces are authored by `AylluSite`; the generic field planes
+  // read as floating planks on the Pacaritambo slope and duplicated the hamlets' chacras. Keep only the
+  // low andenes/walls that frame the valley, and let the authored kit own the settlement.
   high_andes: {
     features: [
       { feature: 'terrace', weight: 0.9 },
@@ -115,6 +118,21 @@ export const LANDSCAPE: Record<GeographicRegion, CulturalLandscapeProfile> = {
     settlementShape: 'dispersed',
     provenance: 'docs/historia/mapas.md (selva alta: ríos y bosque húmedo; abstracción: cultivos y senderos)',
   },
+};
+
+/**
+ * Tambotoco's ayllu fields, roads and terraces are authored by `AylluSite`; the generic field planes
+ * read as floating planks on the Pacaritambo slope and duplicated the hamlets' chacras. Keep only the
+ * low andenes/walls that frame the valley, and let the authored kit own the settlement.
+ */
+export const TAMBOTOCO_LANDSCAPE: CulturalLandscapeProfile = {
+  features: [
+    { feature: 'terrace', weight: 0.45 },
+    { feature: 'wall', weight: 0.2 },
+    { feature: 'path', weight: 0.25 },
+  ],
+  settlementShape: 'dispersed',
+  provenance: 'docs/historia/campanas/tambotoco.md (Killke: andenes y aldeas de altura; abstracción)',
 };
 
 export function landscapeWeight(profile: CulturalLandscapeProfile, feature: LandscapeFeature): number {

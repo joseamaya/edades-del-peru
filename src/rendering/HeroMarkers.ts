@@ -14,13 +14,13 @@ export const HERO_DETAIL_ZOOM = 0.5;
 function crestGeometry(shape: HeroCrest): THREE.BufferGeometry {
   switch (shape) {
     case 'diamond':
-      return new THREE.OctahedronGeometry(0.3, 0);
+      return new THREE.OctahedronGeometry(0.26, 0);
     case 'tetra':
-      return new THREE.TetrahedronGeometry(0.34, 0);
+      return new THREE.TetrahedronGeometry(0.3, 0);
     case 'stone':
-      return new THREE.DodecahedronGeometry(0.26, 0);
+      return new THREE.DodecahedronGeometry(0.24, 0);
     case 'spire':
-      return new THREE.ConeGeometry(0.22, 0.5, 4);
+      return new THREE.ConeGeometry(0.19, 0.44, 4);
   }
 }
 
@@ -49,7 +49,7 @@ export class HeroMarkers {
       side: THREE.DoubleSide,
       depthWrite: false,
     });
-    const poleGeometry = new THREE.CylinderGeometry(0.045, 0.055, 2.6, 5);
+    const poleGeometry = new THREE.CylinderGeometry(0.035, 0.045, 2.1, 5);
     const poleMaterial = new THREE.MeshStandardMaterial({ color: 0xc9a24a, roughness: 0.7, metalness: 0.15 });
     const crestMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35, metalness: 0.55 });
     this.rings = new THREE.InstancedMesh(ringGeometry, ringMaterial, MAX_HEROES);
@@ -112,13 +112,13 @@ export class HeroMarkers {
       this.rings.setColorAt(i, GOLD);
       if (!detail) continue;
       // The pole stands beside the hero, not through the body; the ring stays under the feet.
-      _dummy.position.set(unit.pos.x + 0.85, unit.pos.y + 1.3, unit.pos.z - 0.25);
+      _dummy.position.set(unit.pos.x + 0.85, unit.pos.y + 1.05, unit.pos.z - 0.25);
       _dummy.scale.set(1, 1, 1);
       _dummy.updateMatrix();
       this.poles.setMatrixAt(i, _dummy.matrix);
       const index = crestIndex.get(shape) ?? 0;
       crestIndex.set(shape, index + 1);
-      _dummy.position.set(unit.pos.x + 0.85, unit.pos.y + 3.02, unit.pos.z - 0.25);
+      _dummy.position.set(unit.pos.x + 0.85, unit.pos.y + 2.45, unit.pos.z - 0.25);
       _dummy.rotation.set(0, 0, 0);
       _dummy.updateMatrix();
       const crest = this.crests.get(shape)!;

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { meshopt, simplifyPrimitive, weld } from '@gltf-transform/functions';
+import { meshopt, prune, resample, simplifyPrimitive, weld } from '@gltf-transform/functions';
 import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 import { cliArg } from './lib.mjs';
 
@@ -54,7 +54,12 @@ export async function simplifyCaralWorker(file) {
     }
   }
   if (changed) {
-    await document.transform(weld(), meshopt({ encoder: MeshoptEncoder, level: 'medium' }));
+    await document.transform(
+      weld(),
+      resample({ tolerance: 1e-4 }),
+      prune(),
+      meshopt({ encoder: MeshoptEncoder, level: 'medium' }),
+    );
     await io.write(file, document);
   }
   return report;

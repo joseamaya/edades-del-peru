@@ -7,6 +7,7 @@ import {
   TAMBOTOCO_SHRINE as TAMBOTOCO_HUANACAURE,
   TAMBOTOCO_VILLAGES,
 } from '../../../model/defs/tambotocoLayout';
+import { TAMBOTOCO_LANDSCAPE } from '../../../model/defs/landscape';
 
 // Los hijos de Tambotoco: the cave, the Huanacaure huaca, the valley and Inticancha.
 const TAMBOTOCO_TAMBO_QUIRO = { x: 70, z: 91 } as const;
@@ -50,6 +51,13 @@ export const mTambotoco: MissionDef = {
   playerName: 'Ayllus de Ayar',
   enemyName: 'Ayllus del valle',
   map: { seed: 1200, type: 'andes', size: 256 },
+  mapOverrides: {
+    culturalLandscape: TAMBOTOCO_LANDSCAPE,
+    // Tambotoco is a highland valley, not a wet broadleaf forest: fewer, more varied groves and a
+    // drier ground cover. The wood budget stays ample (18-20 clusters of 20+ trees).
+    vegetation: { density: 0.22, groundCover: 0.2, variants: { broad: 0.45, needle: 0.2, molle: 0.2, sauce: 0.15 } },
+    resources: { tree: 0.22 },
+  },
   layout: {
     labels: [
       { text: 'Pacaritambo', x: 40 / 256, z: 58 / 256, kind: 'region' },
@@ -89,8 +97,14 @@ export const mTambotoco: MissionDef = {
       path: [
         { x: 152 / 256, z: 160 / 256 },
         { x: 156 / 256, z: 168 / 256 },
-        { x: 162 / 256, z: 178 / 256 },
-        { x: 172 / 256, z: 188 / 256 },
+        { x: 162 / 256, z: 174 / 256 },
+        // The channel skirts Inticancha on its north-east perimeter: it must not cross the plaza ring,
+        // the four cancha plots or the west/east fields, and it reaches the outlet along the field edge.
+        { x: 174 / 256, z: 166 / 256 },
+        { x: 186 / 256, z: 176 / 256 },
+        { x: 190 / 256, z: 182 / 256 },
+        { x: 188 / 256, z: 186 / 256 },
+        { x: 184 / 256, z: 188 / 256 },
         { x: TAMBOTOCO_OUTLET.x / 256, z: TAMBOTOCO_OUTLET.z / 256 },
       ],
       initiallyOpen: false,

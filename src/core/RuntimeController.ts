@@ -120,10 +120,24 @@ export class RuntimeController {
     material.color.setHex(flowing ? 0x2f6f7a : 0x5c4a33);
     material.transparent = true;
     material.needsUpdate = true;
+    this.game.aylluSite?.setIrrigated(flowing);
     if (this.game.canalGate) {
       if (authored) this.game.canalGate.visible = !flowing;
       else this.game.canalGate.position.y = this.game.canalOpen ? 1.55 : 0.8;
     }
+  }
+
+  /** Scroll the acequia's ripples while the gate is open; visual only, no simulation state. */
+  updateCanalFlow(dt: number): void {
+    const water = this.game.canalWater;
+    if (!water || !this.game.canalOpen) return;
+    const material = water.material as THREE.MeshStandardMaterial;
+    const ripple = material.normalMap;
+    if (!ripple) return;
+    ripple.offset.x = (ripple.offset.x + dt * 0.22) % 1;
+    ripple.offset.y = (ripple.offset.y + dt * 0.05) % 1;
+    const flow = material.map;
+    if (flow) flow.offset.x = (flow.offset.x + dt * 0.16) % 1;
   }
 
   /** Train a unit in a completed building of player 0. */
@@ -735,12 +749,12 @@ export class RuntimeController {
     for (const u of this.game.units.values()) {
       if (u.owner === 0) continue;
       const vis = this.game.fow.isVisible(u.pos.x, u.pos.z) || !this.game.settings.fogOfWar;
-      if (u.view) u.view.group.visible = vis;
+      if (u.view) u.view.setVisible(vis);
     }
     for (const b of this.game.buildings.values()) {
       if (b.owner === 0) continue;
       const vis = this.game.fow.isVisible(b.pos.x, b.pos.z) || !this.game.settings.fogOfWar;
-      if (b.view) b.view.group.visible = vis;
+      if (b.view) b.view.setVisible(vis);
     }
     this.game.revealOpeningWhileCinematic();
     this.game.fowTexture.upload();
@@ -776,8 +790,8 @@ export class RuntimeController {
     this.game.terrain.setFow(this.game.fowTexture.texture, on);
     this.game.fowUniforms.fowEnabled.value = on ? 1 : 0;
     if (!on) {
-      for (const u of this.game.units.values()) if (u.view) u.view.group.visible = true;
-      for (const b of this.game.buildings.values()) if (b.view) b.view.group.visible = true;
+      for (const u of this.game.units.values()) if (u.view) u.view.setVisible(true);
+      for (const b of this.game.buildings.values()) if (b.view) b.view.setVisible(true);
       for (const n of this.game.resourceNodes.values()) n.setVisibleEx(true);
       for (const grove of this.game.caralGroves) this.game.trees.setVisible(grove.slot, true);
     }
@@ -864,6 +878,7 @@ export class RuntimeController {
     this.game.water.setSunDir(this.game.sky.sunDir);
     this.game.water.setDayFactor(this.game.sky.getDayFactor());
     this.game.water.update(realTime);
+    this.updateCanalFlow(d);
     this.game.terrain.setSunLight(this.game.sky.sunDir, this.game.sky.getSunColor());
     const hemi = this.game.sky.getHemi();
     this.game.terrain.setHemisphere(hemi.color, hemi.groundColor, hemi.intensity);
@@ -895,6 +910,7 @@ export class RuntimeController {
     // edge scrolling is off while the pointer is over a HUD panel or control
     this.game.camera.setPointerOverUi(this.game.isPointerOverUi());
     this.game.camera.update(d, realTime);
+    this.game.aylluSite?.updateLod(this.game.camera.getZoom());
     // Fit the shadow frustum and the terrain LOD to where the camera is this frame, not the last one.
     this.frameShadows();
     this.game.terrain.updateLod(this.game.camera.camera.position);

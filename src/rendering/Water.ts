@@ -33,6 +33,8 @@ export class Water {
     inland = false,
     /** Waterline x sampled along z (world metres); west of it is sea that must not follow the seasons. */
     coastX: readonly number[] | null = null,
+    /** Grid segments per side; 128 default, a low-detail inland scene can pass 64. */
+    gridSegments = 128,
   ) {
     const n = Math.round(Math.sqrt(heightMap.length));
     const depthData = new Uint8Array(n * n);
@@ -68,9 +70,7 @@ export class Water {
     // On coastal maps the water extends beyond the map (sea/horizon).
     // On inland maps (andes/altiplano/jungle) it covers only the map (lakes and rivers).
     const span = inland ? size : size * 2.5;
-    // 128 segments: the shortest wave (~26 m) still gets ~7 vertices per wavelength across the 2.5x
-    // coastal span, at 40% of the triangles of the former 200x200 grid.
-    const geo = new THREE.PlaneGeometry(span, span, 128, 128);
+    const geo = new THREE.PlaneGeometry(span, span, gridSegments, gridSegments);
     geo.rotateX(-Math.PI / 2);
 
     this.uniforms = {

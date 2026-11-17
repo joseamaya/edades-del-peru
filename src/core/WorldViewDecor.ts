@@ -32,7 +32,8 @@ import { fishingApproach, type Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
 import { SiteCrew } from '../rendering/SiteCrew';
 import type { CaralMayorPhase } from '../model/defs/caralPhases';
-import { buildCanalGeometry } from '../rendering/canal';
+import { buildCanalGeometry, canalFlowTexture } from '../rendering/canal';
+import { MaterialTex } from '../rendering/Textures';
 import { DEFAULT_CANAL_WIDTH } from '../model/defs/canal';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
@@ -827,13 +828,22 @@ export class WorldViewDecor {
     bed.receiveShadow = true;
     const water = new THREE.Mesh(
       geometry.water,
-      new THREE.MeshStandardMaterial({
-        color: 0x2f6f7a,
-        roughness: 0.45,
-        metalness: 0.1,
-        transparent: true,
-        side: THREE.DoubleSide,
-      }),
+      (() => {
+        const ripple = MaterialTex.normal(41).clone();
+        ripple.wrapS = ripple.wrapT = THREE.RepeatWrapping;
+        ripple.repeat.set(2.5, 1);
+        ripple.needsUpdate = true;
+        return new THREE.MeshStandardMaterial({
+          color: 0x3a8a94,
+          roughness: 0.28,
+          metalness: 0.05,
+          transparent: true,
+          side: THREE.DoubleSide,
+          map: canalFlowTexture(),
+          normalMap: ripple,
+          normalScale: new THREE.Vector2(0.55, 0.55),
+        });
+      })(),
     );
     water.name = 'canal_water';
     water.receiveShadow = true;

@@ -25,6 +25,7 @@ import {
   preloadModelAssets,
   type LoadedModelAsset,
 } from '../src/rendering/ModelAssets';
+import { MODEL_ASSET_DEFS } from '../src/rendering/modelAssetRegistry';
 
 const MODEL_URL = new URL('../src/assets/models/ual_mannequin.glb', import.meta.url);
 const WORKER_URL = new URL('../src/assets/models/caral_worker.glb', import.meta.url);
@@ -650,11 +651,12 @@ describe('rigged model assets', () => {
       expect.arrayContaining([
         'Idle_Loop',
         'Walk_Loop',
-        'Jog_Fwd_Loop',
-        'Sprint_Loop',
         'Farm_Harvest',
         'Walk_Carry_Loop',
         'Punch_Jab',
+        'Sword_Regular_A',
+        'OverhandThrow',
+        'Death01',
       ]),
     );
     expect(json.nodes.map((node) => node.name)).toEqual(
@@ -676,6 +678,14 @@ describe('rigged model assets', () => {
         'attire_belt_chasqui',
       ]),
     );
+  });
+
+  it('maps Andean combat and death clips from the shared worker GLB', () => {
+    expect(RIG_VARIANT_CLIPS.chanca_soldier_m?.attack).toBe('Sword_Regular_A');
+    expect(RIG_VARIANT_CLIPS.chanca_ranged_m?.attack).toBe('OverhandThrow');
+    expect(RIG_VARIANT_CLIPS.chanca_worker_m?.attack).toBe('Punch_Jab');
+    expect(MODEL_ASSET_DEFS.caral_worker.deathClip).toBe('Death01');
+    expect(MODEL_ASSET_DEFS.caral_worker.clips.attack).toBe('Punch_Jab');
   });
 
   it('adds the Caral accessories to a compatible rig and toggles the carried load', async () => {

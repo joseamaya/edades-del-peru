@@ -196,7 +196,16 @@ export interface SiteTerrainStyle {
   valleyHaze: boolean;
   moisture: SiteTerrainMoisture;
   /** Optional sea/river colours (art-direction palette) and sun sheen. */
-  water?: { deep: string; shallow: string; sheen: number; foam: number; fog: number; refraction: number };
+  water?: {
+    deep: string;
+    shallow: string;
+    sheen: number;
+    foam: number;
+    fog: number;
+    refraction: number;
+    /** Optional water-grid segments (default 128; Tambotoco uses 64 to pay for the site detail). */
+    grid?: number;
+  };
 }
 
 export interface SiteLife {
@@ -952,7 +961,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       suppressSnow: true,
       // The Cusco basin (5.7 m) reads wet, the altiplano (4.0 m) reads as puna grass.
       moisture: { valleyHeight: 7.6, valleyRange: 3.4, bankStart: 0.12, bankRange: 0.1 },
-      water: { deep: '#1c3a44', shallow: '#4f7a74', sheen: 0.12, foam: 0.1, fog: 0.22, refraction: 0.15 },
+      water: { deep: '#1c3a44', shallow: '#4f7a74', sheen: 0.12, foam: 0.1, fog: 0.22, refraction: 0.15, grid: 64 },
     },
   },
   // Lima (1535) reuses the colonial plaza/church model on a new 256 m coast transect.
@@ -1043,10 +1052,13 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     walkableCorridor: { width: 8 },
     terrain: {
       ...DEFAULT_SITE_TERRAIN,
+      palette: 'cusco_valley',
+      pbr: { grass: 'puna_grass', dirt: 'dirt', sand: 'sand', rock: 'rock', snow: 'snow' },
       flatNormals: true,
       suppressSnow: true,
+      valleyHaze: true,
       moisture: { valleyHeight: 6.4, valleyRange: 3.2, bankStart: 0.12, bankRange: 0.1 },
-      water: { deep: '#1c3a44', shallow: '#4f7a74', sheen: 0.12, foam: 0.1, fog: 0.22, refraction: 0.15 },
+      water: { deep: '#1c3a44', shallow: '#4f7a74', sheen: 0.12, foam: 0.1, fog: 0.22, refraction: 0.15, grid: 64 },
     },
   },
 };

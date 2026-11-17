@@ -43,7 +43,7 @@ below, which record each mission's own review and are kept for history). **M** m
 | m2_chavin          | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | M    | M     |
 | m3_moche_recuay    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m4_wari            | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m_tambotoco        | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | P    | M     |
+| m_tambotoco        | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m5_yahuar_pampa    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6_chimu_inca      | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6b_guerra_civil   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
@@ -61,6 +61,16 @@ pass. **m3–m9 meet the scale, opening and performance gates**; the m3, m4, m5,
 Arica intro renders are approved. Every render record in `src/art/manifest.json` is now approved: the five
 Caral education/tour records were reconciled and the three draft Workbench mission intros were removed. The
 open art review is the reused site GLBs (#343).
+
+**Tambotoco art pass (2026-11-16).** The ayllu kit now uses per-surface PBR detail (stone, rock, earth,
+plaster, thatch, wood, crops, people) with world-scale UVs; the cave is an arch in a scree apron, Huanacaure's
+monolith was re-proportioned, canchas are enclosures, the plaza has a kerb and four axes, fields follow the
+relief and the acequia skirts Inticancha with flowing water and a wet-crop response. The site is merged per
+surface family per phase; contact shadows are one instanced draw; the inland water grid and the dry-puna
+ground cover were trimmed. Measured `bench_scene` (Intel RPL-S, high): opening **479,630/264**, late
+**651,572/353**, under the ratcheted 500k/280 opening cap and the unchanged 660k/360 late cap; software is
+436,880/265 and 608,324/347. The eight Ayar gained per-commander props, headdresses, weaves and combat clips;
+`docs/design/tambotoco-model-mission.md` carries the site certainty table and the evidence commands.
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at

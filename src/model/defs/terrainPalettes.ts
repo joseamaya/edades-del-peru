@@ -3,7 +3,15 @@ import { smoothstep } from '../../util/math';
 /** Data-driven terrain palettes: material tints and macro height bands. */
 
 export type TerrainPaletteId =
-  'north_coast' | 'central_coast' | 'south_coast' | 'andean_valley' | 'high_andes' | 'altiplano' | 'amazon' | 'caral';
+  | 'north_coast'
+  | 'central_coast'
+  | 'south_coast'
+  | 'andean_valley'
+  | 'high_andes'
+  | 'cusco_valley'
+  | 'altiplano'
+  | 'amazon'
+  | 'caral';
 
 /** Shared landform thresholds (world units; slope is the raw height delta used by the mesh). */
 const TERRAIN_BAND_RANGES = {
@@ -119,6 +127,19 @@ export const TERRAIN_PALETTES: Record<TerrainPaletteId, TerrainPalette> = {
     },
     bands: { valley: '#4a7a2a', slope: '#7a8a4a', loma: '#9a9a60', summit: '#c0c8b8' },
     textureMix: 0.84,
+  },
+  // Cusco basin in the Intermedio Tardío: olive and ochre instead of the wet green valley used by
+  // Chavín/Recuay. Mission-scoped through tambotoco_site so the shared andean_valley profile is untouched.
+  cusco_valley: {
+    materials: {
+      grass: '#e8d8a8',
+      dirt: '#e0c8a0',
+      sand: '#eedcb8',
+      rock: '#d8d0c0',
+      snow: '#ffffff',
+    },
+    bands: { valley: '#6f7d42', slope: '#958a60', loma: '#ad9d6c', summit: '#cdc4ae' },
+    textureMix: 0.82,
   },
   high_andes: {
     materials: {
