@@ -71,6 +71,9 @@ ground cover were trimmed. Measured `bench_scene` (Intel RPL-S, high): opening *
 **651,572/353**, under the ratcheted 500k/280 opening cap and the unchanged 660k/360 late cap; software is
 436,880/265 and 608,324/347. The eight Ayar gained per-commander props, headdresses, weaves and combat clips;
 `docs/design/tambotoco-model-mission.md` carries the site certainty table and the evidence commands.
+The 2026-11-16 pass is the baseline for the art-direction pilot: the next work is light/shadows, palette and
+material finish, architecture silhouette, highland vegetation and the Tambotoco hero variant, tracked in
+[`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md).
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
@@ -425,7 +428,8 @@ Quizu's hills) and starts as the traced plaza; the colonial church and the stree
 `m_tambotoco` is the released opening of El Tahuantinsuyo and the first **Leyenda** mission. It is built on
 the 256 m Pacaritambo–Huanacaure–Cusco transect and draws its own ayllu kit (cave, shrine, hamlets and the
 planned Inticancha).
-The table separates what is implemented from the performance pass that is still open; the intro render is approved.
+The table separates what is implemented from the art-direction pilot that is still open; the intro render is
+approved.
 
 | Gate        | m_tambotoco                                                                                                                                                              |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -437,11 +441,11 @@ The table separates what is implemented from the performance pass that is still 
 | Onboarding  | Met: six-step tutorial that teaches controls (move, camp store, hunt, visit, water, canchas), briefing with the eight siblings and Codex.                                |
 | Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden.                                                                |
 | UX          | Met: campaign layout at 1600×900, the eight-card briefing at 1280×720, a left dialogue dock above the minimap, portrait chips for a selected cast, a large-screen HUD scale at 1920×1080 and `hud-layout.spec.ts`. |
-| Visuals     | Met: 256 m transect, the modular terrain-conformed ayllu kit (coursed stone, thatch houses, qollqas, terraced fields, paved plaza at grade) and the approved EEVEE intro render (`m_tambotoco-intro`). |
+| Visuals     | Met (baseline): 256 m transect, the modular terrain-conformed ayllu kit (coursed stone, thatch houses, qollqas, terraced fields, paved plaza at grade) and the approved EEVEE intro render (`m_tambotoco-intro`). The art-direction pilot ([`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md)) is the next pass; it is a quality gate, not a rebuild. |
 | Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                    |
 | Tests       | Met: `tests/tambotoco.test.ts` (cast, tags, huaca beats), scale, campaign path and the campaign E2E specs.                                                               |
 | Docs        | Met: dossier, `tambotoco-model-mission.md`, this table and the redesign status.                                                                                          |
-| Performance | Partial (measured 2026-11-16, real Inticancha framing, after the PCF shadow pass and the rig silhouette rule): software `bench:check` opening 408,221 tris / 309 calls and founded Inticancha 591,009 / 295 (under the 620k target). Hardware high (`--gpu`, Intel iGPU) 625,811 / 313 and 808,827 / 301, against 691,941 / 327 and 864,833 / 314 on the same scene with VSM: the shadow pass saved 66k and 56k triangles. The opening is still over the 600k target and the late view over the 660k hardware cap, so the row stays Partial until the hardware/LOD pass (B6). |
+| Performance | Met (measured 2026-11-16 after the art pass): software `bench:check` opening **436,880 tris / 265 calls** and founded Inticancha **608,324 / 347**; hardware high (`--gpu`, Intel RPL-S iGPU) **479,630 / 264** and **651,572 / 353**. The opening cap is **500k / 280** (ratcheted from 600k/340) and the late cap stays **660k / 360**, both met without raising them. The pass batched contact shadows into one instanced draw, merged the site by surface family per phase, cut the inland water grid and trimmed the dry-puna ground cover. `node scripts/bench_scene.mjs --mission=m_tambotoco [--stage=late] [--gpu] --assert` is the gate. |
 | Art         | Met: approved authored EEVEE intro render; the ayllu kit stays procedural; captures are in-engine and documented in PROVENANCE.                                          |
 | Structure   | Met: four acts with hidden objectives, three chapter cards and the documented foundation.                                                                                |
 | Opening     | Met: three narrated beats with in-engine captures, three act cards and the epilogue backdrop.                                                                            |

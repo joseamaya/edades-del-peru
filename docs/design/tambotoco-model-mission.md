@@ -244,6 +244,15 @@ dialogue.
   captured with the same script from `origin/main` (84bc279) before this pass. The same pass is covered by `tests/ayllu-kit.test.ts` (surface
   families, phase groups, plinths) and `tests/tambotoco-layout.test.ts`.
 
+## Art direction
+
+Tambotoco is the reference scene for the stylized-realism standard ([`art-direction.md`](./art-direction.md)).
+The 2026-11-16 kit pass is the baseline; the next pass is the art-direction pilot
+([`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md)): terrain shadows (B11), `cusco_valley` palette and
+macro materials, architecture silhouette, highland vegetation and an opt-in Tambotoco hero variant. The pilot
+runs E0–E6 and does not rebuild the mission, its layout or its economy. Production (E7) waits for a human
+approval of the reference captures.
+
 ## Open items
 
 1. Performance (measured 2026-11-16 after the art pass; the mission is in `bench:check`): software

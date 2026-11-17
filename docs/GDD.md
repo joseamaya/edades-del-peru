@@ -94,9 +94,11 @@ The detailed rules, certainty tables and sources live in the dossiers and
 
 ## 6. Art and audio
 
-The visual target is **stylized realism**: low-poly geometry, clear silhouettes, authored landmarks and a
-palette that belongs to the place and the period. The camera, scale, terrain, materials, vegetation and light
-rules are in [`design/art-direction.md`](./design/art-direction.md) and
+The visual target is **stylized realism**: optimized but believable geometry, clear silhouettes, authored
+landmarks and a palette that belongs to the place and the period. Tambotoco is the reference scene; the
+camera, scale, terrain, materials, vegetation and light rules are in
+[`design/art-direction.md`](./design/art-direction.md), and the pilot audit and plan in
+[`design/tambotoco-art-pilot.md`](./design/tambotoco-art-pilot.md). The implementation map is
 [`design/visual-language.md`](./design/visual-language.md).
 
 - **Procedural first.** Units and buildings have a procedural model and the simulation never depends on a

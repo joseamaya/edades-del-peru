@@ -1,6 +1,6 @@
 # Development backlog
 
-**Status:** living · **Last updated:** 2026-11-14
+**Status:** living · **Last updated:** 2026-11-16
 
 A short, ordered queue for the current roadmap. This is not a second issue tracker: when an item has a
 GitHub issue or PR, link it here instead of copying the discussion. The live mission status is in
@@ -12,7 +12,8 @@ GitHub issue or PR, link it here instead of copying the discussion. The live mis
 | --- | --- | --- | --- | --- |
 | B0 | Documentation foundation | There was no entry point to the docs, no ADR log and no roadmap | `docs/README.md`, `docs/GDD.md`, `docs/DECISIONS/` and `docs/plan/` exist, links resolve, and `AGENTS.md`/`README.md`/`CONTRIBUTING.md` point to them | In review (this PR) |
 | B6 | Real-GPU pass for the remaining model-mission site views | m1, m2, Tambotoco and Lima openings are already in #447; the site views of m3–m9, m6b and La Junta still rest on structural SwiftShader benches | Frame time and draw calls are recorded at 1280×800 and 1600×900; a decision is documented | Queued |
-| B11 | Terrain receives directional shadows | The old hand-written hook was dead (`ShaderMaterial` with `lights: false`, so three never bound the shadow uniforms); buildings and trees do not cast onto the ground | The terrain material uses `lights: true` and a PCF sample; before/after captures show the ground shadows, no acne, and the bench stays green | Queued |
+| B11 | Terrain receives directional shadows | The old hand-written hook was dead (`ShaderMaterial` with `lights: false`, so three never bound the shadow uniforms); buildings and trees do not cast onto the ground | The terrain material uses `lights: true` and a PCF sample; before/after captures show the ground shadows, no acne, and the bench stays green | Queued (E1) |
+| B12 | Tambotoco art-direction pilot | Tambotoco replaces Caral as the visual reference; the 2026-11-16 kit pass is the baseline, not the target | E0–E6 of [`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md) close: art direction and pilot docs, light/terrain, architecture, highland vegetation, hero variant, cinematic beats, 3 × 3 captures, bench and human approval | In progress (E0) |
 | B7 | Package the itch build | The Pages build exists; the itch upload was deferred | The package is built from the release commit, checked and uploaded with `butler` | Blocked (tooling) |
 
 ## Closed this cycle
