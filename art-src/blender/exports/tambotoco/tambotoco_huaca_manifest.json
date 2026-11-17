@@ -1,0 +1,78 @@
+{
+  "asset_id": "tambotoco_huaca",
+  "source_scene": "scenes/tambotoco_hero_kit.blend",
+  "script": "scripts/blender/build_tambotoco_hero_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "assumed",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/historia/campanas/tambotoco.md",
+    "docs/design/tambotoco-art-pilot.md"
+  ],
+  "budget": {
+    "LOD0": 2000,
+    "LOD1": 600
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 288,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Tambotoco_Mouth",
+        "MAT-Tambotoco_Rock",
+        "MAT-Tambotoco_RockDark"
+      ],
+      "bounds": {
+        "min": [
+          -2.199,
+          -1.7,
+          -0.106
+        ],
+        "max": [
+          2.261,
+          1.25,
+          5.328
+        ],
+        "size": [
+          4.461,
+          2.95,
+          5.435
+        ]
+      },
+      "file": "tambotoco_huaca_lod0.glb",
+      "bytes": 28176
+    },
+    "LOD1": {
+      "triangles": 52,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Tambotoco_Mouth",
+        "MAT-Tambotoco_Rock",
+        "MAT-Tambotoco_RockDark"
+      ],
+      "bounds": {
+        "min": [
+          -1.35,
+          -1.25,
+          0.0
+        ],
+        "max": [
+          1.35,
+          1.25,
+          5.09
+        ],
+        "size": [
+          2.7,
+          2.5,
+          5.09
+        ]
+      },
+      "file": "tambotoco_huaca_lod1.glb",
+      "bytes": 6572
+    }
+  }
+}

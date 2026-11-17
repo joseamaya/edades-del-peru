@@ -254,6 +254,31 @@ slot is absent (offline / without assets).
   review on 2026-11-14 (Miguel Amaya), together with the vegetation and household props; a rebuild exports
   every piece unreviewed again.
 
+### Tambotoco hero kit (cave and Huanacaure huaca)
+
+- **Location**: `src/assets/architecture/tambotoco/tambotoco_{cave,huaca}_lod{0,1}.glb`.
+- **Source**: generated in Blender 5.3 by `scripts/blender/build_tambotoco_hero_kit.py`; scene
+  `art-src/blender/scenes/tambotoco_hero_kit.blend` (Git LFS). Per-piece manifests with triangles,
+  materials, bounds, budget, sources and review state live in `art-src/blender/exports/tambotoco/`; the
+  game copies were meshopt-compressed with `yarn art:models`.
+- **Content**: project-owned procedural geometry, Principled materials only, no textures.
+  - Cave: an irregular rock massif around a dark five-sided recess, a rough front lintel/jambs, a scree
+    apron and two torch brackets. LOD0 1,802 triangles / 4 materials; LOD1 262 / 3.
+  - Huanacaure huaca: a tapered monolith with a carved niche, base, cap, offering ledge and two flanking
+    stones. LOD0 288 triangles / 3 materials; LOD1 52 / 3.
+- **Confidence**: **assumed**. The cave and the monolith are stylizations of the myth; the dossier records no
+  dated or documented form, and `docs/historia/arquitectura.md` marks the Huanacaure niche as a stylization,
+  not an imperial architectural niche.
+- **Runtime**: `AylluSite.setHeroAssets` swaps the procedural cave/huaca for the GLB after both LODs load
+  (`loadTambotocoHeroAssets`); a failed load keeps the procedural fallback. LOD0 draws below the 70-unit
+  camera zoom, LOD1 above. The models use the authored cave (40, 55) and shrine (120, 106) positions and
+  the shrine platform top; `WorldViewDecor` applies the site's fog mask after the swap.
+- **SHA-256**:
+  - `tambotoco_cave_lod0.glb` `0b5af2b62075290b2bff0c97e8312edd978c2a7545bf69f3a98b244c1a93130a` (66 KB)
+  - `tambotoco_cave_lod1.glb` `ec1ca81c6c5b07b1a767d864b42da7833da5e7e689d35d795abdd64a450de2b1` (14 KB)
+  - `tambotoco_huaca_lod0.glb` `24eab26f8e3dcc1771784a2c2fcda191e9dce04a9c4eea0c296668d196802c38` (14 KB)
+  - `tambotoco_huaca_lod1.glb` `19d469da19ce04d495a9ba8f2a9d5b0a0c7904c50df402d6504317a8e3b9127b` (6 KB)
+
 ### Caral prop kit (quarries and household goods)
 
 - **Location**: `src/assets/props/caral/caral_<piece>_lod{0,1}.glb`: the `granodiorite` quarry outcrop and
@@ -352,6 +377,17 @@ slot is absent (offline / without assets).
 - **Content**: in-engine shots of the game's own scene. E2a adds contact AO/macro colour, battered walls, a
   layered thatch eave and the qollqa footing/vent; no model, texture or manifest entry is added.
 - **Review**: no human art-review gate applies to in-engine captures; the procedural kit has no GLB asset.
+
+### Tambotoco E2b hero captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e2b-{cave,huaca}-{before,after}.webp`, 960x540 WebP q58, ~105 KB.
+- **Source**: captured from the game by `scripts/capture_art_pilot.mjs` at 1600x900, seed 777, HUD hidden,
+  site at `fundada`, fog of war off. The `before` pair is E2a's procedural cave/huaca; the `after` pair is
+  the loaded GLB. Regenerate with
+  `yarn art:pilot --tag=e2b4 --quality=neutral --sizes=1600x900 --views=cave,shrine` and resize to 960x540.
+- **Content**: in-engine shots of the game's own scene. The cave and huaca GLBs are project-owned,
+  stylized (`confidence: assumed`); no textures or external assets are used.
+- **Review**: no human art-review gate applies to in-engine captures; the GLBs are reviewed through this PR.
 
 ### Tambotoco HUD captures (in-engine evidence)
 

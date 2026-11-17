@@ -31,10 +31,13 @@ export const SURFACES = [
     prefixes: [
       'src/rendering/ayllu',
       'src/rendering/AylluSite',
+      'src/rendering/tambotocoHero',
+      'src/assets/architecture/tambotoco',
       'src/model/defs/terrainPalettes',
       'src/model/defs/sites',
       'src/campaign/defs/missions/m_tambotoco',
     ],
+    files: ['src/core/WorldViewDecor.ts'],
     captures: [
       'yarn art:pilot --tag=after --quality=neutral --sizes=1280x720,1600x900,1920x1080',
       'yarn art:pilot --tag=after --quality=final --sizes=1280x720,1600x900,1920x1080',

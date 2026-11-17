@@ -249,26 +249,27 @@ dialogue.
 Tambotoco is the reference scene for the stylized-realism standard ([`art-direction.md`](./art-direction.md)).
 The 2026-11-16 kit pass is the baseline; the next pass is the art-direction pilot
 ([`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md)): terrain shadows (B11, fixed in E1), `cusco_valley`
-palette (E1), architecture finish with contact AO/macro colour and battered walls (E2a), highland vegetation
-(E3), cave/huaca GLBs (E2b) and an opt-in Tambotoco hero variant (E4). The pilot runs E0–E6 and does not
-rebuild the mission, its layout or its economy. Production (E7) waits for a human approval of the reference
-captures.
+palette (E1), architecture finish with contact AO/macro colour and battered walls (E2a), cave and Huanacaure
+huaca GLBs with a procedural fallback (E2b), highland vegetation (E3) and an opt-in Tambotoco hero variant
+(E4). The pilot runs E0–E6 and does not rebuild the mission, its layout or its economy. Production (E7) waits
+for a human approval of the reference captures.
 
 ## Open items
 
-1. Performance (measured 2026-11-17; E2a numbers): software (SwiftShader) measures **438,856 triangles /
-   269 draw calls** at the opening and **615,532 / 354** on the founded Inticancha; the pre-E1 baseline
-   was 436,880 / 265 and 608,324 / 347, and E1 measured 437,976 / 264 and 614,594 / 357. E2a hardware
-   (`--gpu`, Intel RPL-S iGPU, high) measures **481,606 / 268**
-   opening and **658,780 / 360** late in frames mode (post-processing included; structural late 615,532 / 354).
-   Frame time at high quality with post-processing on: **37 FPS** opening and **33 FPS** late (26.8 / 30.4 ms
-   p50). The opening cap is now **500k / 280** (ratcheted from 600k/340); the late cap stays
+1. Performance (measured 2026-11-17; E2b numbers): software (SwiftShader) measures **430,488 triangles /
+   269 draw calls** at the opening and **613,692 / 354** on the founded Inticancha; the pre-E1 baseline
+   was 436,880 / 265 and 608,324 / 347, E1 measured 437,976 / 264 and 614,594 / 357, and E2a 438,856 / 269
+   and 615,532 / 354. E2b hardware (`--gpu`, Intel RPL-S iGPU, high) measures **473,510 / 273** opening and
+   **656,940 / 360** late in frames mode (post-processing included; structural late 613,692 / 354). Frame
+   time at high quality with post-processing on: **35 FPS** opening and **34 FPS** late (28.3 / 29.2 ms p50).
+   The opening cap is now **500k / 280** (ratcheted from 600k/340); the late cap stays
    **660k / 360** and is met without raising it. The pass batched every entity contact shadow into one
    instanced draw, merged the site by surface family per phase (instead of one mesh for the whole 256 m
    site, which drew the cave and the valley together), cut the inland water grid to 64 and trimmed the
    dry-puna ground cover to a fifth. The 2026-11-16 art pass dropped hardware triangles from
-   **625,811 / 808,827** (opening/late, pre-pass) to **479,630 / 651,572**; E2a measures **481,606** opening
-   in frames mode and trims the flat shadow casters. The late calls are higher than the old 301 because the eight
+   **625,811 / 808,827** (opening/late, pre-pass) to **479,630 / 651,572**; E2b measures **473,510** opening
+   in frames mode after replacing ~8k procedural cave/huaca triangles with ≈100 KB of GLB. The late calls are
+   higher than the old 301 because the eight
    heroes now carry readable props and the base has its cancha houses, but they remain inside the cap. The
    performance row is **Met**. Run `node scripts/bench_scene.mjs --mission=m_tambotoco [--stage=late]
    [--gpu] --assert`.

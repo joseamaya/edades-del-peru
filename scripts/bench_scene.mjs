@@ -181,7 +181,10 @@ try {
           (g.settlementDressing ?? []).every((d) => d.attached !== false)
         );
       }
-      if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site');
+      if (id === 'm_tambotoco') {
+        const site = g.landmark?.getObjectByName('ayllu_site');
+        return !!site?.userData.heroesReady;
+      }
       if (id === 'm9_guerra_pacifico' && !g.landmark?.getObjectByName('arica_site')) return false;
       // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
       if (!g.trees?.hasKit?.('algarrobo') || !g.trees.hasKit('sauce')) return false;
