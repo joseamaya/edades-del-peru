@@ -23,6 +23,7 @@ import {
   caveMouth,
   pavedPlaza,
   retainingTerrace,
+  shrineOfferings,
   shrinePlatform,
   shrineStone,
   stoneBridge,
@@ -136,11 +137,12 @@ export class AylluSite {
       kind: 'smoke',
     });
     const platformTop = shrinePlatform(caveParts, TAMBOTOCO_SHRINE.x, TAMBOTOCO_SHRINE.z, ground);
+    shrineOfferings(caveParts, TAMBOTOCO_SHRINE.x, TAMBOTOCO_SHRINE.z, platformTop);
     villagers(caveParts, TAMBOTOCO_SHRINE.x - 1.8, platformTop, TAMBOTOCO_SHRINE.z + 1.8, 2);
     for (const h of TAMBOTOCO_SHRINE_HUTS) this.hut(caveParts, h, ground, PHASE_CAVE);
     for (const village of TAMBOTOCO_VILLAGES) {
       for (const h of village.huts) this.hut(caveParts, h, ground, PHASE_CAVE);
-      const yard = villageDressing(caveParts, village.x, village.z, ground, 'village');
+      const yard = villageDressing(caveParts, village.x, village.z, ground, 'village', true, undefined, false);
       villagers(caveParts, village.x, yard, village.z, 2);
       terracedField(caveParts, village.field, ground);
     }
@@ -186,6 +188,7 @@ export class AylluSite {
       'village',
       false,
       ground(plaza.x - 6.4, plaza.z + 4.4),
+      true,
     );
     villagers(founded, plaza.x, ground(plaza.x, plaza.z - 4), plaza.z - 4, 3);
     villagers(founded, plaza.x + 3, ground(plaza.x + 3, plaza.z + 3.5), plaza.z + 3.5, 2);

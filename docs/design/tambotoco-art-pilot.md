@@ -5,8 +5,9 @@
 **Progress:** E0 (docs and baseline), E1 (terrain shadows, palette and plaza), E2a (procedural architecture
 finish), E2b (cave and huaca GLBs), E3a (highland vegetation), E3b (soft banks, ford and paths), E4 (Killke/
 ayllu variants and the male-only hero GLB), E5 (hero/detail/wide beats and the foundation reward) and E6
-(the 3 × 3 validation set) are implemented. The reference captures were approved by the project owner on
-2026-11-17; E7 is a separate decision.
+(the 3 × 3 validation set) are implemented, and E7 (production pass: baked hero proportions, scoped terrain macro and Inticancha/shrine
+detail) was delivered on 2026-11-17. The reference captures were approved by the project owner; E7 is a
+separate production decision.
 
 This is the pilot that makes Tambotoco the visual reference for the next campaigns. It implements the rules in
 [`art-direction.md`](./art-direction.md): audit, reference scene, asset inventory, performance ledger,
@@ -50,7 +51,7 @@ Baseline: `a0352d5`, seed 777, 1600×900, `sitePhase=fundada`, acequia open, HUD
 | **Landscape** | Flat olive ground with visible tiling, teal water ribbon, identical low-poly trees, neon crop rows, scattered rocks. | No terrain layers, no vegetation groups, no atmospheric depth. The Caral vegetation kit is coastal and does not cover the highlands. | `cusco_valley` palette and layers; highland vegetation kit; clustered placement; water/path pass. |
 | **Light and materials** | Ambient-heavy, weak contact shadows, no ground shadows, flat stone and plaster. | The custom terrain `ShaderMaterial` declared `lights: false`, so the ground never received directional shadows (B11). Materials have micro-detail but no macro scale and little roughness break. | **B11 fixed in E1** (terrain samples the shadow map, low morning sun); vertex AO and macro maps still open. |
 | **Presentation** | The opening and act cards are in-engine but framed as aerial views; Inticancha reads as the same disc with more props. | No shot grammar; the foundation lacks a reward moment. | Re-frame the three beats; wide/detail/hero shots; foundation phase + camera + life. |
-| **Performance** | Pre-E1 baseline: 436,880/265 and 608,324/347. Caps: 500k/280 and 660k/360. E3a–E6 structural: **425,324 / 273** and **633,330 / 356** (kit 9,352/9 and 34,306/12; the opening sample varies by 272 tris / 5 calls on an animated shadow-frustum edge, the E4b run read 425,052/268; the cap is the gate). High-quality frames scene: 450,654/269 (36 FPS) and 659,158/359 (34 FPS; iGPU run variance, the scene counts are identical to E4b); both are under the caps too. The complete render adds the shadow and refraction passes. `dist` is 24.56 / 25 MB. | Draw calls exceed the general ≤200 target. High quality runs at 34 FPS late on the iGPU, so the governor steps down below its 45 FPS window; low/medium stay above 30. `dist` has 0.44 MB of headroom. | The andes kit adds 9.4k/34.3k kit triangles; both structural and frames scene counts stay under the unchanged caps. E7 must keep the governor, LOD radius and kit caps honest. Do not raise scene caps. |
+| **Performance** | Pre-E1 baseline: 436,880/265 and 608,324/347. Caps: 500k/280 and 660k/360. E3a–E7 structural: **425,328 / 269** and **634,134 / 357** (kit 9,352/9 and 34,306/12; the opening sample varies with the animated shadow-frustum edge; the cap is the gate). High-quality frames scene: 450,930/270 (39 FPS) and 659,962/360 (33 FPS; the late frames rides the call cap, the structural late is 634,134/357). The complete render adds the shadow and refraction passes. `dist` is 24.63 / 25 MB. | Draw calls exceed the general ≤200 target. High quality runs at 33 FPS late on the iGPU, so the governor steps down below its 45 FPS window; low/medium stay above 30. `dist` has 0.37 MB of headroom. | The andes kit adds 9.4k/34.3k kit triangles; both structural and frames scene counts stay under the unchanged caps. The E7 production pass keeps the governor, LOD radius and caps honest; the late frames is at the call cap. Do not raise scene caps. |
 | **Documentation** | `art-direction.md` was Caral-first; `campaign-quality-bar.md` and `tambotoco-model-mission.md` gave different performance numbers; “Visuals: Met” certified presence, not quality. | No Tambotoco standard and no measurable visual gate. | This pilot, the rewritten art direction and the reconciled quality bar. |
 
 The 2026-11-16 kit pass was a real improvement: coursed stone, thatch houses, qollqas, terraced fields and a
@@ -68,7 +69,7 @@ storehouse, a qollqa, a field, the canal, the stream, people, llamas and vegetat
 | Huts | 134,160 · 142,163 · 138,167 (storehouse) · 132,166 (shed) | `close` (138, 163, h 13) |
 | Field | 131, 175 (10 × 7, 5 rows) | `hualla` |
 | Acequia / bridge | 166, 178 · bridge 186, 177 | `acequia` (166, 178, h 36) |
-| Hero staging | flat ground near 138, 157 | `hero` (low camera, Manco + worker) |
+| Hero staging | flat ground south of the hamlet, near 138, 170 | `hero` (low camera, Manco + worker; clear of the yard props) |
 
 **Secondary: Inticancha `fundada`** (168, 190). It is the reward moment and the test for the plaza, canchas
 and ring houses, but it is not the first fix: its geometry depends on the architecture pass. Capture view:
@@ -159,7 +160,7 @@ exploration. The mission evidence captures (`shots_evidence.mjs`) cover the fog 
   the only file added, so the camera math is identical on both sides.
 - **After** is captured on the branch with the same views, seed and resolution.
 - `neutral` is a stable material comparison, not the shipped quality; `final` is the look gate.
-- Views: `cave`, `shrine`, `hualla`, `acequia`, `inticancha`, `built`, `close`, `wide`, `hero`. `built` runs
+- Views: `cave`, `shrine`, `shrineClose`, `hualla`, `acequia`, `inticancha`, `inticanchaClose`, `built`, `close`, `trees`, `wide`, `hero`, `hero54`. `built` runs
   after the clean scene views so its spawned base does not contaminate them; `hero` runs last and stops the loop.
 - Output: `review/art-pilot-<tag>-<quality>-<size>-<view>.png` and a JSON summary. `review/` is gitignored; a
   path alone is not evidence. Attach the PNGs to the PR.
@@ -178,9 +179,9 @@ The pilot is approved only when all of these are true:
 - [x] The ground receives directional shadows; no floating props or stones. (Approved 2026-11-17.)
 - [x] Inticancha `fundada` reads as a settlement, not a disc with props. (Approved 2026-11-17.)
 - [x] No imperial Inca element and no invented species, name or date; certainty labels are updated. (Approved 2026-11-17.)
-- [x] `bench_scene.mjs --mission=m_tambotoco --assert` is within the 500k/280 and 660k/360 caps (425,324/273 and 633,330/356 on a clean checkout).
-- [x] Integrated GPU ≥ 30 FPS at low/medium; high quality is measured and recorded (36/34 FPS, 27.8/29.4 ms p50).
-- [x] `yarn dist:check` ≤ 25 MB and the entry chunk ≤ 600 KB gzip (24.56 MB, 2 KB gzip).
+- [x] `bench_scene.mjs --mission=m_tambotoco --assert` is within the 500k/280 and 660k/360 caps (425,328/269 and 634,134/357; the high-quality frames late is 659,962/360, at the call cap).
+- [x] Integrated GPU ≥ 30 FPS at low/medium; high quality is measured and recorded (39/33 FPS, 25.6/30.1 ms p50).
+- [x] `yarn dist:check` ≤ 25 MB and the entry chunk ≤ 600 KB gzip (24.63 MB, 2 KB gzip).
 - [x] `yarn verify:fast`, `yarn art:validate` and the relevant tests pass (948 tests).
 - [x] The 3 × 3 before/after set is attached; the docs and provenance are current. Approved 2026-11-17; the 960×540 representatives are in `docs/media/tambotoco-e6-*` and the 3 × 3 sheets in `docs/media/tambotoco-e6-3x3-*`.
 - [x] A human has approved the reference captures. **Approved by the project owner on 2026-11-17.**
@@ -194,19 +195,19 @@ The pilot is approved only when all of these are true:
 | Huanacaure monolith | Blender GLB (E2b) | Implemented, procedural fallback | LOD0 288 / LOD1 104 | Tapered huaca with a carved niche; fallback kept |
 | Highland trees and shrubs | Blender vegetation kit | **Implemented (E3a)** | Molle 1.5k/400, pacay 1.1k/320, ichu 220/60 | Molle/pacay/sauce trees; ichu GLB built and budgeted but not attached; reeds shared |
 | Ground cover | Procedural | Partial | Existing | Ichu stand on a trimmed 0.08 budget (1,280 tufts) to fund the kit |
-| Rock outcrops | Blender prop kit | Partial (Caral granodiorite) | 300 / — | Build an andes stone kit; instance |
+| Rock outcrops | Blender prop kit | Partial (Caral granodiorite); E7 kept the site's procedural andes-hued rocks | 300 / — | A dedicated andes GLB remains future work |
 | Water | `Water.ts` shader | Implemented | Existing | Cold palette, depth gradient, soft banks |
 | Paths | Terrain paint + stones | Implemented | Existing | Embedded stone, soft edges; remove the ladder look |
-| Ayar hero | CC0 rig + hero outfit GLB (E4b) | **Implemented** | 10 draws / 10,004 tris measured | `tambotoco_hero.glb`; male-only, 4 clips, 1.38 MB; longer tunic, head/hands +12% |
+| Ayar hero | CC0 rig + hero outfit GLB (E4b) + baked E7 proportion pass | **Implemented** | 9 draws / 7,230 scene tris measured (6,913 in the GLB) | `tambotoco_hero.glb`; male-only, 4 clips, 1.45 MB, 7 materials; baked head/hands +12%, shoulder/waist taper |
 | Common unit | Shared rig + Killke attire variant (E4a) | **Implemented** | 14 draws / 9,628 tris measured | Killke/ayllu palettes and rodela; shared asset |
 | Llamas | Existing CC0 GLB | Implemented | Existing | Keep; check scale and grouping |
-| Household props (hearth, basket, bench…) | Caral prop kit | Partial | 300 / — | Reuse where source-neutral; add highland pieces |
+| Household props (hearth, basket, bench…) | Caral prop kit + E7 procedural yard detail | **Partial (E7)**: Inticancha loom/jars and Huanacaure offerings; hamlet props reverted by the frames cap | 300 / — | Reuse where source-neutral; a future offset can restore the hamlet props |
 | Cinematic beats | Mission data + `CinematicPlayer` | **Implemented (E5)** | — | Hero/detail/wide shots; foundation reward; no new system |
-| Portraits / UI | Existing medallions | Implemented | — | No change in the pilot |
+| Portraits / UI | Existing medallions | Implemented | — | Unique Ayar portraits remain future work |
 
 ## 8. Size ledger
 
-`dist/` is 24.56 MB of the 25 MB budget. New assets must be offset in the same PR; the cap is not raised.
+`dist/` is 24.63 MB of the 25 MB budget. New assets must be offset in the same PR; the cap is not raised.
 
 | Item | Estimated size | Offset |
 | --- | --- | --- |
@@ -214,9 +215,9 @@ The pilot is approved only when all of these are true:
 | Highland vegetation kit (molle, pacay, ichu × 2 LODs) | **0.216 MB actual (E3a)** | Meshopt, project-owned procedural geometry; no new textures |
 | Architecture hero GLBs (cave, monolith) | **0.100 MB actual (E2b)** | Replaced procedural geometry; no net addition |
 | Textures / macro maps | 0.3–0.5 MB | WebP; reuse atlases; remove unused maps |
-| **Total** | **1.8–2.8 MB** | **At least 2.5 MB of offsets** (E2b used 0.10 MB and freed 1.84 MB by not shipping the demo mannequin; E3a added 0.216 MB; E4b added 1.38 MB; E5 re-shot the captures (+0.02 MB); `dist` is 24.56 MB) |
+| **Total** | **1.8–2.8 MB** | **At least 2.5 MB of offsets** (E2b used 0.10 MB and freed 1.84 MB by not shipping the demo mannequin; E3a added 0.216 MB; E4b added 1.38 MB; E5 re-shot the captures (+0.02 MB); E7 replaced the hero (+0.07 MB); `dist` is 24.63 MB) |
 
-The registry imports the gameplay GLBs explicitly; the demo mannequin is not shipped. The hero is preloaded only for `INCA_KILLKE` matches, and `dist` keeps 0.44 MB of headroom.
+The registry imports the gameplay GLBs explicitly; the demo mannequin is not shipped. The hero is preloaded only for `INCA_KILLKE` matches, and `dist` keeps 0.37 MB of headroom.
 
 ## 9. Backlog
 
@@ -262,8 +263,8 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
 
 ### P2 · Polish after approval
 
-9. Household props, extra fauna and micro-detail; UI portraits if the field identity changes.
-10. Standardize the palette/material/pipeline method for the next campaign.
+9. Household props, extra fauna and micro-detail; UI portraits if the field identity changes. **E7:** partial — Inticancha yard detail and Huanacaure offerings shipped; the hamlet props, field cairns and plaza jars hit the frames cap and were reverted; the existing llama/vicuña/condor groups are unchanged. Unique Ayar portraits remain future work.
+10. Standardize the palette/material/pipeline method for the next campaign. **E7:** the `models:hero` chain now records base build → Blender proportion pass → meshopt, the terrain palette carries an optional `macro` budget, and the E6/E7 capture/publish/compare scripts are the reproducible evidence pipeline.
 
 ## 10. Stages
 
@@ -276,9 +277,9 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
 | **E4** | Hero + common unit | **E4a done (2026-11-17):** Killke and valley-ayllu rig variants replace the Chanca proxy. **E4b done (2026-11-17):** male-only `tambotoco_hero.glb` (1.38 MB, 4 clips, longer hero tunic) for Manco; hero 10,004 tris / 10 draws, common 9,628 / 14. Acceptance: Manco distinct at 54; budget; other campaigns unchanged |
 | **E5** | Cinematic beats and foundation | **Done (2026-11-17):** hero cave, detail Huanacaure, wide valley, wide traced Inticancha and a hero foundation beat (camera + Ayar Auca stone; its raise fires the dust); the five intro/card/epilogue captures were re-shot. `camera` cues gained `zoom`/`seconds` and `Camera.flyTo` gained `holdClock` (only the opening flight holds the clock); no scene geometry changed. Acceptance: wide/detail/hero shots; foundation reward |
 | **E6** | 3 × 3 validation, bench, provenance, docs, review | **Done (2026-11-17):** the three cameras (`hualla`, `acequia`, `inticancha`) × 1280×720/1600×900/1920×1080, neutral and final; before at `a0352d5`, after on this branch. `yarn verify:fast` (948 tests), `art:validate` and `dist:check` green; `bench:check` keeps the pre-existing `m8_independencia` failure (626,265 > 625,000), accepted as an unrelated exception; caps 425,324/273 and 633,330/356. The 3 × 3 set was approved by the project owner on 2026-11-17 and the 960×540 copies are published in `docs/media/`. |
-| **E7** | Full pilot production | Only after E6 approval |
+| **E7** | Full pilot production | **Delivered (2026-11-17):** baked Manco proportions (`tambotoco_hero.glb`, 1.45 MB, 4 clips, 7,230 visible tris / 9 draws), a `cusco_valley`-scoped terrain macro/AO softening, Inticancha yard detail and Huanacaure offerings. The 3 x 3 E7 set and the 3X full-mode recording (Act III; the autopilot loses Manco at the Huanacaure hold, so it is not a victory run) are the review artifacts. The hamlet household props, field cairns and plaza jars were trialed and reverted: the E6 frames late had only 842 triangles of headroom, and the retained detail leaves the E7 frames late at 659,962/360 (38 tris, 0 calls). Unique outfits/portraits for all eight Ayar, a hand-sculpted body, a dedicated andes rock GLB and new fauna species remain future work. |
 
-E0–E6 are the scope of this pilot. E7 is a separate decision.
+E0–E6 are the scope of the pilot; E7 is the separate production pass delivered on 2026-11-17.
 
 ## 11. Risks
 
@@ -355,6 +356,12 @@ Recorded 2026-11-16:
 | 2026-11-17 | `yarn art:pilot --tag=e6 --quality=neutral --sizes=1280x720,1600x900,1920x1080 --views=hualla,acequia,inticancha` | After 3 × 3, neutral (review/) |
 | 2026-11-17 | `yarn art:pilot --tag=e6 --quality=final --sizes=1280x720,1600x900,1920x1080 --views=hualla,acequia,inticancha` | After 3 × 3, final look (review/) |
 | 2026-11-17 | `node scripts/publish_tambotoco_e6.mjs` + approval | Published `docs/media/tambotoco-e6-{hualla,acequia,inticancha}-{before,after,final}.webp` (960×540) |
+| 2026-11-17 | `yarn models:hero` (base build → Blender sculpt → meshopt `--hero`) | `tambotoco_hero.glb` 1.45 MB, 4 clips, baked head/hands +12% and taper; 7,230 scene tris / 9 draws (6,913 in the GLB) |
+| 2026-11-17 | `yarn art:pilot --tag=e7 --quality=neutral / final --sizes=1280x720,1600x900,1920x1080 --views=hualla,acequia,inticancha` | E7 3 × 3 set; published as `docs/media/tambotoco-e7-*` |
+| 2026-11-17 | `node scripts/capture_art_pilot.mjs --tag=e7-hero --quality=final --sizes=1600x900 --views=hero` | Baked-proportion hero; published as `docs/media/tambotoco-e7-hero.webp` |
+| 2026-11-17 | `node scripts/capture_art_pilot.mjs --tag=e7-detail --quality=neutral --sizes=1600x900 --views=shrineClose,inticanchaClose` | Huanacaure offerings and the Inticancha yard; published as `docs/media/tambotoco-e7-{shrine,yard}.webp` |
+| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert` | 450,930/270 opening (39 FPS) and 659,962/360 late (33 FPS; structural 634,134/357) |
+| 2026-11-17 | `yarn record --mission=m_tambotoco --mode=full --speed=3` | 3X full-mode recording in `review/` (935 s JSON / 910.6 s MP4; reaches Act III and loses Manco at the Huanacaure hold, not a victory run; the local recorder has uncommitted working-tree changes) |
 
 ## 14. See also
 

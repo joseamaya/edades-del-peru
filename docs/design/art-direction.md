@@ -384,8 +384,14 @@ certainty"; the historical basis is [`../historia/campanas/tambotoco.md`](../his
 5. **E4 · Characters.** Tambotoco hero GLB and a common-unit variant; proportions, textiles and headdresses.
 6. **E5 · Presentation. — Done in E5.** Hero cave, detail Huanacaure, wide valley, wide traced Inticancha and a hero foundation beat; the intro/card/epilogue captures were re-shot.
 7. **E6 · Validation and approval. — Done in E6.** 3 cameras × 3 resolutions, bench, provenance, docs and human review (approved 2026-11-17).
-8. **E7 · Production.** A separate decision after the E6 approval: the cave, camp, Huanacaure, hamlets, acequia, fields,
-   Inticancha and the eight Ayar.
+8. **E7 · Production. — Delivered in E7.** A separate decision after the E6 approval. The cave, camp,
+   Huanacaure, hamlets, acequia and fields already had their E1–E6 passes; E7 added the baked Manco
+   proportions, the `cusco_valley`-scoped terrain macro/AO and the Inticancha yard/Huanacaure offerings
+   (captured as `docs/media/tambotoco-e7-{hero,shrine,yard}.webp`). The
+   hamlet props, field cairns and plaza jars were reverted by the late frames cap; unique outfits/portraits
+   for the eight Ayar, a hand-sculpted body, an andes rock GLB and new fauna species remain future work. The
+   3 x 3 E7 captures and the 3X recording (Act III; Manco lost at the hold, not a victory run) are the
+   review artifacts.
 
 **Standardization.** After the pilot, future campaigns share the quality bar, the pipeline, the palette
 method and the performance gate — not the same look. Each campaign defines its own regional palette,

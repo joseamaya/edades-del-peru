@@ -35,6 +35,14 @@ describe('terrain palettes', () => {
     expect(valley.valley + valley.slope + valley.loma + valley.summit).toBeCloseTo(1, 5);
   });
 
+  it('scopes the macro/AO softening to the Cusco valley palette', () => {
+    expect(TERRAIN_PALETTES.cusco_valley.macro).toEqual({ blend: 0.45, ao: 0.45, contrast: 1.06 });
+    for (const [id, palette] of Object.entries(TERRAIN_PALETTES)) {
+      if (id === 'cusco_valley') continue;
+      expect(palette.macro, id).toBeUndefined();
+    }
+  });
+
   it('separates the four playable map types in luminance, not only hue', () => {
     const grass = ['central_coast', 'andean_valley', 'altiplano', 'amazon'].map((id) =>
       luminance(TERRAIN_PALETTES[id as keyof typeof TERRAIN_PALETTES].materials.grass),

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { AylluSite } from '../src/rendering/AylluSite';
-import { ageSurface, aylluHut, box, slab, terracedField, type Parts } from '../src/rendering/aylluKit';
+import { ageSurface, aylluHut, box, slab, terracedField, villageDressing, type Parts } from '../src/rendering/aylluKit';
 import {
   TAMBOTOCO_FIELDS,
   TAMBOTOCO_INTICANCHA_HUTS,
@@ -209,5 +209,18 @@ describe('the ayllu kit', () => {
     expect(site.group.getObjectByName('ayllu_hero_cave_fallback')?.visible).toBe(true);
     expect(site.group.getObjectByName('ayllu_hero_huaca_fallback')?.visible).toBe(true);
     site.dispose();
+  });
+});
+
+describe('ayllu yard detail', () => {
+  it('adds the Inticancha yard detail only when requested', () => {
+    const ground = (): number => 0;
+    const plain: Parts = [];
+    villageDressing(plain, 0, 0, ground, 'village', true, 0, false);
+    const detailed: Parts = [];
+    villageDressing(detailed, 0, 0, ground, 'village', true, 0, true);
+    expect(detailed.length).toBeGreaterThan(plain.length);
+    const surfaces = new Set(detailed.map((g) => g.userData.surface));
+    expect(surfaces.has('earth')).toBe(true);
   });
 });

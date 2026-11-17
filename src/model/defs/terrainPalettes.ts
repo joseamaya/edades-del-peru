@@ -81,6 +81,8 @@ export interface TerrainPalette {
   textureMix: number;
   /** Extra aerial-perspective cap on authored high-relief sites. */
   fogCapBoost?: number;
+  /** Near/far macro blend, AO strength and contrast; lower values soften large turf patches. */
+  macro?: { blend: number; ao: number; contrast: number };
 }
 
 export const TERRAIN_PALETTES: Record<TerrainPaletteId, TerrainPalette> = {
@@ -141,6 +143,9 @@ export const TERRAIN_PALETTES: Record<TerrainPaletteId, TerrainPalette> = {
     },
     bands: { valley: '#6b7444', slope: '#8f8660', loma: '#a09368', summit: '#c8c0aa' },
     textureMix: 0.82,
+    // E7: the 1920 captures exposed large turf patches around the hamlet; soften the macro/AO blend
+    // here instead of changing the shared terrain look for every campaign.
+    macro: { blend: 0.45, ao: 0.45, contrast: 1.06 },
   },
   high_andes: {
     materials: {

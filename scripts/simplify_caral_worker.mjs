@@ -28,6 +28,10 @@ const PART_BUDGETS = {
   attire_tunic_f: { budget: 1000, ratio: 0.35 },
   attire_tunic_m: { budget: 1000, ratio: 0.45 },
 };
+/** The hero's longer tunic is a silhouette layer, not hidden detail: keep it through the meshopt pass. */
+const HERO_BUDGETS = { ...PART_BUDGETS, attire_tunic_m: { budget: 2800, ratio: 0.45 } };
+const hero = process.argv.includes('--hero');
+const budgets = hero ? HERO_BUDGETS : PART_BUDGETS;
 
 export async function simplifyCaralWorker(file) {
   await Promise.all([MeshoptDecoder.ready, MeshoptEncoder.ready, MeshoptSimplifier.ready]);
@@ -39,7 +43,7 @@ export async function simplifyCaralWorker(file) {
   let changed = false;
   for (const node of document.getRoot().listNodes()) {
     const mesh = node.getMesh();
-    const part = PART_BUDGETS[node.getName()];
+    const part = budgets[node.getName()];
     if (!mesh || !part) continue;
     for (const prim of mesh.listPrimitives()) {
       const before = (prim.getIndices()?.getCount() ?? prim.getAttribute('POSITION').getCount()) / 3;
@@ -53,7 +57,8 @@ export async function simplifyCaralWorker(file) {
       changed = true;
     }
   }
-  if (changed) {
+  // The hero may already be within every part budget, but the round-trip export still needs meshopt.
+  if (changed || hero) {
     await document.transform(
       weld(),
       resample({ tolerance: 1e-4 }),

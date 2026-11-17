@@ -47,6 +47,9 @@ export const AYLLU = {
   cropWetDry: new THREE.Color('#8a8258'),
   mouth: new THREE.Color('#120f0c'),
   cloth: new THREE.Color('#a0603c'),
+  /** Props: a wood hue carried by the shadow-casting earth family (the `wood` family is shadowless). */
+  timber: new THREE.Color('#6a5238'),
+  textile: new THREE.Color('#8a5a3c'),
   skin: new THREE.Color('#94694a'),
   wood: new THREE.Color('#6a5238'),
 } as const;
@@ -76,6 +79,8 @@ const SURFACE_OF = new Map<THREE.Color, SurfaceFamily>([
   [AYLLU.mouth, 'wood'],
   [AYLLU.cloth, 'people'],
   [AYLLU.skin, 'people'],
+  [AYLLU.timber, 'earth'],
+  [AYLLU.textile, 'earth'],
   [AYLLU.wood, 'wood'],
 ]);
 
@@ -1153,6 +1158,7 @@ export function villageDressing(
   phase: 'camp' | 'village',
   yard = true,
   base?: number,
+  detail = true,
 ): number {
   const yardTop =
     base ??
@@ -1188,7 +1194,57 @@ export function villageDressing(
     rock(parts, x - 1.2 + i * 0.28, yardTop - 0.1, z + 1.6 + (i % 2) * 0.2, 0.14 + (i % 3) * 0.04, AYLLU.darkStone);
   }
   box(parts, AYLLU.mouth, x - 0.7, yardTop - 0.02, z + 1.7, 0.9, 0.05, 0.7);
+  if (detail) householdDetail(parts, x, z, yardTop);
   return yardTop;
+}
+
+/**
+ * Household detail around a yard: a backstrap loom and a pottery pair. All of it merges into the
+ * existing stone/earth families, so the extra lived-in detail costs no draw calls; the geometry budget
+ * is a few hundred triangles. The late Inticancha phases skip earth shadows, so the props are matte.
+ */
+function householdDetail(parts: Parts, x: number, z: number, yardTop: number): void {
+  // Loom: four posts, two beams and a hanging panel, set beside the house wall.
+  const lx = x + 1.45;
+  const lz = z + 1.35;
+  for (const [ox, oz] of [
+    [-0.42, -0.32],
+    [0.42, -0.32],
+    [-0.42, 0.32],
+    [0.42, 0.32],
+  ] as const) {
+    box(parts, AYLLU.timber, lx + ox, yardTop, lz + oz, 0.07, 1.15, 0.07);
+  }
+  box(parts, AYLLU.timber, lx, yardTop + 1.1, lz, 0.92, 0.07, 0.07);
+  box(parts, AYLLU.timber, lx, yardTop + 0.42, lz, 0.92, 0.06, 0.06);
+  box(parts, AYLLU.textile, lx, yardTop + 0.5, lz, 0.72, 0.55, 0.03);
+  // Pottery pair: two jars of different heights and mouths.
+  for (const [ox, oz, r, h] of [
+    [-0.35, -1.55, 0.18, 0.3],
+    [0.55, -1.35, 0.2, 0.36],
+  ] as const) {
+    cylinder(parts, AYLLU.earth, x + ox, yardTop, z + oz, r * 0.8, r, h, 7);
+    cylinder(parts, AYLLU.darkStone, x + ox, yardTop + h, z + oz, r * 0.62, r * 0.74, 0.06, 7);
+  }
+}
+
+/** Offerings at the huaca: a stone cairn, two jars and a folded cloth at the platform edge. */
+export function shrineOfferings(parts: Parts, x: number, z: number, base: number): void {
+  for (let i = 0; i < 5; i++) {
+    rock(
+      parts,
+      x - 2.4 + (i % 2) * 0.3,
+      base + i * 0.16,
+      z + 2.2 + Math.floor(i / 2) * 0.22,
+      0.22 - i * 0.015,
+      AYLLU.darkStone,
+      i,
+    );
+  }
+  cylinder(parts, AYLLU.earth, x + 2.5, base, z + 1.8, 0.16, 0.2, 0.28, 7);
+  cylinder(parts, AYLLU.plaster, x + 2.5, base + 0.28, z + 1.8, 0.12, 0.15, 0.05, 7);
+  cylinder(parts, AYLLU.earth, x + 2.9, base, z + 1.55, 0.12, 0.16, 0.22, 7);
+  box(parts, AYLLU.textile, x + 2.2, base, z + 2.15, 0.5, 0.04, 0.34, 0.2);
 }
 
 /** Dry-stone terrace: a retaining face conformed to the slope, with a thin cap. */
