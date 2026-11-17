@@ -15,9 +15,9 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
 - **Performance:** m3–m9 and m6b meet the scale, opening and performance gates; the m3, m4, m5, Tambotoco,
   Lima, La Junta and Arica intro renders are approved, and the rest of the art review is pending.
 - **Art pending:** Chavín, Chimú, the civil war, Túpac Amaru and Independencia still lack mostly art.
-- **Art direction:** Tambotoco is the new reference scene; E0–E3b of the pilot are implemented (docs,
+- **Art direction:** Tambotoco is the new reference scene; E0–E5 of the pilot are implemented (docs,
   terrain shadows, palette, plaza, procedural architecture finish, cave/huaca GLBs, highland vegetation,
-  soft banks/ford and paths, Killke/ayllu variants and the Manco GLB), E5–E6 remain
+  soft banks/ford and paths, Killke/ayllu variants, the Manco GLB and hero/detail/wide beats), E6 remains
   ([`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md)).
 - **Open release work:** human art review, a site-specific real-GPU performance pass and the itch package.
 

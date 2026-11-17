@@ -173,10 +173,15 @@ checks the panels geometrically at 1280x720, 1600x900 and 1920x1080. Captures:
 - The ayllu site uses the same fog mask as the terrain. The old injection dimmed alpha as well as colour;
   opaque landscape and site meshes then wrote alpha 0 and the post-processed SwiftShader frame showed
   white slabs. `applyFow` now dims colour only. The cave clearing is explored by the opening reveal;
-  Huanacaure and the valley stay dark until reached or shown by the Act III/IV camera beats (`reveal: 45`).
-- Three narrated beats: the cave, Huanacaure, the valley.
+  Huanacaure and the valley stay dark until reached or shown by the Act II–IV camera beats (`reveal: 45`).
+- Three narrated beats with a hero/detail/wide grammar: the cave (the party leaves the mouth), Huanacaure
+  (the monolith and its niche) and the valley (the inhabited hualla hamlet and its fields).
 - Three chapter cards open the act that follows: Ayar Uchu en Huanacaure, el agua de los alcabizas and
-  Ayar Auca en Inticancha.
+  Ayar Auca en Inticancha. The Act II/III/IV beats glide behind their cards to a framed shot (`zoom` 34/46/48, `reveal: 45`);
+  after the wave the camera flies to the stone plug (zoom 36), not the field intake.
+- The foundation beat (`t_inticancha`) is the reward moment: a close flight to the plaza (zoom 29) while
+  Ayar Auca's stone rises (its raise fires the dust). The four canchas then complete the `fundada` phase and
+  the victory backdrop shows the founded settlement, not the empty valley.
 - Victory: Inticancha and its four canchas; the epilogue tells the foundation as tradition and names the
   disagreement between Sarmiento and Garcilaso.
 - Defeat: the valley ayllus reject the newcomers.
@@ -257,13 +262,14 @@ hero variant (E4). The pilot runs E0–E6 and does not rebuild the mission, its 
 
 ## Open items
 
-1. Performance (measured 2026-11-17; E4 numbers): software (SwiftShader) measures **425,052 triangles /
-   273 draw calls** at the opening and **632,910 / 356** on the founded Inticancha (vegetation kit 9,352/9 and
+1. Performance (measured 2026-11-17; E5 numbers): software (SwiftShader) measures **425,324 triangles /
+   273 draw calls** at the opening (the E4b sample read 425,052/268 on the same scene; the animated
+   shadow-frustum edge moves 272 tris / 5 calls) and **633,330 / 356** on the founded Inticancha (vegetation kit 9,352/9 and
    34,306/12); the pre-E1 baseline was 436,880 / 265 and 608,324 / 347, E1 measured 437,976 / 264 and
    614,594 / 357, E2a 438,856 / 269 and 615,532 / 354, and E2b 430,488 / 269 and 613,692 / 354. E3b hardware
    (`--gpu`, Intel RPL-S iGPU, high) measures **450,654 / 269** opening and **659,158 / 359** late in frames mode
-   (the scene pass; the complete render adds the shadow/refraction passes; structural late 632,910 / 356).
-   Frame time at high quality with post-processing on: **39 FPS** opening and **33 FPS** late (25.5 / 30.2 ms p50).
+   (the scene pass; the complete render adds the shadow/refraction passes; structural late 633,330 / 356).
+   Frame time at high quality with post-processing on: **36 FPS** opening and **34 FPS** late (27.8 / 29.4 ms p50; iGPU run variance, the scene counts are identical to E4b).
    The opening cap is now **500k / 280** (ratcheted from 600k/340); the late cap stays
    **660k / 360** and is met without raising it. The pass batched every entity contact shadow into one
    instanced draw, merged the site by surface family per phase (instead of one mesh for the whole 256 m

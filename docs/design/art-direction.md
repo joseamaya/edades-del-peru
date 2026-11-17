@@ -285,9 +285,9 @@ Targets for the default view at 1600×900:
 **Mission caps are ratified, not raised to hide a regression.** The current Tambotoco caps in
 `scripts/bench_scene.mjs` are **500k triangles / 280 draw calls** at the opening and **660k / 360** in the
 late founded settlement. The pilot must stay inside them. Prefer a neutral pass; a measured increase is
-acceptable only when it buys a visible improvement and the frame-time target still holds. E4b: opening
-**425,052 / 268** (vegetation kit 9,352/9) and late **632,910 / 356** structural (kit 34,306/12);
-**39 / 33 FPS** at high quality on the integrated GPU; both the structural and frames scene counts stay
+acceptable only when it buys a visible improvement and the frame-time target still holds. E5: opening
+**425,324 / 273** (vegetation kit 9,352/9; the E4b sample read 425,052/268) and late **633,330 / 356** structural (kit 34,306/12);
+**36 / 34 FPS** at high quality on the integrated GPU; both the structural and frames scene counts stay
 under the caps. The complete render adds the shadow and refraction passes. Do not raise a cap to hide a
 regression.
 
@@ -382,7 +382,7 @@ certainty"; the historical basis is [`../historia/campanas/tambotoco.md`](../his
 3. **E2 · Architecture.** Stone, plaster, thatch, eaves, qollqa, cancha and plaza; decide the hero GLB pieces.
 4. **E3 · Landscape.** Highland vegetation kit, clustering, rocks, water and paths.
 5. **E4 · Characters.** Tambotoco hero GLB and a common-unit variant; proportions, textiles and headdresses.
-6. **E5 · Presentation.** The three beats and the Inticancha foundation.
+6. **E5 · Presentation. — Done in E5.** Hero cave, detail Huanacaure, wide valley, wide traced Inticancha and a hero foundation beat; the intro/card/epilogue captures were re-shot.
 7. **E6 · Validation and approval.** 3 cameras × 3 resolutions, bench, provenance, docs and human review.
 8. **E7 · Production.** Only after E6 is approved: the cave, camp, Huanacaure, hamlets, acequia, fields,
    Inticancha and the eight Ayar.

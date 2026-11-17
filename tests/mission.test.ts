@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { Mission } from '../src/campaign/Mission';
+import { CAMERA_PITCH } from '../src/core/cameraMath';
 import type { MissionDef } from '../src/campaign/types';
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../src/core/types';
 
@@ -40,11 +41,12 @@ function stubGame(unit: { id: number; tag: string; owner: number; dead: boolean;
     loop: { start: () => {} },
     hud: {
       showBriefing: (_d: MissionDef, cb: () => void) => cb(),
+      isMissionCardOpen: () => false,
       showToast: () => {},
       showDialogue: () => {},
     },
     audio: { uiClick: () => {} },
-    camera: { focusOn: () => {} },
+    camera: { focusOn: () => {}, flyTo: () => {}, getYaw: () => 0, getZoom: () => 30 },
     rng: { float: () => 0.5 },
     getVisitedHeritage: () => [],
     setVisitedHeritage: () => {},
@@ -626,5 +628,60 @@ describe('mission alternative branches', () => {
     (failGame.units.get(1) as any).dead = true;
     failMission.update(0.1, 0);
     expect(lost).toBe(false);
+  });
+});
+
+describe('mission camera beats', () => {
+  it('frames a shot along the current yaw and keeps the instant focus without a framing', () => {
+    const unit = { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.SCOUT };
+    const game = stubGame(unit) as any;
+    const focusOn = vi.fn();
+    const flyTo = vi.fn();
+    let yaw = 0;
+    game.camera = { focusOn, flyTo, getYaw: () => yaw, getZoom: () => 30 };
+    game.terrain = { getHeight: () => 9 };
+    game.fow = { explore: vi.fn() };
+    const lift = 9 / Math.tan(CAMERA_PITCH);
+    const shotDef: MissionDef = {
+      ...def,
+      objectives: [],
+      triggers: [
+        {
+          id: 'shot',
+          condition: { type: 'time', seconds: 0.5 },
+          effects: [{ type: 'camera', pos: { dx: 20, dz: 30 }, zoom: 34, seconds: 2, reveal: 45 }],
+        },
+        {
+          id: 'cut',
+          condition: { type: 'time', seconds: 5 },
+          effects: [{ type: 'camera', pos: { dx: 1, dz: 2 } }],
+        },
+        {
+          id: 'yaw',
+          condition: { type: 'time', seconds: 7 },
+          effects: [{ type: 'camera', pos: { dx: 7, dz: 8 }, zoom: 34, seconds: 2 }],
+        },
+        {
+          id: 'pan',
+          condition: { type: 'time', seconds: 9 },
+          effects: [{ type: 'camera', pos: { dx: 5, dz: 6 }, seconds: 1 }],
+        },
+      ],
+    };
+    const mission = new Mission(game, shotDef, () => {});
+    mission.start();
+    mission.update(1, 0);
+    // The RTS camera looks at sea level; the glide aims short of the elevated subject so it is framed.
+    expect(flyTo).toHaveBeenLastCalledWith(20, 30 - lift, 34, 2, false);
+    expect(game.fow.explore).toHaveBeenCalledWith(20, 30, 45);
+    mission.update(5, 1);
+    expect(focusOn).toHaveBeenCalledWith(1, 2);
+    // A turned camera aims along its own forward axis, not the world Z.
+    yaw = Math.PI / 2;
+    mission.update(2, 6);
+    expect(flyTo).toHaveBeenLastCalledWith(7 - lift, 8, 34, 2, false);
+    // `seconds` without `zoom` glides at the current framing instead of being ignored.
+    mission.update(2, 8);
+    expect(flyTo).toHaveBeenLastCalledWith(5 - lift, 6, 30, 1, false);
   });
 });

@@ -1073,7 +1073,7 @@ export class Game {
 
   /** True while the opening flight or the chapter title card is holding the mission clock. */
   isCinematicActive(): boolean {
-    return this.camera.isFlying() || this.hud.isMissionCardOpen();
+    return this.camera.isOpeningFlight() || this.hud.isMissionCardOpen();
   }
 
   /**

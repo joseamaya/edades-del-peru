@@ -52,7 +52,7 @@ export class RTSCamera {
   /** Multiplier for keyboard/edge pan speed (user setting). */
   private speedScale = 1;
   private keymap: HotkeyMap = DEFAULT_KEYMAP;
-  /** Scripted camera flight (intro), overriding the damp while active. */
+  /** Scripted camera flight (intro or a mission beat), overriding the damp while active. */
   private fly: {
     fromX: number;
     fromZ: number;
@@ -62,6 +62,8 @@ export class RTSCamera {
     toZoom: number;
     startTime: number | null;
     dur: number;
+    /** The opening flight holds the mission clock; a presentation beat does not. */
+    holdClock: boolean;
   } | null = null;
 
   private mapSize: number;
@@ -284,8 +286,11 @@ export class RTSCamera {
     this.desiredZoom = clamp(h, this.minZoom, this.maxZoom);
   }
 
-  /** Cinematic flight from the current framing to `(x,z,zoom)` over `seconds`. */
-  flyTo(x: number, z: number, zoom: number, seconds: number): void {
+  /**
+   * Cinematic flight from the current framing to `(x,z,zoom)` over `seconds`. `holdClock` keeps the mission
+   * clock paused for the flight (the opening hold); a mid-mission beat passes false so gameplay keeps running.
+   */
+  flyTo(x: number, z: number, zoom: number, seconds: number, holdClock = true): void {
     this.followId = null;
     this.fly = {
       fromX: this.desiredTarget.x,
@@ -296,12 +301,18 @@ export class RTSCamera {
       toZoom: clamp(zoom, this.minZoom, this.maxZoom),
       startTime: null,
       dur: Math.max(0.01, seconds),
+      holdClock,
     };
   }
 
-  /** True while the scripted intro flight is still running. */
+  /** True while a scripted flight is running, whether it holds the mission clock or not. */
   isFlying(): boolean {
     return this.fly !== null;
+  }
+
+  /** True only for the opening flight that holds the mission clock (not a mid-mission camera beat). */
+  isOpeningFlight(): boolean {
+    return this.fly?.holdClock === true;
   }
 
   /** Enable camera rotation (Z/X). Off by default (fixed camera, SC2 style). */

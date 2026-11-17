@@ -42,6 +42,7 @@ function stubGame() {
     toasts: [] as string[],
     hud: {
       showBriefing: (_d: unknown, cb: () => void) => cb(),
+      isMissionCardOpen: () => false,
       showToast: (text: string) => game.toasts.push(text),
       showDialogue: (name: string) => game.dialogues.push(name),
       showActCard: (kicker: string) => game.acts.push(kicker),

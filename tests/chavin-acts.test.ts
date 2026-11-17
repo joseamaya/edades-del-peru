@@ -25,6 +25,7 @@ function stubGame() {
     loop: { start: () => {} },
     hud: {
       showBriefing: (_d: unknown, cb: () => void) => cb(),
+      isMissionCardOpen: () => false,
       showToast: () => {},
       showDialogue: (name: string) => game.dialogues.push(name),
       showActCard: (kicker: string) => game.acts.push(kicker),
