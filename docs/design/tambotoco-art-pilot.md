@@ -49,7 +49,7 @@ Baseline: `a0352d5`, seed 777, 1600×900, `sitePhase=fundada`, acequia open, HUD
 | **Landscape** | Flat olive ground with visible tiling, teal water ribbon, identical low-poly trees, neon crop rows, scattered rocks. | No terrain layers, no vegetation groups, no atmospheric depth. The Caral vegetation kit is coastal and does not cover the highlands. | `cusco_valley` palette and layers; highland vegetation kit; clustered placement; water/path pass. |
 | **Light and materials** | Ambient-heavy, weak contact shadows, no ground shadows, flat stone and plaster. | The custom terrain `ShaderMaterial` declared `lights: false`, so the ground never received directional shadows (B11). Materials have micro-detail but no macro scale and little roughness break. | **B11 fixed in E1** (terrain samples the shadow map, low morning sun); vertex AO and macro maps still open. |
 | **Presentation** | The opening and act cards are in-engine but framed as aerial views; Inticancha reads as the same disc with more props. | No shot grammar; the foundation lacks a reward moment. | Re-frame the three beats; wide/detail/hero shots; foundation phase + camera + life. |
-| **Performance** | Pre-E1 baseline: 436,880/265 and 608,324/347. Caps: 500k/280 and 660k/360. E3a–E4b structural: **424,904 / 273** and **632,910 / 356** (kit 9,352/9 and 34,306/12). High-quality frames scene: 450,234/269 (36 FPS) and 658,738/359 (31 FPS); both are under the caps too. The complete render adds the shadow and refraction passes. `dist` is 24.60 / 25 MB. | Draw calls exceed the general ≤200 target. High quality runs at 31 FPS late on the iGPU, so the governor steps down below its 45 FPS window; low/medium stay above 30. `dist` has 0.40 MB of headroom. | The andes kit adds 9.4k/34.3k kit triangles; both structural and frames scene counts stay under the unchanged caps. E5 must keep the governor, LOD radius and kit caps honest. Do not raise scene caps. |
+| **Performance** | Pre-E1 baseline: 436,880/265 and 608,324/347. Caps: 500k/280 and 660k/360. E3a–E4b structural: **425,052 / 268** and **633,330 / 356** (kit 9,352/9 and 34,306/12). High-quality frames scene: 450,654/269 (39 FPS) and 659,158/359 (33 FPS); both are under the caps too. The complete render adds the shadow and refraction passes. `dist` is 24.54 / 25 MB. | Draw calls exceed the general ≤200 target. High quality runs at 33 FPS late on the iGPU, so the governor steps down below its 45 FPS window; low/medium stay above 30. `dist` has 0.46 MB of headroom. | The andes kit adds 9.4k/34.3k kit triangles; both structural and frames scene counts stay under the unchanged caps. E5 must keep the governor, LOD radius and kit caps honest. Do not raise scene caps. |
 | **Documentation** | `art-direction.md` was Caral-first; `campaign-quality-bar.md` and `tambotoco-model-mission.md` gave different performance numbers; “Visuals: Met” certified presence, not quality. | No Tambotoco standard and no measurable visual gate. | This pilot, the rewritten art direction and the reconciled quality bar. |
 
 The 2026-11-16 kit pass was a real improvement: coursed stone, thatch houses, qollqas, terraced fields and a
@@ -180,8 +180,8 @@ The pilot is approved only when all of these are true:
 | Rock outcrops | Blender prop kit | Partial (Caral granodiorite) | 300 / — | Build an andes stone kit; instance |
 | Water | `Water.ts` shader | Implemented | Existing | Cold palette, depth gradient, soft banks |
 | Paths | Terrain paint + stones | Implemented | Existing | Embedded stone, soft edges; remove the ladder look |
-| Ayar hero | CC0 rig + hero outfit GLB (E4b) | **Implemented** | 10 draws / 9,164 tris measured | `tambotoco_hero.glb`; male-only, 5 clips, 1.44 MB |
-| Common unit | Shared rig + Killke attire variant (E4a) | **Implemented** | 15 draws / 9,648 tris measured | Killke/ayllu palettes and rodela; shared asset |
+| Ayar hero | CC0 rig + hero outfit GLB (E4b) | **Implemented** | 10 draws / 10,004 tris measured | `tambotoco_hero.glb`; male-only, 4 clips, 1.38 MB; longer tunic, head/hands +12% |
+| Common unit | Shared rig + Killke attire variant (E4a) | **Implemented** | 14 draws / 9,628 tris measured | Killke/ayllu palettes and rodela; shared asset |
 | Llamas | Existing CC0 GLB | Implemented | Existing | Keep; check scale and grouping |
 | Household props (hearth, basket, bench…) | Caral prop kit | Partial | 300 / — | Reuse where source-neutral; add highland pieces |
 | Cinematic beats | Mission data + `CinematicPlayer` | Implemented | — | Re-frame; no new system |
@@ -189,17 +189,17 @@ The pilot is approved only when all of these are true:
 
 ## 8. Size ledger
 
-`dist/` is 24.60 MB of the 25 MB budget. New assets must be offset in the same PR; the cap is not raised.
+`dist/` is 24.54 MB of the 25 MB budget. New assets must be offset in the same PR; the cap is not raised.
 
 | Item | Estimated size | Offset |
 | --- | --- | --- |
-| Tambotoco hero character GLB (E4b) | **1.44 MB actual** | Male-only subset of the worker sources; the demo mannequin is already out of the bundle |
+| Tambotoco hero character GLB (E4b) | **1.38 MB actual** | Male-only subset of the worker sources; the demo mannequin is already out of the bundle |
 | Highland vegetation kit (molle, pacay, ichu × 2 LODs) | **0.216 MB actual (E3a)** | Meshopt, project-owned procedural geometry; no new textures |
 | Architecture hero GLBs (cave, monolith) | **0.100 MB actual (E2b)** | Replaced procedural geometry; no net addition |
 | Textures / macro maps | 0.3–0.5 MB | WebP; reuse atlases; remove unused maps |
-| **Total** | **1.8–2.8 MB** | **At least 2.5 MB of offsets** (E2b used 0.10 MB and freed 1.84 MB by not shipping the demo mannequin; E3a added 0.216 MB; E4b added 1.44 MB; `dist` is 24.60 MB) |
+| **Total** | **1.8–2.8 MB** | **At least 2.5 MB of offsets** (E2b used 0.10 MB and freed 1.84 MB by not shipping the demo mannequin; E3a added 0.216 MB; E4b added 1.38 MB; `dist` is 24.54 MB) |
 
-The registry imports the gameplay GLBs explicitly; the demo mannequin is not shipped. The hero is preloaded only for `INCA_KILLKE` matches, and `dist` keeps 0.40 MB of headroom.
+The registry imports the gameplay GLBs explicitly; the demo mannequin is not shipped. The hero is preloaded only for `INCA_KILLKE` matches, and `dist` keeps 0.46 MB of headroom.
 
 ## 9. Backlog
 
@@ -254,7 +254,7 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
 | **E1** | B11, palette, water, plaza | **Partial (2026-11-16):** shadows on ground, low morning sun, straw/stone palette, single-rim plaza, bench 437,976/264 and 614,594/357; macro/AO and ground cover move to E2–E3 |
 | **E2** | Architecture materials/geometry; hero GLB decision | **E2a done (2026-11-17):** AO/macro, battered walls, thatch eave, qollqa footing/vent; bench 438,856/269 and 615,532/354. Acceptance: no box read at 28/54; ≤4 materials per building. **E2b done (2026-11-17):** cave and huaca GLBs, fallback and LODs; bench 430,488/269 and 613,692/354 |
 | **E3** | Highland vegetation kit, rocks, paths | **E3a done (2026-11-17):** molle/pacay/ichu kit (1,362/360, 1,048/316, 144/42 tris), andes pack, 14 m LOD0 radius, ichu stand on a trimmed 0.08 cover budget. **E3b done (2026-11-17):** wet-margin stream banks and a gravel ford bar (ground paint; heights unchanged, REPLAY_VERSION 40 for the resource shift), dirt-shouldered stone paths, and ayllu bank/path stones on the existing rock mesh (no new draw call). Bench **424,904/273** and **632,910/356** (kit 9,352/9 and 34,306/12). Acceptance: no invented species (inferred, sourced), LOD1 footprint stable. |
-| **E4** | Hero + common unit | **E4a done (2026-11-17):** Killke and valley-ayllu rig variants replace the Chanca proxy. **E4b done (2026-11-17):** male-only `tambotoco_hero.glb` (1.44 MB, 5 clips) for Manco; hero 9,164 tris / 10 draws, common 9,648 / 15. Acceptance: Manco distinct at 54; budget; other campaigns unchanged |
+| **E4** | Hero + common unit | **E4a done (2026-11-17):** Killke and valley-ayllu rig variants replace the Chanca proxy. **E4b done (2026-11-17):** male-only `tambotoco_hero.glb` (1.38 MB, 4 clips, longer hero tunic) for Manco; hero 10,004 tris / 10 draws, common 9,628 / 14. Acceptance: Manco distinct at 54; budget; other campaigns unchanged |
 | **E5** | Cinematic beats and foundation | Shot grammar; no new system |
 | **E6** | 3 × 3 validation, bench, provenance, docs, review | `yarn verify:fast`, `bench:check`, `art:validate`, `dist:check`, human approval |
 | **E7** | Full pilot production | Only after E6 approval |
@@ -320,11 +320,12 @@ Recorded 2026-11-16:
 | 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e3b-frames.json` | Intel RPL-S iGPU, high: **38 FPS** opening (26.5 ms p50); frames 450,354 / 269 |
 | 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e3b-late-frames.json` | Late: **33 FPS** (30.2 ms p50); frames 658,738 / 359 |
 | 2026-11-17 | `node scripts/build_caral_worker.mjs --hero --out=src/assets/models/tambotoco_hero.glb` + `node scripts/simplify_caral_worker.mjs --file=…` | Male-only hero: 7 meshes, 5 clips, 1.44 MB |
-| 2026-11-17 | `yarn art:pilot --tag=e4b --quality=neutral --sizes=1600x900 --views=hero` | Hero capture; published as `docs/media/tambotoco-e4a-hero-{before,after}.webp` |
-| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --assert --out=review/bench-scene-tambotoco-e4.json` | Opening **424,904 tris / 273 calls** (cap 500k/280) |
-| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --assert --out=review/bench-scene-tambotoco-e4-late.json` | Founded Inticancha **632,910 / 356** (cap 660k/360) |
-| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e4-frames.json` | **36 FPS** opening (27.9 ms p50); frames 450,234 / 269 |
-| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e4-late-frames.json` | Late: **31 FPS** (32.3 ms p50); frames 658,738 / 359 |
+| 2026-11-17 | `yarn art:pilot --tag=e4b2 --quality=neutral --sizes=1600x900 --views=hero,hero54` | Hero close-up and strategic frame; published as `docs/media/tambotoco-e4b-hero-{before,after,54}.webp` |
+| 2026-11-17 | `yarn hero:budget` | Hero 10,004 tris / 10 draws; common 9,628 / 14 |
+| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --assert --out=review/bench-scene-tambotoco-e4.json` | Opening **425,052 tris / 268 calls** (cap 500k/280) |
+| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --assert --out=review/bench-scene-tambotoco-e4-late.json` | Founded Inticancha **633,330 / 356** (cap 660k/360) |
+| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e4-frames.json` | **39 FPS** opening (25.5 ms p50); frames 450,654 / 269 |
+| 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e4-late-frames.json` | Late: **33 FPS** (30.2 ms p50); frames 659,158 / 359 |
 | pending | `yarn art:pilot --tag=after --quality=neutral --sizes=1280x720,1600x900,1920x1080` | E6 evidence |
 | pending | `yarn art:pilot --tag=after --quality=final --sizes=1280x720,1600x900,1920x1080` | E6 evidence |
 

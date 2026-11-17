@@ -8,6 +8,7 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
  * generated from the base body surface.
  *
  * Usage: node scripts/build_caral_worker.mjs [--out=src/assets/models/caral_worker.glb]
+ *        node scripts/build_caral_worker.mjs --hero --out=src/assets/models/tambotoco_hero.glb
  *
  * Sources are fetched from the pinned mirror commit and verified by SHA-256.
  * The generated GLB owns one skeleton, the body/hair meshes and the worker
@@ -55,7 +56,7 @@ const CLIPS = [
   ['ual1', 'Death01'],
 ];
 const hero = process.argv.includes('--hero');
-const HERO_CLIPS = ['Idle_Loop', 'Walk_Loop', 'Sword_Regular_A', 'OverhandThrow', 'Death01'];
+const HERO_CLIPS = ['Idle_Loop', 'Walk_Loop', 'Sword_Regular_A', 'Death01'];
 const outFile = path.resolve(cliArg('out', 'review/caral_worker_test.glb'));
 
 const { base, close } = await withViteServer({ optimizeDeps: { noDiscovery: true } });
@@ -560,6 +561,16 @@ try {
       };
       const tunicF = addSkinned(makeTunic(femaleBody), cotton, 'attire_tunic_f');
       const tunicM = addSkinned(makeTunic(maleBody, { sideX: 0.3 }), cotton, 'attire_tunic_m', maleBody.bindMatrix);
+      if (hero) {
+        // The hero's uncu is longer than the worker's: a second silhouette layer under the mantle.
+        tunicM.removeFromParent();
+        addSkinned(
+          makeTunic(maleBody, { topY: 1.48, bottomY: 0.68, sideX: 0.34, offset: 0.04 }),
+          cotton.clone(),
+          'attire_tunic_m',
+          maleBody.bindMatrix,
+        );
+      }
       const skirtF = addSkinned(
         makeTube({
           topY: 0.97,
@@ -662,6 +673,9 @@ try {
           baseGltf.scene.getObjectByName(name)?.removeFromParent();
         }
         animations = animations.filter((clip) => heroClips.includes(clip.name));
+        if (skinned(baseGltf.scene).length !== 7 || animations.length !== 4) {
+          throw new Error(`hero filter: ${skinned(baseGltf.scene).length} meshes / ${animations.length} clips`);
+        }
       }
 
       const bounds = new THREE.Box3().setFromObject(baseGltf.scene);

@@ -260,11 +260,15 @@ export function unitModelAsset(
   civ: CivId,
   id = 0,
   gender?: PersonGender,
+  tag = '',
 ): RigModelChoice | null {
   // A named commander passes its declared gender; anonymous units keep the deterministic id split.
   const unitGender = gender ?? genderForId(id);
   const baseKind = unitBaseKind(kind);
-  if (baseKind !== kind) return unitModelAsset(baseKind, era, civ, id, gender);
+  if (baseKind !== kind) return unitModelAsset(baseKind, era, civ, id, gender, tag);
+  if (tag === 'manco_capac' && civ === CivId.INCA_KILLKE) {
+    return { asset: TAMBOTOCO_HERO_ASSET_ID, variant: 'inca_killke_soldier_m' };
+  }
   if (civ === CivId.HUESTE_INDIANA) return unitModelAsset(kind, era, CivId.REALISTAS, id, gender);
   if (civ === CivId.CARAL && era === Era.FORMATIVE) {
     const female = unitGender === 'female';

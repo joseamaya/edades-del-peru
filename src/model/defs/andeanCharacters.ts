@@ -215,8 +215,8 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
   huanca: GENERAL_ANDEAN_SPEC,
   // Killke ayllus: a plain tunic, short manta and sling; no imperial gear or metal.
   // Killke/ayllu honderos and porras (tambotoco-model-mission.md): plain tunic and the documented rodela
-  // (atuendos.md); no imperial helmet, maskapaycha or metal. The manta is omitted to keep one draw per unit
-  // in the late scene. Presentation abstraction.
+  // (atuendos.md); no imperial helmet, maskapaycha or metal. The dossier keeps the short manta; the runtime
+  // omits it so the late scene keeps one draw per unit. Presentation abstraction.
   inca_killke: GENERAL_ANDEAN_SPEC,
   ayllus: GENERAL_ANDEAN_SPEC,
 };

@@ -121,9 +121,9 @@ fauna-only.
 ## Current gaps
 
 - `m1`–`m4` have no named cast by design; their narrators are anonymous.
-- The eight Ayar heroes share the ayllu rig; unique outfits and headdresses are pending. The Tambotoco
-  art-direction pilot plans an opt-in hero GLB for Ayar Manco and a common-unit variant
-  ([`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md) E4).
+- The eight Ayar heroes share the ayllu rig; unique outfits and headdresses are pending. Tambotoco's Ayar
+  Manco has an opt-in male-only GLB with a longer tunic and the shared clips; the common units use the
+  Killke/ayllu variants ([`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md) E4).
 - Other named commanders use their role's shared rig; no unique garments are claimed.
 - There is no per-character animation set. A unique clip is an art decision, not a narrative one.
 - Miguel Grau is defined for narration/education but is not fielded in `m9`.
