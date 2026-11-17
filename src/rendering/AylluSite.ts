@@ -226,8 +226,16 @@ export class AylluSite {
       const mesh = new THREE.Mesh(merged, this.materialFor(family));
       mesh.name = `ayllu:${phase}:${family}`;
       mesh.userData.family = family;
-      // Crops, the tiny merged villagers and flat paving add nothing to the shadow silhouette.
-      mesh.castShadow = castShadow && family !== 'crops' && family !== 'cropsWet' && family !== 'people';
+      // Crops, the tiny merged villagers and flat paving/earth add nothing to the shadow silhouette.
+      // A low morning sun makes every extra caster count, so keep only walls, roofs, stone and rock.
+      mesh.castShadow =
+        castShadow &&
+        family !== 'crops' &&
+        family !== 'cropsWet' &&
+        family !== 'people' &&
+        family !== 'earth' &&
+        family !== 'wood' &&
+        family !== 'rock';
       mesh.receiveShadow = true;
       group.add(mesh);
       this.geometries.push(merged);

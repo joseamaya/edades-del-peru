@@ -28,24 +28,25 @@ export type SurfaceFamily =
   'stone' | 'rock' | 'earth' | 'plaster' | 'thatch' | 'wood' | 'crops' | 'cropsWet' | 'people';
 
 export const AYLLU = {
-  // Tints stay under art-direction §4's 0.8 albedo cap; the detail map multiplies them down again.
-  stone: new THREE.Color('#c4b7a3'),
-  rock: new THREE.Color('#a99c88'),
-  darkStone: new THREE.Color('#948a78'),
-  plaster: new THREE.Color('#ddc9a4'),
-  earth: new THREE.Color('#b38a64'),
-  packedEarth: new THREE.Color('#c9ab84'),
-  thatch: new THREE.Color('#c8a45a'),
-  thatchDark: new THREE.Color('#8e6c3c'),
-  crop: new THREE.Color('#6f8f3d'),
-  cropDry: new THREE.Color('#a3944d'),
+  // Tints stay under art-direction §5's 0.8 albedo cap; the detail map multiplies them down again.
+  // Warm fieldstone and straw thatch, not cold grey and mustard (tambotoco-art-pilot.md §4).
+  stone: new THREE.Color('#8a8174'),
+  rock: new THREE.Color('#8a7c6b'),
+  darkStone: new THREE.Color('#6e675d'),
+  plaster: new THREE.Color('#b49a78'),
+  earth: new THREE.Color('#8a7358'),
+  packedEarth: new THREE.Color('#a08a6a'),
+  thatch: new THREE.Color('#b49b6a'),
+  thatchDark: new THREE.Color('#8c774d'),
+  crop: new THREE.Color('#6f7c3f'),
+  cropDry: new THREE.Color('#8a8258'),
   // Distinct instances so only the canal-side field gets the wet-material tint; same base hue.
-  cropWet: new THREE.Color('#6f8f3d'),
-  cropWetDry: new THREE.Color('#a3944d'),
+  cropWet: new THREE.Color('#5f7a3c'),
+  cropWetDry: new THREE.Color('#8a8258'),
   mouth: new THREE.Color('#120f0c'),
   cloth: new THREE.Color('#a0603c'),
   skin: new THREE.Color('#94694a'),
-  wood: new THREE.Color('#6b4a2f'),
+  wood: new THREE.Color('#6a5238'),
 } as const;
 
 function lcg(seed: number): () => number {
@@ -985,18 +986,13 @@ export function pavedPlaza(parts: Parts, x: number, z: number, radius: number, g
   // The mission builds the communal store on this plaza, so the paving follows the ground instead of
   // raising a platform the building would sink into.
   conformedDisc(parts, AYLLU.packedEarth, x, z, radius, getHeight, 6, 40, 0.12);
-  for (const [ring, count, size] of [
-    [radius - 0.55, 34, 0.92],
-    [radius * 0.74, 24, 0.88],
-    [radius * 0.46, 16, 0.8],
-  ] as const) {
-    for (let i = 0; i < count; i++) {
-      const a = (i / count) * Math.PI * 2 + (ring === radius - 0.55 ? 0 : 0.18);
-      const px = x + Math.cos(a) * ring;
-      const pz = z + Math.sin(a) * ring;
-      // Set the flagstones into the paving instead of stacking them on top of it.
-      box(parts, AYLLU.stone, px, getHeight(px, pz) + 0.08, pz, size, 0.1, size * 0.62, -a);
-    }
+  // One sparse rim of flagstones, set almost flush with the packed earth. Three concentric rings
+  // read as a wooden deck from the RTS camera; a single rim reads as a bounded plaza.
+  for (let i = 0; i < 22; i++) {
+    const a = (i / 22) * Math.PI * 2 + 0.08;
+    const px = x + Math.cos(a) * (radius - 0.6);
+    const pz = z + Math.sin(a) * (radius - 0.6);
+    box(parts, AYLLU.stone, px, getHeight(px, pz) + 0.04, pz, 0.86, 0.06, 0.52, -a);
   }
   // A low kerb bounds the plaza and leaves the four cancha axes open.
   for (let i = 0; i < 32; i++) {

@@ -248,23 +248,26 @@ dialogue.
 
 Tambotoco is the reference scene for the stylized-realism standard ([`art-direction.md`](./art-direction.md)).
 The 2026-11-16 kit pass is the baseline; the next pass is the art-direction pilot
-([`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md)): terrain shadows (B11), `cusco_valley` palette and
-macro materials, architecture silhouette, highland vegetation and an opt-in Tambotoco hero variant. The pilot
-runs E0–E6 and does not rebuild the mission, its layout or its economy. Production (E7) waits for a human
-approval of the reference captures.
+([`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md)): terrain shadows (B11, fixed in E1), `cusco_valley`
+palette and macro materials, architecture silhouette, highland vegetation and an opt-in Tambotoco hero
+variant. The pilot runs E0–E6 and does not rebuild the mission, its layout or its economy. Production (E7)
+waits for a human approval of the reference captures.
 
 ## Open items
 
-1. Performance (measured 2026-11-16 after the art pass; the mission is in `bench:check`): software
-   (SwiftShader) measures **436,880 triangles / 265 draw calls** at the opening and **608,324 / 347** on
-   the founded Inticancha; hardware high quality (`--gpu`, Intel RPL-S iGPU) measures **479,630 / 264** and
-   **651,572 / 353**. The opening cap is now **500k / 280** (ratcheted from 600k/340); the late cap stays
+1. Performance (measured 2026-11-16; E1 numbers): software (SwiftShader) measures **431,312 triangles /
+   261 draw calls** at the opening and **605,084 / 357** on the founded Inticancha; the pre-E1 baseline was
+   436,880 / 265 and 608,324 / 347. E1 hardware (`--gpu`, Intel RPL-S iGPU, high) measures **474,334 / 265**
+   opening and **648,332 / 363** in frames mode (post-processing included; structural late 605,084 / 357).
+   Frame time at high quality with post-processing on: **41 FPS** opening and **35 FPS** late (24.1 / 28.8 ms
+   p50). The opening cap is now **500k / 280** (ratcheted from 600k/340); the late cap stays
    **660k / 360** and is met without raising it. The pass batched every entity contact shadow into one
    instanced draw, merged the site by surface family per phase (instead of one mesh for the whole 256 m
    site, which drew the cave and the valley together), cut the inland water grid to 64 and trimmed the
-   dry-puna ground cover to a fifth. Hardware triangles dropped from **625,811 / 808,827** (opening/late,
-   pre-pass) to **479,630 / 651,572**; the late calls are higher than the old 301 because the eight heroes
-   now carry readable props and the base has its cancha houses, but they remain inside the cap. The
+   dry-puna ground cover to a fifth. The 2026-11-16 art pass dropped hardware triangles from
+   **625,811 / 808,827** (opening/late, pre-pass) to **479,630 / 651,572**; E1 lowers the opening to
+   474,334 and trims the flat shadow casters. The late calls are higher than the old 301 because the eight
+   heroes now carry readable props and the base has its cancha houses, but they remain inside the cap. The
    performance row is **Met**. Run `node scripts/bench_scene.mjs --mission=m_tambotoco [--stage=late]
    [--gpu] --assert`.
 2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry), now a modular,

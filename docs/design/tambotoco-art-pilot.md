@@ -2,6 +2,9 @@
 
 **Status:** Living · **Mission:** `m_tambotoco` (Los hijos de Tambotoco) · **Started:** 2026-11-16
 
+**Progress:** E0 (docs and baseline) and E1 (terrain shadows, palette and plaza) are implemented. E2–E6 are
+pending; E7 waits for a human approval of the reference captures.
+
 This is the pilot that makes Tambotoco the visual reference for the next campaigns. It implements the rules in
 [`art-direction.md`](./art-direction.md): audit, reference scene, asset inventory, performance ledger,
 backlog and staged production. It does **not** rebuild the mission, the engine or the other campaigns.
@@ -42,9 +45,9 @@ Baseline: `a0352d5`, seed 777, 1600×900, `sitePhase=fundada`, acequia open, HUD
 | **Characters** | Small heads, large hands, boxy torsos, flat cloth, a glossy white mantle, geometric crests on poles, no facial identity. | The shared CC0 bodies read as mannequins (8+ heads); identity is carried almost only by accent colour. `characters.md` still lists unique Ayar outfits as pending. | Hero GLB variant for Tambotoco + a common-unit variant; 6.5–7 heads; woven cloth; headdress/hair silhouette. |
 | **Architecture** | Uniform grey stone, mustard roofs, concrete-like retaining walls, a cream plaza disc with radial slats, canchas as grey pads. | Little macro variation, no vertex AO, no eave shadow; some masses still read as boxes. No Tambotoco architecture GLB. | Material/geometry pass on `aylluKit`; hero GLBs for the cave, monolith and plaza furniture; modular kit for the rest. |
 | **Landscape** | Flat olive ground with visible tiling, teal water ribbon, identical low-poly trees, neon crop rows, scattered rocks. | No terrain layers, no vegetation groups, no atmospheric depth. The Caral vegetation kit is coastal and does not cover the highlands. | `cusco_valley` palette and layers; highland vegetation kit; clustered placement; water/path pass. |
-| **Light and materials** | Ambient-heavy, weak contact shadows, no ground shadows, flat stone and plaster. | `Terrain.ts:737` documents a custom `ShaderMaterial` with `lights: false`; the ground never receives directional shadows (backlog B11). Materials have micro-detail but no macro scale and little roughness break. | B11 first; vertex AO; macro maps; sun 30–35°; exposure; fog/haze. |
+| **Light and materials** | Ambient-heavy, weak contact shadows, no ground shadows, flat stone and plaster. | The custom terrain `ShaderMaterial` declared `lights: false`, so the ground never received directional shadows (B11). Materials have micro-detail but no macro scale and little roughness break. | **B11 fixed in E1** (terrain samples the shadow map, low morning sun); vertex AO and macro maps still open. |
 | **Presentation** | The opening and act cards are in-engine but framed as aerial views; Inticancha reads as the same disc with more props. | No shot grammar; the foundation lacks a reward moment. | Re-frame the three beats; wide/detail/hero shots; foundation phase + camera + life. |
-| **Performance** | Software: 436,880 triangles / 265 calls (opening), 608,324 / 347 (founded). Hardware iGPU: 479,630 / 264 and 651,572 / 353. Caps: 500k/280 and 660k/360. | Draw calls exceed the general ≤200 target; the late scene is close to the 660k cap. `dist` is 24.75 / 25 MB. | Budget-neutral pass; merge/atlas/LOD; do not raise caps; size ledger with offsets. |
+| **Performance** | Baseline software: 436,880 triangles / 265 calls (opening), 608,324 / 347 (founded). Hardware iGPU: 479,630 / 264 and 651,572 / 353. Caps: 500k/280 and 660k/360. E1: **431,312 / 261** and **605,084 / 357**. | Draw calls exceed the general ≤200 target; the late scene is close to the 660k cap. `dist` is 24.75 / 25 MB. | Budget-neutral pass; merge/atlas/LOD; do not raise caps; size ledger with offsets. |
 | **Documentation** | `art-direction.md` was Caral-first; `campaign-quality-bar.md` and `tambotoco-model-mission.md` gave different performance numbers; “Visuals: Met” certified presence, not quality. | No Tambotoco standard and no measurable visual gate. | This pilot, the rewritten art direction and the reconciled quality bar. |
 
 The 2026-11-16 kit pass was a real improvement: coursed stone, thatch houses, qollqas, terraced fields and a
@@ -112,7 +115,7 @@ The pilot does not move the mission layout, objectives or economy. All coordinat
 
 ### Light and presentation
 
-- Morning sun from the NE at 30–35°, warm; terrain receives shadows; vertex AO; light haze.
+- Morning sun from the NE at 30–35°, warm; terrain receives shadows (B11, E1); vertex AO; light haze.
 - Three beats: cave (wide + detail), Huanacaure (medium + hero), valley (wide + settlement).
 - Inticancha foundation: phase change + camera + fire/smoke + people; the plaza becomes a settlement, not a
   bigger disc.
@@ -126,9 +129,12 @@ site to `fundada` and opens the acequia.
 # Materials and silhouettes: fog off, post-processing off
 yarn art:pilot --tag=before --quality=neutral --sizes=1280x720,1600x900,1920x1080
 
-# Player-facing look: fog on, the player's quality preset
+# Player-facing look: post-processing on, the player's quality preset
 yarn art:pilot --tag=after --quality=final --sizes=1280x720,1600x900,1920x1080
 ```
+
+Fog of war is off in both modes: the comparison is about materials, light and composition, not
+exploration. The mission evidence captures (`shots_evidence.mjs`) cover the fog states.
 
 - **Before** is captured from the base commit (`a0352d5` or the current `main` at the start of the branch) in
   a clean worktree.
@@ -200,13 +206,15 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
 
 ### P0 · The pass that changes the read
 
-1. **Terrain receives directional shadows (B11).**
-   Files: `src/rendering/Terrain.ts`, `src/rendering/shadowFrame.ts` if needed, a regression capture of one
-   non-pilot mission. Acceptance: ground shadows visible, no acne, bench green.
-2. **Palette, macro variation and vertex AO.**
+1. **Terrain receives directional shadows (B11). — Done in E1.**
+   Files: `src/rendering/Terrain.ts`, `src/core/Game.ts` (mission sun), `src/rendering/AylluSite.ts`
+   (shadow-caster trim). Acceptance: ground shadows visible, no acne, bench green
+   (431,312/261 opening; 605,084/357 late).
+2. **Palette, macro variation and vertex AO. — Partially done in E1.**
    Files: `src/model/defs/terrainPalettes.ts` (`cusco_valley`), `src/model/defs/sites.ts`
    (`tambotoco_site.terrain`), `src/rendering/aylluKit.ts`, `src/rendering/GroundCover.ts`.
-   Acceptance: no tiling at 54; stone/earth/thatch within `art-direction.md` §5.
+   Done: stone, plaster, earth, thatch, crop and water palette; single-rim plaza. Still open: vertex AO,
+   macro scale and the ground-cover pass.
 3. **Hero GLB + common variant.**
    Files: `scripts/build_ayllu_hero.mjs` (or Blender), `src/assets/models/ayllu_hero.glb`,
    `src/model/defs/modelAssets.ts`, `src/rendering/modelAssetRegistry.ts`, `src/rendering/UnitView.ts`,
@@ -239,8 +247,8 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
 
 | Stage | Content | Gate |
 | --- | --- | --- |
-| **E0** | This document, `art-direction.md`, `capture_art_pilot.mjs`, baseline set, quality-bar reconciliation | Docs links, `yarn verify:fast`, docs-only evidence note |
-| **E1** | B11, palette, macro/AO, water, ground cover | Shadows on ground, no tiling at 54, bench green, before/after |
+| **E0** | This document, `art-direction.md`, `capture_art_pilot.mjs`, baseline set, quality-bar reconciliation | **Done (2026-11-16):** docs links and baseline set |
+| **E1** | B11, palette, macro/AO, water, ground cover | **Done (2026-11-16):** shadows on ground, straw/stone palette, plaza rim; bench 431k/261 and 605k/357 |
 | **E2** | Architecture materials/geometry; hero GLB decision | House/qollqa/plaza at 28/54; ≤ 4 materials |
 | **E3** | Highland vegetation kit, rocks, paths | Groups, LODs, wind; no invented species |
 | **E4** | Hero + common unit | Manco distinct at 54; budget; other campaigns unchanged |
@@ -276,8 +284,14 @@ Recorded 2026-11-16:
 | --- | --- | --- |
 | 2026-11-16 | `node scripts/capture_ayllu_quality.mjs --tag=before --sizes=1600x900 --views=hualla,acequia,inticancha,built,close,wide` | Baseline PNGs in `review/ayllu-quality-before-1600x900-*.png` |
 | 2026-11-16 | `yarn art:pilot --tag=before --quality=neutral --sizes=1600x900` | Baseline PNGs in `review/art-pilot-before-neutral-1600x900-*.png`; includes the `hero` staging |
-| pending | `yarn art:pilot --tag=after --quality=neutral --sizes=1280x720,1600x900,1920x1080` | E1/E6 evidence |
-| pending | `yarn art:pilot --tag=after --quality=final --sizes=1280x720,1600x900,1920x1080` | Player-facing evidence |
+| 2026-11-16 | `yarn art:pilot --tag=e1b --quality=neutral --sizes=1600x900 --views=hualla,close,inticancha` | E1 PNGs: long ground shadows, straw thatch, warm stone, single-rim plaza |
+| 2026-11-16 | `yarn art:pilot --tag=e1b --quality=final --sizes=1600x900 --views=hualla,close,inticancha,hero` | Player-facing grade (fog of war off) |
+| 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --assert --out=review/bench-scene-tambotoco-e1.json` | Opening **431,312 tris / 261 calls** (cap 500k/280) |
+| 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --assert --out=review/bench-scene-tambotoco-e1-late.json` | Founded Inticancha **605,084 tris / 357 calls** (cap 660k/360) |
+| 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e1-frames.json` | Intel RPL-S iGPU, high, postfx on: **41 FPS** opening (24.1 ms p50), hardware **474,334 / 265** |
+| 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e1-late-frames.json` | Late: **35 FPS** (28.8 ms p50); structural **605,084 / 357** (under cap); the frames-mode 363 count includes the postfx passes |
+| pending | `yarn art:pilot --tag=after --quality=neutral --sizes=1280x720,1600x900,1920x1080` | E6 evidence |
+| pending | `yarn art:pilot --tag=after --quality=final --sizes=1280x720,1600x900,1920x1080` | E6 evidence |
 
 ## 14. See also
 

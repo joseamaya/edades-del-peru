@@ -1058,7 +1058,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       suppressSnow: true,
       valleyHaze: true,
       moisture: { valleyHeight: 6.4, valleyRange: 3.2, bankStart: 0.12, bankRange: 0.1 },
-      water: { deep: '#1c3a44', shallow: '#4f7a74', sheen: 0.12, foam: 0.1, fog: 0.22, refraction: 0.15, grid: 64 },
+      water: { deep: '#2c4748', shallow: '#4e6b65', sheen: 0.1, foam: 0.08, fog: 0.22, refraction: 0.15, grid: 64 },
     },
   },
 };

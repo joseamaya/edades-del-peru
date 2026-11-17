@@ -164,8 +164,9 @@ the engine. Do not rebuild the whole site as one GLB.
 - **Sun and ambient:** directional sun + hemisphere; hemisphere intensity 0.35–0.5; exposure 1.0–1.1. Avoid
   the flat "ambient fill" look where every face has the same value.
 - **Shadows:** PCF; 2048 high, 1024 medium/low; radius ~2; the frustum follows the view. Limit shadow casters
-  to the silhouette. The terrain must **receive** directional shadows: the current custom `ShaderMaterial` has
-  `lights: false`, which is why objects look pasted onto a flat ground (backlog B11).
+  to the silhouette. The terrain **receives** directional shadows: the custom `ShaderMaterial` declares
+  `lights: true` and samples `directionalShadowMap[0]` with the same PCF settings (B11, E1). Flat earth, rock
+  and wood pieces no longer cast, so the low-sun shadow pass stays within budget.
 - **AO:** bake vertex AO into kit geometry (0.65–1.0 in bases and corners) and use slope/valley shading on the
   terrain. Do not add SSAO: it was removed because its cost was high and its effect invisible with the camera
   range.

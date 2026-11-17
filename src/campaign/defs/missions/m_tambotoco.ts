@@ -135,6 +135,8 @@ export const mTambotoco: MissionDef = {
     ],
   },
   timeOfDay: 'morning',
+  // A low morning sun: long shadows model the cave slope, the eaves and the terraces.
+  timeOfDayValue: 0.7,
   startingEra: Era.TAHUANTINSUYO,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
   unitSpeedScale: 0.75,

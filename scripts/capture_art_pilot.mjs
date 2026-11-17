@@ -8,9 +8,10 @@ import { cliArg, launchChromium, reviewDir, withViteServer } from './lib.mjs';
  *        [--sizes=1280x720,1600x900,1920x1080]
  *        [--views=hualla,acequia,inticancha,built,close,wide,hero]
  *
- * `neutral` isolates materials and silhouettes (fog off, post-processing off); `final` is the
- * player-facing look (fog on, the player's quality preset). Every scene view uses seed 777, the
- * site at `fundada`, the acequia open and the HUD hidden, so two runs differ only in the code.
+ * `neutral` isolates materials and silhouettes (post-processing off); `final` is the player-facing
+ * look (post-processing and the player's quality preset). Fog of war is off in both so the scene is
+ * visible; exploration is covered by the mission evidence captures. Every scene view uses seed 777,
+ * the site at `fundada`, the acequia open and the HUD hidden, so two runs differ only in the code.
  * The `hero` view stages Ayar Manco and a worker at the hualla hamlet for a close presentation
  * check; it is captured last because it stops the simulation loop.
  *
@@ -50,7 +51,9 @@ const views = wanted
   .map((name) => ({ name, ...VIEWS[name] }))
   .sort((a, b) => Number(Boolean(a.hero)) - Number(Boolean(b.hero)));
 
-const URL_PARAMS = quality === 'neutral' ? '&fog=0&low=1&intro=0' : '&fog=1&intro=0';
+// Fog of war is off in both modes: the comparison is about materials and light, not exploration.
+// `neutral` isolates the materials (no post-processing); `final` is the player-facing grade.
+const URL_PARAMS = quality === 'neutral' ? '&fog=0&low=1&intro=0' : '&fog=0&intro=0';
 
 async function startMission(page) {
   const briefing = page.getByRole('button', { name: /COMENZAR MISIÓN/ });

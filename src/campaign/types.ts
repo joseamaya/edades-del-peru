@@ -430,6 +430,11 @@ export interface MissionDef {
   /** Commanders shown as portrait cards in the briefing (stylized, not likenesses). */
   commanders?: PortraitId[];
   timeOfDay: 'morning' | 'noon' | 'dusk' | 'night';
+  /**
+   * Optional explicit sun time (0 night .. 1 day) when the named preset is not low enough for the
+   * scene, e.g. the long-shadow morning of the Tambotoco pilot.
+   */
+  timeOfDayValue?: number;
   startingEra: Era;
   /**
    * Multiplier on every unit's base speed for campaign pacing (1 = the skirmish speeds). Caral and Chavín use 0.75
