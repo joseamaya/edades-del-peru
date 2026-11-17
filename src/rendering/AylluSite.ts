@@ -17,6 +17,7 @@ import {
   type AylluHut,
 } from '../model/defs/tambotocoLayout';
 import {
+  ageSurface,
   aylluHut,
   canchaPlot,
   caveMouth,
@@ -233,6 +234,9 @@ export class AylluSite {
       const merged = mergeGeometries(geometries, false);
       geometries.forEach((g) => g.dispose());
       if (!merged) continue;
+      // Bake contact AO and macro colour variation into the merged surface: a single material and
+      // draw call per family, but the wall bases, roof edges and paved floors stop reading flat.
+      if (family !== 'crops' && family !== 'cropsWet' && family !== 'people') ageSurface(merged);
       const mesh = new THREE.Mesh(merged, this.materialFor(family));
       mesh.name = `ayllu:${phase}:${family}`;
       mesh.userData.family = family;

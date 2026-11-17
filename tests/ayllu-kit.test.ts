@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { AylluSite } from '../src/rendering/AylluSite';
-import { aylluHut, slab, terracedField, type Parts } from '../src/rendering/aylluKit';
+import { ageSurface, aylluHut, box, slab, terracedField, type Parts } from '../src/rendering/aylluKit';
 import {
   TAMBOTOCO_FIELDS,
   TAMBOTOCO_INTICANCHA_HUTS,
@@ -34,6 +34,32 @@ function verticalRange(parts: Parts): { min: number; max: number } {
 }
 
 describe('the ayllu kit', () => {
+  it('bakes contact AO into the merged colours', () => {
+    const parts: Parts = [];
+    box(parts, new THREE.Color('#c8b89a'), 0, 0, 0, 2, 2, 2);
+    const geometry = parts[0]!;
+    ageSurface(geometry);
+    const position = geometry.getAttribute('position');
+    const color = geometry.getAttribute('color');
+    let bottom = 0;
+    let bottomCount = 0;
+    let top = 0;
+    let topCount = 0;
+    for (let i = 0; i < position.count; i++) {
+      const y = position.getY(i);
+      const value = color.getX(i);
+      if (y < 0.1) {
+        bottom += value;
+        bottomCount++;
+      } else if (y > 1.9) {
+        top += value;
+        topCount++;
+      }
+    }
+    expect(bottom / bottomCount).toBeLessThan(top / topCount);
+    expect(top / topCount).toBeLessThanOrEqual(1);
+  });
+
   it('buries every plinth below the lowest ground it spans', () => {
     const parts: Parts = [];
     const top = slab(parts, new THREE.Color('#ffffff'), {

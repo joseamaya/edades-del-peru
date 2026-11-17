@@ -418,6 +418,85 @@ export function box(
   parts.push(paint(g, color));
 }
 
+/** A wall volume with a slight batter: wider at the footing, narrower under the eave. */
+export function batteredWall(
+  parts: Parts,
+  color: THREE.Color,
+  x: number,
+  y: number,
+  z: number,
+  w: number,
+  h: number,
+  d: number,
+  ry = 0,
+  batter = 0.12,
+): void {
+  const g = new THREE.BoxGeometry(w, h, d);
+  boxUv(g, w, h, d);
+  const position = g.getAttribute('position');
+  const topScaleX = Math.max(0.8, 1 - (batter * 2) / w);
+  const topScaleZ = Math.max(0.8, 1 - (batter * 2) / d);
+  for (let i = 0; i < position.count; i++) {
+    if (position.getY(i) > 0) {
+      position.setX(i, position.getX(i) * topScaleX);
+      position.setZ(i, position.getZ(i) * topScaleZ);
+    }
+  }
+  position.needsUpdate = true;
+  g.computeVertexNormals();
+  if (ry) g.rotateY(ry);
+  g.translate(x, y + h / 2, z);
+  parts.push(paint(g, color));
+}
+
+/**
+ * Bake contact AO and low-frequency colour variation into a merged kit geometry. The kit builds in
+ * world XZ with Y relative to the site base, so a vertex at Y≈0 is the ground and Y>1.6 is clear of
+ * the base. Flat tops keep their colour; vertical faces darken toward the footing.
+ */
+export function ageSurface(geometry: THREE.BufferGeometry): void {
+  const position = geometry.getAttribute('position');
+  const color = geometry.getAttribute('color');
+  const normal = geometry.getAttribute('normal');
+  if (!position || !color) return;
+  const hash = (ix: number, iz: number): number => {
+    const h = Math.sin(ix * 127.1 + iz * 311.7) * 43758.5453;
+    return h - Math.floor(h);
+  };
+  const value = (px: number, pz: number): number => {
+    const ix = Math.floor(px);
+    const iz = Math.floor(pz);
+    const fx = px - ix;
+    const fz = pz - iz;
+    const u = fx * fx * (3 - 2 * fx);
+    const v = fz * fz * (3 - 2 * fz);
+    return (
+      hash(ix, iz) * (1 - u) * (1 - v) +
+      hash(ix + 1, iz) * u * (1 - v) +
+      hash(ix, iz + 1) * (1 - u) * v +
+      hash(ix + 1, iz + 1) * u * v
+    );
+  };
+  for (let i = 0; i < position.count; i++) {
+    const x = position.getX(i);
+    const y = position.getY(i);
+    const z = position.getZ(i);
+    const t = Math.max(0, Math.min(1, y / 1.6));
+    const height = t * t * (3 - 2 * t);
+    const nY = normal ? Math.abs(normal.getY(i)) : 0.5;
+    const ao = nY > 0.7 ? 0.94 + 0.06 * height : 0.74 + 0.26 * height;
+    const macro = 0.9 + 0.1 * (value(x * 0.06, z * 0.06) * 0.7 + value(x * 0.015 + 13.7, z * 0.015 - 7.1) * 0.3);
+    const scale = ao * macro;
+    color.setXYZ(
+      i,
+      Math.min(1, color.getX(i) * scale),
+      Math.min(1, color.getY(i) * scale),
+      Math.min(1, color.getZ(i) * scale),
+    );
+  }
+  color.needsUpdate = true;
+}
+
 export function cylinder(
   parts: Parts,
   color: THREE.Color,
@@ -782,6 +861,13 @@ export function gableRoof(
   };
   fascia(0, hd, ry);
   fascia(0, -hd, ry);
+  // A second, slightly inset straw layer under the fascia: the eave reads as bundled thatch, not a cut edge.
+  const eaveLip = (lz: number): void => {
+    const r = rotate(0, lz, ry);
+    box(parts, AYLLU.thatch, x + r.x, y - 0.22, z + r.z, w + overhang * 2 - 0.08, 0.1, 0.24, ry);
+  };
+  eaveLip(hd);
+  eaveLip(-hd);
   box(parts, AYLLU.thatchDark, x, y + rise - 0.05, z, w + overhang * 2 + 0.1, 0.14, 0.26, ry);
   // Exposed ridge poles, the detail that makes the roof read as a built thatch.
   box(parts, AYLLU.wood, x, y + rise - 0.02, z, w + overhang * 2 + 0.5, 0.09, 0.1, ry);
@@ -854,7 +940,7 @@ function house(parts: Parts, h: AylluHut, ry: number, plinth: number): HouseResu
   const wallBase = plinth + 0.26;
   box(parts, AYLLU.stone, h.x, plinth, h.z, h.w + 0.18, 0.26, h.d + 0.18, ry);
   const plastered = h.wallColor !== 'earth';
-  box(parts, plastered ? AYLLU.plaster : AYLLU.earth, h.x, wallBase, h.z, h.w, h.wall, h.d, ry);
+  batteredWall(parts, plastered ? AYLLU.plaster : AYLLU.earth, h.x, wallBase, h.z, h.w, h.wall, h.d, ry);
   // A dark course at the base and a light one under the eave break the single wall volume.
   box(parts, AYLLU.darkStone, h.x, wallBase, h.z, h.w + 0.04, 0.28, h.d + 0.04, ry);
   // Four fieldstone corner stones: the cheapest cue that the wall is laid, not extruded.
@@ -884,9 +970,12 @@ function storehouse(parts: Parts, h: AylluHut, ry: number, plinth: number): Hous
   const radius = Math.min(h.w, h.d) / 2;
   const barrel = h.wall * 1.05;
   cylinder(parts, AYLLU.stone, h.x, plinth, h.z, radius * 0.93, radius, barrel, 10);
-  // Corbel ring and a raised threshold: the silhouette of a granary, not a plain silo.
+  // A dark stone footing grounds the silo; the corbel ring keeps the granary silhouette.
+  cylinder(parts, AYLLU.darkStone, h.x, plinth - 0.02, h.z, radius + 0.04, radius + 0.08, 0.18, 10);
   cylinder(parts, AYLLU.darkStone, h.x, plinth + barrel - 0.22, h.z, radius * 1.03, radius * 1.03, 0.22, 10);
   box(parts, AYLLU.darkStone, h.x, plinth, h.z, radius * 1.7, 0.16, radius * 1.7, ry);
+  const vent = rotate(0, radius * 0.98, ry);
+  box(parts, AYLLU.mouth, h.x + vent.x, plinth + barrel * 0.72, h.z + vent.z, 0.22, 0.16, 0.12, ry);
   const roofBase = plinth + barrel;
   cone(parts, AYLLU.thatch, h.x, roofBase, h.z, radius + 0.5, h.wall * 0.62, 10, ry);
   box(parts, AYLLU.thatchDark, h.x, roofBase - 0.06, h.z, radius * 2 + 1.0, 0.12, radius * 2 + 1.0, ry);
