@@ -1334,8 +1334,8 @@ test('the ayllu site grows through its phases', async ({ page }) => {
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     const visible = (): { name: string; visible: boolean }[] =>
-      (g.aylluSite.group.children as { visible: boolean; children: { name: string }[] }[]).map((group) => ({
-        name: group.children[0]?.name ?? '?',
+      (g.aylluSite.group.children as { visible: boolean; name: string }[]).map((group) => ({
+        name: group.name,
         visible: group.visible,
       }));
     const at = (phase: string) => {
@@ -1358,8 +1358,8 @@ test('the ayllu site grows through its phases', async ({ page }) => {
     return { before, shrine, inticancha, fundada, afterBogus: g.sitePhase, lifeCalls };
   });
   expect(states.before).toEqual([
+    { name: 'ayllu_hero', visible: true },
     { name: 'ayllu:cave', visible: true },
-    { name: 'ayllu:huanacaure', visible: false },
     { name: 'ayllu:inticancha', visible: false },
     { name: 'ayllu:fundada', visible: false },
   ]);

@@ -48,7 +48,7 @@ Baseline: `a0352d5`, seed 777, 1600×900, `sitePhase=fundada`, acequia open, HUD
 | **Landscape** | Flat olive ground with visible tiling, teal water ribbon, identical low-poly trees, neon crop rows, scattered rocks. | No terrain layers, no vegetation groups, no atmospheric depth. The Caral vegetation kit is coastal and does not cover the highlands. | `cusco_valley` palette and layers; highland vegetation kit; clustered placement; water/path pass. |
 | **Light and materials** | Ambient-heavy, weak contact shadows, no ground shadows, flat stone and plaster. | The custom terrain `ShaderMaterial` declared `lights: false`, so the ground never received directional shadows (B11). Materials have micro-detail but no macro scale and little roughness break. | **B11 fixed in E1** (terrain samples the shadow map, low morning sun); vertex AO and macro maps still open. |
 | **Presentation** | The opening and act cards are in-engine but framed as aerial views; Inticancha reads as the same disc with more props. | No shot grammar; the foundation lacks a reward moment. | Re-frame the three beats; wide/detail/hero shots; foundation phase + camera + life. |
-| **Performance** | Pre-E1 baseline: 436,880 triangles / 265 calls (opening), 608,324 / 347 (founded); E1: 437,976/264 and 614,594/357; E2a: 438,856/269 and 615,532/354. Caps: 500k/280 and 660k/360. E2b structural: **430,488 / 269** and **613,692 / 354**; frames high: 473,510/273 (35 FPS) and 656,940/360 (34 FPS). | Draw calls exceed the general ≤200 target; the late frames sit at the 360 cap. `dist` is 24.85 / 25 MB. | E2b replaced ~8k procedural triangles with ≈100 KB of GLB; it is within caps but leaves 4 FPS of headroom at late high. E3–E4 must keep the governor, LODs and the `dist` offset honest. Do not raise caps. |
+| **Performance** | Pre-E1 baseline: 436,880 triangles / 265 calls (opening), 608,324 / 347 (founded); E1: 437,976/264 and 614,594/357; E2a: 438,856/269 and 615,532/354. Caps: 500k/280 and 660k/360. E2b structural: **430,488 / 269** and **613,692 / 354**; frames high: 473,510/273 (35 FPS) and 656,940/360 (34 FPS). | Draw calls exceed the general ≤200 target; the late frames sit at the 360 cap. `dist` is 23.01 / 25 MB. | E2b's shipped cave/huaca GLBs are 2,090 triangles vs 1,196 procedural; the opening bench drops ~8k because the cave leaves the merged cave-phase mesh and the off-screen valley culls. It is within caps but leaves 4 FPS of headroom at late high. E3–E4 must keep the governor, LODs and the `dist` offset honest. Do not raise caps. |
 | **Documentation** | `art-direction.md` was Caral-first; `campaign-quality-bar.md` and `tambotoco-model-mission.md` gave different performance numbers; “Visuals: Met” certified presence, not quality. | No Tambotoco standard and no measurable visual gate. | This pilot, the rewritten art direction and the reconciled quality bar. |
 
 The 2026-11-16 kit pass was a real improvement: coursed stone, thatch houses, qollqas, terraced fields and a
@@ -172,8 +172,8 @@ The pilot is approved only when all of these are true:
 | Asset | Authoring | Status | Budget | Action |
 | --- | --- | --- | --- | --- |
 | Huts, qollqas, canchas, terraces, fields, plaza | Procedural `aylluKit` | Implemented | Existing scene caps | Material/geometry pass; keep the procedural fallback |
-| Cave mouth and rock ring | Procedural → Blender GLB candidate | Implemented, reads as blobs | ≤ 5k / 1.5k per piece | Rebuild as GLB if the material pass fails the gate |
-| Huanacaure monolith | Procedural → Blender GLB candidate | Implemented, reads as a box | ≤ 5k / 1.5k | Rebuild as a tapered huaca with a carved niche |
+| Cave mouth and rock ring | Blender GLB (E2b) | Implemented, procedural fallback | LOD0 1,802 / LOD1 342 | `tambotocoHeroKit` + `AylluSite`; source in `art-src` |
+| Huanacaure monolith | Blender GLB (E2b) | Implemented, procedural fallback | LOD0 288 / LOD1 104 | Tapered huaca with a carved niche; fallback kept |
 | Highland trees and shrubs | Blender vegetation kit | **Missing** | 1.5k / 400 per tree | Molle, pacay, ichu/puna grass, reeds; LOD0/LOD1 |
 | Ground cover | Procedural | Partial | Existing | Add puna/ichu; keep the dry-puna trim |
 | Rock outcrops | Blender prop kit | Partial (Caral granodiorite) | 300 / — | Build an andes stone kit; instance |
@@ -188,7 +188,7 @@ The pilot is approved only when all of these are true:
 
 ## 8. Size ledger
 
-`dist/` is 24.85 MB of the 25 MB budget. New assets must be offset in the same PR; the cap is not raised.
+`dist/` is 23.01 MB of the 25 MB budget. New assets must be offset in the same PR; the cap is not raised.
 
 | Item | Estimated size | Offset |
 | --- | --- | --- |
@@ -196,7 +196,7 @@ The pilot is approved only when all of these are true:
 | Highland vegetation kit (4–6 species × 2 LODs) | 0.6–1.0 MB | Meshopt; reuse the Caral material set where possible |
 | Architecture hero GLBs (cave, monolith) | **0.100 MB actual (E2b)** | Replaced procedural geometry; no net addition |
 | Textures / macro maps | 0.3–0.5 MB | WebP; reuse atlases; remove unused maps |
-| **Total** | **1.8–3.3 MB** | **At least 2.5 MB of offsets** (E2b used 0.10 MB; `dist` is 24.85 MB) |
+| **Total** | **1.8–2.8 MB** | **At least 2.5 MB of offsets** (E2b used 0.10 MB and freed 1.84 MB by not shipping the demo mannequin; `dist` is 23.01 MB) |
 
 The eager `import.meta.glob` in `src/rendering/modelAssetRegistry.ts` bundles every GLB in
 `src/assets/models/`, including the demo mannequin. Making it lazy (or moving the mannequin to `public/`) is the
@@ -237,7 +237,7 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
    banks, no ladder path.
 7. **Cave and monolith GLBs. — Done in E2b.** `scripts/blender/build_tambotoco_hero_kit.py`,
    `src/assets/architecture/tambotoco/`, `tambotocoHeroKit.ts`, `AylluSite.ts`, `WorldViewDecor.ts`.
-   Cave LOD0 1,802 tris / 4 materials, LOD1 262 / 3; huaca LOD0 288 / 3, LOD1 52 / 3; ≈100 KB after meshopt.
+   Cave LOD0 1,802 tris / 4 materials, LOD1 342 / 3; huaca LOD0 288 / 3, LOD1 104 / 3; ≈103 KB after meshopt.
    Acceptance: the cave and the huaca carry the opening with a procedural fallback.
 8. **Cinematic beats.** `src/campaign/defs/missions/m_tambotoco.ts`, `src/ui/CinematicPlayer.ts` (only if
    needed). Acceptance: wide/detail/hero shots; foundation reward.
@@ -300,8 +300,8 @@ Recorded 2026-11-16:
 | 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --assert --out=review/bench-scene-tambotoco-e2a-late.json` | Founded Inticancha **615,532 tris / 354 calls** (cap 660k/360) |
 | 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e2a-frames.json` | Intel RPL-S iGPU, high: **37 FPS** opening (26.8 ms p50), **481,606 / 268** |
 | 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e2a-late-frames.json` | Late: **33 FPS** (30.4 ms p50), **658,780 / 360** (at the cap) |
-| 2026-11-17 | `blender --background --python scripts/blender/build_tambotoco_hero_kit.py` | Cave LOD0 1,802 tris / 4 mats, LOD1 262 / 3; huaca LOD0 288 / 3, LOD1 52 / 3 |
-| 2026-11-17 | `yarn art:models --only=tambotoco_cave_lod0,tambotoco_cave_lod1,tambotoco_huaca_lod0,tambotoco_huaca_lod1` | Four GLBs, **≈100 KB** total; manifests in `art-src/blender/exports/tambotoco/` |
+| 2026-11-17 | `blender --background --python scripts/blender/build_tambotoco_hero_kit.py` | Cave LOD0 1,802 tris / 4 mats, LOD1 342 / 3; huaca LOD0 288 / 3, LOD1 104 / 3 |
+| 2026-11-17 | `yarn art:models --only=tambotoco_cave_lod0,tambotoco_cave_lod1,tambotoco_huaca_lod0,tambotoco_huaca_lod1` | Four GLBs, **≈103 KB** total; manifests in `art-src/blender/exports/tambotoco/` |
 | 2026-11-17 | `yarn art:pilot --tag=e2b4 --quality=neutral --sizes=1600x900 --views=cave,shrine` | E2b PNGs; published as `docs/media/tambotoco-e2b-{cave,huaca}-{before,after}.webp` |
 | 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --assert --out=review/bench-scene-tambotoco-e2b.json` | Opening **430,488 tris / 269 calls** (cap 500k/280) |
 | 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --assert --out=review/bench-scene-tambotoco-e2b-late.json` | Founded Inticancha **613,692 tris / 354 calls** (cap 660k/360) |

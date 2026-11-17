@@ -5,7 +5,8 @@
   "scale": 1.0,
   "up": "Y",
   "front": "+Z",
-  "pivot": "footprint centre at ground level",
+  "pivot": "cave mouth threshold at ground level; the massif extends behind the mouth",
+  "collision": "none in the GLB; AylluSite/sites.ts owns the cave and shrine blockers",
   "confidence": "assumed",
   "sources": [
     "docs/historia/arquitectura.md",
@@ -45,10 +46,10 @@
         ]
       },
       "file": "tambotoco_cave_lod0.glb",
-      "bytes": 187060
+      "bytes": 187068
     },
     "LOD1": {
-      "triangles": 262,
+      "triangles": 342,
       "draw_calls": 3,
       "materials": [
         "MAT-Tambotoco_Mouth",
@@ -58,7 +59,7 @@
       "bounds": {
         "min": [
           -6.488,
-          -2.1,
+          -3.17,
           -0.693
         ],
         "max": [
@@ -68,12 +69,12 @@
         ],
         "size": [
           10.678,
-          7.015,
+          8.085,
           7.277
         ]
       },
       "file": "tambotoco_cave_lod1.glb",
-      "bytes": 29028
+      "bytes": 37192
     }
   }
 }

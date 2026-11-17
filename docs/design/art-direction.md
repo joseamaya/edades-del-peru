@@ -286,9 +286,10 @@ Targets for the default view at 1600×900:
 `scripts/bench_scene.mjs` are **500k triangles / 280 draw calls** at the opening and **660k / 360** in the
 late founded settlement. The pilot must stay inside them. Prefer a neutral pass; a measured increase is
 acceptable only when it buys a visible improvement and the frame-time target still holds. E2b: opening
-**430,488 / 269** (the cave/huaca GLBs replace ~8k procedural triangles) and late **613,692 / 354**
-structural; **35 / 34 FPS** at high quality on the integrated GPU, late frames at the 360-call cap.
-Do not raise a cap to hide a regression.
+**430,488 / 269** (the opening drop is culling after the cave leaves the merged cave-phase mesh; the
+cave/huaca GLBs are 2,090 triangles vs 1,196 procedural) and late **613,692 / 354** structural;
+**35 / 34 FPS** at high quality on the integrated GPU, late frames at the 360-call cap. Do not raise a cap
+to hide a regression.
 
 Asset budgets:
 

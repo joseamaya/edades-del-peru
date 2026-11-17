@@ -2,13 +2,14 @@ import { CARAL_WORKER_SHADOW_SKIP_MESHES, type ModelAssetId, type RigClipState }
 
 /**
  * Local model files bundled by Vite. `?url` keeps them as separate assets
- * (hashed in production) instead of inlining them into the JS chunk.
+ * (hashed in production) instead of inlining them into the JS chunk. The
+ * list is explicit so the 1.9 MB demo mannequin stays out of the production bundle.
  */
-const modelUrls = import.meta.glob('../assets/models/*.glb', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-}) as Record<string, string>;
+import alpacaUrl from '../assets/models/quaternius_alpaca.glb?url';
+import caralWorkerUrl from '../assets/models/caral_worker.glb?url';
+import mountedRigUrl from '../assets/models/mounted_rig.glb?url';
+import siegeRigUrl from '../assets/models/siege_rig.glb?url';
+import vehicleRigUrl from '../assets/models/vehicle_rig.glb?url';
 
 export interface ModelAssetDefinition {
   readonly url: string;
@@ -30,12 +31,11 @@ export interface ModelAssetDefinition {
   readonly shadowSkipMeshes?: readonly string[];
 }
 
-const UAL_URL = modelUrls['../assets/models/ual_mannequin.glb'] ?? '';
-const ALPACA_URL = modelUrls['../assets/models/quaternius_alpaca.glb'] ?? '';
-const CARAL_WORKER_URL = modelUrls['../assets/models/caral_worker.glb'] ?? '';
-const MOUNTED_RIG_URL = modelUrls['../assets/models/mounted_rig.glb'] ?? '';
-const SIEGE_RIG_URL = modelUrls['../assets/models/siege_rig.glb'] ?? '';
-const VEHICLE_RIG_URL = modelUrls['../assets/models/vehicle_rig.glb'] ?? '';
+const ALPACA_URL = alpacaUrl;
+const CARAL_WORKER_URL = caralWorkerUrl;
+const MOUNTED_RIG_URL = mountedRigUrl;
+const SIEGE_RIG_URL = siegeRigUrl;
+const VEHICLE_RIG_URL = vehicleRigUrl;
 
 /** Shared clip set and grounding for the mounted, siege and vehicle platform rigs. */
 const PLATFORM_RIG: Omit<ModelAssetDefinition, 'url'> = {
@@ -53,13 +53,13 @@ const PLATFORM_RIG: Omit<ModelAssetDefinition, 'url'> = {
 };
 
 /**
- * The mannequin is the pipeline's validation asset (Quaternius Universal
- * Animation Library, CC0). The base mesh is still a generic placeholder; a later
- * iteration replaces it with a bespoke historical mesh.
+ * The mannequin is the pipeline's validation fixture (Quaternius Universal
+ * Animation Library, CC0). It is not imported into the production bundle; the
+ * model tests load it from disk and `?rig=1` previews the shipped worker.
  */
 export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
   ual_mannequin: {
-    url: UAL_URL,
+    url: '',
     scale: 0.78,
     yawOffset: 0,
     ground: true,

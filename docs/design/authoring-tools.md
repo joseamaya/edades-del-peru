@@ -8,7 +8,7 @@ asset pipelines.
 
 | Tool | Version | Purpose |
 |---|---|---|
-| Blender | 5.2.2 LTS (snap) | 3D scenery, materials, lighting, cameras, GLB and renders |
+| Blender | 5.3.0 (snap) | 3D scenery, materials, lighting, cameras, GLB and renders |
 | GIMP | 3.2.6 (snap) | 2D textures, render retouching, UI art, icons |
 | `mcp-for-blender` | latest via `uvx` | Blender MCP bridge (port 9876) |
 | `gimp3-mcp` | 0.2.0 | GIMP MCP bridge and plugin (port 9877) |
@@ -67,7 +67,7 @@ a local binary in `~/.local/bin` works; `git lfs version` must report 3.x.
 
 ## Blender MCP
 
-1. Open Blender 5.2.2.
+1. Open Blender 5.3.0.
 2. Start **N → MCP for Blender → Start MCP Server** (port 9876).
 3. Keep safe mode enabled:
 

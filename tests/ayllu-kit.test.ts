@@ -204,6 +204,10 @@ describe('the ayllu kit', () => {
     site.setPhase('fundada');
     expect(site.group.children.filter((g) => g.visible)).toHaveLength(4);
     expect(site.group.getObjectByName('ayllu_hero_huaca_fallback')?.visible).toBe(true);
+    // A failed or empty load keeps the procedural heroes in place.
+    site.setHeroAssets({});
+    expect(site.group.getObjectByName('ayllu_hero_cave_fallback')?.visible).toBe(true);
+    expect(site.group.getObjectByName('ayllu_hero_huaca_fallback')?.visible).toBe(true);
     site.dispose();
   });
 });

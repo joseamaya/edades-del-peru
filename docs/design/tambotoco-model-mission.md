@@ -268,7 +268,8 @@ for a human approval of the reference captures.
    site, which drew the cave and the valley together), cut the inland water grid to 64 and trimmed the
    dry-puna ground cover to a fifth. The 2026-11-16 art pass dropped hardware triangles from
    **625,811 / 808,827** (opening/late, pre-pass) to **479,630 / 651,572**; E2b measures **473,510** opening
-   in frames mode after replacing ~8k procedural cave/huaca triangles with ≈100 KB of GLB. The late calls are
+   in frames mode after swapping 1,196 procedural cave/huaca triangles for 2,090 GLB triangles (the ~8k
+   structural drop is culling). The late calls are
    higher than the old 301 because the eight
    heroes now carry readable props and the base has its cancha houses, but they remain inside the cap. The
    performance row is **Met**. Run `node scripts/bench_scene.mjs --mission=m_tambotoco [--stage=late]

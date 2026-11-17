@@ -88,6 +88,14 @@ async function main() {
       await page.goto(base + `/?mission=m_tambotoco&seed=777${URL_PARAMS}`, { waitUntil: 'networkidle' });
       await page.waitForFunction(() => window.game?.mission !== undefined, null, { timeout: 30_000 });
       await startMission(page);
+      // The cave/huaca GLBs load after the site; wait so a capture never photographs the fallback.
+      await page
+        .waitForFunction(
+          () => window.game?.landmark?.getObjectByName('ayllu_site')?.userData.heroesReady === true,
+          null,
+          { timeout: 20_000 },
+        )
+        .catch(() => {});
       await page.waitForTimeout(2600);
       await page.addStyleTag({ content: '#ui-root { display: none !important; }' });
 

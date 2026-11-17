@@ -176,6 +176,12 @@ def cave(lod, mats):
         for index, (x, y, z, radius, scale, seed) in enumerate(boulders[::2]):
             parts.append(ico(f'cave_boulder_{index}', (x, y, z), radius, mats['rock'], scale, 1, seed))
         parts.append(ico('cave_lintel', (0, 1.15, 3.45), 1.75, mats['dark'], (1.55, 0.8, 0.72), 1, 2.1))
+        # Keep a reduced scree apron at LOD1: it is part of the cave's footprint, not micro-detail.
+        for index in range(4):
+            angle = (index / 4) * math.pi * 2
+            x = math.cos(angle) * 3.4
+            y = -2.1 + math.sin(angle) * 0.8
+            parts.append(ico(f'cave_scree_{index}', (x, y, 0.2), 0.34, mats['rock'], (1, 0.9, 0.75), 1, 6.0 + index))
     # Front boulders overlap the recess edge: they turn the rectangular hole into a rough arch.
     front = [
         (0, -0.25, 3.55, 1.8, (1.55, 0.45, 0.45), 6.6),
@@ -196,6 +202,10 @@ def huaca(lod, mats):
         cone('huaca_shaft', (0, 0, 2.6), 1.15, 0.58, 4.4, mats['rock'], 6 if lod == 0 else 5),
         box('huaca_cap', (0, 0, 4.95), (1.1, 0.95, 0.28), mats['dark']),
         box('huaca_niche', (0, -0.9, 2.25), (0.78, 0.22, 1.35), mats['mouth']),
+        # The offering ledge and flanking stones shape the silhouette; they stay at both LODs.
+        box('huaca_offering', (0, -1.35, 0.14), (1.4, 0.7, 0.28), mats['dark']),
+        ico('huaca_flank_l', (-1.75, 0.35, 0.28), 0.45, mats['rock'], (1.05, 0.9, 0.7), 1 if lod else 2, 8.1),
+        ico('huaca_flank_r', (1.75, 0.3, 0.3), 0.5, mats['rock'], (1.05, 0.9, 0.75), 1 if lod else 2, 8.4),
     ]
     if lod == 0:
         parts += [
@@ -203,9 +213,6 @@ def huaca(lod, mats):
             box('huaca_shelf', (0, -1.02, 1.5), (1.1, 0.3, 0.22), mats['rock']),
             box('huaca_jamb_l', (-0.58, -1.0, 2.25), (0.16, 0.3, 1.4), mats['rock']),
             box('huaca_jamb_r', (0.58, -1.0, 2.25), (0.16, 0.3, 1.4), mats['rock']),
-            box('huaca_offering', (0, -1.35, 0.14), (1.4, 0.7, 0.28), mats['dark']),
-            ico('huaca_flank_l', (-1.75, 0.35, 0.28), 0.45, mats['rock'], (1.05, 0.9, 0.7), 2, 8.1),
-            ico('huaca_flank_r', (1.75, 0.3, 0.3), 0.5, mats['rock'], (1.05, 0.9, 0.75), 2, 8.4),
             box('huaca_top_stone', (0.1, 0.05, 5.16), (0.85, 0.8, 0.24), mats['rock'], (0.08, 0.04, 0.12)),
         ]
     return join(parts, 'tambotoco_huaca')
@@ -220,6 +227,7 @@ def join(parts, name):
     bpy.ops.object.join()
     obj = bpy.context.object
     obj.name = name
+    obj.data.name = f'{name}_mesh'
     bpy.context.scene.cursor.location = (0, 0, 0)
     bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
     return obj
@@ -286,7 +294,12 @@ def main():
             'scale': 1.0,
             'up': 'Y',
             'front': '+Z',
-            'pivot': 'footprint centre at ground level',
+            'pivot': (
+                'cave mouth threshold at ground level; the massif extends behind the mouth'
+                if kind == 'cave'
+                else 'base centre at ground level'
+            ),
+            'collision': 'none in the GLB; AylluSite/sites.ts owns the cave and shrine blockers',
             'confidence': 'assumed',
             'sources': [
                 'docs/historia/arquitectura.md',
@@ -304,6 +317,9 @@ def main():
             path = os.path.join(EXPORT_DIR, file)
             export_glb(obj, path)
             shutil.copy2(path, os.path.join(GAME_DIR, file))
+            # Keep the source scene readable and free the base name for the next LOD's root object.
+            obj.name = f'{obj.name}_lod{lod}'
+            obj.data.name = f'{obj.data.name}_lod{lod}'
             info['file'] = file
             info['bytes'] = os.path.getsize(path)
             manifest['lods'][f'LOD{lod}'] = info
