@@ -6,7 +6,7 @@ import { cliArg, launchChromium, reviewDir, withViteServer, waitForHighlandKits 
  * Art-direction pilot captures for `m_tambotoco` (docs/design/tambotoco-art-pilot.md).
  * Usage: node scripts/capture_art_pilot.mjs [--tag=before|after] [--quality=neutral|final]
  *        [--sizes=1280x720,1600x900,1920x1080]
- *        [--views=cave,shrine,hualla,acequia,inticancha,built,close,wide,hero]
+ *        [--views=cave,shrine,hualla,acequia,ford,bank,path,inticancha,built,close,wide,hero]
  *
  * `neutral` isolates materials and silhouettes (post-processing off); `final` is the player-facing
  * look (post-processing and the player's quality preset). Fog of war is off in both so the scene is

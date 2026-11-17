@@ -145,6 +145,44 @@ describe('seasonal water', () => {
   });
 });
 
+/** Headless Tambotoco match: the authored valley, its stream and the dry ford bar. */
+function tambotocoGame(): Game {
+  setAutoStart(false);
+  const game = new Game(
+    {
+      ...DEFAULT_SETTINGS,
+      missionId: 'm_tambotoco',
+      fogOfWar: false,
+      cinematic: false,
+      showHints: false,
+      soundEnabled: false,
+    },
+    null,
+    null,
+    false,
+    true,
+  );
+  game.ais.length = 0;
+  return game;
+}
+
+describe('Tambotoco stream ford', () => {
+  it('crosses on the dry bar and keeps the deep channel impassable', () => {
+    const game = tambotocoGame();
+    expect(game.isFordAt(153.5, 190), 'the bar is inside the authored ford').toBe(true);
+    expect(game.terrain.isWater(153.5, 190), 'the bar is dry').toBe(false);
+    expect(game.pathfinder.isWalkable(153.5, 190), 'the bar is crossable').toBe(true);
+    // The wide dry bar reaches the field edge; the deep channel south of it stays water.
+    expect(game.isFordAt(153.5, 196)).toBe(true);
+    expect(game.isFordAt(153.5, 205)).toBe(false);
+    expect(game.pathfinder.isWalkable(153.5, 205), 'deep water is not').toBe(false);
+    const route = game.pathfinder.pathfind(148, 190, 160, 190);
+    expect(route.length, 'a route crosses the stream on the bar').toBeGreaterThan(0);
+    game.destroy();
+    setAutoStart(true);
+  });
+});
+
 describe('Supe fords', () => {
   it('keeps the river continuous and walkable at the crossings', () => {
     const game = caralGame();

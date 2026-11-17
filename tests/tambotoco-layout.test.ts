@@ -57,15 +57,15 @@ describe('Tambotoco authored huts', () => {
     }
   });
 
-  it('gives the stream a soft bank and keeps the ford dry', () => {
-    const water = TERRAIN.waterLevel;
-    expect(TERRAIN.getHeight(155, 214)).toBeLessThan(water - 0.8);
-    const lowBank = TERRAIN.getHeight(150.5, 214);
-    const upperBank = TERRAIN.getHeight(147.5, 214);
-    expect(lowBank).toBeGreaterThan(water + 0.2);
-    // The bank climbs over ~3 m instead of cutting straight to the grass.
-    expect(upperBank - lowBank).toBeLessThan(1.8);
-    expect(TERRAIN.getHeight(153.47, 190)).toBeGreaterThan(water + 0.4);
+  it('paints a wet sand margin on the stream bank and a gravel bar at the ford', () => {
+    // The bank paint is visual-only: the heightfield stays as it was, so the walkable cells do not move.
+    const ground = (x: number, z: number) => TERRAIN.getAuthoredGround(x, z)!;
+    const bank = ground(150.5, 214);
+    expect(bank[2], 'the wet margin is sandier than the grass').toBeGreaterThan(bank[0]);
+    expect(bank[2]).toBeGreaterThan(0.3);
+    const ford = ground(153.5, 190);
+    expect(ford[2], 'the ford bar reads as gravel').toBeGreaterThan(0.6);
+    expect(ford[0]).toBeLessThan(0.2);
   });
 
   it('does not overlap two hut footprints', () => {

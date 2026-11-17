@@ -37,7 +37,6 @@ import { buildCanalGeometry, canalFlowTexture } from '../rendering/canal';
 import { MaterialTex } from '../rendering/Textures';
 import { DEFAULT_CANAL_WIDTH } from '../model/defs/canal';
 import { planProps, propCountFor, type PropPlacement } from '../model/defs/props';
-import type { AmbientQuery } from '../model/defs/ambientQuery';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
 import { attachFaunaKit } from '../rendering/faunaKit';
 import { BuildingKind } from '../core/types';
@@ -70,6 +69,10 @@ import { getMission } from '../campaign/defs/campaign';
 
 const AMBIENT_PROP_SEED = 7;
 const AMBIENT_FAUNA_SEED = 13;
+/** Visual-only ayllu stones: cap, minimum gap and seed salt (they reuse the `rock` instancer). */
+const AYLLU_STONE_LIMIT = 24;
+const AYLLU_STONE_MIN_GAP = 2.4;
+const AYLLU_STONE_SEED = 271;
 const FISHING_SCAN_MARGIN = 4;
 /** Fishing banks keep a large reserve: the anchoveta shoals off Áspero fed the village. */
 const FISHING_RESERVE = { min: 280, max: 380 } as const;
@@ -1170,7 +1173,7 @@ export class WorldViewDecor {
         { id: 'llama', x: 142, z: 168, rotY: 4.2, scale: 1.05 },
         { id: 'llama', x: 194, z: 160, rotY: 1.2, scale: 0.9 },
       ];
-      placements = [...placements, ...this.planAylluStones(query)];
+      placements = [...placements, ...this.planAylluStones()];
     }
     this.game.props.place(placements, heightAt);
     this.game.wildlife.spawn(fauna, heightAt);
@@ -1181,67 +1184,77 @@ export class WorldViewDecor {
    * Visual-only stones on the ayllu path shoulders and the stream banks. It reuses the `rock` prop
    * mesh, so the additions cost no draw call; the cap keeps the triangle delta small.
    */
-  private planAylluStones(query: AmbientQuery): PropPlacement[] {
-    const rng = new RNG(this.game.settings.mapSeed * 271 + 7);
+  private planAylluStones(): PropPlacement[] {
+    const rng = new RNG(this.game.settings.mapSeed * AYLLU_STONE_SEED + 7);
     const out: PropPlacement[] = [];
     const tryStone = (x: number, z: number, scale: number, allowReserved = false): void => {
-      if (out.length >= 30) return;
-      if (query.isWater(x, z)) return;
+      if (out.length >= AYLLU_STONE_LIMIT) return;
+      if (this.game.terrain.isWater(x, z)) return;
       if (!allowReserved && this.game.isReserved(x, z)) return;
-      if (out.some((p) => Math.hypot(p.x - x, p.z - z) < 2.4)) return;
+      if (out.some((p) => Math.hypot(p.x - x, p.z - z) < AYLLU_STONE_MIN_GAP)) return;
       out.push({ id: 'rock', x, z, rotY: rng.range(0, Math.PI * 2), scale });
     };
-    for (const road of this.game.missionLayout?.roads ?? []) {
-      if (!road.stonePath) continue;
-      const a = this.game.resolveMissionPoint(road.from);
-      const b = this.game.resolveMissionPoint(road.to);
-      const len = Math.hypot(b.x - a.x, b.z - a.z);
-      if (len < 1) continue;
-      const nx = -(b.z - a.z) / len;
-      const nz = (b.x - a.x) / len;
-      const steps = Math.max(1, Math.round(len / 10));
-      for (let i = 1; i < steps; i++) {
-        const t = i / steps;
+    const scatter = (
+      ax: number,
+      az: number,
+      bx: number,
+      bz: number,
+      spacing: number,
+      offset: number,
+      jitter: number,
+      chance: number,
+      scale: readonly [number, number],
+      allowReserved = false,
+    ): void => {
+      const len = Math.hypot(bx - ax, bz - az);
+      if (len < 1) return;
+      const nx = -(bz - az) / len;
+      const nz = (bx - ax) / len;
+      const steps = Math.max(1, Math.round(len / spacing));
+      for (let s = 1; s < steps; s++) {
+        const t = s / steps;
         for (const side of [-1, 1]) {
-          if (!rng.chance(0.55)) continue;
-          const off = (road.width ?? 4) / 2 + 0.8 + rng.range(0, 1.2);
+          if (!rng.chance(chance)) continue;
+          const off = offset + rng.range(0, jitter);
           tryStone(
-            a.x + (b.x - a.x) * t + nx * off * side,
-            a.z + (b.z - a.z) * t + nz * off * side,
-            rng.range(0.45, 0.75),
+            ax + (bx - ax) * t + nx * off * side,
+            az + (bz - az) * t + nz * off * side,
+            rng.range(...scale),
+            allowReserved,
+          );
+        }
+      }
+    };
+    const river = this.game.siteDef?.heightField?.river;
+    const ford = this.game.siteDef?.heightField?.fords?.[0];
+    // The ford marker goes first so the per-seed cap never starves it.
+    if (river && ford) {
+      const point = river.path.reduce(
+        (best, p) => (Math.abs(p[1] - ford.z) < Math.abs(best[1] - ford.z) ? p : best),
+        river.path[0]!,
+      );
+      for (const side of [-1, 1]) {
+        for (let k = 0; k < 3; k++) {
+          tryStone(
+            point[0] + side * (river.halfWidth + 0.45 + k * 0.3),
+            ford.z - 2 + k * 2,
+            rng.range(0.45, 0.7),
             true,
           );
         }
       }
     }
-    const river = this.game.siteDef?.heightField?.river;
+    for (const road of this.game.missionLayout?.roads ?? []) {
+      if (!road.stonePath) continue;
+      const a = this.game.resolveMissionPoint(road.from);
+      const b = this.game.resolveMissionPoint(road.to);
+      scatter(a.x, a.z, b.x, b.z, 10, (road.width ?? 4) / 2 + 0.8, 1.2, 0.55, [0.45, 0.75], true);
+    }
     if (river) {
       for (let i = 0; i < river.path.length - 1; i++) {
         const [ax, az] = river.path[i];
         const [bx, bz] = river.path[i + 1];
-        const len = Math.hypot(bx - ax, bz - az);
-        if (len < 1) continue;
-        const nx = -(bz - az) / len;
-        const nz = (bx - ax) / len;
-        const steps = Math.max(1, Math.round(len / 12));
-        for (let s = 0; s < steps; s++) {
-          const t = (s + rng.range(0.2, 0.8)) / steps;
-          for (const side of [-1, 1]) {
-            if (!rng.chance(0.5)) continue;
-            const off = river.halfWidth + 0.7 + rng.range(0, 1.4);
-            tryStone(ax + (bx - ax) * t + nx * off * side, az + (bz - az) * t + nz * off * side, rng.range(0.5, 1.0));
-          }
-        }
-      }
-      // Mark the ford: a few flat stones on each bank where the bar meets the water.
-      const ford = river.path.reduce(
-        (best, p) => (Math.abs(p[1] - 190) < Math.abs(best[1] - 190) ? p : best),
-        river.path[0]!,
-      );
-      for (const side of [-1, 1]) {
-        for (let k = 0; k < 3; k++) {
-          tryStone(ford[0] + side * (river.halfWidth + 0.45 + k * 0.3), 190 - 2 + k * 2, rng.range(0.45, 0.7), true);
-        }
+        scatter(ax, az, bx, bz, 12, river.halfWidth + 0.7, 1.4, 0.5, [0.5, 1.0]);
       }
     }
     return out;
