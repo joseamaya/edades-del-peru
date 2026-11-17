@@ -223,6 +223,8 @@ dialogue.
 
 ## Evidence
 
+- E6 reference set: `docs/media/tambotoco-e6-{hualla,acequia,inticancha}-{before,after,final}.webp` (960×540;
+  approved 2026-11-17).
 - `node scripts/shots_evidence.mjs --scene=tambotoco-cave` → `docs/media/tambotoco-cave.webp`: the cave
   with fog on, at the opening hold.
 - `node scripts/shots_evidence.mjs --scene=tambotoco-heroes` → `docs/media/tambotoco-heroes.webp` (close)
@@ -257,8 +259,9 @@ The 2026-11-16 kit pass is the baseline; the next pass is the art-direction pilo
 ([`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md)): terrain shadows (B11, fixed in E1), `cusco_valley`
 palette (E1), architecture finish with contact AO/macro colour and battered walls (E2a), cave and Huanacaure
 huaca GLBs with a procedural fallback (E2b), highland molle/pacay kit and an ichu ground-cover stand (E3a) and an opt-in Tambotoco
-hero variant (E4). The pilot runs E0–E6 and does not rebuild the mission, its layout or its economy. Production
-(E7) waits for a human approval of the reference captures.
+hero variant (E4) and the presentation pass (E5). The pilot runs E0–E6 and does not rebuild the mission, its
+layout or its economy; the E6 reference captures were approved on 2026-11-17. Production (E7) is a separate
+decision.
 
 ## Open items
 

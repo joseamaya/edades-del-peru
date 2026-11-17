@@ -71,9 +71,9 @@ ground cover were trimmed. Measured `bench_scene` (Intel RPL-S, high): opening *
 **651,572/353**, under the ratcheted 500k/280 opening cap and the unchanged 660k/360 late cap; software is
 436,880/265 and 608,324/347. The eight Ayar gained per-commander props, headdresses, weaves and combat clips;
 `docs/design/tambotoco-model-mission.md` carries the site certainty table and the evidence commands.
-The 2026-11-16 pass is the baseline for the art-direction pilot: the next work is light/shadows, palette and
-material finish, architecture silhouette, highland vegetation and the Tambotoco hero variant, tracked in
-[`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md).
+The 2026-11-16 pass was the baseline for the art-direction pilot, which closed in E6 on 2026-11-17: terrain
+shadows, palette, architecture finish, highland vegetation, the Manco hero variant, the presentation pass and
+the approved 3 × 3 captures ([`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md)).
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
@@ -428,8 +428,7 @@ Quizu's hills) and starts as the traced plaza; the colonial church and the stree
 `m_tambotoco` is the released opening of El Tahuantinsuyo and the first **Leyenda** mission. It is built on
 the 256 m Pacaritambo–Huanacaure–Cusco transect and draws its own ayllu kit (cave, shrine, hamlets and the
 planned Inticancha).
-The table separates what is implemented from the art-direction pilot that is still open; the intro render is
-approved.
+The table reflects the art-direction pilot, closed in E6 on 2026-11-17; the intro render is approved.
 
 | Gate        | m_tambotoco                                                                                                                                                              |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -441,7 +440,7 @@ approved.
 | Onboarding  | Met: six-step tutorial that teaches controls (move, camp store, hunt, visit, water, canchas), briefing with the eight siblings and Codex.                                |
 | Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden.                                                                |
 | UX          | Met: campaign layout at 1600×900, the eight-card briefing at 1280×720, a left dialogue dock above the minimap, portrait chips for a selected cast, a large-screen HUD scale at 1920×1080 and `hud-layout.spec.ts`. |
-| Visuals     | Met (E3a–E5): 256 m transect, the modular terrain-conformed ayllu kit (coursed stone, thatch houses, qollqas, terraced fields, paved plaza at grade), contact AO/macro colour, battered walls and a layered thatch eave, the cave and Huanacaure huaca GLBs, the highland molle/pacay kit (ichu ground-cover stand at a trimmed budget) with a 14 m LOD0 radius, soft stream banks and a dry ford bar, dirt-shouldered stone paths with bank/path stones, Killke/ayllu unit variants and the male-only Manco GLB (E4a/E4b), the E5 shot grammar (hero cave, detail Huanacaure, wide valley and traced Inticancha, a foundation beat with the Ayar Auca stone and the founded settlement as the victory backdrop), plus the approved EEVEE intro render (`m_tambotoco-intro`). E6 of the art-direction pilot ([`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md)) is pending; it is a quality gate, not a rebuild. |
+| Visuals     | Met (E3a–E6): 256 m transect, the modular terrain-conformed ayllu kit (coursed stone, thatch houses, qollqas, terraced fields, paved plaza at grade), contact AO/macro colour, battered walls and a layered thatch eave, the cave and Huanacaure huaca GLBs, the highland molle/pacay kit (ichu ground-cover stand at a trimmed budget) with a 14 m LOD0 radius, soft stream banks and a dry ford bar, dirt-shouldered stone paths with bank/path stones, Killke/ayllu unit variants and the male-only Manco GLB (E4a/E4b), the E5 shot grammar (hero cave, detail Huanacaure, wide valley and traced Inticancha, a foundation beat with the Ayar Auca stone and the founded settlement as the victory backdrop), plus the approved EEVEE intro render (`m_tambotoco-intro`) and the approved E6 reference captures (3 cameras × 3 resolutions, neutral + final; [`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md)). The pilot is a quality gate, not a rebuild. |
 | Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                    |
 | Tests       | Met: `tests/tambotoco.test.ts` (cast, tags, huaca beats), scale, campaign path and the campaign E2E specs.                                                               |
 | Docs        | Met: dossier, `tambotoco-model-mission.md`, this table and the redesign status.                                                                                          |

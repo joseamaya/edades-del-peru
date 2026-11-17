@@ -4,8 +4,9 @@
 
 **Progress:** E0 (docs and baseline), E1 (terrain shadows, palette and plaza), E2a (procedural architecture
 finish), E2b (cave and huaca GLBs), E3a (highland vegetation), E3b (soft banks, ford and paths), E4 (Killke/
-ayllu variants and the male-only hero GLB) and E5 (hero/detail/wide beats and the foundation reward) are
-implemented. E6 is pending; E7 waits for a human approval of the reference captures.
+ayllu variants and the male-only hero GLB), E5 (hero/detail/wide beats and the foundation reward) and E6
+(the 3 × 3 validation set) are implemented. The reference captures were approved by the project owner on
+2026-11-17; E7 is a separate decision.
 
 This is the pilot that makes Tambotoco the visual reference for the next campaigns. It implements the rules in
 [`art-direction.md`](./art-direction.md): audit, reference scene, asset inventory, performance ledger,
@@ -49,7 +50,7 @@ Baseline: `a0352d5`, seed 777, 1600×900, `sitePhase=fundada`, acequia open, HUD
 | **Landscape** | Flat olive ground with visible tiling, teal water ribbon, identical low-poly trees, neon crop rows, scattered rocks. | No terrain layers, no vegetation groups, no atmospheric depth. The Caral vegetation kit is coastal and does not cover the highlands. | `cusco_valley` palette and layers; highland vegetation kit; clustered placement; water/path pass. |
 | **Light and materials** | Ambient-heavy, weak contact shadows, no ground shadows, flat stone and plaster. | The custom terrain `ShaderMaterial` declared `lights: false`, so the ground never received directional shadows (B11). Materials have micro-detail but no macro scale and little roughness break. | **B11 fixed in E1** (terrain samples the shadow map, low morning sun); vertex AO and macro maps still open. |
 | **Presentation** | The opening and act cards are in-engine but framed as aerial views; Inticancha reads as the same disc with more props. | No shot grammar; the foundation lacks a reward moment. | Re-frame the three beats; wide/detail/hero shots; foundation phase + camera + life. |
-| **Performance** | Pre-E1 baseline: 436,880/265 and 608,324/347. Caps: 500k/280 and 660k/360. E3a–E5 structural: **425,324 / 273** and **633,330 / 356** (kit 9,352/9 and 34,306/12; the opening sample varies by 272 tris / 5 calls on an animated shadow-frustum edge, the E4b run read 425,052/268; the cap is the gate). High-quality frames scene: 450,654/269 (36 FPS) and 659,158/359 (34 FPS; iGPU run variance, the scene counts are identical to E4b); both are under the caps too. The complete render adds the shadow and refraction passes. `dist` is 24.56 / 25 MB. | Draw calls exceed the general ≤200 target. High quality runs at 34 FPS late on the iGPU, so the governor steps down below its 45 FPS window; low/medium stay above 30. `dist` has 0.44 MB of headroom. | The andes kit adds 9.4k/34.3k kit triangles; both structural and frames scene counts stay under the unchanged caps. E6 must keep the governor, LOD radius and kit caps honest. Do not raise scene caps. |
+| **Performance** | Pre-E1 baseline: 436,880/265 and 608,324/347. Caps: 500k/280 and 660k/360. E3a–E6 structural: **425,324 / 273** and **633,330 / 356** (kit 9,352/9 and 34,306/12; the opening sample varies by 272 tris / 5 calls on an animated shadow-frustum edge, the E4b run read 425,052/268; the cap is the gate). High-quality frames scene: 450,654/269 (36 FPS) and 659,158/359 (34 FPS; iGPU run variance, the scene counts are identical to E4b); both are under the caps too. The complete render adds the shadow and refraction passes. `dist` is 24.56 / 25 MB. | Draw calls exceed the general ≤200 target. High quality runs at 34 FPS late on the iGPU, so the governor steps down below its 45 FPS window; low/medium stay above 30. `dist` has 0.44 MB of headroom. | The andes kit adds 9.4k/34.3k kit triangles; both structural and frames scene counts stay under the unchanged caps. E7 must keep the governor, LOD radius and kit caps honest. Do not raise scene caps. |
 | **Documentation** | `art-direction.md` was Caral-first; `campaign-quality-bar.md` and `tambotoco-model-mission.md` gave different performance numbers; “Visuals: Met” certified presence, not quality. | No Tambotoco standard and no measurable visual gate. | This pilot, the rewritten art direction and the reconciled quality bar. |
 
 The 2026-11-16 kit pass was a real improvement: coursed stone, thatch houses, qollqas, terraced fields and a
@@ -74,8 +75,8 @@ and ring houses, but it is not the first fix: its geometry depends on the archit
 `inticancha` (168, 190, h 38).
 
 The harness aims at the ground under each view: the RTS camera looks at sea level, so it moves the target
-`ground / tan(pitch)` short of the authored point (the same compensation the mission camera cues use). Without
-it an elevated hamlet sits at the top edge of the frame.
+`ground / tan(pitch)` short of the authored point (the same ground lift as the mission camera cues, fixed to
+yaw 0; the mission cues rotate it with the camera). Without it an elevated hamlet sits at the top edge.
 
 The pilot does not move the mission layout, objectives or economy. All coordinates come from
 `src/model/defs/tambotocoLayout.ts`.
@@ -154,7 +155,8 @@ Fog of war is off in both modes: the comparison is about materials, light and co
 exploration. The mission evidence captures (`shots_evidence.mjs`) cover the fog states.
 
 - **Before** is captured from the base commit (`a0352d5` or the current `main` at the start of the branch) in
-  a clean worktree.
+  a worktree with this branch's `capture_art_pilot.mjs` copied in: the harness postdates the baseline and is
+  the only file added, so the camera math is identical on both sides.
 - **After** is captured on the branch with the same views, seed and resolution.
 - `neutral` is a stable material comparison, not the shipped quality; `final` is the look gate.
 - Views: `cave`, `shrine`, `hualla`, `acequia`, `inticancha`, `built`, `close`, `wide`, `hero`. `built` runs
@@ -168,20 +170,20 @@ exploration. The mission evidence captures (`shots_evidence.mjs`) cover the fog 
 
 The pilot is approved only when all of these are true:
 
-- [ ] The hualla scene reads at 54: hut, qollqa, field, canal and people are recognizable without the HUD.
-- [ ] Manco is identifiable at 54 by at least two silhouette layers; the worker is not a clone.
-- [ ] Stone, plaster, thatch, earth, wood, cloth and water share one material language; no photo-vs-flat clash.
-- [ ] The palette is within `art-direction.md` §5; no mustard roofs, neon crops or turquoise water.
-- [ ] No visible tiling at 54; terrain transitions are soft and geographic.
-- [ ] The ground receives directional shadows; no floating props or stones.
-- [ ] Inticancha `fundada` reads as a settlement, not a disc with props.
-- [ ] No imperial Inca element and no invented species, name or date; certainty labels are updated.
+- [x] The hualla scene reads at 54: hut, qollqa, field, canal and people are recognizable without the HUD. (Approved 2026-11-17.)
+- [x] Manco is identifiable at 54 by at least two silhouette layers; the worker is not a clone. (Approved 2026-11-17.)
+- [x] Stone, plaster, thatch, earth, wood, cloth and water share one material language; no photo-vs-flat clash. (Approved 2026-11-17.)
+- [x] The palette is within `art-direction.md` §5; no mustard roofs, neon crops or turquoise water. (Approved 2026-11-17.)
+- [x] No visible tiling at 54; terrain transitions are soft and geographic. (Approved 2026-11-17; the 1920×1080 macro patches were accepted.)
+- [x] The ground receives directional shadows; no floating props or stones. (Approved 2026-11-17.)
+- [x] Inticancha `fundada` reads as a settlement, not a disc with props. (Approved 2026-11-17.)
+- [x] No imperial Inca element and no invented species, name or date; certainty labels are updated. (Approved 2026-11-17.)
 - [x] `bench_scene.mjs --mission=m_tambotoco --assert` is within the 500k/280 and 660k/360 caps (425,324/273 and 633,330/356 on a clean checkout).
 - [x] Integrated GPU ≥ 30 FPS at low/medium; high quality is measured and recorded (36/34 FPS, 27.8/29.4 ms p50).
 - [x] `yarn dist:check` ≤ 25 MB and the entry chunk ≤ 600 KB gzip (24.56 MB, 2 KB gzip).
 - [x] `yarn verify:fast`, `yarn art:validate` and the relevant tests pass (948 tests).
-- [ ] The 3 × 3 before/after set is attached; the docs and provenance are current. Prepared as `review/e6-{before-neutral,after-neutral,after-final,before-after-1600x900}.webp`; publish only after approval.
-- [ ] A human has approved the reference captures. **Pending.**
+- [x] The 3 × 3 before/after set is attached; the docs and provenance are current. Approved 2026-11-17; the 960×540 representatives are in `docs/media/tambotoco-e6-*` and the 3 × 3 sheets in `docs/media/tambotoco-e6-3x3-*`.
+- [x] A human has approved the reference captures. **Approved by the project owner on 2026-11-17.**
 
 ## 7. Asset inventory
 
@@ -273,7 +275,7 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
 | **E3** | Highland vegetation kit, rocks, paths | **E3a done (2026-11-17):** molle/pacay/ichu kit (1,362/360, 1,048/316, 144/42 tris), andes pack, 14 m LOD0 radius, ichu stand on a trimmed 0.08 cover budget. **E3b done (2026-11-17):** wet-margin stream banks and a gravel ford bar (ground paint; heights unchanged, REPLAY_VERSION 40 for the resource shift), dirt-shouldered stone paths, and ayllu bank/path stones on the existing rock mesh (no new draw call). Bench **424,904/273** and **632,910/356** (kit 9,352/9 and 34,306/12). Acceptance: no invented species (inferred, sourced), LOD1 footprint stable. |
 | **E4** | Hero + common unit | **E4a done (2026-11-17):** Killke and valley-ayllu rig variants replace the Chanca proxy. **E4b done (2026-11-17):** male-only `tambotoco_hero.glb` (1.38 MB, 4 clips, longer hero tunic) for Manco; hero 10,004 tris / 10 draws, common 9,628 / 14. Acceptance: Manco distinct at 54; budget; other campaigns unchanged |
 | **E5** | Cinematic beats and foundation | **Done (2026-11-17):** hero cave, detail Huanacaure, wide valley, wide traced Inticancha and a hero foundation beat (camera + Ayar Auca stone; its raise fires the dust); the five intro/card/epilogue captures were re-shot. `camera` cues gained `zoom`/`seconds` and `Camera.flyTo` gained `holdClock` (only the opening flight holds the clock); no scene geometry changed. Acceptance: wide/detail/hero shots; foundation reward |
-| **E6** | 3 × 3 validation, bench, provenance, docs, review | **Captures prepared (2026-11-17):** the three cameras (`hualla`, `acequia`, `inticancha`) × 1280×720/1600×900/1920×1080, neutral and final; before at `a0352d5`, after at this branch. Gates: `yarn verify:fast`, `art:validate` and `dist:check` green; `bench:check` has the pre-existing `m8_independencia` failure; caps unchanged. **Awaiting human approval** of the reference captures. |
+| **E6** | 3 × 3 validation, bench, provenance, docs, review | **Done (2026-11-17):** the three cameras (`hualla`, `acequia`, `inticancha`) × 1280×720/1600×900/1920×1080, neutral and final; before at `a0352d5`, after on this branch. `yarn verify:fast` (948 tests), `art:validate` and `dist:check` green; `bench:check` keeps the pre-existing `m8_independencia` failure (626,265 > 625,000), accepted as an unrelated exception; caps 425,324/273 and 633,330/356. The 3 × 3 set was approved by the project owner on 2026-11-17 and the 960×540 copies are published in `docs/media/`. |
 | **E7** | Full pilot production | Only after E6 approval |
 
 E0–E6 are the scope of this pilot. E7 is a separate decision.
@@ -349,8 +351,10 @@ Recorded 2026-11-16:
 | 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco [--stage=late] --assert` | Opening **425,324 / 273** on a clean checkout, founded **633,330 / 356** (E5 adds no geometry; the E4b sample read 425,052/268 on the same scene) |
 | 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e5-frames.json` | **36 FPS** opening (27.8 ms p50); frames 450,654 / 269 |
 | 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e5-late-frames.json` | Late: **34 FPS** (29.4 ms p50); frames 659,158 / 359 |
-| pending | `yarn art:pilot --tag=after --quality=neutral --sizes=1280x720,1600x900,1920x1080` | E6 evidence |
-| pending | `yarn art:pilot --tag=after --quality=final --sizes=1280x720,1600x900,1920x1080` | E6 evidence |
+| 2026-11-17 | `node scripts/capture_art_pilot.mjs --tag=e6-before --quality=neutral --sizes=1280x720,1600x900,1920x1080 --views=hualla,acequia,inticancha` in a worktree at `a0352d5` with the branch harness copied in (`a0352d5` has no `art:pilot` package entry) | Baseline 3 × 3 set (review/) |
+| 2026-11-17 | `yarn art:pilot --tag=e6 --quality=neutral --sizes=1280x720,1600x900,1920x1080 --views=hualla,acequia,inticancha` | After 3 × 3, neutral (review/) |
+| 2026-11-17 | `yarn art:pilot --tag=e6 --quality=final --sizes=1280x720,1600x900,1920x1080 --views=hualla,acequia,inticancha` | After 3 × 3, final look (review/) |
+| 2026-11-17 | `node scripts/publish_tambotoco_e6.mjs` + approval | Published `docs/media/tambotoco-e6-{hualla,acequia,inticancha}-{before,after,final}.webp` (960×540) |
 
 ## 14. See also
 
