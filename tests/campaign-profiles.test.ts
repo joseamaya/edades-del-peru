@@ -101,8 +101,8 @@ describe('campaign map profiles', () => {
     expect(map.vegetation.variants.pacay).toBeGreaterThan(0);
     expect(map.vegetation.variants.broad ?? 0).toBe(0);
     expect(map.vegetation.variants.needle ?? 0).toBe(0);
-    // E3a keeps the E2b ground-cover budget and only changes the species mix.
-    expect(map.vegetation.groundCover).toBe(0.2);
+    // E3a trims the instance budget to fund the kit and shifts the mix to ichu.
+    expect(map.vegetation.groundCover).toBe(0.08);
     expect(map.vegetation.groundCoverWeights?.ichu).toBeGreaterThan(map.vegetation.groundCoverWeights?.grass ?? 0);
   });
 

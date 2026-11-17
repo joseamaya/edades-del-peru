@@ -82,8 +82,8 @@ const BUDGETS = {
   // The site now merges per surface family (not one mesh for the whole 256 m phase), the blob shadows
   // are one instanced draw, and the ground cover/water grid were trimmed; the opening drops from
   // 625,811/313 (hardware, before this pass) with 4% headroom on both counters.
-  // E3a adds the andes vegetation kit: 11,554/7 opening and 38,350/12 late; the scene caps stay unchanged.
-  m_tambotoco: { sceneTriangles: 500_000, sceneDrawCalls: 280, kitTriangles: 15_000, kitDrawCalls: 9 },
+  // E3a adds the andes vegetation kit: 9,352/9 opening and 34,306/12 late; the scene caps stay unchanged.
+  m_tambotoco: { sceneTriangles: 500_000, sceneDrawCalls: 280, kitTriangles: 15_000, kitDrawCalls: 10 },
   // The founded Inticancha at victory. 2026-11-16: 651,452/352 hardware high and 608,204/346 in
   // software, under the unchanged 660k/360 cap (the old hardware run was 808,827/301: the art pass
   // trades triangles for calls but stays inside both counters).

@@ -104,7 +104,7 @@ export const VEGETATION_PACKS: Record<VegetationPack, VegetationPackDef> = {
     trees: KIT_TREE_VARIANTS_ANDES,
     props: KIT_PROPS_ANDES,
     nearLeafShadows: true,
-    lod0Radius: { high: KIT_LOD0_RADIUS_ANDES, low: KIT_LOD0_RADIUS_ANDES },
+    lod0Radius: { high: 14, low: 14 },
   },
 };
 

@@ -58,8 +58,8 @@ export const mTambotoco: MissionDef = {
     vegetationKit: 'andes',
     vegetation: {
       density: 0.22,
-      groundCover: 0.2,
-      groundCoverWeights: { grass: 0.7, ichu: 1.6, pebble: 0.15, gravel: 0.15 },
+      groundCover: 0.08,
+      groundCoverWeights: { grass: 0, ichu: 1.6, pebble: 0, gravel: 0 },
       variants: { molle: 0.55, pacay: 0.25, sauce: 0.2, broad: 0, needle: 0 },
     },
     resources: { tree: 0.22 },

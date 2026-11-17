@@ -251,19 +251,19 @@ Tambotoco is the reference scene for the stylized-realism standard ([`art-direct
 The 2026-11-16 kit pass is the baseline; the next pass is the art-direction pilot
 ([`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md)): terrain shadows (B11, fixed in E1), `cusco_valley`
 palette (E1), architecture finish with contact AO/macro colour and battered walls (E2a), cave and Huanacaure
-huaca GLBs with a procedural fallback (E2b), highland molle/pacay kit and ichu ground-cover mix (E3a) and an opt-in Tambotoco
+huaca GLBs with a procedural fallback (E2b), highland molle/pacay kit and an ichu ground-cover stand (E3a) and an opt-in Tambotoco
 hero variant (E4). The pilot runs E0–E6 and does not rebuild the mission, its layout or its economy. Production
 (E7) waits for a human approval of the reference captures.
 
 ## Open items
 
-1. Performance (measured 2026-11-17; E3a numbers): software (SwiftShader) measures **425,784 triangles /
-   271 draw calls** at the opening and **634,794 / 356** on the founded Inticancha (vegetation kit 11,554/7 and
-   38,350/12); the pre-E1 baseline was 436,880 / 265 and 608,324 / 347, E1 measured 437,976 / 264 and
+1. Performance (measured 2026-11-17; E3a numbers): software (SwiftShader) measures **422,864 triangles /
+   273 draw calls** at the opening and **630,750 / 356** on the founded Inticancha (vegetation kit 9,352/9 and
+   34,306/12); the pre-E1 baseline was 436,880 / 265 and 608,324 / 347, E1 measured 437,976 / 264 and
    614,594 / 357, E2a 438,856 / 269 and 615,532 / 354, and E2b 430,488 / 269 and 613,692 / 354. E3a hardware
-   (`--gpu`, Intel RPL-S iGPU, high) measures **475,434 / 270** opening and **685,660 / 362** late in frames mode
-   (post-processing/refraction included; structural late 634,794 / 356). Frame time at high quality with
-   post-processing on: **34 FPS** opening and **33 FPS** late (29.8 / 30.2 ms p50).
+   (`--gpu`, Intel RPL-S iGPU, high) measures **448,194 / 269** opening and **656,578 / 359** late in frames mode
+   (the scene pass; the complete render adds the shadow/refraction passes; structural late 630,750 / 356).
+   Frame time at high quality with post-processing on: **34 FPS** opening and **31 FPS** late (29.5 / 32.1 ms p50).
    The opening cap is now **500k / 280** (ratcheted from 600k/340); the late cap stays
    **660k / 360** and is met without raising it. The pass batched every entity contact shadow into one
    instanced draw, merged the site by surface family per phase (instead of one mesh for the whole 256 m

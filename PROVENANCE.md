@@ -191,10 +191,10 @@ slot is absent (offline / without assets).
 - **Source**: captured from the game by `scripts/capture_art_pilot.mjs` at 1600x900, seed 777, HUD hidden,
   site at `fundada`, fog of war off. `before` is the E2b scene at `ae9e489`; `after` is the andes kit.
   Regenerate the after set with
-  `yarn art:pilot --tag=e3a7 --quality=neutral --sizes=1600x900 --views=wide,trees,hualla`; the before
+  `yarn art:pilot --tag=e3a8 --quality=neutral --sizes=1600x900 --views=wide,trees,hualla`; the before
   trees use the same view and script checked out at `ae9e489`.
 - **Content**: in-engine shots of the game's own scene. The highland tree kit is project-owned and
-  `confidence: inferred`; the ichu ground cover is the procedural instancer at the E2b budget.
+  `confidence: inferred`; the ichu ground cover is the procedural instancer at a trimmed 0.08 budget.
 - **Review**: no human art-review gate applies to in-engine captures; the kit is reviewed through this PR.
 
 ### Caral fauna kit (deer, riparian bird)
