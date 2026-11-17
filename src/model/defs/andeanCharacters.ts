@@ -19,6 +19,8 @@ export const ANDEAN_CULTURES = [
   'chincha',
   'collas_lupaca',
   'huanca',
+  'inca_killke',
+  'ayllus',
 ] as const;
 export const ANDEAN_ROLES = ['worker', 'scout', 'soldier', 'ranged', 'amauta'] as const;
 export type AndeanCulture = (typeof ANDEAN_CULTURES)[number];
@@ -57,6 +59,8 @@ const ANDEAN_CIV: Record<AndeanCulture, CivId> = {
   chincha: CivId.CHINCHA,
   collas_lupaca: CivId.COLLAS_LUPACA,
   huanca: CivId.HUANCA,
+  inca_killke: CivId.INCA_KILLKE,
+  ayllus: CivId.AYLLUS,
 };
 
 const GENERAL_ANDEAN_SPEC: AndeanSpec = {
@@ -209,6 +213,10 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
   chincha: GENERAL_ANDEAN_SPEC,
   collas_lupaca: GENERAL_ANDEAN_SPEC,
   huanca: GENERAL_ANDEAN_SPEC,
+  // Killke ayllus: a plain tunic, short manta and sling; no imperial gear or metal.
+  inca_killke: { ...GENERAL_ANDEAN_SPEC, shield: false, manta: 'short' },
+  // Valley ayllus: the same plain kit, with the green/earth civ palette.
+  ayllus: { ...GENERAL_ANDEAN_SPEC, shield: false, manta: 'short' },
 };
 
 function andeanCultureForCiv(civ: CivId): AndeanCulture | null {

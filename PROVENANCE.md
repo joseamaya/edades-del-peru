@@ -197,6 +197,16 @@ slot is absent (offline / without assets).
   `confidence: inferred`; the ichu ground cover is the procedural instancer at a trimmed 0.08 budget.
 - **Review**: no human art-review gate applies to in-engine captures; the kit is reviewed through this PR.
 
+### Tambotoco E4a Killke/ayllu variants (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e4a-hero-{before,after}.webp`, 960x540 WebP q58, ~36 KB.
+- **Source**: `yarn art:pilot --tag=e4a --quality=neutral --sizes=1600x900 --views=hero` on this branch;
+  `before` is `d32c526` (E3b, Chanca proxy). The `hero` view stages Ayar Manco and a worker at the hualla.
+- **Content**: both figures use the same CC0 `caral_worker` asset; E4a selects the Killke and valley-ayllu
+  palettes/garments instead of the Chanca proxy. No new mesh, body or clip is added.
+- **Review**: presentation abstraction; no attested Ayar likeness or garment survives, so the accent and
+  silhouettes remain a game convention.
+
 ### Tambotoco E3b stream banks, ford and paths (in-engine evidence)
 
 - **Location**: `docs/media/tambotoco-e3b-{bank,path,ford,close}-{before,after}.webp`, 960x540 WebP q58, ~181 KB.
@@ -775,7 +785,7 @@ downscaled 1920 shot would look smaller than the 1280 one.
     reproducible with `yarn models:build`.
   - SHA-256: `d44b0d91dd98601510ab566d1435481ced98142cf92e5e5491633a57bc46cadf` (2,435,528 bytes). The
     build now runs `resample`/`prune` before meshopt; the three added clips still grow the GLB, and the
-    committed asset keeps `dist/` at 24.75 MB of its 25 MB budget.
+    committed asset keeps `dist/` at 23.22 MB of its 25 MB budget after E3b.
   - Contents: 15 skinned meshes (female/male bodies, hair, eyes and eyebrows, worker tunic/skirt/sash,
     reserved chasqui skirt/belt, male wrap), one shared 65-bone skeleton, 13 clips (10 mapped: `Idle_Loop`, `Walk_Loop`,
     `Farm_Harvest`, `TreeChopping_Loop`, `Walk_Carry_Loop`, `Push_Loop`, `Punch_Jab`, `Sword_Regular_A`,
@@ -809,6 +819,9 @@ downscaled 1920 shot would look smaller than the 1280 one.
     because they are too small to cast a readable shadow; the garments keep theirs. Hidden gender/outfit meshes
     do not render. This keeps the visible worker under the **40 draws / 40k tris** budget measured in
     `docs/development/performance-audit.md`.
+  - Presentation variants: `inca_killke_*` and `ayllus_*` (E4a) reuse this asset and its clips; they only
+    select the palette, garments and runtime hero attire. No new body/mesh is added, so other campaigns are
+    unchanged. The dedicated Tambotoco hero sculpt remains E4b.
 
 - **`mounted_rig.glb` (Viceroyalty/Republic cavalry)**: project-authored low-poly horse and rider used by
   #241a for `HUSSAR`/`CAVALRY` in the late-colonial rebel and post-colonial civilizations.

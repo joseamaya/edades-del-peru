@@ -210,13 +210,21 @@ describe('rigged model assets', () => {
     expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.REALISTAS])).toContain('caral_worker');
   });
 
+  it('gives the Killke señorío and the valley ayllus their own variants', () => {
+    expect(unitModelAsset(UnitKind.WORKER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 1)?.variant).toBe(
+      'inca_killke_worker_m',
+    );
+    expect(unitModelAsset(UnitKind.WORKER, Era.TAHUANTINSUYO, CivId.AYLLUS, 1)?.variant).toBe('ayllus_worker_m');
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.AYLLUS, 2)?.variant).toBe('ayllus_soldier_f');
+  });
+
   it('lets a named hero gender override the unit-id split for body and garments', () => {
     const byId = unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 2);
-    expect(byId?.variant).toBe('chanca_soldier_f');
+    expect(byId?.variant).toBe('inca_killke_soldier_f');
     const hero = unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 2, 'male');
-    expect(hero?.variant).toBe('chanca_soldier_m');
+    expect(hero?.variant).toBe('inca_killke_soldier_m');
     expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 3, 'female')?.variant).toBe(
-      'chanca_soldier_f',
+      'inca_killke_soldier_f',
     );
     // The Killke señorío shares the Chanca kit, and the recursion must carry the override.
     expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 3, 'female')?.asset).toBe(

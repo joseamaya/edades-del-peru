@@ -17,7 +17,7 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
 - **Art pending:** Chavín, Chimú, the civil war, Túpac Amaru and Independencia still lack mostly art.
 - **Art direction:** Tambotoco is the new reference scene; E0–E3b of the pilot are implemented (docs,
   terrain shadows, palette, plaza, procedural architecture finish, cave/huaca GLBs, highland vegetation,
-  soft banks/ford and paths), E4–E6 remain
+  soft banks/ford and paths, Killke/ayllu variants), E4b–E6 remain
   ([`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md)).
 - **Open release work:** human art review, a site-specific real-GPU performance pass and the itch package.
 
