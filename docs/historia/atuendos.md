@@ -114,7 +114,7 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 | Estados Regionales (Moche/Nazca/Recuay/Tiahuanaco/Wari) | uncu/túnica con tocapu | casco cónico (metal) o diadema + orejeras | porra + lanza/honda | túnica acolchada, backflap (Moche), disco pectoral (Wari) | rodela |
 | Tahuantinsuyo (Inca/Chanca/Chimú/Chincha) | uncu ajedrezado + canesú rojo | llawt'u + maskapaycha (élite), diadema+orejeras | porra + honda (sierra); arco (aux. selva) | casco acolchado | rodela |
 
-- **Killke y ayllus del valle (Intermedio Tardío, presentación)**: uncu simple, manta corta y **rodela**;
+- **Killke y ayllus del valle (Intermedio Tardío, presentación)**: uncu simple y **rodela**;
   sin maskapaycha ni metal imperial. Los honderos y porras son la abstracción de juego del señorío
   (`docs/design/tambotoco-model-mission.md`); no hay una prenda Killke documentada pieza por pieza.
 

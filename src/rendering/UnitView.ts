@@ -6,6 +6,7 @@ import type { RigInstance } from './RigInstance';
 import { buildModel, disposeModel, type BuildContext } from '../model/ProceduralModel';
 import { getUnitModel } from '../model/defs/units';
 import {
+  TAMBOTOCO_HERO_ASSET_ID,
   unitModelAsset,
   rigClipStateFor,
   WALK_CLIP_REFERENCE_SPEED,
@@ -17,7 +18,7 @@ import { FishingNetFx } from './FishingNetFx';
 import { createRigAttireTools, mergeColoredGeometry, type RigAttireTools } from './rigAttire';
 import { limitShadowCasters } from './shadowCasters';
 import { clamp } from '../util/math';
-import type { Resources } from '../core/types';
+import { CivId, type Resources } from '../core/types';
 
 const CARRY_COLORS: Record<keyof Resources, number> = {
   food: 0xc8a04a,
@@ -52,7 +53,10 @@ export class UnitView {
     ctx: BuildContext,
   ) {
     // `Unit.gender` already resolves a tagged commander before the id split.
-    const choice = unitModelAsset(unit.kind, unit.era, ctx.civ.id, unit.id, unit.gender);
+    const hero = unit.tag === 'manco_capac' && ctx.civ.id === CivId.INCA_KILLKE;
+    const choice = hero
+      ? ({ asset: TAMBOTOCO_HERO_ASSET_ID, variant: 'inca_killke_soldier_m' } as const)
+      : unitModelAsset(unit.kind, unit.era, ctx.civ.id, unit.id, unit.gender);
     this.rig = choice ? acquireRig(choice.asset, choice.variant) : null;
     const model = this.rig
       ? this.rig.root

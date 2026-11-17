@@ -211,6 +211,12 @@ describe('rigged model assets', () => {
     expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.REALISTAS])).toContain('caral_worker');
   });
 
+  it('preloads the Tambotoco hero for Killke matches', () => {
+    const file = fileURLToPath(new URL('../src/assets/models/tambotoco_hero.glb', import.meta.url));
+    expect(fs.statSync(file).size).toBeLessThan(1_600_000);
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_INTERMEDIATE, [CivId.INCA_KILLKE])).toContain('tambotoco_hero');
+  });
+
   it('resolves the longest Andean culture prefix and its palette', () => {
     expect(andeanCultureForVariant('inca_killke_soldier_f')).toBe('inca_killke');
     expect(andeanRoleForVariant('inca_killke_soldier_f')).toBe('soldier');

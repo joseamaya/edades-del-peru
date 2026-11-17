@@ -54,6 +54,8 @@ const CLIPS = [
   ['ual2', 'OverhandThrow'],
   ['ual1', 'Death01'],
 ];
+const hero = process.argv.includes('--hero');
+const HERO_CLIPS = ['Idle_Loop', 'Walk_Loop', 'Sword_Regular_A', 'OverhandThrow', 'Death01'];
 const outFile = path.resolve(cliArg('out', 'review/caral_worker_test.glb'));
 
 const { base, close } = await withViteServer({ optimizeDeps: { noDiscovery: true } });
@@ -62,7 +64,7 @@ const page = await browser.newPage();
 try {
   await page.goto(`${base}/?noloop=1`, { waitUntil: 'domcontentloaded' });
   const result = await page.evaluate(
-    async ({ sources, clipsSpec }) => {
+    async ({ sources, clipsSpec, hero, heroClips }) => {
       const THREE = await import('/node_modules/three/build/three.module.js');
       const { GLTFLoader, GLTFExporter } = await import('/scripts/gltf_tools.mjs');
       const { HUMAN_HAIR, HUMAN_SKIN } = await import('/src/model/defs/people.ts');
@@ -637,12 +639,29 @@ try {
         'attire_sash',
       );
       const byName = (gltf, name) => gltf.animations.find((clip) => clip.name === name);
-      const animations = [];
+      let animations = [];
       for (const [source, name] of clipsSpec) {
         const gltf = source === 'ual1' ? ual1 : ual2;
         const clip = byName(gltf, name);
         if (!clip) throw new Error(`missing clip ${name} in ${source}`);
         animations.push(clip);
+      }
+
+      if (hero) {
+        // Male-only Tambotoco hero: drop the female body/garments and the clips a hero never plays.
+        for (const name of [
+          'Body_f',
+          'Hair_f',
+          'Eyes_f',
+          'Eyebrows_f',
+          'attire_tunic_f',
+          'attire_skirt_f',
+          'attire_skirt_chasqui_f',
+          'attire_belt_chasqui',
+        ]) {
+          baseGltf.scene.getObjectByName(name)?.removeFromParent();
+        }
+        animations = animations.filter((clip) => heroClips.includes(clip.name));
       }
 
       const bounds = new THREE.Box3().setFromObject(baseGltf.scene);
@@ -682,7 +701,7 @@ try {
         boneCount: skeleton.bones.length,
       };
     },
-    { sources: SOURCES, clipsSpec: CLIPS },
+    { sources: SOURCES, clipsSpec: CLIPS, hero, heroClips: HERO_CLIPS },
   );
 
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
