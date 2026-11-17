@@ -261,6 +261,103 @@ test('edge scrolling waits for a short delay before moving', async ({ page }) =>
   expect(out.late).toBeGreaterThan(0.5);
 });
 
+test('the edge band is a plateau: 16 px pans at full speed and 22 px does not', async ({ page }) => {
+  await bootMatch(page);
+  await stopLoop(page);
+  await page.mouse.move(16, 300);
+  expect(await panFrames(page, 30)).toBeGreaterThan(5);
+
+  await page.mouse.move(22, 300);
+  expect(await panFrames(page, 30)).toBe(0);
+});
+
+test('F follows the selected unit and pressing it again releases the camera', async ({ page }) => {
+  await bootMatch(page);
+  await stopLoop(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const u = [...g.units.values()].find((x: any) => x.owner === 0 && !x.dead);
+    g.selectUnits([u.id]);
+    g.camera.moveTo(g.settings.mapSize / 2, g.settings.mapSize / 2, true);
+    for (let i = 0; i < 30; i++) g.update(1 / 60, i / 60);
+    const tapF = () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f' }));
+      window.dispatchEvent(new KeyboardEvent('keyup', { key: 'f' }));
+    };
+    tapF();
+    for (let i = 0; i < 10; i++) g.update(1 / 60, i / 60);
+    const following = g.camera.isFollowing(u.id);
+    const followed = g.camera.getTarget();
+    tapF();
+    for (let i = 0; i < 10; i++) g.update(1 / 60, i / 60);
+    const released = g.camera.isFollowing(u.id);
+    // Following again and then panning with the keyboard must release the camera too.
+    tapF();
+    for (let i = 0; i < 10; i++) g.update(1 / 60, i / 60);
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'd' }));
+    for (let i = 0; i < 60; i++) g.update(1 / 60, i / 60);
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'd' }));
+    return {
+      unit: { x: u.pos.x, z: u.pos.z },
+      following,
+      followed,
+      released,
+      releasedAfterPan: g.camera.isFollowing(u.id),
+      panned: g.camera.getTarget(),
+    };
+  });
+  expect(out.following).toBe(true);
+  expect(out.followed.x).toBeCloseTo(out.unit.x, 1);
+  expect(out.followed.z).toBeCloseTo(out.unit.z, 1);
+  expect(out.released).toBe(false);
+  expect(out.releasedAfterPan).toBe(false);
+  expect(Math.abs(out.panned.x - out.unit.x)).toBeGreaterThan(5);
+});
+
+test('losing focus clears held keys and the middle drag', async ({ page }) => {
+  await bootMatch(page);
+  await stopLoop(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const centre = g.settings.mapSize / 2;
+    g.camera.moveTo(centre, centre, true);
+    g.camera.setHeight(40);
+    for (let i = 0; i < 30; i++) g.update(1 / 60, i / 60);
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'd' }));
+    for (let i = 0; i < 10; i++) g.update(1 / 60, i / 60);
+    window.dispatchEvent(new Event('blur'));
+    const beforeKey = g.camera.getTarget();
+    for (let i = 0; i < 60; i++) g.update(1 / 60, i / 60);
+    const afterKey = g.camera.getTarget();
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'd' }));
+
+    g.camera.moveTo(centre, centre, true);
+    for (let i = 0; i < 10; i++) g.update(1 / 60, i / 60);
+    g.renderer.domElement.dispatchEvent(
+      new MouseEvent('mousedown', { button: 1, clientX: 640, clientY: 360, bubbles: true }),
+    );
+    window.dispatchEvent(new MouseEvent('mousemove', { clientX: 700, clientY: 360, bubbles: true }));
+    window.dispatchEvent(new Event('blur'));
+    const beforeMove = g.camera.getTarget();
+    window.dispatchEvent(new MouseEvent('mousemove', { clientX: 900, clientY: 360, bubbles: true }));
+    const afterMove = g.camera.getTarget();
+
+    g.camera.updateMouse(1, 300);
+    const beforeEdge = g.camera.getTarget();
+    for (let i = 0; i < 40; i++) g.update(1 / 60, i / 60);
+    const afterEdge = g.camera.getTarget();
+    return {
+      keyDrift: Math.hypot(afterKey.x - beforeKey.x, afterKey.z - beforeKey.z),
+      freeMove: Math.hypot(afterMove.x - beforeMove.x, afterMove.z - beforeMove.z),
+      edgePan: Math.hypot(afterEdge.x - beforeEdge.x, afterEdge.z - beforeEdge.z),
+    };
+  });
+  expect(out.keyDrift).toBeLessThan(0.01);
+  expect(out.freeMove).toBe(0);
+  expect(out.edgePan).toBeGreaterThan(0.5);
+});
+
 test('moving from the bottom edge onto the command bar stops the camera', async ({ page }) => {
   await bootMatch(page);
   const bar = await page.evaluate(() => {

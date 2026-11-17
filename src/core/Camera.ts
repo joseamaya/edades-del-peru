@@ -91,6 +91,8 @@ export class RTSCamera {
   private attach(): void {
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
+    window.addEventListener('blur', this.onBlur);
+    document.addEventListener('visibilitychange', this.onVisibility);
     this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
     this.canvas.addEventListener('mousedown', this.onMouseDown);
     window.addEventListener('mousemove', this.onMouseMove);
@@ -101,12 +103,30 @@ export class RTSCamera {
   dispose(): void {
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
+    window.removeEventListener('blur', this.onBlur);
+    document.removeEventListener('visibilitychange', this.onVisibility);
     this.canvas.removeEventListener('wheel', this.onWheel);
     this.canvas.removeEventListener('mousedown', this.onMouseDown);
     window.removeEventListener('mousemove', this.onMouseMove);
     window.removeEventListener('mouseup', this.onMouseUp);
     this.canvas.removeEventListener('contextmenu', this.onContextMenu);
   }
+
+  /**
+   * A lost `keyup`/`mouseup` (alt-tab, releasing outside the window) used to leave a key held —
+   * the camera drifted — or `dragging` true, which disabled edge scrolling and made plain mouse
+   * moves pan. Drop every held input when the page loses focus.
+   */
+  private onBlur = (): void => {
+    this.keys.clear();
+    this.dragging = false;
+    this.edgeHeldSeconds = 0;
+    this.hasMousePos = false;
+  };
+
+  private onVisibility = (): void => {
+    if (document.hidden) this.onBlur();
+  };
 
   /** Resolve the entity to follow by id (units or buildings). */
   setFollowResolver(fn: (id: number) => CameraTarget | null | undefined): void {
@@ -197,6 +217,8 @@ export class RTSCamera {
     const fromY = this.dragLast.y;
     this.dragLast.set(e.clientX, e.clientY);
     if (this.uiCaptured) return;
+    // Dragging the map is a manual pan: stop following the selected unit first.
+    this.followId = null;
     // The map follows the hand exactly: move the target by the ground offset between both cursor
     // positions (perspective included), not by a per-pixel approximation.
     const from = this.groundOffsetAt(fromX, fromY, this.zoom);
@@ -228,8 +250,9 @@ export class RTSCamera {
     return { x: this.desiredTarget.x, z: this.desiredTarget.z };
   }
 
-  /** Move the camera to a map point. */
+  /** Move the camera to a map point; manual map movement releases any follow. */
   moveTo(x: number, z: number, immediate = false): void {
+    this.followId = null;
     this.desiredTarget.x = x;
     this.desiredTarget.z = z;
     if (immediate) {
@@ -293,11 +316,20 @@ export class RTSCamera {
     // HUD panel is drawn: real controls still block it through `pointerOverUi`, and the delay keeps a
     // pass-through on the way to a button from panning.
     const rect = this.canvas.getBoundingClientRect();
-    const ev = edgeVector(this.lastMouseX, this.lastMouseY, rect, CAMERA_CONFIG.edgeZone);
+    const ev = edgeVector(
+      this.lastMouseX,
+      this.lastMouseY,
+      rect,
+      CAMERA_CONFIG.edgeZone,
+      CAMERA_CONFIG.edgeZoneTop,
+      CAMERA_CONFIG.edgeZone,
+    );
     if (ev.x === 0 && ev.y === 0) {
       this.edgeHeldSeconds = 0;
       return;
     }
+    // Reaching the border is a manual pan: stop following the selected unit.
+    this.followId = null;
     this.edgeHeldSeconds += dt;
     const factor = edgeSpeedFactor(this.edgeHeldSeconds, CAMERA_CONFIG.edgeDelay, CAMERA_CONFIG.edgeRampTime);
     if (factor <= 0) return;
@@ -322,6 +354,8 @@ export class RTSCamera {
     if (this.uiCaptured) return;
     const kv = keyPanVector(this.keys);
     if (kv.x === 0 && kv.y === 0) return;
+    // WASD/arrows are a manual pan: stop following the selected unit.
+    this.followId = null;
     const w = rotateToWorld(kv.x, kv.y, this.yaw);
     const speed = this.zoom * CAMERA_CONFIG.keySpeed * this.speedScale;
     this.desiredTarget.x += w.x * speed * dt;
@@ -339,12 +373,14 @@ export class RTSCamera {
     this.keyboardPan(dt);
     this.edgePan(dt);
 
-    // Follow entity
+    // Follow entity; a dead or removed unit releases the camera instead of pinning it to a corpse.
     if (this.followId !== null && this.followResolver) {
       const ent = this.followResolver(this.followId);
       if (ent) {
         this.desiredTarget.x = ent.x;
         this.desiredTarget.z = ent.z;
+      } else {
+        this.followId = null;
       }
     }
 

@@ -181,7 +181,7 @@ const CSS = /* css */ `
   .speed-btn.active { background: var(--gold); color: #14161a; border-color: var(--gold); }
 
   /* Minimapa */
-  #ed-minimap-wrap { position: absolute; left: 12px; bottom: 12px; width: var(--minimap-size); height: var(--minimap-size); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+  #ed-minimap-wrap { position: absolute; left: var(--bar-gap); bottom: var(--bar-gap); width: var(--minimap-size); height: var(--minimap-size); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
   #ed-minimap { width: 100%; height: 100%; display: block; cursor: crosshair; pointer-events: auto; }
   #ed-compass { position: absolute; inset: 0; pointer-events: none; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px rgba(0,0,0,0.9); }
   #ed-compass span { position: absolute; padding: 1px 3px; border-radius: 2px; background: rgba(6,8,12,0.55); }
@@ -192,7 +192,7 @@ const CSS = /* css */ `
 
   /* Command bar: one low horizontal strip right of the minimap (AoE/SC2 layout). Selection info on the
      left, actions in a row in the middle, orders on the right; it only grows when the actions wrap. */
-  #ui-root { --minimap-size: 190px; --bar-gap: 12px; }
+  #ui-root { --minimap-size: 190px; --bar-gap: 18px; }
   #ed-bottom { position: absolute; left: calc(var(--minimap-size) + 2 * var(--bar-gap)); right: var(--bar-gap); bottom: var(--bar-gap); max-width: 1180px; margin: 0 auto; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; pointer-events: auto; display: flex; flex-direction: column; box-shadow: 0 6px 30px rgba(0,0,0,0.55); overflow: hidden; }
   #ed-bottom-header { padding: 3px 12px; font-size: 12px; font-weight: 700; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; background: rgba(232,195,106,0.06); background-image: var(--weave); background-repeat: repeat-x; background-position: bottom; }
   #ed-bottom-header:empty { display: none; }
@@ -469,7 +469,7 @@ const CSS = /* css */ `
   #ui-root.help-collapsed #ed-help-open { display: block; }
   #ed-cursor { position: absolute; width: 20px; height: 20px; pointer-events: none; }
   .ed-error { color: var(--red); font-size: 12px; margin-top: 8px; min-height: 16px; }
-  #ed-fps { position: absolute; top: 52px; right: 12px; font-size: 11px; color: var(--text-dim); background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 3px; }
+  #ed-fps { position: absolute; top: 52px; right: var(--bar-gap); font-size: 11px; color: var(--text-dim); background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 3px; }
   /* Hide the in-game HUD while a modal menu is open */
   #ui-root.menu-open .ed-topbar,
   #ui-root.menu-open #ed-bottom,
@@ -482,7 +482,7 @@ const CSS = /* css */ `
   /* Objectives panel (campaign) */
   /* Right-hand column: objectives, tutorial and shortcuts share one stack, so they never cover each
      other nor reach the command bar (issues 401 and 402). */
-  #ed-right-column { position: absolute; top: 56px; right: 12px; width: 240px; bottom: calc(var(--ed-command-bar-h, 0px) + 2 * var(--bar-gap)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  #ed-right-column { position: absolute; top: 56px; right: var(--bar-gap); width: 240px; bottom: calc(var(--ed-command-bar-h, 0px) + 2 * var(--bar-gap)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
   #ed-right-column > * { pointer-events: auto; }
   /* Final screens, the pause menu and every other modal own the screen: the objectives column
      must not show through the veil, not even its sticky archive summary (issue 415). */
@@ -541,7 +541,7 @@ const CSS = /* css */ `
   @keyframes alert-in { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
   /* Large screens: the same HUD at a readable size instead of 12 px labels on a 1920 panel. */
   @media (min-width: 1700px) {
-    #ui-root { --minimap-size: 228px; --bar-gap: 14px; }
+    #ui-root { --minimap-size: 228px; --bar-gap: 18px; }
     .ed-topbar { height: 54px; padding: 8px 16px; }
     .ed-logo { font-size: 18px; }
     .ed-logo svg { width: 26px; height: 26px; }

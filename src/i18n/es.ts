@@ -66,7 +66,7 @@ export const es = {
   'hud.help.closeTitle': 'Cerrar (?)',
   'hud.help.openTitle': 'Mostrar atajos (?)',
   'hud.help.body':
-    '<b>Atajos</b><br>Clic izq: seleccionar · arrastra: área<br>Clic der: orden · Ctrl+der: atacar-mover<br>Shift: cola/rally · Ctrl+1-9: grupo · 1-9: recuperar<br>Minimapa: arrastra para mover · clic der: orden<br>Rueda: zoom · <span class="ed-help-keys">{keys}</span>',
+    '<b>Atajos</b><br>Clic izq: seleccionar · arrastra: área<br>Clic der: orden · Ctrl+der: atacar-mover<br>Shift: cola/rally · Ctrl+1-9: grupo · 1-9: recuperar<br>Botón central: arrastrar · Minimapa: arrastra para mover · clic der: orden<br>Rueda: zoom · <span class="ed-help-keys">{keys}</span>',
   'hud.fps.value': '{fps} FPS · {quality}',
 
   'hud.stance.agresivo': 'Agresivo: persigue y ataca enemigos.',
@@ -95,6 +95,8 @@ export const es = {
   'hud.toast.rallyHint': 'Usa Shift+Botón derecho en el suelo',
   'hud.toast.hotkeyConflict': 'Esa tecla ya está asignada',
   'hud.toast.hotkeyUpdated': 'Atajo actualizado',
+  'hud.camera.following': 'Siguiendo: {unit} · F para soltar',
+  'hud.camera.released': 'Cámara libre',
 
   'hud.victory.title': 'VICTORIA',
   'hud.victory.defeat': 'DERROTA',
@@ -247,7 +249,7 @@ export const es = {
   'hud.menu.controls.title': 'CÓMO JUGAR',
   'hud.menu.controls.sub': 'Reúne recursos, construye, entrena un ejército y vence a tu rival.',
   'hud.menu.controls.keys':
-    '<b>Clic izquierdo / arrastrar</b><span>Seleccionar unidad, edificio o caja de selección</span><b>Doble clic</b><span>Seleccionar todas las unidades del mismo tipo</span><b>E</b><span>Seleccionar todo tu ejército</span><b>Botón derecho</b><span>Mover · recolectar · atacar · construir (con obreros)</span><b>Ctrl + Botón derecho</b><span>Atacar-mover</span><b>Shift + Botón derecho</b><span>Encolar órdenes / fijar punto de reunión</span><b>G · V</b><span>Construir chacra · vivienda</span><b>WASD / flechas / bordes</b><span>Mover la cámara</span><b>Rueda</b><span>Zoom · <b>Z/X</b> rotar (si está activada) · <b>F</b> seguir</span><b>H</b><span>Ir a la ciudad · <b>Espacio</b> última batalla</span><b>P</b><span>Pausa · <b>☰ Menú</b> opciones y salir</span><b>Meta</b><span>Destruye a tu rival o construye la Huaca Sagrada y protégela 5 min</span>',
+    '<b>Clic izquierdo / arrastrar</b><span>Seleccionar unidad, edificio o caja de selección</span><b>Doble clic</b><span>Seleccionar todas las unidades del mismo tipo</span><b>E</b><span>Seleccionar todo tu ejército</span><b>Botón derecho</b><span>Mover · recolectar · atacar · construir (con obreros)</span><b>Ctrl + Botón derecho</b><span>Atacar-mover</span><b>Shift + Botón derecho</b><span>Encolar órdenes / fijar punto de reunión</span><b>G · V</b><span>Construir chacra · vivienda</span><b>WASD / flechas / bordes</b><span>Mover la cámara · botón central: arrastrar</span><b>Minimapa</b><span>Clic o arrastra para mover la cámara · clic derecho: orden</span><b>Rueda</b><span>Zoom · <b>Z/X</b> rotar (si está activada) · <b>F</b> seguir / soltar</span><b>H</b><span>Ir a la ciudad · <b>Espacio</b> última batalla</span><b>P</b><span>Pausa · <b>☰ Menú</b> opciones y salir</span><b>Meta</b><span>Destruye a tu rival o construye la Huaca Sagrada y protégela 5 min</span>',
   'hud.menu.controls.back': '← Volver',
   'hud.menu.briefing.mission': 'MISIÓN HISTÓRICA',
   'hud.menu.briefing.kicker': 'Campaña {n} · {campaign} · Misión {mission} de {total}',
@@ -376,7 +378,7 @@ export const es = {
   'hotkey.pause': 'Pausa',
   'hotkey.lastBattle': 'Última batalla',
   'hotkey.centerBase': 'Centrar la ciudad',
-  'hotkey.followUnit': 'Seguir unidad',
+  'hotkey.followUnit': 'Seguir unidad / soltarla',
   'hotkey.selectArmy': 'Todo el ejército',
   'hotkey.buildFarm': 'Chacra',
   'hotkey.buildHouse': 'Vivienda',

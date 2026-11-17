@@ -122,7 +122,7 @@ The game teaches history while you play:
 | Last battle / center base    | Space / **H** (centro de la ciudad)           |
 | Build platform / dwelling    | G / V                                 |
 | Rotate camera (optional)     | Z / X                                 |
-| Follow unit                  | **F**                                 |
+| Follow unit (toggle)         | **F**                                 |
 | Pause                        | P · **☰** menu                       |
 
 ## Historical periods (10)

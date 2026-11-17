@@ -55,13 +55,20 @@ describe('edge scrolling', () => {
     expect(Math.abs(v.y)).toBeLessThan(1e-6);
   });
 
-  it('grows toward the border', () => {
-    const near = edgeVector(rect.left + 30, 300, rect, 36);
-    const closer = edgeVector(rect.left + 10, 300, rect, 36);
-    const at = edgeVector(rect.left, 300, rect, 36);
-    expect(Math.abs(near.x)).toBeLessThan(Math.abs(closer.x));
-    expect(Math.abs(closer.x)).toBeLessThanOrEqual(Math.abs(at.x));
+  it('is at full speed anywhere inside the zone, not only at the border pixel', () => {
+    const near = edgeVector(rect.left + 16, 300, rect, 18);
+    const at = edgeVector(rect.left, 300, rect, 18);
+    expect(Math.abs(near.x)).toBeCloseTo(1, 6);
     expect(Math.abs(at.x)).toBeCloseTo(1, 6);
+  });
+
+  it('is zero just outside the zone', () => {
+    expect(edgeVector(rect.left + 22, 300, rect, 18)).toEqual({ x: 0, y: 0 });
+  });
+
+  it('keeps the top band narrower than the sides', () => {
+    expect(edgeVector(400, rect.top + 12, rect, 18, 10)).toEqual({ x: 0, y: 0 });
+    expect(Math.abs(edgeVector(rect.left + 12, 300, rect, 18).x)).toBeCloseTo(1, 6);
   });
 
   it('normalizes a corner (not faster than an edge)', () => {
@@ -71,10 +78,12 @@ describe('edge scrolling', () => {
     expect(mag(edge)).toBeCloseTo(1, 6);
   });
 
-  it('clamps the progressive factor to [-1, 1]', () => {
+  it('returns full speed inside the zone and zero outside', () => {
     expect(edgeFactor(-100, 0, 800, 36)).toBe(-1);
     expect(edgeFactor(900, 0, 800, 36)).toBe(1);
     expect(edgeFactor(400, 0, 800, 36)).toBe(0);
+    expect(edgeFactor(10, 0, 800, 18)).toBe(-1);
+    expect(edgeFactor(25, 0, 800, 18)).toBe(0);
   });
 });
 
