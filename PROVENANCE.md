@@ -342,6 +342,17 @@ slot is absent (offline / without assets).
 - **Review**: no human art-review gate applies to in-engine captures; the modular kit has no GLB asset and
   the authored layout stays the source of truth for a later Blender kit.
 
+### Tambotoco E2a architecture captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e2a-{close,hualla}-{before,after}.webp`, 960x540 WebP q58, ~70 KB.
+- **Source**: captured from the game by `scripts/capture_art_pilot.mjs` at 1600x900, seed 777, HUD hidden,
+  site at `fundada`, acequia open and fog of war off. The `before` pair is the E1 capture
+  (`--tag=e1d --quality=neutral`); the `after` pair is E2a (`--tag=e2a3 --quality=neutral`). Regenerate with
+  `yarn art:pilot --tag=e2a --quality=neutral --sizes=1600x900 --views=close,hualla` and resize to 960x540.
+- **Content**: in-engine shots of the game's own scene. E2a adds contact AO/macro colour, battered walls, a
+  layered thatch eave and the qollqa footing/vent; no model, texture or manifest entry is added.
+- **Review**: no human art-review gate applies to in-engine captures; the procedural kit has no GLB asset.
+
 ### Tambotoco HUD captures (in-engine evidence)
 
 - **Location**: `docs/media/tambotoco-hud-{1280,1600,1920}.webp` (native size, WebP q72).

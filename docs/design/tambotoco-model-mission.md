@@ -257,8 +257,9 @@ captures.
 ## Open items
 
 1. Performance (measured 2026-11-17; E2a numbers): software (SwiftShader) measures **438,856 triangles /
-   269 draw calls** at the opening and **615,532 / 354** on the founded Inticancha; the baseline was
-   436,880 / 265 and 608,324 / 347. E2a hardware (`--gpu`, Intel RPL-S iGPU, high) measures **481,606 / 268**
+   269 draw calls** at the opening and **615,532 / 354** on the founded Inticancha; the pre-E1 baseline
+   was 436,880 / 265 and 608,324 / 347, and E1 measured 437,976 / 264 and 614,594 / 357. E2a hardware
+   (`--gpu`, Intel RPL-S iGPU, high) measures **481,606 / 268**
    opening and **658,780 / 360** late in frames mode (post-processing included; structural late 615,532 / 354).
    Frame time at high quality with post-processing on: **37 FPS** opening and **33 FPS** late (26.8 / 30.4 ms
    p50). The opening cap is now **500k / 280** (ratcheted from 600k/340); the late cap stays

@@ -7,6 +7,8 @@ import {
   type AylluHut,
   type AylluPath,
 } from '../model/defs/tambotocoLayout';
+import { smoothstep } from '../util/math';
+import { noise2 } from '../util/noise';
 import { conformWallGeometry } from './landscapeConform';
 
 /**
@@ -450,42 +452,24 @@ export function batteredWall(
 }
 
 /**
- * Bake contact AO and low-frequency colour variation into a merged kit geometry. The kit builds in
- * world XZ with Y relative to the site base, so a vertex at Y≈0 is the ground and Y>1.6 is clear of
- * the base. Flat tops keep their colour; vertical faces darken toward the footing.
+ * Bake contact AO and low-frequency colour variation into a merged kit geometry. `groundAt` returns
+ * the local ground under a vertex (site-space Y), so the AO follows the slope instead of the site
+ * datum: a hut at 7 m on the hillside still darkens at its footing. The macro octaves sit inside the
+ * 32–64 m band (≈50 m and ≈33 m); the detail map already covers 1–2 m.
  */
-export function ageSurface(geometry: THREE.BufferGeometry): void {
+export function ageSurface(geometry: THREE.BufferGeometry, groundAt: HeightAt): void {
   const position = geometry.getAttribute('position');
   const color = geometry.getAttribute('color');
   const normal = geometry.getAttribute('normal');
   if (!position || !color) return;
-  const hash = (ix: number, iz: number): number => {
-    const h = Math.sin(ix * 127.1 + iz * 311.7) * 43758.5453;
-    return h - Math.floor(h);
-  };
-  const value = (px: number, pz: number): number => {
-    const ix = Math.floor(px);
-    const iz = Math.floor(pz);
-    const fx = px - ix;
-    const fz = pz - iz;
-    const u = fx * fx * (3 - 2 * fx);
-    const v = fz * fz * (3 - 2 * fz);
-    return (
-      hash(ix, iz) * (1 - u) * (1 - v) +
-      hash(ix + 1, iz) * u * (1 - v) +
-      hash(ix, iz + 1) * (1 - u) * v +
-      hash(ix + 1, iz + 1) * u * v
-    );
-  };
   for (let i = 0; i < position.count; i++) {
     const x = position.getX(i);
     const y = position.getY(i);
     const z = position.getZ(i);
-    const t = Math.max(0, Math.min(1, y / 1.6));
-    const height = t * t * (3 - 2 * t);
+    const height = smoothstep(0, 1.6, y - groundAt(x, z));
     const nY = normal ? Math.abs(normal.getY(i)) : 0.5;
     const ao = nY > 0.7 ? 0.94 + 0.06 * height : 0.74 + 0.26 * height;
-    const macro = 0.9 + 0.1 * (value(x * 0.06, z * 0.06) * 0.7 + value(x * 0.015 + 13.7, z * 0.015 - 7.1) * 0.3);
+    const macro = 0.9 + 0.1 * (noise2(x * 0.02, z * 0.02) * 0.7 + noise2(x * 0.03 + 13.7, z * 0.03 - 7.1) * 0.3);
     const scale = ao * macro;
     color.setXYZ(
       i,

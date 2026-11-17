@@ -47,7 +47,7 @@ Baseline: `a0352d5`, seed 777, 1600×900, `sitePhase=fundada`, acequia open, HUD
 | **Landscape** | Flat olive ground with visible tiling, teal water ribbon, identical low-poly trees, neon crop rows, scattered rocks. | No terrain layers, no vegetation groups, no atmospheric depth. The Caral vegetation kit is coastal and does not cover the highlands. | `cusco_valley` palette and layers; highland vegetation kit; clustered placement; water/path pass. |
 | **Light and materials** | Ambient-heavy, weak contact shadows, no ground shadows, flat stone and plaster. | The custom terrain `ShaderMaterial` declared `lights: false`, so the ground never received directional shadows (B11). Materials have micro-detail but no macro scale and little roughness break. | **B11 fixed in E1** (terrain samples the shadow map, low morning sun); vertex AO and macro maps still open. |
 | **Presentation** | The opening and act cards are in-engine but framed as aerial views; Inticancha reads as the same disc with more props. | No shot grammar; the foundation lacks a reward moment. | Re-frame the three beats; wide/detail/hero shots; foundation phase + camera + life. |
-| **Performance** | Baseline software: 436,880 triangles / 265 calls (opening), 608,324 / 347 (founded). Caps: 500k/280 and 660k/360. E2a structural: **438,856 / 269** and **615,532 / 354**; frames high: 481,606/268 (37 FPS) and 658,780/360 (33 FPS). | Draw calls exceed the general ≤200 target; the late frames sit at the 360 cap. `dist` is 24.75 / 25 MB. | E2a is within caps but leaves 3 FPS of headroom at late high; E2b–E4 must keep the quality governor and LODs honest. Do not raise caps; size ledger with offsets. |
+| **Performance** | Pre-E1 baseline: 436,880 triangles / 265 calls (opening), 608,324 / 347 (founded); E1: 437,976/264 and 614,594/357. Caps: 500k/280 and 660k/360. E2a structural: **438,856 / 269** and **615,532 / 354**; frames high: 481,606/268 (37 FPS) and 658,780/360 (33 FPS). | Draw calls exceed the general ≤200 target; the late frames sit at the 360 cap. `dist` is 24.75 / 25 MB. | E2a is within caps but leaves 3 FPS of headroom at late high; E2b–E4 must keep the quality governor and LODs honest. Do not raise caps; size ledger with offsets. |
 | **Documentation** | `art-direction.md` was Caral-first; `campaign-quality-bar.md` and `tambotoco-model-mission.md` gave different performance numbers; “Visuals: Met” certified presence, not quality. | No Tambotoco standard and no measurable visual gate. | This pilot, the rewritten art direction and the reconciled quality bar. |
 
 The 2026-11-16 kit pass was a real improvement: coursed stone, thatch houses, qollqas, terraced fields and a
@@ -230,8 +230,8 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
 ### P1 · The finish
 
 5. **Architecture material/geometry pass. — Done in E2a.** `aylluKit.ts` (contact AO + macro colour,
-   battered walls, thatch eave, qollqa footing/vent, stone courses), `AylluSite.ts` (baked into the merged
-   surfaces). Acceptance: no box read at 28/54; ≤ 4 materials per building.
+   battered walls, thatch eave, qollqa footing/vent), `AylluSite.ts` (baked into the merged surfaces). The
+   stone courses are E1's detail map. Acceptance: no box read at 28/54; ≤ 4 materials per building.
 6. **Water, paths and ford.** `Water.ts`, `Terrain.ts` paint paths, the bridge. Acceptance: cold water, soft
    banks, no ladder path.
 7. **Cave and monolith GLBs.** New Blender sources + `architectureKit.ts`/`AylluSite.ts`. Acceptance: the cave
@@ -250,7 +250,7 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
 | --- | --- | --- |
 | **E0** | This document, `art-direction.md`, `capture_art_pilot.mjs`, baseline set, quality-bar reconciliation | **Done (2026-11-16):** docs links and baseline set |
 | **E1** | B11, palette, water, plaza | **Partial (2026-11-16):** shadows on ground, low morning sun, straw/stone palette, single-rim plaza, bench 437,976/264 and 614,594/357; macro/AO and ground cover move to E2–E3 |
-| **E2** | Architecture materials/geometry; hero GLB decision | **E2a done (2026-11-17):** AO/macro, battered walls, thatch eave, qollqa footing/vent; bench 438,856/269 and 615,532/354. **E2b pending:** cave and huaca GLBs |
+| **E2** | Architecture materials/geometry; hero GLB decision | **E2a done (2026-11-17):** AO/macro, battered walls, thatch eave, qollqa footing/vent; bench 438,856/269 and 615,532/354. Acceptance: no box read at 28/54; ≤4 materials per building. **E2b pending:** cave and huaca GLBs |
 | **E3** | Highland vegetation kit, rocks, paths | Groups, LODs, wind; no invented species |
 | **E4** | Hero + common unit | Manco distinct at 54; budget; other campaigns unchanged |
 | **E5** | Cinematic beats and foundation | Shot grammar; no new system |
@@ -292,7 +292,7 @@ Recorded 2026-11-16:
 | 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e1c-frames.json` | Intel RPL-S iGPU, high, postfx on: **41 FPS** opening (24.2 ms p50), hardware **480,998 / 268** |
 | 2026-11-16 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e1c-late-frames.json` | Late: **36 FPS** (27.4 ms p50), frames **657,556 / 360** (at the cap, no raise) |
 | 2026-11-16 | `yarn shot m1-b11-before --url='/?play=1&mission=m1_caral&seed=777&fog=0&low=1&intro=0' --click` (baseline worktree) and `yarn shot m1-b11-after ...` | Non-pilot regression: the Caral ground receives the pyramid/tree/house shadows in `review/m1-b11-{before,after}_0.png`; no shader errors |
-| 2026-11-17 | `node scripts/capture_art_pilot.mjs --tag=e2a --quality=neutral --sizes=1600x900 --views=cave,shrine,hualla,close,inticancha,built` | E2a PNGs: contact AO/macro, battered walls, layered thatch eave, qollqa footing/vent |
+| 2026-11-17 | `node scripts/capture_art_pilot.mjs --tag=e2a --quality=neutral --sizes=1600x900 --views=cave,shrine,hualla,close,inticancha,built` | E2a PNGs: contact AO/macro, battered walls, layered thatch eave, qollqa footing/vent; published as `docs/media/tambotoco-e2a-{close,hualla}-{before,after}.webp` |
 | 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --assert --out=review/bench-scene-tambotoco-e2a.json` | Opening **438,856 tris / 269 calls** (cap 500k/280) |
 | 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --stage=late --assert --out=review/bench-scene-tambotoco-e2a-late.json` | Founded Inticancha **615,532 tris / 354 calls** (cap 660k/360) |
 | 2026-11-17 | `node scripts/bench_scene.mjs --mission=m_tambotoco --gpu --frames --quality=high --assert --out=review/bench-scene-tambotoco-e2a-frames.json` | Intel RPL-S iGPU, high: **37 FPS** opening (26.8 ms p50), **481,606 / 268** |

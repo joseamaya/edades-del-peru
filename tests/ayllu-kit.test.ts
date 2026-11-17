@@ -34,11 +34,12 @@ function verticalRange(parts: Parts): { min: number; max: number } {
 }
 
 describe('the ayllu kit', () => {
-  it('bakes contact AO into the merged colours', () => {
+  it('bakes contact AO against the local ground into the merged colours', () => {
     const parts: Parts = [];
-    box(parts, new THREE.Color('#c8b89a'), 0, 0, 0, 2, 2, 2);
+    // The kit builds at absolute terrain heights; this wall stands at 7 m, not at the site datum.
+    box(parts, new THREE.Color('#c8b89a'), 0, 7, 0, 2, 2, 2);
     const geometry = parts[0]!;
-    ageSurface(geometry);
+    ageSurface(geometry, () => 7);
     const position = geometry.getAttribute('position');
     const color = geometry.getAttribute('color');
     let bottom = 0;
@@ -48,10 +49,10 @@ describe('the ayllu kit', () => {
     for (let i = 0; i < position.count; i++) {
       const y = position.getY(i);
       const value = color.getX(i);
-      if (y < 0.1) {
+      if (y < 7.1) {
         bottom += value;
         bottomCount++;
-      } else if (y > 1.9) {
+      } else if (y > 8.9) {
         top += value;
         topCount++;
       }
