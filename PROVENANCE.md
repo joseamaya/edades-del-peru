@@ -254,6 +254,34 @@ slot is absent (offline / without assets).
   review on 2026-11-14 (Miguel Amaya), together with the vegetation and household props; a rebuild exports
   every piece unreviewed again.
 
+### Tambotoco hero kit (cave and Huanacaure huaca)
+
+- **Location**: `src/assets/architecture/tambotoco/tambotoco_{cave,huaca}_lod{0,1}.glb`.
+- **Source**: generated in Blender 5.3.0 by `scripts/blender/build_tambotoco_hero_kit.py`; scene
+  `art-src/blender/scenes/tambotoco_hero_kit.blend` (Git LFS). Per-piece manifests with triangles,
+  materials, bounds, budget, sources and review state live in `art-src/blender/exports/tambotoco/`; the
+  game copies were meshopt-compressed with `yarn art:models`.
+- **Content**: project-owned procedural geometry, Principled materials only, no textures.
+  - Cave: an irregular rock massif around a dark five-sided recess, a rough front lintel/jambs, a scree
+    apron and two torch brackets. LOD0 1,802 triangles / 4 materials; LOD1 342 / 3.
+  - Huanacaure huaca: a tapered monolith with a carved niche, base, cap, offering ledge and two flanking
+    stones. LOD0 288 triangles / 3 materials; LOD1 104 / 3.
+- **Confidence**: **assumed**. The cave and the monolith are stylizations of the myth; the dossier records no
+  dated or documented form, and `docs/historia/arquitectura.md` marks the Huanacaure niche as a stylization,
+  not an imperial architectural niche.
+- **Runtime**: `AylluSite.setHeroAssets` swaps the procedural cave/huaca for the GLB after both LODs load
+  (`loadTambotocoHeroAssets`); a failed load keeps the procedural fallback. LOD0 draws below the 70-unit
+  camera zoom, LOD1 above. The models use the authored cave (40, 55) and shrine (120, 106) positions and
+  the shrine platform top; `WorldViewDecor` applies the site's fog mask after the swap.
+- **Pivot and collision**: the cave origin is the mouth threshold at ground level (the massif extends
+  behind it); the huaca origin is its base centre. The GLBs carry no collision: the cave and shrine blockers
+  in `src/model/defs/sites.ts` own pathing.
+- **SHA-256**:
+  - `tambotoco_cave_lod0.glb` `551b362873b93db44341921d087627947548d4f60c6dcdff63b7b21016355974` (65 KB)
+  - `tambotoco_cave_lod1.glb` `bfb63483207bfa92c0a70ed0a901845467c4ffafac7056bb25bf3ff06d9c401c` (16 KB)
+  - `tambotoco_huaca_lod0.glb` `3466c8908c9a086ac1f30bebf64cb5c4a8854009b894f9d381d4ca9bef086e67` (14 KB)
+  - `tambotoco_huaca_lod1.glb` `199ba0b82e57ae9b25f6b6c9f8d3295e681880066b7bdd7e3df4702dcee24dc1` (8 KB)
+
 ### Caral prop kit (quarries and household goods)
 
 - **Location**: `src/assets/props/caral/caral_<piece>_lod{0,1}.glb`: the `granodiorite` quarry outcrop and
@@ -352,6 +380,17 @@ slot is absent (offline / without assets).
 - **Content**: in-engine shots of the game's own scene. E2a adds contact AO/macro colour, battered walls, a
   layered thatch eave and the qollqa footing/vent; no model, texture or manifest entry is added.
 - **Review**: no human art-review gate applies to in-engine captures; the procedural kit has no GLB asset.
+
+### Tambotoco E2b hero captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e2b-{cave,huaca}-{before,after}.webp`, 960x540 WebP q58, ~105 KB.
+- **Source**: captured from the game by `scripts/capture_art_pilot.mjs` at 1600x900, seed 777, HUD hidden,
+  site at `fundada`, fog of war off. The `before` pair is E2a's procedural cave/huaca; the `after` pair is
+  the loaded GLB. Regenerate with
+  `yarn art:pilot --tag=e2b4 --quality=neutral --sizes=1600x900 --views=cave,shrine` and resize to 960x540.
+- **Content**: in-engine shots of the game's own scene. The cave and huaca GLBs are project-owned,
+  stylized (`confidence: assumed`); no textures or external assets are used.
+- **Review**: no human art-review gate applies to in-engine captures; the GLBs are reviewed through this PR.
 
 ### Tambotoco HUD captures (in-engine evidence)
 
@@ -651,8 +690,10 @@ downscaled 1920 shot would look smaller than the 1280 one.
 
 - **Location**: `src/assets/models/*.glb` (loaded by `src/rendering/ModelAssets.ts`).
 - **`ual_mannequin.glb`**: Quaternius _Universal Animation Library_ (UAL1.glb), a generic rigged mannequin used
-  to validate the glTF/GLB + skeleton + mixer pipeline and as the `?rig=1` demo/fallback fixture. It is **not**
-  the Caral worker anymore; the finished asset is `caral_worker.glb` below.
+  to validate the glTF/GLB + skeleton + mixer pipeline. It is **not** the Caral worker anymore; the finished
+  asset is `caral_worker.glb` below. It is **not shipped in `dist`**: `modelAssetRegistry.ts` imports the five
+  gameplay models explicitly, the model tests load this fixture from disk, and `?rig=1` previews the shipped
+  `caral_worker`.
   - Source: <https://quaternius.com/packs/universalanimationlibrary.html> (CC0 1.0).
   - Downloaded from the CC0 mirror <https://github.com/Dallolz/moorfall-assets>
     (`animations/UAL1.glb`, licence in its `LICENSE.md`), 2026-10-20.

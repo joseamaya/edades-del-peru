@@ -163,6 +163,32 @@ describe('the ayllu kit', () => {
     site.dispose();
   });
 
+  it('replaces the procedural cave and huaca when the hero GLBs arrive', () => {
+    const parent = new THREE.Group();
+    const site = new AylluSite(parent, (x, z) => slope(x, z) + 4, 4, {
+      phases: ['cave', 'huanacaure', 'inticancha', 'fundada'],
+      initial: 'cave',
+    });
+    const cave = { lod0: new THREE.Group(), lod1: new THREE.Group() };
+    cave.lod0.name = 'cave-lod0';
+    cave.lod1.name = 'cave-lod1';
+    const huaca = { lod0: new THREE.Group(), lod1: new THREE.Group() };
+    huaca.lod0.name = 'huaca-lod0';
+    huaca.lod1.name = 'huaca-lod1';
+    site.setHeroAssets({ cave, huaca });
+    expect(site.group.getObjectByName('ayllu_hero_cave_fallback')?.visible).toBe(false);
+    expect(site.group.getObjectByName('ayllu_hero_huaca_fallback')?.visible).toBe(false);
+    expect(site.group.getObjectByName('cave-lod0')?.visible).toBe(true);
+    expect(site.group.getObjectByName('cave-lod1')?.visible).toBe(false);
+    expect(site.group.getObjectByName('ayllu_hero_cave_glb')?.visible).toBe(true);
+    expect(site.group.getObjectByName('ayllu_hero_huaca_glb')?.visible).toBe(false);
+    site.setPhase('huanacaure');
+    expect(site.group.getObjectByName('ayllu_hero_huaca_glb')?.visible).toBe(true);
+    site.setPhase('fundada');
+    expect(site.group.getObjectByName('ayllu_hero_huaca_glb')?.visible).toBe(true);
+    site.dispose();
+  });
+
   it('shows the site by phase and keeps the latest pieces for the founded settlement', () => {
     const parent = new THREE.Group();
     const site = new AylluSite(parent, (x, z) => slope(x, z) + 4, 4, {
@@ -170,11 +196,18 @@ describe('the ayllu kit', () => {
       initial: 'cave',
     });
     const phases = site.group.children.map((g) => g.name);
-    expect(phases).toEqual(['ayllu:cave', 'ayllu:huanacaure', 'ayllu:inticancha', 'ayllu:fundada']);
+    expect(phases).toEqual(['ayllu_hero', 'ayllu:cave', 'ayllu:inticancha', 'ayllu:fundada']);
     site.setPhase('cave');
-    expect(site.group.children.filter((g) => g.visible)).toHaveLength(1);
+    expect(site.group.children.filter((g) => g.visible)).toHaveLength(2);
+    expect(site.group.getObjectByName('ayllu_hero_cave_fallback')?.visible).toBe(true);
+    expect(site.group.getObjectByName('ayllu_hero_huaca_fallback')?.visible).toBe(false);
     site.setPhase('fundada');
     expect(site.group.children.filter((g) => g.visible)).toHaveLength(4);
+    expect(site.group.getObjectByName('ayllu_hero_huaca_fallback')?.visible).toBe(true);
+    // A failed or empty load keeps the procedural heroes in place.
+    site.setHeroAssets({});
+    expect(site.group.getObjectByName('ayllu_hero_cave_fallback')?.visible).toBe(true);
+    expect(site.group.getObjectByName('ayllu_hero_huaca_fallback')?.visible).toBe(true);
     site.dispose();
   });
 });

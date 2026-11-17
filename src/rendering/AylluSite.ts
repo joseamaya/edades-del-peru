@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { isKnownPhase, phaseOrder, type SitePhasePlan } from '../model/defs/sitePhases';
+import { isKnownPhase, phaseOrder, standsAt, type SitePhasePlan } from '../model/defs/sitePhases';
 import {
   TAMBOTOCO_CAVE,
   TAMBOTOCO_BRIDGES,
@@ -35,6 +35,8 @@ import {
   type SurfaceFamily,
 } from './aylluKit';
 import type { Particles } from './Particles';
+import { disposeStaticGltf } from './StaticModel';
+import type { TambotocoHeroAssets, TambotocoHeroModel } from './tambotocoHeroKit';
 
 const PHASE_CAVE = 'cave';
 const PHASE_SHRINE = 'huanacaure';
@@ -80,8 +82,19 @@ export class AylluSite {
   private readonly life: LifeSource[] = [];
   private readonly materials = new Map<SurfaceFamily, THREE.MeshStandardMaterial>();
   private readonly geometries: THREE.BufferGeometry[] = [];
+  private readonly heroRoot = new THREE.Group();
+  private readonly caveFallback = new THREE.Group();
+  private readonly huacaFallback = new THREE.Group();
+  private readonly caveHero = new THREE.Group();
+  private readonly huacaHero = new THREE.Group();
+  private readonly heroLods: { lod0: THREE.Group; lod1: THREE.Group }[] = [];
+  private readonly heroObjects: THREE.Object3D[] = [];
   private phase = PHASE_CAVE;
   private detailVisible = true;
+  private heroNear = true;
+  private caveLoaded = false;
+  private huacaLoaded = false;
+  private huacaBase = 0;
 
   constructor(
     parent: THREE.Object3D,
@@ -91,10 +104,20 @@ export class AylluSite {
   ) {
     this.group.name = 'ayllu_site';
     parent.add(this.group);
+    this.heroRoot.name = 'ayllu_hero';
+    this.caveFallback.name = 'ayllu_hero_cave_fallback';
+    this.huacaFallback.name = 'ayllu_hero_huaca_fallback';
+    this.caveHero.name = 'ayllu_hero_cave_glb';
+    this.huacaHero.name = 'ayllu_hero_huaca_glb';
+    this.heroRoot.add(this.caveFallback, this.huacaFallback, this.caveHero, this.huacaHero);
+    this.group.add(this.heroRoot);
+    this.group.userData.heroesReady = false;
     const ground = (x: number, z: number): number => this.heightAt(x, z) - baseY;
 
     const caveParts: Parts = [];
-    caveMouth(caveParts, TAMBOTOCO_CAVE.x, TAMBOTOCO_CAVE.z, ground);
+    const caveHero: Parts = [];
+    caveMouth(caveHero, TAMBOTOCO_CAVE.x, TAMBOTOCO_CAVE.z, ground);
+    this.addHeroParts('cave', caveHero);
     // No huts at the cave: the Ayar leave it with nothing built, and their workers raise the first camp.
     for (const dx of [-2.4, 2.4]) {
       this.life.push({
@@ -128,6 +151,8 @@ export class AylluSite {
     // The huaca stone appears with the pilgrimage's arrival: the phase is the deed, not a label.
     const shrineParts: Parts = [];
     shrineStone(shrineParts, TAMBOTOCO_SHRINE.x, TAMBOTOCO_SHRINE.z, platformTop);
+    this.huacaBase = platformTop;
+    this.addHeroParts('huaca', shrineParts);
     this.life.push({
       x: TAMBOTOCO_SHRINE.x,
       z: TAMBOTOCO_SHRINE.z - 1.8,
@@ -135,7 +160,6 @@ export class AylluSite {
       phase: PHASE_SHRINE,
       kind: 'fire',
     });
-    this.addPhase(PHASE_SHRINE, shrineParts);
 
     // Inticancha in two steps. Act IV only traces it (paved plaza, altar and the four cancha plots) for
     // the player's store and houses; the living settlement (houses, terraces, fields, people, fire)
@@ -225,6 +249,26 @@ export class AylluSite {
    */
   private addPhase(phase: string, parts: Parts, castShadow = true): void {
     if (!parts.length) return;
+    // Crops, villagers and wood add nothing to the shadow silhouette. The late Inticancha phases
+    // also drop plaster/earth/rock; the cave and shrine keep their rock and earth shadows.
+    const noShadow =
+      phase === PHASE_INTICANCHA || phase === PHASE_FOUNDED ? NO_SHADOW_FAMILIES_LATE : NO_SHADOW_FAMILIES;
+    this.addMergedParts(this.phaseGroup(phase), `ayllu:${phase}`, parts, castShadow, noShadow);
+  }
+
+  /** Build the procedural cave/huaca fallback; `setHeroAssets` hides it when the GLB arrives. */
+  private addHeroParts(kind: 'cave' | 'huaca', parts: Parts): void {
+    const group = kind === 'cave' ? this.caveFallback : this.huacaFallback;
+    this.addMergedParts(group, `ayllu:hero:${kind}`, parts, true, NO_SHADOW_FAMILIES);
+  }
+
+  private addMergedParts(
+    group: THREE.Group,
+    name: string,
+    parts: Parts,
+    castShadow: boolean,
+    noShadow: ReadonlySet<SurfaceFamily>,
+  ): void {
     const byFamily = new Map<SurfaceFamily, THREE.BufferGeometry[]>();
     for (const geometry of parts) {
       const family = (geometry.userData.surface as SurfaceFamily | undefined) ?? 'stone';
@@ -232,7 +276,6 @@ export class AylluSite {
       if (bucket) bucket.push(geometry);
       else byFamily.set(family, [geometry]);
     }
-    const group = this.phaseGroup(phase);
     for (const [family, geometries] of byFamily) {
       const merged = mergeGeometries(geometries, false);
       geometries.forEach((g) => g.dispose());
@@ -245,12 +288,8 @@ export class AylluSite {
         ageSurface(merged, (x, z) => this.heightAt(x, z) - this.baseY);
       }
       const mesh = new THREE.Mesh(merged, this.materialFor(family));
-      mesh.name = `ayllu:${phase}:${family}`;
+      mesh.name = `${name}:${family}`;
       mesh.userData.family = family;
-      // Crops, villagers and wood add nothing to the shadow silhouette. The late Inticancha phases
-      // also drop plaster/earth/rock; the cave and shrine keep their rock and earth shadows.
-      const noShadow =
-        phase === PHASE_INTICANCHA || phase === PHASE_FOUNDED ? NO_SHADOW_FAMILIES_LATE : NO_SHADOW_FAMILIES;
       mesh.castShadow = castShadow && !noShadow.has(family);
       mesh.receiveShadow = true;
       group.add(mesh);
@@ -260,6 +299,14 @@ export class AylluSite {
 
   /** Strategic-zoom LOD: the tiny crop rows and static villagers vanish before the site reads as a blob. */
   updateLod(zoom: number): void {
+    const near = zoom < 70;
+    if (near !== this.heroNear) {
+      this.heroNear = near;
+      for (const lod of this.heroLods) {
+        lod.lod0.visible = near;
+        lod.lod1.visible = !near;
+      }
+    }
     const detail = zoom < 82;
     if (detail === this.detailVisible) return;
     this.detailVisible = detail;
@@ -271,12 +318,51 @@ export class AylluSite {
     }
   }
 
+  /**
+   * Replace the procedural cave/huaca with the loaded GLB. Both LODs must arrive; a missing pair
+   * leaves the fallback visible, so the opening never loses its cave.
+   */
+  setHeroAssets(assets: TambotocoHeroAssets): void {
+    if (assets.cave) {
+      this.caveLoaded = true;
+      this.addHeroModel(
+        this.caveHero,
+        assets.cave,
+        TAMBOTOCO_CAVE.x,
+        TAMBOTOCO_CAVE.z,
+        this.heightAt(TAMBOTOCO_CAVE.x, TAMBOTOCO_CAVE.z) - this.baseY,
+      );
+    }
+    if (assets.huaca) {
+      this.huacaLoaded = true;
+      this.addHeroModel(this.huacaHero, assets.huaca, TAMBOTOCO_SHRINE.x, TAMBOTOCO_SHRINE.z, this.huacaBase);
+    }
+    this.group.userData.heroesReady = true;
+    this.setPhase(this.phase);
+  }
+
+  private addHeroModel(parent: THREE.Group, model: TambotocoHeroModel, x: number, z: number, y: number): void {
+    const wrapper = new THREE.Group();
+    wrapper.position.set(x, y, z);
+    wrapper.add(model.lod0, model.lod1);
+    model.lod0.visible = this.heroNear;
+    model.lod1.visible = !this.heroNear;
+    this.heroLods.push({ lod0: model.lod0, lod1: model.lod1 });
+    this.heroObjects.push(model.lod0, model.lod1);
+    parent.add(wrapper);
+  }
+
   /** Show the pieces whose phase has been reached; the order is the site plan's, not the engine's. */
   setPhase(phase: string): void {
     this.phase = isKnownPhase(this.plan, phase) ? phase : this.plan.initial;
     for (const entry of this.phases) {
       entry.group.visible = phaseOrder(this.plan, entry.phase) <= phaseOrder(this.plan, this.phase);
     }
+    const huacaVisible = standsAt(PHASE_SHRINE, this.phase, this.plan);
+    this.caveFallback.visible = !this.caveLoaded;
+    this.caveHero.visible = this.caveLoaded;
+    this.huacaFallback.visible = !this.huacaLoaded && huacaVisible;
+    this.huacaHero.visible = this.huacaLoaded && huacaVisible;
   }
 
   /**
@@ -328,6 +414,9 @@ export class AylluSite {
 
   dispose(): void {
     this.group.removeFromParent();
+    for (const object of this.heroObjects) disposeStaticGltf(object);
+    this.heroObjects.length = 0;
+    this.heroLods.length = 0;
     for (const g of this.geometries) g.dispose();
     this.geometries.length = 0;
     for (const material of this.materials.values()) material.dispose();

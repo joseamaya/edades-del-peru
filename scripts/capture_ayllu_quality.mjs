@@ -63,6 +63,13 @@ async function main() {
         .first()
         .click({ timeout: 3000 })
         .catch(() => {});
+      await page
+        .waitForFunction(
+          () => window.game?.landmark?.getObjectByName('ayllu_site')?.userData.heroesReady === true,
+          null,
+          { timeout: 20_000 },
+        )
+        .catch(() => {});
       await page.waitForTimeout(2200);
       await page.addStyleTag({ content: '#ui-root { display: none !important; }' });
       const spawnBuilt = views.some((v) => v.name === 'built');

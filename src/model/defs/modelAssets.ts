@@ -33,11 +33,12 @@ import { SIEGE_VARIANTS, siegeVariantFor, type SiegeRigVariant } from './siegeCh
 export type ModelAssetId =
   'ual_mannequin' | 'quaternius_alpaca' | 'caral_worker' | 'mounted_rig' | 'siege_rig' | 'vehicle_rig';
 
-/** CC0 Quaternius mannequin: pipeline demo/fallback fixture. */
+/** CC0 Quaternius mannequin: pipeline fixture kept for the model tests, not shipped in `dist`. */
 export const MANNEQUIN_ASSET_ID: ModelAssetId = 'ual_mannequin';
-export const RIG_DEMO_ASSET_ID: ModelAssetId = MANNEQUIN_ASSET_ID;
 /** Finished Caral worker asset (CC0 body/hair/clips + project-authored cotton cloth). */
 export const CARAL_WORKER_ASSET_ID: ModelAssetId = 'caral_worker';
+/** `?rig=1` now previews the shipped worker instead of the 1.9 MB mannequin fixture. */
+export const RIG_DEMO_ASSET_ID: ModelAssetId = CARAL_WORKER_ASSET_ID;
 const MOUNTED_RIG_ASSET_ID: ModelAssetId = 'mounted_rig';
 const SIEGE_RIG_ASSET_ID: ModelAssetId = 'siege_rig';
 const VEHICLE_RIG_ASSET_ID: ModelAssetId = 'vehicle_rig';

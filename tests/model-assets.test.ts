@@ -2,7 +2,6 @@ import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import {
   RIG_VARIANT_CLIPS,
   modelAssetIdsForMatch,
@@ -157,13 +156,14 @@ describe('rigged model assets', () => {
     expect(modelAssetStatus(['ual_mannequin'])[0].state).toBe('idle');
   });
 
-  it('reports a failed URL load and keeps the fallback available', async () => {
+  it('reports a failed load and keeps the fallback available', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockRejectedValue(new Error('404'));
+    // The demo mannequin is intentionally not registered in the production registry; the test
+    // asserts the fallback path for an unavailable asset, not a specific fetch error.
     const asset = await loadModelAsset('ual_mannequin');
     expect(asset).toBeNull();
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('using the procedural fallback'));
-    expect(modelAssetStatus(['ual_mannequin'])[0]).toMatchObject({ state: 'failed', error: '404' });
+    expect(modelAssetStatus(['ual_mannequin'])[0]).toMatchObject({ state: 'failed' });
     expect(acquireRig('ual_mannequin')).toBeNull();
   });
 

@@ -12,6 +12,7 @@ import { loadSiteModel } from '../rendering/siteModels';
 import { mergeStaticByMaterial } from '../rendering/mergeStatic';
 import { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
 import { AylluSite } from '../rendering/AylluSite';
+import { loadTambotocoHeroAssets } from '../rendering/tambotocoHeroKit';
 import { ColonialLife } from '../rendering/ColonialLife';
 import { COLONIAL_LAYOUTS } from '../model/defs/colonialLayout';
 import {
@@ -297,6 +298,20 @@ export class WorldViewDecor {
         // camera beats.
         applyFowToObject(ayllu.group, this.game.fowUniforms);
         this.game.aylluSite = ayllu;
+        // Hero GLBs are optional: the procedural cave and huaca stay until both LODs of a piece
+        // arrive, and a failed load never leaves a hole in the opening.
+        void loadTambotocoHeroAssets().then((assets) => {
+          if (!current()) {
+            for (const model of [assets.cave, assets.huaca]) {
+              if (!model) continue;
+              disposeStaticGltf(model.lod0);
+              disposeStaticGltf(model.lod1);
+            }
+            return;
+          }
+          ayllu.setHeroAssets(assets);
+          applyFowToObject(ayllu.group, this.game.fowUniforms);
+        });
       }
       return;
     }

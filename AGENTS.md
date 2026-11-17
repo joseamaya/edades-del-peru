@@ -50,7 +50,7 @@ described below.
 ## Authoring tools (Blender and GIMP)
 
 - Sources live in `art-src/blender`, `art-src/gimp` and `art-src/textures` (terrain source scans); `.blend`/`.xcf` are Git LFS.
-- Blender 5.2.2 is driven by `mcp-for-blender` on `localhost:9876` with safe mode; GIMP 3.2.6
+- Blender 5.3.0 is driven by `mcp-for-blender` on `localhost:9876` with safe mode; GIMP 3.2.6
   by `gimp3-mcp` on `localhost:9877`. Both are local authoring tools, **not** CI dependencies.
 - MCP client config is **project-scoped** in this repo's `opencode.json` (gitignored); do not add
   Blender/GIMP to the global opencode config. The tracked reference is

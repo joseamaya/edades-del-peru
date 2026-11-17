@@ -14,6 +14,8 @@ describe('pr evidence classifier', () => {
     expect(ids(['src/rendering/AylluSite.ts'])).toEqual(['tambotoco-pilot']);
     expect(ids(['src/model/defs/sites.ts'])).toEqual(['tambotoco-pilot']);
     expect(ids(['src/campaign/defs/missions/m_tambotoco.ts'])).toEqual(['tambotoco-pilot']);
+    expect(ids(['src/assets/architecture/tambotoco/tambotoco_cave_lod0.glb'])).toEqual(['tambotoco-pilot']);
+    expect(ids(['src/core/WorldViewDecor.ts'])).toEqual(['runtime']);
     expect(ids(['src/model/defs/units.ts'])).toEqual(['models']);
     expect(ids(['src/assets/models/caral_worker.glb'])).toEqual(['models']);
     expect(ids(['src/campaign/defs/missions.ts'])).toEqual(['campaign']);
