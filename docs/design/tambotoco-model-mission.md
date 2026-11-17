@@ -236,9 +236,10 @@ dialogue.
 - `node scripts/capture_ayllu_quality.mjs --tag=before|after [--sizes=1280x720,1600x900,1920x1080]`
   captures cave, Huanacaure, hualla, acequia, Inticancha, valley, close, wide and (after only) the built
   base at each resolution with the HUD hidden, seed 777, `fundada` and the gate open. The 2026-11-16
-  before/after sets are in `review/ayllu-quality-*` (gitignored); attach the PNGs to the PR. The same pass
-  is covered by `tests/ayllu-kit.test.ts` (surface families, phase groups, plinths) and
-  `tests/tambotoco-layout.test.ts`.
+  before/after sets are in `review/ayllu-quality-*` (gitignored); attach the PNGs to the PR. The 1600×900
+  after captures are published as `docs/media/tambotoco-quality-{cave,shrine,hualla,acequia,inticancha,built,
+  close,valley}.webp` (960×540, WebP q58). The same pass is covered by `tests/ayllu-kit.test.ts` (surface
+  families, phase groups, plinths) and `tests/tambotoco-layout.test.ts`.
 
 ## Open items
 

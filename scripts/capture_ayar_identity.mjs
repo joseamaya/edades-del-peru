@@ -8,7 +8,7 @@ import { launchChromium, withViteServer, reviewDir } from './lib.mjs';
  * Usage: node scripts/capture_ayar_identity.mjs
  * Writes review/ayar-identity-*.png and the 960x540 WebP copies under docs/media/.
  */
-const HEROES = ['manco_capac', 'mama_huaco', 'mama_ocllo', 'ayar_cachi'];
+const HEROES = ['manco_capac', 'ayar_auca', 'mama_huaco', 'ayar_cachi'];
 const WEBP_DIR = path.resolve('docs/media');
 
 async function publish(png, name) {
