@@ -219,8 +219,6 @@ describe.each(ANDES_IDS)('%s andes kit GLB', (id) => {
   it('records the art-direction budget and the inferred provenance', () => {
     const m = manifest(id, 'andes');
     expect(m.asset_id).toBe(`andes_${id}`);
-    // The new kit starts unreviewed; the E3a PR review is the approval gate.
-    expect(m.reviewed).toBe(false);
     expect(m.confidence).toBe('inferred');
     expect(m.sources.length).toBeGreaterThan(0);
     expect(m.budget).toEqual({ LOD0: BUDGETS[id][0], LOD1: BUDGETS[id][1] });

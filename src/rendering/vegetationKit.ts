@@ -32,6 +32,11 @@ import type { PropId } from '../model/defs/props';
 export type VegetationKitId =
   'huarango' | 'sauce' | 'cana_brava' | 'carrizo' | 'totora' | 'pacae' | 'molle' | 'pacay' | 'ichu';
 
+/** Kit LOD0 radii by pack; a pack owns its own policy. */
+export const KIT_LOD0_RADIUS = 45;
+export const KIT_LOD0_RADIUS_LOW = 25;
+export const KIT_LOD0_RADIUS_ANDES = 18;
+
 /** A regional kit set; the mission chooses its pack explicitly (`MapOverrides.vegetationKit`). */
 export type { VegetationPack };
 
@@ -48,8 +53,8 @@ const VEGETATION_KIT_URLS: Record<VegetationKitId, { lod0: string; lod1: string 
 };
 
 /**
- * Tree variants drawn with the kit. The game's `algarrobo` is Prosopis, i.e. the huarango. The kit
- * is authored for the Supe valley, so it only replaces trees on coastal maps (`isCoastalRegion`).
+ * Tree variants drawn with the kit. The game's `algarrobo` is Prosopis, i.e. the huarango. A mission
+ * opts into a regional pack (`MapOverrides.vegetationKit`); Caral's coastal profile does so by region.
  */
 export const KIT_TREE_VARIANTS: Partial<Record<TreeVariant, VegetationKitId>> = {
   algarrobo: 'huarango',
@@ -85,11 +90,22 @@ export interface VegetationPackDef {
   props: Partial<Record<PropId, VegetationKitId>>;
   /** Dense pack: only the near leaf cards cast, keeping the shared shadow pass inside its cap. */
   nearLeafShadows: boolean;
+  lod0Radius: { high: number; low: number };
 }
 
 export const VEGETATION_PACKS: Record<VegetationPack, VegetationPackDef> = {
-  caral: { trees: KIT_TREE_VARIANTS, props: KIT_PROPS, nearLeafShadows: false },
-  andes: { trees: KIT_TREE_VARIANTS_ANDES, props: KIT_PROPS_ANDES, nearLeafShadows: true },
+  caral: {
+    trees: KIT_TREE_VARIANTS,
+    props: KIT_PROPS,
+    nearLeafShadows: false,
+    lod0Radius: { high: KIT_LOD0_RADIUS, low: KIT_LOD0_RADIUS_LOW },
+  },
+  andes: {
+    trees: KIT_TREE_VARIANTS_ANDES,
+    props: KIT_PROPS_ANDES,
+    nearLeafShadows: true,
+    lod0Radius: { high: KIT_LOD0_RADIUS_ANDES, low: KIT_LOD0_RADIUS_ANDES },
+  },
 };
 
 export interface KitPart {

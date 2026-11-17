@@ -26,12 +26,12 @@ import { Building } from '../entities/Building';
 import { ResourceNode } from '../entities/ResourceNode';
 import { clearResourceCaches } from '../rendering/ResourceNodeView';
 import { OrderMarkers } from '../entities/OrderMarker';
-import { KIT_LOD0_RADIUS_ANDES, TreeInstances, kitLod0RadiusFor } from '../rendering/TreeInstances';
+import { TreeInstances, kitLod0RadiusFor } from '../rendering/TreeInstances';
 import { PropKitInstances } from '../rendering/PropKitInstances';
 import type { SiteCrew } from '../rendering/SiteCrew';
 import type { CaralMayorPhase } from '../model/defs/caralPhases';
 import { loadPropsKit } from '../rendering/propsKit';
-import { isCoastalRegion, loadKitModel } from '../rendering/vegetationKit';
+import { isCoastalRegion, loadKitModel, VEGETATION_PACKS } from '../rendering/vegetationKit';
 import { attachVegetationKit } from '../rendering/vegetationKitLoader';
 import { Props } from '../rendering/Props';
 import { GroundCover } from '../rendering/GroundCover';
@@ -337,10 +337,11 @@ export class Game {
   /** Regional vegetation pack of the current map; drives the kit LOD radius. */
   private vegetationPack: VegetationPack | null = null;
 
-  /** LOD0 radius for a quality preset; a dense pack keeps its shorter radius through governor steps. */
+  /** LOD0 radius for a quality preset; a pack keeps its own radius through governor steps. */
   kitLod0RadiusFor(quality: GameSettings['quality']): number {
-    if (this.vegetationPack === 'andes') return KIT_LOD0_RADIUS_ANDES;
-    return kitLod0RadiusFor(quality === 'low' || this.usesSoftwareRenderer);
+    const low = quality === 'low' || this.usesSoftwareRenderer;
+    const pack = this.vegetationPack ? VEGETATION_PACKS[this.vegetationPack] : null;
+    return pack ? (low ? pack.lod0Radius.low : pack.lod0Radius.high) : kitLod0RadiusFor(low);
   }
 
   /** True when the renderer fell back to the software-safe profile. */

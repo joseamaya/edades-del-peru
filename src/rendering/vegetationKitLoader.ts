@@ -18,8 +18,9 @@ export async function attachVegetationKit(
 ): Promise<void> {
   const jobs: Promise<void>[] = [];
   const def = pack ? VEGETATION_PACKS[pack] : null;
+  const nearLeafShadows = def?.nearLeafShadows ?? false;
   for (const [variant, id] of Object.entries(def?.trees ?? {}) as [TreeVariant, VegetationKitId][]) {
-    jobs.push(loadKitModel(id).then((model) => trees.attachKit(variant, model, def?.nearLeafShadows ?? false)));
+    jobs.push(loadKitModel(id).then((model) => trees.attachKit(variant, model, { nearLeafShadows })));
   }
   for (const [prop, id] of Object.entries(def?.props ?? KIT_PROPS) as [PropId, VegetationKitId][]) {
     jobs.push(loadKitModel(id).then((model) => props.attachKit(prop, model)));

@@ -3,10 +3,11 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MaterialTex } from './Textures';
 import { applyGeneratedPbr } from './Biomes';
 import type { TreeVariant } from '../model/defs/profiles';
-import type { KitModel } from './vegetationKit';
+import { KIT_LOD0_RADIUS, KIT_LOD0_RADIUS_LOW, type KitModel } from './vegetationKit';
 import { preserveAlphaCoverage } from './alphaCoverage';
 
 export type { TreeVariant };
+export { KIT_LOD0_RADIUS, KIT_LOD0_RADIUS_LOW } from './vegetationKit';
 
 const MAX = 700;
 const VARIANTS: TreeVariant[] = ['broad', 'needle', 'frond', 'algarrobo', 'molle', 'sauce', 'pacay'];
@@ -19,16 +20,10 @@ const _scale = new THREE.Vector3();
 const _euler = new THREE.Euler();
 const _swayM = new THREE.Matrix4();
 
-/** Instances further than this from the camera focus use the far (LOD1) kit model. */
-export const KIT_LOD0_RADIUS = 45;
-/** Highland trees are denser; keep LOD0 closer so the kit's higher triangle count stays in budget. */
-export const KIT_LOD0_RADIUS_ANDES = 18;
 /**
  * Smaller LOD0 radius on low quality / software rendering: LOD1 cards read as noisy discs up close,
  * while LOD0 near the camera costs only ~20k triangles.
  */
-export const KIT_LOD0_RADIUS_LOW = 25;
-
 export function kitLod0RadiusFor(lowQuality: boolean): number {
   return lowQuality ? KIT_LOD0_RADIUS_LOW : KIT_LOD0_RADIUS;
 }
@@ -326,9 +321,10 @@ export class TreeInstances {
    * Draw `variant` with a Blender kit model instead of the procedural trunk and cards. Instances
    * are packed every update (only visible trees are drawn) and split by distance into LOD0/LOD1.
    */
-  attachKit(variant: TreeVariant, model: KitModel, nearLeafShadows = false): void {
+  attachKit(variant: TreeVariant, model: KitModel, options: { nearLeafShadows?: boolean } = {}): void {
     // Kit models are session-cached by the loader; the instancer only owns its meshes.
     if (this.disposed || this.kits.has(variant)) return;
+    const nearLeafShadows = options.nearLeafShadows ?? false;
     const meshes = model.lods.map((parts, lod) =>
       parts.map((part) => {
         const mesh = new THREE.InstancedMesh(part.geometry, part.material, MAX);
