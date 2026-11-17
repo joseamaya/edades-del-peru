@@ -72,6 +72,7 @@ export class RTSCamera {
   private canvas: HTMLCanvasElement;
   private dragging = false;
   private dragLast = new THREE.Vector2();
+  private dragStart = new THREE.Vector2();
 
   readonly minZoom = CAMERA_CONFIG.minZoom;
   private zoomLimit: number = CAMERA_CONFIG.maxZoom;
@@ -206,6 +207,7 @@ export class RTSCamera {
   private onMouseDown = (e: MouseEvent): void => {
     if (e.button === 1) {
       this.dragging = true;
+      this.dragStart.set(e.clientX, e.clientY);
       this.dragLast.set(e.clientX, e.clientY);
       e.preventDefault();
     }
@@ -217,6 +219,8 @@ export class RTSCamera {
     const fromY = this.dragLast.y;
     this.dragLast.set(e.clientX, e.clientY);
     if (this.uiCaptured) return;
+    // A middle click with a 1 px jiggle is not a pan: keep the follow until the hand actually moves.
+    if (Math.hypot(e.clientX - this.dragStart.x, e.clientY - this.dragStart.y) < 2) return;
     // Dragging the map is a manual pan: stop following the selected unit first.
     this.followId = null;
     // The map follows the hand exactly: move the target by the ground offset between both cursor

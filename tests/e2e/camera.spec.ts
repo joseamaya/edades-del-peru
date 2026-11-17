@@ -328,11 +328,11 @@ test('F follows the selected unit and pressing it again releases the camera', as
     g.camera.moveTo(g.settings.mapSize / 2, g.settings.mapSize / 2, true);
     const releasedByMinimap = g.camera.isFollowing(u.id);
 
-    // A removed unit releases the follow instead of pinning the camera to its last position.
+    // A dead unit goes through `cleanupDead` and releases the follow instead of pinning the camera.
     tapF();
     for (let i = 0; i < 10; i++) g.update(1 / 60, i / 60);
-    g.units.delete(u.id);
-    g.update(1 / 60, 0);
+    u.dead = true;
+    for (let i = 0; i < 2; i++) g.update(1 / 60, i / 60);
     const releasedByDeath = g.camera.isFollowing(u.id);
 
     return {

@@ -79,10 +79,9 @@ export function edgeFactor(pos: number, min: number, max: number, zoneMin: numbe
  * Edge-scroll vector for a pointer at (px, py) inside `rect`: full speed inside the bands and
  * normalized so a corner is not faster than an edge.
  */
-export function edgeVector(px: number, py: number, rect: Rect, band: number | EdgeBand): Vec2 {
-  const zones: EdgeBand = typeof band === 'number' ? { sides: band, top: band, bottom: band } : band;
-  const fx = edgeFactor(px, rect.left, rect.right, zones.sides);
-  const fy = edgeFactor(py, rect.top, rect.bottom, zones.top, zones.bottom);
+export function edgeVector(px: number, py: number, rect: Rect, band: EdgeBand): Vec2 {
+  const fx = edgeFactor(px, rect.left, rect.right, band.sides);
+  const fy = edgeFactor(py, rect.top, rect.bottom, band.top, band.bottom);
   const len = Math.hypot(fx, fy);
   if (len < 1e-6) return { x: 0, y: 0 };
   const mag = Math.min(1, len);
