@@ -17,6 +17,12 @@ export type SoilKind = 'sandy' | 'loam' | 'clay' | 'peaty' | 'rocky';
 /** Tree/foliage variant (shared with the instancing manager). */
 export type TreeVariant = 'broad' | 'needle' | 'frond' | 'algarrobo' | 'molle' | 'sauce' | 'pacay';
 
+/** Low ground-cover species; the authoritative list is `GROUND_COVER_SPECIES` in `groundCover.ts`. */
+export type GroundCoverSpecies = 'grass' | 'ichu' | 'fern' | 'pebble' | 'gravel';
+
+/** Regional Blender vegetation pack; the mission chooses one explicitly. */
+export type VegetationPack = 'caral' | 'andes';
+
 /** Documented fruit shrub that replaces the generic berry bush on authored scenarios. */
 export type BerryShrubId = 'pacae';
 
@@ -103,7 +109,11 @@ export interface HistoricalMapProfile {
     variants: Partial<Record<TreeVariant, number>>;
     /** Optional multiplier on the low ground-cover budget (0 = none; default 1). */
     groundCover?: number;
+    /** Mission-scoped species mix on top of the regional weights. */
+    groundCoverWeights?: Partial<Record<GroundCoverSpecies, number>>;
   };
+  /** Regional Blender vegetation pack; omitted derives it from `region`. */
+  vegetationKit?: VegetationPack;
   /** A documented fruit shrub for the food nodes; omitted keeps the generic berry bush. */
   berryShrub?: BerryShrubId;
   /** A Blender kit outcrop for stone nodes; omitted keeps the procedural quarry. */
@@ -143,6 +153,8 @@ export interface MapOverrides {
   berryShrub?: BerryShrubId;
   quarryStyle?: QuarryStyle;
   resources?: Partial<HistoricalMapProfile['resources']>;
+  /** Regional Blender vegetation pack for this mission. */
+  vegetationKit?: HistoricalMapProfile['vegetationKit'];
   /** Replace or disable the generic cultural landscape (authored scenes). */
   culturalLandscape?: CulturalLandscapeProfile | null;
   /** Ground albedo multiplier (e.g. the warm ochre terrace of Caral). */
@@ -164,6 +176,7 @@ export function applyMapOverrides(
       ...overrides.vegetation,
       variants: { ...profile.vegetation.variants, ...overrides.vegetation?.variants },
     },
+    vegetationKit: overrides.vegetationKit ?? profile.vegetationKit,
     berryShrub: overrides.berryShrub ?? profile.berryShrub,
     quarryStyle: overrides.quarryStyle ?? profile.quarryStyle,
     resources: { ...profile.resources, ...overrides.resources },

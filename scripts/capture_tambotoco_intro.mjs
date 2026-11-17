@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
-import { launchChromium, withViteServer, cliArg } from './lib.mjs';
+import { launchChromium, withViteServer, cliArg, waitForHighlandKits } from './lib.mjs';
 
 /**
  * Capture the Tambotoco intro, chapter-card and epilogue images from the game itself (in-engine
@@ -55,6 +55,7 @@ try {
         { timeout: 20_000 },
       )
       .catch(() => {});
+    await waitForHighlandKits(page);
     await page.waitForTimeout(2500);
     await page.evaluate(
       ({ shot }) => {

@@ -31,7 +31,7 @@ import { PropKitInstances } from '../rendering/PropKitInstances';
 import type { SiteCrew } from '../rendering/SiteCrew';
 import type { CaralMayorPhase } from '../model/defs/caralPhases';
 import { loadPropsKit } from '../rendering/propsKit';
-import { isCoastalRegion, loadKitModel } from '../rendering/vegetationKit';
+import { isCoastalRegion, loadKitModel, VEGETATION_PACKS } from '../rendering/vegetationKit';
 import { attachVegetationKit } from '../rendering/vegetationKitLoader';
 import { Props } from '../rendering/Props';
 import { GroundCover } from '../rendering/GroundCover';
@@ -86,6 +86,7 @@ import {
   resolveMapProfile,
   type HistoricalMapProfile,
   type GeographicRegion,
+  type VegetationPack,
 } from '../model/defs/profiles';
 import { resolveColorGrade } from '../model/defs/grades';
 import type { SettlementPlan } from '../model/defs/settlementPlan';
@@ -333,6 +334,15 @@ export class Game {
   private readonly forceCinematic: boolean;
   /** True when the renderer is a software rasterizer (safe profile applied). */
   private softwareFallback = false;
+  /** Regional vegetation pack of the current map; drives the kit LOD radius. */
+  private vegetationPack: VegetationPack | null = null;
+
+  /** LOD0 radius for a quality preset; a pack keeps its own radius through governor steps. */
+  kitLod0RadiusFor(quality: GameSettings['quality']): number {
+    const low = quality === 'low' || this.usesSoftwareRenderer;
+    const pack = this.vegetationPack ? VEGETATION_PACKS[this.vegetationPack] : null;
+    return pack ? (low ? pack.lod0Radius.low : pack.lod0Radius.high) : kitLod0RadiusFor(low);
+  }
 
   /** True when the renderer fell back to the software-safe profile. */
   get usesSoftwareRenderer(): boolean {
@@ -630,8 +640,9 @@ export class Game {
       }
     }
     if (!this.headless) {
-      this.trees.kitLod0Radius = kitLod0RadiusFor(this.softwareFallback || this.settings.quality === 'low');
-      void attachVegetationKit(this.trees, this.props, isCoastalRegion(this.mapProfile.region));
+      this.vegetationPack = this.mapProfile.vegetationKit ?? (isCoastalRegion(this.mapProfile.region) ? 'caral' : null);
+      this.trees.kitLod0Radius = this.kitLod0RadiusFor(this.settings.quality);
+      void attachVegetationKit(this.trees, this.props, this.vegetationPack);
     }
     this.wildlife = new Wildlife(this.scene);
     this.fow = new Fow(s.mapSize, 128);

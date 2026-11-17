@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import { launchChromium, withViteServer, reviewDir, cliArg } from './lib.mjs';
+import { launchChromium, withViteServer, reviewDir, cliArg, waitForHighlandKits } from './lib.mjs';
 
 /**
  * Comparable before/after captures for the Tambotoco art pass (Plan Fase 6).
@@ -70,6 +70,7 @@ async function main() {
           { timeout: 20_000 },
         )
         .catch(() => {});
+      await waitForHighlandKits(page);
       await page.waitForTimeout(2200);
       await page.addStyleTag({ content: '#ui-root { display: none !important; }' });
       const spawnBuilt = views.some((v) => v.name === 'built');

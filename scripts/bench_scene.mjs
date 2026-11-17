@@ -1,7 +1,15 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { launchChromium, withViteServer, cliArg, useGpu, isSoftwareRenderer, readGlRenderer } from './lib.mjs';
+import {
+  launchChromium,
+  withViteServer,
+  cliArg,
+  useGpu,
+  isSoftwareRenderer,
+  readGlRenderer,
+  waitForHighlandKits,
+} from './lib.mjs';
 
 /**
  * Scene budget for a mission's opening view (docs/design/art-direction.md §11): one plain scene render
@@ -74,11 +82,12 @@ const BUDGETS = {
   // The site now merges per surface family (not one mesh for the whole 256 m phase), the blob shadows
   // are one instanced draw, and the ground cover/water grid were trimmed; the opening drops from
   // 625,811/313 (hardware, before this pass) with 4% headroom on both counters.
-  m_tambotoco: { sceneTriangles: 500_000, sceneDrawCalls: 280, kitTriangles: 0, kitDrawCalls: 0 },
+  // E3a adds the andes vegetation kit: 9,352/9 opening and 34,306/12 late; the scene caps stay unchanged.
+  m_tambotoco: { sceneTriangles: 500_000, sceneDrawCalls: 280, kitTriangles: 15_000, kitDrawCalls: 10 },
   // The founded Inticancha at victory. 2026-11-16: 651,452/352 hardware high and 608,204/346 in
   // software, under the unchanged 660k/360 cap (the old hardware run was 808,827/301: the art pass
   // trades triangles for calls but stays inside both counters).
-  m_tambotoco_late: { sceneTriangles: 660_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
+  m_tambotoco_late: { sceneTriangles: 660_000, sceneDrawCalls: 360, kitTriangles: 42_000, kitDrawCalls: 14 },
   // Lima opening: the hueste with horses and artillery. Software ~645k/624 (627–664k observed, the vegetation
   // kit varies between runs) after the PCF shadow pass and the rig silhouette rule (under the
   // 800k/860 cap, over art-direction §11's 600k/200 target). Hardware high ~874k/627 (974,062/832 with VSM
@@ -181,10 +190,7 @@ try {
           (g.settlementDressing ?? []).every((d) => d.attached !== false)
         );
       }
-      if (id === 'm_tambotoco') {
-        const site = g.landmark?.getObjectByName('ayllu_site');
-        return !!site?.userData.heroesReady;
-      }
+      if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site')?.userData.heroesReady;
       if (id === 'm9_guerra_pacifico' && !g.landmark?.getObjectByName('arica_site')) return false;
       // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
       if (!g.trees?.hasKit?.('algarrobo') || !g.trees.hasKit('sauce')) return false;
@@ -195,6 +201,7 @@ try {
     mission,
     { timeout: 90_000 },
   );
+  if (mission === 'm_tambotoco') await waitForHighlandKits(page);
   await page
     .locator('.ed-primary', { hasText: 'COMENZAR' })
     .first()
@@ -218,10 +225,10 @@ try {
       const g = window.game;
       const kit = new RegExp(kitPattern);
       // Pin the requested preset (same call as bench.mjs: it does not persist the choice) and freeze the
-      // governor, which would otherwise downgrade before the sample starts.
+      // governor, which would otherwise downgrade before the sample starts. The preset applies the
+      // pack's own LOD0 radius through Game.kitLod0RadiusFor.
       g.qualityGovernor.setUserQuality(quality);
       g.qualityGovernor.update = () => {};
-      g.trees.kitLod0Radius = quality === 'low' ? 25 : 45;
       let p = g.playerCenter(0);
       if (stage === 'camp') {
         g.setSitePhase('foundation');

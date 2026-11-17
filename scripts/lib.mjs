@@ -115,3 +115,17 @@ export function classify(r, g, b) {
   if (r > g && g > b) return 'B';
   return '?';
 }
+
+/** Resolve once Tambotoco's three highland tree kits are attached (or after `timeout`). */
+export async function waitForHighlandKits(page, timeout = 20_000) {
+  await page
+    .waitForFunction(
+      () => {
+        const trees = window.game?.trees;
+        return !!trees?.hasKit?.('molle') && !!trees?.hasKit?.('pacay') && !!trees?.hasKit?.('sauce');
+      },
+      null,
+      { timeout },
+    )
+    .catch(() => {});
+}

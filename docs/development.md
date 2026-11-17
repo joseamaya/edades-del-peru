@@ -974,9 +974,9 @@ rigged bird is added, and evaluate per-species LOD/update throttling at the 16-a
   `?fps=1` (show the debug FPS overlay, hidden by default), `?civ=ID` (force the player civilization; with
   `?period=N` it drives the geography), `?map=TYPE` (force the map type), `?intro=0` (skip the campaign
   camera flyover; `?noloop=1` skips it too) and `?cine=1` (disables the software-renderer fallback; `?low=1` wins).
-- Shared `scripts/lib.mjs` (`launchChromium`, `withViteServer`, `readPng`, `classify`). Scripts launch Vite on a
-  free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`. Run captures
-  with `?low=1`.
+- Shared `scripts/lib.mjs` (`launchChromium`, `withViteServer`, `readPng`, `classify`, `waitForHighlandKits`). Scripts
+  launch Vite on a free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`.
+  Run captures with `?low=1`.
 - `review/` holds generated PNG/JSON (gitignored); do not edit them by hand.
 - **Gameplay recordings**: `yarn record --mission=<id> --mode=clip|full` records the running game to
   `review/<mission>-<mode>.mp4` with a JSON timeline and a contact sheet. `clip` tours the opening;

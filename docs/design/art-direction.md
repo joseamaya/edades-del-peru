@@ -285,11 +285,11 @@ Targets for the default view at 1600×900:
 **Mission caps are ratified, not raised to hide a regression.** The current Tambotoco caps in
 `scripts/bench_scene.mjs` are **500k triangles / 280 draw calls** at the opening and **660k / 360** in the
 late founded settlement. The pilot must stay inside them. Prefer a neutral pass; a measured increase is
-acceptable only when it buys a visible improvement and the frame-time target still holds. E2b: opening
-**430,488 / 269** (the opening drop is culling after the cave leaves the merged cave-phase mesh; the
-cave/huaca GLBs are 2,090 triangles vs 1,196 procedural) and late **613,692 / 354** structural;
-**35 / 34 FPS** at high quality on the integrated GPU, late frames at the 360-call cap. Do not raise a cap
-to hide a regression.
+acceptable only when it buys a visible improvement and the frame-time target still holds. E3a: opening
+**422,864 / 273** (vegetation kit 9,352/9) and late **630,750 / 356** structural (kit 34,306/12);
+**34 / 31 FPS** at high quality on the integrated GPU; both the structural and frames scene counts stay
+under the caps. The complete render adds the shadow and refraction passes. Do not raise a cap to hide a
+regression.
 
 Asset budgets:
 
@@ -310,6 +310,8 @@ Implementation rules:
 - Shadow casters are limited to the silhouette; tiny eyes, crops, people and flat paving do not cast.
 - `yarn bench:check` keeps the structural budgets; `bench_scene.mjs --mission=m_tambotoco --assert` is the
   scene gate. New categories are added when a kit lands.
+- The structural bench runs on SwiftShader, which disables ground cover; `--gpu --frames` is the runtime
+  check that includes ground cover, post-processing and refraction. Read both before claiming a cap is met.
 - `yarn dist:check` keeps `dist/` under 25 MB and the entry chunk under 600 KB gzip. New assets need a size
   ledger with offsets, not just an addition.
 
