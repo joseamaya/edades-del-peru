@@ -26,7 +26,7 @@ import { Building } from '../entities/Building';
 import { ResourceNode } from '../entities/ResourceNode';
 import { clearResourceCaches } from '../rendering/ResourceNodeView';
 import { OrderMarkers } from '../entities/OrderMarker';
-import { TreeInstances, kitLod0RadiusFor } from '../rendering/TreeInstances';
+import { KIT_LOD0_RADIUS_ANDES, TreeInstances, kitLod0RadiusFor } from '../rendering/TreeInstances';
 import { PropKitInstances } from '../rendering/PropKitInstances';
 import type { SiteCrew } from '../rendering/SiteCrew';
 import type { CaralMayorPhase } from '../model/defs/caralPhases';
@@ -630,8 +630,11 @@ export class Game {
       }
     }
     if (!this.headless) {
-      this.trees.kitLod0Radius = kitLod0RadiusFor(this.softwareFallback || this.settings.quality === 'low');
-      void attachVegetationKit(this.trees, this.props, isCoastalRegion(this.mapProfile.region));
+      const vegetationPack =
+        this.mapProfile.vegetationKit ?? (isCoastalRegion(this.mapProfile.region) ? 'caral' : null);
+      const lowQuality = this.softwareFallback || this.settings.quality === 'low';
+      this.trees.kitLod0Radius = vegetationPack === 'andes' ? KIT_LOD0_RADIUS_ANDES : kitLod0RadiusFor(lowQuality);
+      void attachVegetationKit(this.trees, this.props, vegetationPack);
     }
     this.wildlife = new Wildlife(this.scene);
     this.fow = new Fow(s.mapSize, 128);

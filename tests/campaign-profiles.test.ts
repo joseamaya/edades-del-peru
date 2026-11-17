@@ -93,6 +93,17 @@ describe('campaign map profiles', () => {
     for (const mis of MISSIONS) expect(getPeriod(mis.period), mis.id).toBeDefined();
   });
 
+  it('gives Tambotoco the highland vegetation pack', () => {
+    const mis = MISSIONS.find((m) => m.id === 'm_tambotoco')!;
+    const map = applyMapOverrides(resolve(mis), mis.mapOverrides);
+    expect(map.vegetationKit).toBe('andes');
+    expect(map.vegetation.variants.molle).toBeGreaterThan(0);
+    expect(map.vegetation.variants.pacay).toBeGreaterThan(0);
+    expect(map.vegetation.variants.broad ?? 0).toBe(0);
+    expect(map.vegetation.variants.needle ?? 0).toBe(0);
+    expect(map.vegetation.groundCover).toBeGreaterThan(0.2);
+  });
+
   it('gives Caral only the kit-backed tree species and a documented fruit shrub', () => {
     const mis = MISSIONS.find((m) => m.id === 'm1_caral')!;
     const map = applyMapOverrides(resolve(mis), mis.mapOverrides);

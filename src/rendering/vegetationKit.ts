@@ -12,6 +12,12 @@ import pacaeLod0 from '../assets/vegetation/caral/caral_pacae_lod0.glb?url';
 import pacaeLod1 from '../assets/vegetation/caral/caral_pacae_lod1.glb?url';
 import totoraLod0 from '../assets/vegetation/caral/caral_totora_lod0.glb?url';
 import totoraLod1 from '../assets/vegetation/caral/caral_totora_lod1.glb?url';
+import molleLod0 from '../assets/vegetation/andes/andes_molle_lod0.glb?url';
+import molleLod1 from '../assets/vegetation/andes/andes_molle_lod1.glb?url';
+import pacayLod0 from '../assets/vegetation/andes/andes_pacay_lod0.glb?url';
+import pacayLod1 from '../assets/vegetation/andes/andes_pacay_lod1.glb?url';
+import ichuLod0 from '../assets/vegetation/andes/andes_ichu_lod0.glb?url';
+import ichuLod1 from '../assets/vegetation/andes/andes_ichu_lod1.glb?url';
 import { loadStaticGltf } from './StaticModel';
 import { preserveAlphaCoverage } from './alphaCoverage';
 import { dequantize } from './mergeStatic';
@@ -23,7 +29,11 @@ import type { PropId } from '../model/defs/props';
  * docs/design/art-direction.md §7). Each species ships a LOD0 and a LOD1 GLB; every LOD holds one
  * mesh per material (bark/stems and alpha-masked leaf or plume cards).
  */
-export type VegetationKitId = 'huarango' | 'sauce' | 'cana_brava' | 'carrizo' | 'totora' | 'pacae';
+export type VegetationKitId =
+  'huarango' | 'sauce' | 'cana_brava' | 'carrizo' | 'totora' | 'pacae' | 'molle' | 'pacay' | 'ichu';
+
+/** A regional kit set; the mission chooses its pack explicitly (`MapOverrides.vegetationKit`). */
+export type VegetationPack = 'caral' | 'andes';
 
 const VEGETATION_KIT_URLS: Record<VegetationKitId, { lod0: string; lod1: string }> = {
   huarango: { lod0: huarangoLod0, lod1: huarangoLod1 },
@@ -32,6 +42,9 @@ const VEGETATION_KIT_URLS: Record<VegetationKitId, { lod0: string; lod1: string 
   carrizo: { lod0: carrizoLod0, lod1: carrizoLod1 },
   totora: { lod0: totoraLod0, lod1: totoraLod1 },
   pacae: { lod0: pacaeLod0, lod1: pacaeLod1 },
+  molle: { lod0: molleLod0, lod1: molleLod1 },
+  pacay: { lod0: pacayLod0, lod1: pacayLod1 },
+  ichu: { lod0: ichuLod0, lod1: ichuLod1 },
 };
 
 /**
@@ -43,6 +56,13 @@ export const KIT_TREE_VARIANTS: Partial<Record<TreeVariant, VegetationKitId>> = 
   sauce: 'sauce',
 };
 
+/** Tambotoco's highland valley: the two valley trees plus the shared riverbank willow. */
+export const KIT_TREE_VARIANTS_ANDES: Partial<Record<TreeVariant, VegetationKitId>> = {
+  molle: 'molle',
+  pacay: 'pacay',
+  sauce: 'sauce',
+};
+
 export function isCoastalRegion(region: GeographicRegion): boolean {
   return region === 'north_coast' || region === 'central_coast' || region === 'south_coast';
 }
@@ -51,6 +71,12 @@ export function isCoastalRegion(region: GeographicRegion): boolean {
 export const KIT_PROPS: Partial<Record<PropId, VegetationKitId>> = {
   totora: 'totora',
   cana_brava: 'cana_brava',
+  carrizo: 'carrizo',
+};
+
+/** Highland pack: the shared reeds; the ichu tufts stay in the procedural ground-cover instancer. */
+export const KIT_PROPS_ANDES: Partial<Record<PropId, VegetationKitId>> = {
+  totora: 'totora',
   carrizo: 'carrizo',
 };
 

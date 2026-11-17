@@ -53,9 +53,15 @@ export const mTambotoco: MissionDef = {
   map: { seed: 1200, type: 'andes', size: 256 },
   mapOverrides: {
     culturalLandscape: TAMBOTOCO_LANDSCAPE,
-    // Tambotoco is a highland valley, not a wet broadleaf forest: fewer, more varied groves and a
-    // drier ground cover. The wood budget stays ample (18-20 clusters of 20+ trees).
-    vegetation: { density: 0.22, groundCover: 0.2, variants: { broad: 0.45, needle: 0.2, molle: 0.2, sauce: 0.15 } },
+    // Tambotoco is a highland valley: the andes pack replaces the generic broad/needle trees with
+    // molle and pacay, keeps the riverbank willow and raises the puna ground cover.
+    vegetationKit: 'andes',
+    vegetation: {
+      density: 0.22,
+      groundCover: 0.7,
+      groundCoverWeights: { grass: 0.7, ichu: 1.6, fern: 0, pebble: 0.15, gravel: 0.15 },
+      variants: { molle: 0.55, pacay: 0.25, sauce: 0.2, broad: 0, needle: 0 },
+    },
     resources: { tree: 0.22 },
   },
   layout: {

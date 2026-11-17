@@ -39,6 +39,7 @@ const VIEWS = {
   inticancha: { x: 168, z: 190, h: 34 },
   built: { x: 168, z: 190, h: 44, built: true },
   close: { x: 138, z: 163, h: 13 },
+  trees: { x: 202, z: 228, h: 18 },
   wide: { x: 168, z: 190, h: 90 },
   hero: { hero: true },
 };
@@ -92,6 +93,16 @@ async function main() {
       await page
         .waitForFunction(
           () => window.game?.landmark?.getObjectByName('ayllu_site')?.userData.heroesReady === true,
+          null,
+          { timeout: 20_000 },
+        )
+        .catch(() => {});
+      await page
+        .waitForFunction(
+          () => {
+            const trees = window.game?.trees;
+            return !!trees?.hasKit?.('molle') && !!trees?.hasKit?.('pacay') && !!trees?.hasKit?.('sauce');
+          },
           null,
           { timeout: 20_000 },
         )

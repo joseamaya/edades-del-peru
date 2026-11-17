@@ -10,6 +10,8 @@ export type { TreeVariant };
 
 const MAX = 700;
 const VARIANTS: TreeVariant[] = ['broad', 'needle', 'frond', 'algarrobo', 'molle', 'sauce', 'pacay'];
+/** Kits whose near canopy is the only shadow caster (dense pack, shared scene cap). */
+const HIGHLAND_KIT_IDS: ReadonlySet<KitModel['id']> = new Set(['molle', 'pacay', 'ichu']);
 const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
 const _m = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
@@ -21,6 +23,8 @@ const _swayM = new THREE.Matrix4();
 
 /** Instances further than this from the camera focus use the far (LOD1) kit model. */
 export const KIT_LOD0_RADIUS = 45;
+/** Highland trees are denser; keep LOD0 closer so the kit's higher triangle count stays in budget. */
+export const KIT_LOD0_RADIUS_ANDES = 18;
 /**
  * Smaller LOD0 radius on low quality / software rendering: LOD1 cards read as noisy discs up close,
  * while LOD0 near the camera costs only ~20k triangles.
@@ -331,7 +335,9 @@ export class TreeInstances {
       parts.map((part) => {
         const mesh = new THREE.InstancedMesh(part.geometry, part.material, MAX);
         mesh.count = 0;
-        mesh.castShadow = true;
+        // The highland pack is denser; only its near leaf cards cast. That keeps the shadow pass
+        // inside the scene cap while the canopy still anchors each tree. Caral kits are unchanged.
+        mesh.castShadow = HIGHLAND_KIT_IDS.has(model.id) ? part.leaf && lod === 0 : true;
         mesh.receiveShadow = !part.leaf;
         mesh.frustumCulled = false;
         mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -379,6 +385,8 @@ export class TreeInstances {
       kit.meshes.forEach((parts, lod) => {
         for (const mesh of parts) {
           mesh.count = kit.slots[lod].length;
+          // Hide an unused LOD outright: count 0 still sets up its program and counts as a draw call.
+          mesh.visible = mesh.count > 0;
           // Upload only the packed instances, not the whole MAX-sized buffer.
           mesh.instanceMatrix.clearUpdateRanges();
           mesh.instanceMatrix.addUpdateRange(0, mesh.count * 16);

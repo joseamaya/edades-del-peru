@@ -156,6 +156,43 @@ slot is absent (offline / without assets).
 - **Evidence**: `node scripts/shots_evidence.mjs --scene=caral-pacae --out=review/evidence/caral-pacae`
   captures a close-up and the RTS view; the two frames compose `docs/media/caral-pacae.webp`.
 
+### Tambotoco highland vegetation kit (molle, pacay, ichu)
+
+- **Location**: `src/assets/vegetation/andes/andes_{molle,pacay,ichu}_lod{0,1}.glb`.
+- **Source**: generated in Blender 5.3.0 by `scripts/blender/build_andes_vegetation_kit.py` (shared
+  bmesh helpers in `scripts/blender/build_caral_slice.py`); scene
+  `art-src/blender/scenes/tambotoco_vegetation_kit.blend` (Git LFS). Per-species manifests live in
+  `art-src/blender/exports/tambotoco/vegetation/`; game copies were meshopt-compressed with
+  `yarn art:models`.
+- **Content**: project-owned procedural geometry and a generated leaf-cluster atlas; no third-party scans
+  or textures. Molle LOD0 1,362 / LOD1 360 triangles; pacay 1,048 / 316; ichu 144 / 42. Total game copies
+  ≈216 KB.
+- **Confidence**: **inferred**. Molle (_Schinus molle_), pacay (_Inga feuillei_) and ichu are plausible
+  Andean-valley species; their exact forms, leaf atlas and placement are a game reconstruction, not a
+  botanical survey or a documented individual.
+- **Runtime**: `MapOverrides.vegetationKit: 'andes'` in `m_tambotoco` selects the highland tree set
+  (`molle`, `pacay`, and the shared Caral willow for `sauce`); the loader is `vegetationKitLoader.ts`.
+  The ichu GLB is built and budget-verified, but the visible ground cover still uses the procedural
+  `GroundCover` ichu tufts; the generic `shrub` prop remains procedural on this map.
+- **SHA-256**:
+  - `andes_molle_lod0.glb` `f0491a78c5398fa9a3c229bef015b17232825f77376b6226470a8fe26d6024dc` (67 KB)
+  - `andes_molle_lod1.glb` `b6732848e50450e49144c62c2aca8a52d67c975b0b1a3c3fb2c9e40eafbd4a33` (46 KB)
+  - `andes_pacay_lod0.glb` `506f359fc73a033ec1c7971418cc2c5b9b2b928834ebd0ea3a7f2c6f64882c39` (55 KB)
+  - `andes_pacay_lod1.glb` `8390f97b433f4c68e8d325af5b123ca2b927cd80b4199d2274319201db5d9d91` (40 KB)
+  - `andes_ichu_lod0.glb` `50a1e9e561f1f97914e62622d6eb51ddae18a7f077f9fb58ceb11db8104f0f2b` (5 KB)
+  - `andes_ichu_lod1.glb` `851c1d4f7de916caeabae3cadc06e188daa276c2740dc7ca75f254622c81c0c4` (3 KB)
+
+### Tambotoco E3a highland vegetation captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e3a-wide-{before,after}.webp` and
+  `docs/media/tambotoco-e3a-trees-after.webp`, 960x540 WebP q58, ~70 KB.
+- **Source**: captured from the game by `scripts/capture_art_pilot.mjs` at 1600x900, seed 777, HUD hidden,
+  site at `fundada`, fog of war off. The `before` wide is the E2b scene; the `after` is the andes kit.
+  Regenerate with `yarn art:pilot --tag=e3a6 --quality=neutral --sizes=1600x900 --views=wide,trees,hualla`.
+- **Content**: in-engine shots of the game's own scene. The highland tree kit is project-owned and
+  `confidence: inferred`; the ichu ground cover is procedural.
+- **Review**: no human art-review gate applies to in-engine captures; the kit is reviewed through this PR.
+
 ### Caral fauna kit (deer, riparian bird)
 
 - **Location**: `src/assets/fauna/caral/caral_deer.glb` and `caral_bird.glb`.

@@ -1,0 +1,77 @@
+{
+  "asset_id": "andes_molle",
+  "source_scene": "scenes/tambotoco_vegetation_kit.blend",
+  "script": "scripts/blender/build_andes_vegetation_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "trunk base at origin",
+  "collision": "none in the GLB; visual-only vegetation",
+  "confidence": "inferred",
+  "sources": [
+    "docs/design/tambotoco-art-pilot.md",
+    "docs/historia/mapas.md",
+    "docs/historia/arquitectura.md"
+  ],
+  "budget": {
+    "LOD0": 1500,
+    "LOD1": 400
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 1362,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Andes_Bark",
+        "MAT-Andes_MolleLeaf"
+      ],
+      "bounds": {
+        "min": [
+          -2.6737,
+          -2.9513,
+          -0.128
+        ],
+        "max": [
+          3.384,
+          3.5169,
+          5.4425
+        ],
+        "size": [
+          6.0577,
+          6.4683,
+          5.5705
+        ]
+      },
+      "file": "andes_molle_lod0.glb",
+      "bytes": 156964
+    },
+    "LOD1": {
+      "triangles": 360,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Andes_Bark",
+        "MAT-Andes_MolleLeaf"
+      ],
+      "bounds": {
+        "min": [
+          -3.1056,
+          -3.3132,
+          -0.1171
+        ],
+        "max": [
+          3.6265,
+          3.8144,
+          5.874
+        ],
+        "size": [
+          6.7322,
+          7.1276,
+          5.9912
+        ]
+      },
+      "file": "andes_molle_lod1.glb",
+      "bytes": 76412
+    }
+  }
+}

@@ -55,6 +55,16 @@ try {
         { timeout: 20_000 },
       )
       .catch(() => {});
+    await page
+      .waitForFunction(
+        () => {
+          const trees = window.game?.trees;
+          return !!trees?.hasKit?.('molle') && !!trees?.hasKit?.('pacay') && !!trees?.hasKit?.('sauce');
+        },
+        null,
+        { timeout: 20_000 },
+      )
+      .catch(() => {});
     await page.waitForTimeout(2500);
     await page.evaluate(
       ({ shot }) => {

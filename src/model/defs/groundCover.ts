@@ -106,7 +106,10 @@ export function planGroundCover(
   query: GroundCoverQuery,
 ): GroundCoverPlacement[] {
   const rng = new RNG((seed * 2654435761 + 0x7f4a7c15) >>> 0);
-  const region = REGION_WEIGHTS[profile.region];
+  const region = { ...REGION_WEIGHTS[profile.region] };
+  for (const [id, value] of Object.entries(profile.vegetation.groundCoverWeights ?? {})) {
+    if (value !== undefined) region[id as GroundCoverSpecies] = value;
+  }
   const vegetation = profile.vegetation.density;
   const target = Math.max(0, Math.floor(count));
   const out: GroundCoverPlacement[] = [];
