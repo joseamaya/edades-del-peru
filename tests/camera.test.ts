@@ -17,8 +17,10 @@ import {
   CAMERA_PITCH,
 } from '../src/core/cameraMath';
 import { CAMERA_SPEED_SCALE } from '../src/core/Config';
+import { CAMERA_CONFIG, type EdgeBand } from '../src/core/cameraMath';
 
 const rect = { left: 0, top: 0, right: 800, bottom: 600 };
+const fullBand = (px: number): EdgeBand => ({ sides: px, top: px, bottom: px });
 const mag = (v: { x: number; y: number }): number => Math.hypot(v.x, v.y);
 
 describe('camera keyboard pan', () => {
@@ -46,35 +48,44 @@ describe('camera keyboard pan', () => {
 
 describe('edge scrolling', () => {
   it('is zero outside the edge zone', () => {
-    expect(edgeVector(400, 300, rect, 36)).toEqual({ x: 0, y: 0 });
+    expect(edgeVector(400, 300, rect, fullBand(36))).toEqual({ x: 0, y: 0 });
   });
 
   it('is non-zero inside the zone', () => {
-    const v = edgeVector(10, 300, rect, 36); // left edge
+    const v = edgeVector(10, 300, rect, fullBand(36)); // left edge
     expect(v.x).toBeLessThan(0);
     expect(Math.abs(v.y)).toBeLessThan(1e-6);
   });
 
-  it('grows toward the border', () => {
-    const near = edgeVector(rect.left + 30, 300, rect, 36);
-    const closer = edgeVector(rect.left + 10, 300, rect, 36);
-    const at = edgeVector(rect.left, 300, rect, 36);
-    expect(Math.abs(near.x)).toBeLessThan(Math.abs(closer.x));
-    expect(Math.abs(closer.x)).toBeLessThanOrEqual(Math.abs(at.x));
+  it('is at full speed anywhere inside the zone, not only at the border pixel', () => {
+    const near = edgeVector(rect.left + 16, 300, rect, fullBand(18));
+    const at = edgeVector(rect.left, 300, rect, fullBand(18));
+    expect(Math.abs(near.x)).toBeCloseTo(1, 6);
     expect(Math.abs(at.x)).toBeCloseTo(1, 6);
   });
 
+  it('is zero just outside the zone', () => {
+    expect(edgeVector(rect.left + 22, 300, rect, fullBand(18))).toEqual({ x: 0, y: 0 });
+  });
+
+  it('keeps the top band narrower than the sides', () => {
+    expect(edgeVector(400, rect.top + 12, rect, CAMERA_CONFIG.edgeBand)).toEqual({ x: 0, y: 0 });
+    expect(Math.abs(edgeVector(rect.left + 12, 300, rect, CAMERA_CONFIG.edgeBand).x)).toBeCloseTo(1, 6);
+  });
+
   it('normalizes a corner (not faster than an edge)', () => {
-    const corner = edgeVector(rect.left, rect.top, rect, 36);
-    const edge = edgeVector(rect.left, 300, rect, 36);
+    const corner = edgeVector(rect.left, rect.top, rect, fullBand(36));
+    const edge = edgeVector(rect.left, 300, rect, fullBand(36));
     expect(mag(corner)).toBeCloseTo(1, 6);
     expect(mag(edge)).toBeCloseTo(1, 6);
   });
 
-  it('clamps the progressive factor to [-1, 1]', () => {
+  it('returns full speed inside the zone and zero outside', () => {
     expect(edgeFactor(-100, 0, 800, 36)).toBe(-1);
     expect(edgeFactor(900, 0, 800, 36)).toBe(1);
     expect(edgeFactor(400, 0, 800, 36)).toBe(0);
+    expect(edgeFactor(10, 0, 800, 18)).toBe(-1);
+    expect(edgeFactor(25, 0, 800, 18)).toBe(0);
   });
 });
 
@@ -253,7 +264,7 @@ describe('pan direction matches the camera basis', () => {
 
   it('edge at the bottom pans toward the bottom of the screen', () => {
     for (const yaw of [0, Math.PI / 4, 1.2]) {
-      const v = edgeVector(400, 600, rect, 36); // bottom edge -> (0, +1)
+      const v = edgeVector(400, 600, rect, fullBand(36)); // bottom edge -> (0, +1)
       const w = rotateToWorld(v.x, v.y, yaw);
       // mostly backward (-forward), not sideways
       expect(dot(w, forward(yaw))).toBeLessThan(-0.9);

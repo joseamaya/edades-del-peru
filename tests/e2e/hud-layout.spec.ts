@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { MISSIONS } from '../../src/campaign/defs/campaign';
+import { CAMERA_CONFIG } from '../../src/core/cameraMath';
 
 /**
  * Geometric check of the in-match HUD: the persistent panels must never cover each other at the
@@ -221,6 +222,28 @@ function violations(state: State): string[] {
   return found;
 }
 
+/** Side/bottom panels must leave the camera's edge-scroll band clickable. */
+function bandViolations(state: State, width: number, height: number): string[] {
+  const gap = CAMERA_CONFIG.edgeBand.sides;
+  const found: string[] = [];
+  for (const id of [
+    'ed-bottom',
+    'ed-minimap-wrap',
+    'ed-objectives',
+    'ed-tutorial',
+    'ed-help',
+    'ed-help-open',
+    'ed-dialogue',
+  ]) {
+    const box = state[id];
+    if (!box) continue;
+    if (box.x < gap - 1) found.push(`${id} starts at x=${box.x}`);
+    if (box.x + box.w > width - gap + 1) found.push(`${id} ends at x=${box.x + box.w}`);
+    if (box.y + box.h > height - gap + 1) found.push(`${id} ends at y=${box.y + box.h}`);
+  }
+  return found;
+}
+
 /** The objectives panel must end above the command bar. */
 function objectivesFit(state: State): string[] {
   const found: string[] = [];
@@ -287,6 +310,15 @@ for (const { width, height, missions } of RESOLUTIONS) {
         expect(violations(snap.helpOpen), 'shortcuts open over a long objective list').toEqual([]);
         expect(objectivesFit(snap.archive), 'expanded objectives reach the command bar').toEqual([]);
         expect(objectivesFit(snap.helpOpen), 'objectives reach the command bar with the shortcuts open').toEqual([]);
+
+        for (const [label, state] of [
+          ['start', snap.initial],
+          ['dialogue', snap.dialogue],
+          ['build', snap.build],
+          ['shortcuts open', snap.helpOpen],
+        ] as const) {
+          expect(bandViolations(state, width, height), `edge band clear (${label})`).toEqual([]);
+        }
 
         // The real Act IV goal stays wholly visible, even with the archive open.
         const fit = await page.evaluate(() => {
@@ -658,4 +690,24 @@ test.describe('final screen layering', () => {
       expect(errors).toEqual([]);
     },
   );
+});
+
+test('the transient HUD keeps clear of the camera band', async ({ page }) => {
+  await page.goto('/?play=1&seed=777&fog=0&low=1&intro=0');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const root = document.getElementById('ui-root')!;
+    const gap = Number.parseFloat(getComputedStyle(root).getPropertyValue('--bar-gap'));
+    const alerts = document.getElementById('ed-alerts');
+    const fps = document.getElementById('ed-fps');
+    return {
+      gap,
+      alertsLeft: alerts ? Number.parseFloat(getComputedStyle(alerts).left) : null,
+      fpsRight: fps ? Number.parseFloat(getComputedStyle(fps).right) : null,
+    };
+  });
+  expect(out.alertsLeft).toBeGreaterThanOrEqual(out.gap);
+  expect(out.fpsRight).toBeGreaterThanOrEqual(out.gap);
 });

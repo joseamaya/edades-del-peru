@@ -59,7 +59,26 @@ export class InputController {
     window.addEventListener('mousemove', this.onWindowMouseMove);
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
+    window.addEventListener('blur', this.onBlur);
+    document.addEventListener('visibilitychange', this.onVisibility);
   }
+
+  /**
+   * A lost `mouseup` (alt-tab, releasing outside the window) used to leave a drag or a wall line
+   * armed. Drop the held buttons when the page loses focus.
+   */
+  private onBlur = (): void => {
+    this.leftDown = false;
+    this.leftMoved = false;
+    this.rightDown = false;
+    this.selectionStart = null;
+    this.wallDragStart = null;
+    this.game.hud?.hideSelectionBox();
+  };
+
+  private onVisibility = (): void => {
+    if (document.hidden) this.onBlur();
+  };
 
   // --- input ---
 
@@ -910,7 +929,17 @@ export class InputController {
     if (k === this.key('followUnit')) {
       if (this.game.selectedUnits.length > 0) {
         const u = this.game.units.get(this.game.selectedUnits[0]);
-        if (u) this.game.camera.follow(u.id);
+        if (u) {
+          if (this.game.camera.isFollowing(u.id)) {
+            this.game.camera.follow(null);
+            this.game.hud?.showToast(t('hud.camera.released'), 'info');
+          } else {
+            this.game.camera.follow(u.id);
+            const owner = this.game.players[u.owner];
+            const name = unitDisplayName(u.kind, owner?.civ, u.era);
+            this.game.hud?.showToast(t('hud.camera.following', { unit: name }), 'info');
+          }
+        }
       }
     }
     if (k === this.key('lastBattle')) {
@@ -1016,6 +1045,8 @@ export class InputController {
     window.removeEventListener('mousemove', this.onWindowMouseMove);
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
+    window.removeEventListener('blur', this.onBlur);
+    document.removeEventListener('visibilitychange', this.onVisibility);
     if (this.hoverRaf) cancelAnimationFrame(this.hoverRaf);
   }
 }
