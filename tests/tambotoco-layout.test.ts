@@ -57,6 +57,17 @@ describe('Tambotoco authored huts', () => {
     }
   });
 
+  it('gives the stream a soft bank and keeps the ford dry', () => {
+    const water = TERRAIN.waterLevel;
+    expect(TERRAIN.getHeight(155, 214)).toBeLessThan(water - 0.8);
+    const lowBank = TERRAIN.getHeight(150.5, 214);
+    const upperBank = TERRAIN.getHeight(147.5, 214);
+    expect(lowBank).toBeGreaterThan(water + 0.2);
+    // The bank climbs over ~3 m instead of cutting straight to the grass.
+    expect(upperBank - lowBank).toBeLessThan(1.8);
+    expect(TERRAIN.getHeight(153.47, 190)).toBeGreaterThan(water + 0.4);
+  });
+
   it('does not overlap two hut footprints', () => {
     const all = huts();
     for (let i = 0; i < all.length; i++) {

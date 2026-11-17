@@ -1025,7 +1025,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       heights: TAMBOTOCO_HEIGHTMAP,
       ground: { size: TAMBOTOCO_GROUND_SIZE, weights: TAMBOTOCO_GROUND },
       river: { path: TAMBOTOCO_STREAM_PATH, halfWidth: TAMBOTOCO_STREAM_HALF_WIDTH },
-      fords: [{ z: 190, halfWidth: 10 }],
+      fords: [{ z: 190, halfWidth: 6 }],
     },
     pathCellSize: 1,
     phases: { phases: ['cave', 'huanacaure', 'inticancha', 'fundada'], initial: 'cave' },

@@ -100,10 +100,16 @@ def height(x: float, z: float) -> float:
     h += north + east + south + west
 
     if z > 142.0:
-        channel = 1.0 - smoothstep(2.2, 6.0, abs(x - stream_x(z)))
-        crossing = 1.0 - smoothstep(8.0, 14.0, abs(z - 190.0))
-        bed = 0.9 + crossing * 2.2
-        h = h * (1.0 - channel) + bed * channel
+        d = abs(x - stream_x(z))
+        # A soft bank: the bed keeps its depth, then a shallow gravel shelf rises to just under
+        # the waterline before the ground blends back into grass. The wider blend removes the
+        # hard grass-to-water cut without making the channel wadeable.
+        channel = 1.0 - smoothstep(2.4, 7.5, d)
+        shelf = smoothstep(3.2, 5.8, d)
+        crossing = 1.0 - smoothstep(5.0, 9.5, abs(z - 190.0))
+        bed = 0.9 + crossing * 2.0
+        bank = WATER - 0.1 + 0.9 * shelf
+        h = h * (1.0 - channel) + (bed * (1.0 - shelf) + bank * shelf) * channel
 
     cave = 1.0 - smoothstep(7.0, 14.0, math.hypot(x - CAVE[0], z - CAVE[1]))
     h = h * (1.0 - cave) + 6.0 * cave
@@ -126,6 +132,15 @@ def ground(x: float, z: float) -> tuple[float, float, float, float]:
     dirt = road * 0.55 + cave * 0.5 + hill * 0.25
     sand = (1.0 - valley) * 0.55
     rock = high * 1.15 + hill * 0.45 + cave * 0.3
+    if z > 142.0:
+        d = abs(x - stream_x(z))
+        # Wet gravel margin along the shelf and a lighter bar at the ford.
+        bank = 1.0 - smoothstep(2.8, 8.0, d)
+        bar = (1.0 - smoothstep(3.0, 7.0, abs(z - 190.0))) * (1.0 - smoothstep(8.0, 12.0, d))
+        sand += bank * 0.5 + bar * 0.9
+        rock += bank * 0.08 + bar * 0.5
+        dirt += bar * 0.2
+        grass *= 1.0 - bank * 0.45 - bar * 0.8
     grass *= 1.0 - high
     under = 1.0 - smoothstep(WATER - 0.4, WATER + 0.1, h)
     grass = grass * (1.0 - under) + under * 0.8

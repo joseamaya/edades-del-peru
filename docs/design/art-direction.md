@@ -285,9 +285,9 @@ Targets for the default view at 1600×900:
 **Mission caps are ratified, not raised to hide a regression.** The current Tambotoco caps in
 `scripts/bench_scene.mjs` are **500k triangles / 280 draw calls** at the opening and **660k / 360** in the
 late founded settlement. The pilot must stay inside them. Prefer a neutral pass; a measured increase is
-acceptable only when it buys a visible improvement and the frame-time target still holds. E3a: opening
-**422,864 / 273** (vegetation kit 9,352/9) and late **630,750 / 356** structural (kit 34,306/12);
-**34 / 31 FPS** at high quality on the integrated GPU; both the structural and frames scene counts stay
+acceptable only when it buys a visible improvement and the frame-time target still holds. E3b: opening
+**424,392 / 268** (vegetation kit 9,352/9) and late **632,522 / 356** structural (kit 34,306/12);
+**40 / 31 FPS** at high quality on the integrated GPU; both the structural and frames scene counts stay
 under the caps. The complete render adds the shadow and refraction passes. Do not raise a cap to hide a
 regression.
 
