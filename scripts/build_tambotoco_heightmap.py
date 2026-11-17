@@ -128,14 +128,14 @@ def ground(x: float, z: float) -> tuple[float, float, float, float]:
     rock = high * 1.15 + hill * 0.45 + cave * 0.3
     if z > 142.0:
         d = abs(x - stream_x(z))
-        # Wet gravel margin along the shelf and a lighter bar at the ford.
-        # `bank` is the wet margin here; `shelf` in height() is the raised bed profile.
-        wetMargin = 1.0 - smoothstep(2.8, 8.0, d)
+        # Wet sand margin on the bank and a pale gravel bar at the ford. The paint also feeds
+        # `treeless`/resource selection, so these weights carry the REPLAY_VERSION bump.
         bar = (1.0 - smoothstep(3.0, 7.0, abs(z - 190.0))) * (1.0 - smoothstep(8.0, 12.0, d))
-        sand += wetMargin * 0.8 + bar * 0.9
-        rock += wetMargin * 0.08 + bar * 0.5
+        wetMargin = (1.0 - smoothstep(2.8, 8.0, d)) * (1.0 - bar)
+        sand += wetMargin * 0.9 + bar * 0.9
+        rock += wetMargin * 0.08 + bar * 0.4
         dirt += bar * 0.2
-        grass *= 1.0 - wetMargin * 0.75 - bar * 0.8
+        grass *= 1.0 - wetMargin * 0.85 - bar * 0.8
     grass *= 1.0 - high
     under = 1.0 - smoothstep(WATER - 0.4, WATER + 0.1, h)
     grass = grass * (1.0 - under) + under * 0.8

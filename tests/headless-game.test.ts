@@ -173,7 +173,7 @@ describe('Tambotoco stream ford', () => {
     expect(game.terrain.isWater(153.5, 190), 'the bar is dry').toBe(false);
     expect(game.pathfinder.isWalkable(153.5, 190), 'the bar is crossable').toBe(true);
     // The wide dry bar reaches the field edge; the deep channel south of it stays water.
-    expect(game.isFordAt(153.5, 196)).toBe(true);
+    expect(game.isFordAt(153.5, 198), 'the authored 10 m band is kept').toBe(true);
     expect(game.isFordAt(153.5, 205)).toBe(false);
     expect(game.pathfinder.isWalkable(153.5, 205), 'deep water is not').toBe(false);
     const route = game.pathfinder.pathfind(148, 190, 160, 190);

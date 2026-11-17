@@ -1187,10 +1187,10 @@ export class WorldViewDecor {
   private planAylluStones(): PropPlacement[] {
     const rng = new RNG(this.game.settings.mapSeed * AYLLU_STONE_SEED + 7);
     const out: PropPlacement[] = [];
-    const tryStone = (x: number, z: number, scale: number, allowReserved = false): void => {
+    const tryStone = (x: number, z: number, scale: number): void => {
       if (out.length >= AYLLU_STONE_LIMIT) return;
       if (this.game.terrain.isWater(x, z)) return;
-      if (!allowReserved && this.game.isReserved(x, z)) return;
+      if (this.game.isReserved(x, z)) return;
       if (out.some((p) => Math.hypot(p.x - x, p.z - z) < AYLLU_STONE_MIN_GAP)) return;
       out.push({ id: 'rock', x, z, rotY: rng.range(0, Math.PI * 2), scale });
     };
@@ -1204,7 +1204,6 @@ export class WorldViewDecor {
       jitter: number,
       chance: number,
       scale: readonly [number, number],
-      allowReserved = false,
     ): void => {
       const len = Math.hypot(bx - ax, bz - az);
       if (len < 1) return;
@@ -1216,45 +1215,22 @@ export class WorldViewDecor {
         for (const side of [-1, 1]) {
           if (!rng.chance(chance)) continue;
           const off = offset + rng.range(0, jitter);
-          tryStone(
-            ax + (bx - ax) * t + nx * off * side,
-            az + (bz - az) * t + nz * off * side,
-            rng.range(...scale),
-            allowReserved,
-          );
+          tryStone(ax + (bx - ax) * t + nx * off * side, az + (bz - az) * t + nz * off * side, rng.range(...scale));
         }
       }
     };
-    const river = this.game.siteDef?.heightField?.river;
-    const ford = this.game.siteDef?.heightField?.fords?.[0];
-    // The ford marker goes first so the per-seed cap never starves it.
-    if (river && ford) {
-      const point = river.path.reduce(
-        (best, p) => (Math.abs(p[1] - ford.z) < Math.abs(best[1] - ford.z) ? p : best),
-        river.path[0]!,
-      );
-      for (const side of [-1, 1]) {
-        for (let k = 0; k < 3; k++) {
-          tryStone(
-            point[0] + side * (river.halfWidth + 0.45 + k * 0.3),
-            ford.z - 2 + k * 2,
-            rng.range(0.45, 0.7),
-            true,
-          );
-        }
-      }
-    }
     for (const road of this.game.missionLayout?.roads ?? []) {
       if (!road.stonePath) continue;
       const a = this.game.resolveMissionPoint(road.from);
       const b = this.game.resolveMissionPoint(road.to);
-      scatter(a.x, a.z, b.x, b.z, 10, (road.width ?? 4) / 2 + 0.8, 1.2, 0.55, [0.45, 0.75], true);
+      scatter(a.x, a.z, b.x, b.z, 10, (road.width ?? 4) / 2 + 0.8, 1.2, 0.55, [0.45, 0.75]);
     }
+    const river = this.game.siteDef?.heightField?.river;
     if (river) {
       for (let i = 0; i < river.path.length - 1; i++) {
         const [ax, az] = river.path[i];
         const [bx, bz] = river.path[i + 1];
-        scatter(ax, az, bx, bz, 12, river.halfWidth + 0.7, 1.4, 0.5, [0.5, 1.0]);
+        scatter(ax, az, bx, bz, 4, river.halfWidth + 0.7, 1.4, 0.5, [0.5, 1.0]);
       }
     }
     return out;
