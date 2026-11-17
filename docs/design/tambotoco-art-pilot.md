@@ -63,14 +63,19 @@ storehouse, a qollqa, a field, the canal, the stream, people, llamas and vegetat
 
 | Element | Coordinates (game units) | Capture view |
 | --- | --- | --- |
-| Hamlet centre | `TAMBOTOCO_VILLAGES[0]`: x 138, z 162 | `hualla` (136, 166, h 24) |
+| Hamlet centre | `TAMBOTOCO_VILLAGES[0]`: x 138, z 162 | `hualla` (144, 170, h 50; reference wide) |
 | Huts | 134,160 · 142,163 · 138,167 (storehouse) · 132,166 (shed) | `close` (138, 163, h 13) |
 | Field | 131, 175 (10 × 7, 5 rows) | `hualla` |
-| Acequia / bridge | 166, 178 · bridge 186, 177 | `acequia` (166, 178, h 30) |
+| Acequia / bridge | 166, 178 · bridge 186, 177 | `acequia` (166, 178, h 36) |
 | Hero staging | flat ground near 138, 157 | `hero` (low camera, Manco + worker) |
 
 **Secondary: Inticancha `fundada`** (168, 190). It is the reward moment and the test for the plaza, canchas
-and ring houses, but it is not the first fix: its geometry depends on the architecture pass.
+and ring houses, but it is not the first fix: its geometry depends on the architecture pass. Capture view:
+`inticancha` (168, 190, h 38).
+
+The harness aims at the ground under each view: the RTS camera looks at sea level, so it moves the target
+`ground / tan(pitch)` short of the authored point (the same compensation the mission camera cues use). Without
+it an elevated hamlet sits at the top edge of the frame.
 
 The pilot does not move the mission layout, objectives or economy. All coordinates come from
 `src/model/defs/tambotocoLayout.ts`.
@@ -139,6 +144,10 @@ yarn art:pilot --tag=before --quality=neutral --sizes=1280x720,1600x900,1920x108
 
 # Player-facing look: the player's quality preset and post-processing, fog off
 yarn art:pilot --tag=after --quality=final --sizes=1280x720,1600x900,1920x1080
+
+# E6 review set: the three cameras (hualla, acequia, inticancha) at three resolutions
+yarn art:pilot --tag=e6 --quality=neutral --sizes=1280x720,1600x900,1920x1080 --views=hualla,acequia,inticancha
+yarn art:pilot --tag=e6 --quality=final --sizes=1280x720,1600x900,1920x1080 --views=hualla,acequia,inticancha
 ```
 
 Fog of war is off in both modes: the comparison is about materials, light and composition, not
@@ -167,12 +176,12 @@ The pilot is approved only when all of these are true:
 - [ ] The ground receives directional shadows; no floating props or stones.
 - [ ] Inticancha `fundada` reads as a settlement, not a disc with props.
 - [ ] No imperial Inca element and no invented species, name or date; certainty labels are updated.
-- [ ] `bench_scene.mjs --mission=m_tambotoco --assert` is within the 500k/280 and 660k/360 caps.
-- [ ] Integrated GPU ≥ 30 FPS at low/medium; high quality is measured and recorded.
-- [ ] `yarn dist:check` ≤ 25 MB and the entry chunk ≤ 600 KB gzip.
-- [ ] `yarn verify:fast`, `yarn art:validate` and the relevant tests pass.
-- [ ] The 3 × 3 before/after set is attached; the docs and provenance are current.
-- [ ] A human has approved the reference captures.
+- [x] `bench_scene.mjs --mission=m_tambotoco --assert` is within the 500k/280 and 660k/360 caps (425,324/273 and 633,330/356 on a clean checkout).
+- [x] Integrated GPU ≥ 30 FPS at low/medium; high quality is measured and recorded (36/34 FPS, 27.8/29.4 ms p50).
+- [x] `yarn dist:check` ≤ 25 MB and the entry chunk ≤ 600 KB gzip (24.56 MB, 2 KB gzip).
+- [x] `yarn verify:fast`, `yarn art:validate` and the relevant tests pass (948 tests).
+- [ ] The 3 × 3 before/after set is attached; the docs and provenance are current. Prepared as `review/e6-{before-neutral,after-neutral,after-final,before-after-1600x900}.webp`; publish only after approval.
+- [ ] A human has approved the reference captures. **Pending.**
 
 ## 7. Asset inventory
 
@@ -264,7 +273,7 @@ Priorities are ordered by visual impact per engineering day. Each item includes 
 | **E3** | Highland vegetation kit, rocks, paths | **E3a done (2026-11-17):** molle/pacay/ichu kit (1,362/360, 1,048/316, 144/42 tris), andes pack, 14 m LOD0 radius, ichu stand on a trimmed 0.08 cover budget. **E3b done (2026-11-17):** wet-margin stream banks and a gravel ford bar (ground paint; heights unchanged, REPLAY_VERSION 40 for the resource shift), dirt-shouldered stone paths, and ayllu bank/path stones on the existing rock mesh (no new draw call). Bench **424,904/273** and **632,910/356** (kit 9,352/9 and 34,306/12). Acceptance: no invented species (inferred, sourced), LOD1 footprint stable. |
 | **E4** | Hero + common unit | **E4a done (2026-11-17):** Killke and valley-ayllu rig variants replace the Chanca proxy. **E4b done (2026-11-17):** male-only `tambotoco_hero.glb` (1.38 MB, 4 clips, longer hero tunic) for Manco; hero 10,004 tris / 10 draws, common 9,628 / 14. Acceptance: Manco distinct at 54; budget; other campaigns unchanged |
 | **E5** | Cinematic beats and foundation | **Done (2026-11-17):** hero cave, detail Huanacaure, wide valley, wide traced Inticancha and a hero foundation beat (camera + Ayar Auca stone; its raise fires the dust); the five intro/card/epilogue captures were re-shot. `camera` cues gained `zoom`/`seconds` and `Camera.flyTo` gained `holdClock` (only the opening flight holds the clock); no scene geometry changed. Acceptance: wide/detail/hero shots; foundation reward |
-| **E6** | 3 × 3 validation, bench, provenance, docs, review | `yarn verify:fast`, `bench:check`, `art:validate`, `dist:check`, human approval |
+| **E6** | 3 × 3 validation, bench, provenance, docs, review | **Captures prepared (2026-11-17):** the three cameras (`hualla`, `acequia`, `inticancha`) × 1280×720/1600×900/1920×1080, neutral and final; before at `a0352d5`, after at this branch. Gates: `yarn verify:fast`, `art:validate` and `dist:check` green; `bench:check` has the pre-existing `m8_independencia` failure; caps unchanged. **Awaiting human approval** of the reference captures. |
 | **E7** | Full pilot production | Only after E6 approval |
 
 E0–E6 are the scope of this pilot. E7 is a separate decision.
