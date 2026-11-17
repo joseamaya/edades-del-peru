@@ -152,6 +152,23 @@ test('dispose removes the camera input listeners', async ({ page }) => {
   expect(out.movedAfter).toBe(0);
 });
 
+test('dispose removes the input controller focus listener', async ({ page }) => {
+  await bootMatch(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    let calls = 0;
+    const original = g.hud.hideSelectionBox.bind(g.hud);
+    g.hud.hideSelectionBox = () => {
+      calls++;
+    };
+    g.input.dispose();
+    window.dispatchEvent(new Event('blur'));
+    g.hud.hideSelectionBox = original;
+    return calls;
+  });
+  expect(out).toBe(0);
+});
+
 test('W pans the camera toward the top of the screen', async ({ page }) => {
   await bootMatch(page);
   const out = await page.evaluate(() => {

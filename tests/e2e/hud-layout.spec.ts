@@ -691,3 +691,23 @@ test.describe('final screen layering', () => {
     },
   );
 });
+
+test('the transient HUD keeps clear of the camera band', async ({ page }) => {
+  await page.goto('/?play=1&seed=777&fog=0&low=1&intro=0');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const root = document.getElementById('ui-root')!;
+    const gap = Number.parseFloat(getComputedStyle(root).getPropertyValue('--bar-gap'));
+    const alerts = document.getElementById('ed-alerts');
+    const fps = document.getElementById('ed-fps');
+    return {
+      gap,
+      alertsLeft: alerts ? Number.parseFloat(getComputedStyle(alerts).left) : null,
+      fpsRight: fps ? Number.parseFloat(getComputedStyle(fps).right) : null,
+    };
+  });
+  expect(out.alertsLeft).toBeGreaterThanOrEqual(out.gap);
+  expect(out.fpsRight).toBeGreaterThanOrEqual(out.gap);
+});

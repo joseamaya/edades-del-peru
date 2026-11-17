@@ -9,8 +9,9 @@ import { launchChromium, withViteServer, cliArg, reviewDir } from './lib.mjs';
  *
  * Usage: node scripts/capture_camera_pan.mjs [--tag=after] [--frames=40] [--width=800]
  * Writes review/camera-edge-<tag>-last.png and the animated WebP docs/media/camera-edge-<tag>.webp.
- * For the committed before pair, run the same script from a worktree at the pre-fix commit (origin/main);
- * camera-edge-before.webp was captured that way.
+ * For the committed before pair, copy this script into a worktree at the pre-fix commit
+ * (cp scripts/capture_camera_pan.mjs <worktree>/scripts/), run --tag=before there; camera-edge-before.webp
+ * was captured that way.
  */
 const tag = cliArg('tag', 'after');
 const frames = Number.parseInt(cliArg('frames', '40'), 10);

@@ -453,8 +453,8 @@ Definition of Done and the building audit see
   the pure math is unit-tested (`tests/camera.test.ts`), the wiring in `tests/e2e/camera.spec.ts`. The **camera
   speed** option (Baja/Normal/Alta, `settings.cameraSpeed` → `CAMERA_SPEED_SCALE`) scales the keyboard/edge speed
   only (the middle-drag is direct manipulation). Evidence: `docs/media/camera-edge-{before,after}.webp`
-  (`node scripts/capture_camera_pan.mjs --tag=after` on this branch; the before pair was captured from a
-  worktree at `origin/main` with the same script).
+  (`node scripts/capture_camera_pan.mjs --tag=after` on this branch; copy the script into a worktree at
+  `origin/main` and run `--tag=before` there).
 - **Campaign intro (visual only)**: `Mission.start` calls `Game.playIntro()` from the briefing's onStart
   callback, which frames an overview and runs `RTSCamera.flyTo(x, z, zoom, seconds)` down to the player base;
   for the authored Caral site it settles at `CARAL_SITE_CAMERA.height` so the valley, base and city share the opening.
