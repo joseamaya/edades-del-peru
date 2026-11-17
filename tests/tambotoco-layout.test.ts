@@ -57,6 +57,17 @@ describe('Tambotoco authored huts', () => {
     }
   });
 
+  it('paints a wet sand margin on the stream bank and a gravel bar at the ford', () => {
+    // The heightfield stays as it was; the paint moves sand/dirt, so resource placement carries a replay bump.
+    const ground = (x: number, z: number) => TERRAIN.getAuthoredGround(x, z)!;
+    const bank = ground(150.5, 214);
+    expect(bank[2], 'the wet margin is sandier than the grass').toBeGreaterThan(bank[0]);
+    expect(bank[2]).toBeGreaterThan(0.3);
+    const ford = ground(153.5, 190);
+    expect(ford[2], 'the ford bar reads as gravel').toBeGreaterThan(0.45);
+    expect(ford[0]).toBeLessThan(0.2);
+  });
+
   it('does not overlap two hut footprints', () => {
     const all = huts();
     for (let i = 0; i < all.length; i++) {

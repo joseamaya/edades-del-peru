@@ -536,6 +536,12 @@ Definition of Done and the building audit see
   saves; `REPLAY_VERSION` is 32 (m9), 33 (m7), 34 (m3), 35 (m4), 36 (m5), 37 (m6), 38 (m6b) and 39 (m8),
   which rejects every stored replay (the version is global), not only that mission's. Guarded by
   `tests/save-migrations.test.ts`, `tests/campaign-scale.test.ts` and the mission E2E specs.
+- **Tambotoco ground paint** (E3b): the wet stream margin and the dry ford bar are baked into
+  `TAMBOTOCO_GROUND` (sand/dirt/grass weights) by `scripts/build_tambotoco_heightmap.py`. The heightfield
+  and walkable cells are unchanged, but `getAuthoredGround` also gates tree acceptance and resource
+  selection, so four procedural resource nodes move: `REPLAY_VERSION` is 40. Guarded by
+  `tests/tambotoco-layout.test.ts` (the paint is visible at the bank and ford) and
+  `tests/headless-game.test.ts` (the ford stays crossable).
 - **Caral late period** (issue 353): the Act IV drought is the late-period signal (`isLatePeriod` in
   `model/defs/sites.ts`; any drought level counts, because the event marks the start of the period), so it
   needs no save field of its own and a restored save rebuilds it from the environment state.

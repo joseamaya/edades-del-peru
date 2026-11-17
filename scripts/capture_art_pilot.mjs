@@ -6,7 +6,7 @@ import { cliArg, launchChromium, reviewDir, withViteServer, waitForHighlandKits 
  * Art-direction pilot captures for `m_tambotoco` (docs/design/tambotoco-art-pilot.md).
  * Usage: node scripts/capture_art_pilot.mjs [--tag=before|after] [--quality=neutral|final]
  *        [--sizes=1280x720,1600x900,1920x1080]
- *        [--views=cave,shrine,hualla,acequia,inticancha,built,close,wide,hero]
+ *        [--views=cave,shrine,hualla,acequia,ford,bank,path,inticancha,built,close,wide,hero]
  *
  * `neutral` isolates materials and silhouettes (post-processing off); `final` is the player-facing
  * look (post-processing and the player's quality preset). Fog of war is off in both so the scene is
@@ -36,6 +36,9 @@ const VIEWS = {
   shrine: { x: 120, z: 106, h: 40 },
   hualla: { x: 136, z: 166, h: 24 },
   acequia: { x: 166, z: 178, h: 30 },
+  ford: { x: 153, z: 190, h: 40 },
+  bank: { x: 152, z: 210, h: 10 },
+  path: { x: 52, z: 78, h: 10 },
   inticancha: { x: 168, z: 190, h: 34 },
   built: { x: 168, z: 190, h: 44, built: true },
   close: { x: 138, z: 163, h: 13 },

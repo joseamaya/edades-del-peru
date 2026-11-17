@@ -197,6 +197,18 @@ slot is absent (offline / without assets).
   `confidence: inferred`; the ichu ground cover is the procedural instancer at a trimmed 0.08 budget.
 - **Review**: no human art-review gate applies to in-engine captures; the kit is reviewed through this PR.
 
+### Tambotoco E3b stream banks, ford and paths (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e3b-{bank,path,ford,close}-{before,after}.webp`, 960x540 WebP q58, ~181 KB.
+- **Source**: captured from the game by `scripts/capture_art_pilot.mjs` at 1600x900, seed 777, HUD hidden,
+  site at `fundada`, fog of war off; `before` is the E3a build (`184285b`), `after` this branch. Regenerate
+  with `yarn art:pilot --tag=e3b-final3 --quality=neutral --sizes=1600x900 --views=bank,path,ford,close,wide`.
+- **Content**: in-engine shots of the game's own terrain. The wet-margin and ford-bar weights are generated
+  by `scripts/build_tambotoco_heightmap.py` into `src/model/defs/tambotocoHeightmap.ts` (project-owned, no
+  third-party data; the heightfield and walkable cells are unchanged, but the paint feeds tree/resource
+  selection, hence `REPLAY_VERSION` 40). The path paint and instanced bank/path stones are procedural.
+- **Review**: no human art-review gate applies to in-engine captures; E3b is reviewed through its PR.
+
 ### Caral fauna kit (deer, riparian bird)
 
 - **Location**: `src/assets/fauna/caral/caral_deer.glb` and `caral_bird.glb`.
