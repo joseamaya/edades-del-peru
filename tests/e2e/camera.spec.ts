@@ -451,23 +451,33 @@ test('a mid-mission camera beat yields to manual input', async ({ page }) => {
 test('the opening flight keeps the camera until it ends', async ({ page }) => {
   await bootMatch(page);
   await stopLoop(page);
-  const out = await page.evaluate(() => {
+  const out = await page.evaluate(async () => {
     const g = (window as unknown as { game: any }).game;
     const centre = g.settings.mapSize / 2;
     g.camera.moveTo(centre, centre, true);
     g.camera.setHeight(40);
     for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
-    g.camera.flyTo(centre + 60, centre, 40, 1.8, true);
+    // Fly left, then hold D (right): a held opening flight must stay on the scripted side.
+    g.camera.flyTo(centre - 60, centre, 40, 1.8, true);
+    g.update(1 / 60, 0);
+    await new Promise((resolve) => setTimeout(resolve, 300));
     g.update(1 / 60, 0);
     const cinematic = g.isCinematicActive();
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'd' }));
     for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
     window.dispatchEvent(new KeyboardEvent('keyup', { key: 'd' }));
-    return { cinematic, flying: g.camera.isFlying(), opening: g.camera.isOpeningFlight() };
+    return {
+      cinematic,
+      flying: g.camera.isFlying(),
+      opening: g.camera.isOpeningFlight(),
+      target: g.camera.getTarget(),
+      centre,
+    };
   });
   expect(out.cinematic).toBe(true);
   expect(out.flying).toBe(true);
   expect(out.opening).toBe(true);
+  expect(out.target.x).toBeLessThan(out.centre - 1);
 });
 
 test('moving from the bottom edge onto the command bar stops the camera', async ({ page }) => {

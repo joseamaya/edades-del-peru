@@ -6,7 +6,8 @@ import { launchChromium, withViteServer, cliArg, reviewDir } from './lib.mjs';
 /**
  * Evidence animation for a mid-mission camera beat: the camera starts a non-opening flight to the
  * left and the player holds D after 0.25 s. A fix makes the beat yield and the camera pan right; the
- * old code keeps the scripted flight. Fixed 1/60 s steps, so the capture is deterministic.
+ * old code keeps the scripted flight. The flight is long (60 s) so real-time screenshot waits cannot
+ * end it before D; fixed 1/60 s steps, so the capture is deterministic.
  *
  * Usage: node scripts/capture_camera_beat.mjs [--tag=after] [--frames=50] [--width=800]
  * Writes review/camera-beat-<tag>-last.png and the animated WebP docs/media/camera-beat-<tag>.webp.
@@ -43,7 +44,7 @@ async function main() {
       g.camera.setHeight(40);
       for (let i = 0; i < 90; i++) g.camera.update(1 / 60, i / 60);
       // Fly left; the player will ask to go right with D.
-      g.camera.flyTo(centre - 80, centre, 40, 2, false);
+      g.camera.flyTo(centre - 80, centre, 40, 60, false);
       g.camera.camera.updateMatrixWorld();
       g.renderer.render(g.scene, g.camera.camera);
     });
