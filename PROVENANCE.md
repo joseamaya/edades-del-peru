@@ -1035,6 +1035,10 @@ downscaled 1920 shot would look smaller than the 1280 one.
     `Idle`, `Walk` and `Eating` to the `idle`, `walk` and `eat` rig states.
   - Fit: the llama planner still decides biome/altitude/seed; no new spawn rule is introduced. The model is
     normalised to the game's stylised camelid scale and grounded at its bind-pose feet.
+  - Runtime uses: the ambient llama keeps the bare rig. The `CARAVAN` unit uses the presentation-only
+    `caravan` variant (`src/rendering/caravanAttire.ts`), which attaches code-generated pack, sacks and ropes
+    to the `Back` bone; it adds no new model or texture to this GLB. Hunt herds are procedural
+    (`faunaModels.ts`): vicuña in the highlands and the documented Caral deer as generic coast/jungle game.
 
 ## Reference images (AI generation input)
 

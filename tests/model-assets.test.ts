@@ -304,6 +304,10 @@ describe('rigged model assets', () => {
       asset: 'siege_rig',
       variant: 'siege_tank_republica',
     });
+    expect(unitModelAsset(UnitKind.CARAVAN, Era.VICEROYALTY, CivId.REALISTAS)).toEqual({
+      asset: 'quaternius_alpaca',
+      variant: 'caravan',
+    });
     expect(unitModelAsset(UnitKind.CAVALRY, Era.FORMATIVE, CivId.REALISTAS)).toBeNull();
     expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.REALISTAS])).toContain('mounted_rig');
     expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.CARAL])).not.toContain('mounted_rig');

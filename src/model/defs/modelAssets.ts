@@ -58,6 +58,7 @@ export const CARAL_WORKER_SHADOW_SKIP_MESHES: readonly string[] = ['Eyes_f', 'Ey
 
 /** Presentation variants applied on top of a shared rigged asset. */
 export type RigVariant =
+  | 'caravan'
   | 'caral_worker_f'
   | 'caral_worker_m'
   | 'caral_scout_f'
@@ -294,7 +295,7 @@ export function unitModelAsset(
   }
   const andeanCulture = andeanCultureForEra(civ, era);
   if (kind === UnitKind.CARAVAN) {
-    return { asset: 'quaternius_alpaca' };
+    return { asset: 'quaternius_alpaca', variant: 'caravan' };
   }
   if ((kind === UnitKind.HUSSAR || kind === UnitKind.CAVALRY) && (era === Era.VICEROYALTY || era === Era.REPUBLIC)) {
     const variant = mountedVariantForCiv(civ);

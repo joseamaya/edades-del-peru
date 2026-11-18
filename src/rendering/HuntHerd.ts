@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { HuntSpecies } from '../model/defs/wildlife';
 import { faunaTemplate, type FaunaTemplate } from './faunaModels';
 
 const GAIT_OFFSETS = [0, Math.PI, Math.PI, 0];
@@ -19,9 +20,10 @@ interface CarcassSpot {
 }
 
 /**
- * Presentation-only herd for a hunt resource node. Three stylised camelids
- * walk small deterministic orbits; harvesting converts them to low carcasses
- * without changing the node's simulation or resource amount.
+ * Presentation-only herd for a hunt resource node. Three stylised animals walk
+ * small deterministic orbits; harvesting converts them to low carcasses without
+ * changing the node's simulation or resource amount. The species follows the
+ * map biome (vicuña in the highlands, deer on the coast/jungle).
  */
 export class HuntHerd {
   readonly group = new THREE.Group();
@@ -41,8 +43,8 @@ export class HuntHerd {
   private fadeStart = -1;
   private fadeSeconds = 0;
 
-  constructor(seed = 0) {
-    this.template = faunaTemplate('vicuna');
+  constructor(seed = 0, species: HuntSpecies = 'vicuna') {
+    this.template = faunaTemplate(species);
     this.liveMaterial = new THREE.MeshStandardMaterial({
       vertexColors: true,
       roughness: 0.95,

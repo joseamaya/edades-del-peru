@@ -167,9 +167,12 @@ Definition of Done and the building audit see
   material; diagonal gait and wing flap). No entities, obstacles or save; regenerated deterministically on load,
   templates freed by `clearFaunaTemplates` in `Game.destroy`.
 - **Hunt herds (presentation only)**: `ResourceNodeView` hunt nodes render a small `HuntHerd`
-  (`src/rendering/HuntHerd.ts`) of walking camelids instead of static boxes. Its live/carcass state is derived
-  from `amount / maxAmount` in `subtract` and `applySave`, so save/load and the resource simulation are
-  unchanged. The herd has no entities, obstacles or collision; teardown disposes only its per-herd materials.
+  (`src/rendering/HuntHerd.ts`) of walking animals instead of static boxes. The species follows the map biome:
+  vicuña in `andes`/`altiplano`, deer on `coast`/`jungle` (`huntSpeciesFor` in `src/model/defs/wildlife.ts`;
+  the Caral deer is the documented game, used on the coast/jungle as a generic presentation abstraction). Its
+  live/carcass state is derived from `amount / maxAmount` in `subtract` and `applySave`, so save/load and the
+  resource simulation are unchanged. The herd has no entities, obstacles or collision; teardown disposes only
+  its per-herd materials.
 - **Rigged 3D models (optional, glTF/GLB)**: `src/model/defs/modelAssets.ts` maps a unit kind to a registered
   asset id plus an optional presentation variant. The **shared humanoid rig** covers the Caral worker/scout, the
   Inca chasqui and Amauta, every pre-Hispanic Andean culture, the post-1532 infantry, workers and scouts, the m7
@@ -968,6 +971,13 @@ preload list from that same mapping and the region weights during `boot()` (main
 same `resolveMapProfile` arguments as `Game`). `Wildlife.spawn` asks for a rig through `acquireRig`; if it is
 unavailable it builds the procedural animal exactly as before. The alpaca is an Andean camelid **stand-in** for
 the existing llama, not a new species; vicuña/condor/pelican stay procedural in this iteration.
+
+The **caravan** reuses the same alpaca with a presentation-only `caravan` variant
+(`src/rendering/caravanAttire.ts`): a cargo pack, side sacks and ropes attached to the `Back` bone, so the trade
+unit is no longer a bare animal. The ambient llama keeps the bare variant. Hunt herds select their species from
+the map type (`huntSpeciesFor`): vicuña in the highlands, deer on the coast and jungle. The procedural quadruped
+head is a rounded capsule + tapered muzzle instead of three boxes, which improves both the ambient vicuña and
+the coast/jungle hunted deer.
 
 The rig plays `walk` while it advances its deterministic orbit and stops to play `eat` on a deterministic
 sinusoidal cycle per animal; walk playback follows the orbit speed. The root sits at `Terrain.getHeight`, the model

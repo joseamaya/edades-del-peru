@@ -3,6 +3,7 @@ import { isAndeanVariant } from '../model/defs/andeanCharacters';
 import { isPostColonialVariant } from '../model/defs/postColonialCharacters';
 import { isRebeldeVariant } from '../model/defs/rebeldeCharacters';
 import { isModernVariant } from '../model/defs/modernCharacters';
+import { dressCaravan } from './caravanAttire';
 import { dressPostColonial } from './postColonialAttire';
 import { dressRebelde } from './rebeldeAttire';
 import { dressModern } from './modernAttire';
@@ -27,6 +28,7 @@ export interface RigVariantHandle {
 
 /** Apply the presentation-only dressing for a rig variant. */
 export function applyRigVariant(rig: RigInstance, variant: RigVariant): RigVariantHandle | null {
+  if (variant === 'caravan') return dressCaravan(rig);
   if (isMountedVariant(variant)) return dressMounted(rig, variant);
   if (isSiegeVariant(variant)) return dressSiege(rig, variant);
   if (isVehicleVariant(variant)) return dressVehicle(rig, variant);

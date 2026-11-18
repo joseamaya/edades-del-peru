@@ -27,6 +27,18 @@ export function wildlifeModelChoice(id: SpeciesId): RigModelChoice | null {
   return id === 'llama' ? { asset: 'quaternius_alpaca' } : null;
 }
 
+/** Hunted herd species. The deer model is the documented Caral game; the highlands use the vicuña. */
+export type HuntSpecies = 'vicuna' | 'deer';
+
+/**
+ * Coast and jungle hunts reuse the Caral deer as a generic game abstraction; only the
+ * Andean/altiplano hunts show the vicuña. The coast/jungle mapping is a presentation
+ * choice, not a new species claim (see docs/development.md §Rigged fauna).
+ */
+export function huntSpeciesFor(mapType: string): HuntSpecies {
+  return mapType === 'andes' || mapType === 'altiplano' ? 'vicuna' : 'deer';
+}
+
 /** Base presence of each species per geographic region. */
 const REGION_WEIGHTS: Record<GeographicRegion, Record<SpeciesId, number>> = {
   north_coast: { pelican: 1.2, llama: 0.2, vicuna: 0, condor: 0, deer: 0, riparian_bird: 0 },

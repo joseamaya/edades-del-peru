@@ -75,6 +75,15 @@ describe('rigged fauna assets', () => {
     wildlife.dispose();
   });
 
+  it('dresses the caravan alpaca with a cargo pack on the Back bone', async () => {
+    await loadModelAssetFromData('quaternius_alpaca', glb);
+    const rig = acquireRig('quaternius_alpaca', 'caravan')!;
+    const pack = rig.root.getObjectByName('attire_caravan_pack');
+    expect(pack).toBeDefined();
+    expect(pack?.parent?.name).toBe('Back');
+    rig.dispose();
+  });
+
   it('clones independent camelid skeletons and grounds the feet', async () => {
     const asset = await loadModelAssetFromData('quaternius_alpaca', glb);
     const a = acquireRig('quaternius_alpaca')!;

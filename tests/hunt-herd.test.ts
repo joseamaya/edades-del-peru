@@ -5,6 +5,7 @@ import { ResourceNode } from '../src/entities/ResourceNode';
 import { clearResourceCaches } from '../src/rendering/ResourceNodeView';
 import { attachResource } from '../src/rendering/RenderSync';
 import { clearFaunaTemplates } from '../src/rendering/faunaModels';
+import { huntSpeciesFor } from '../src/model/defs/wildlife';
 
 afterEach(() => {
   clearFaunaTemplates();
@@ -12,6 +13,13 @@ afterEach(() => {
 });
 
 describe('hunt herd presentation', () => {
+  it('uses the vicuña in the highlands and the deer on the coast/jungle', () => {
+    expect(huntSpeciesFor('andes')).toBe('vicuna');
+    expect(huntSpeciesFor('altiplano')).toBe('vicuna');
+    expect(huntSpeciesFor('coast')).toBe('deer');
+    expect(huntSpeciesFor('jungle')).toBe('deer');
+  });
+
   it('starts as a walking herd and converts animals to carcasses as it is harvested', () => {
     const herd = new HuntHerd(7);
     expect(herd.live).toBe(3);

@@ -129,12 +129,19 @@ function quadruped(id: 'llama' | 'vicuna' | 'deer'): FaunaTemplate {
 
   const headY = baseY + Math.cos(tilt) * neckLen;
   const headZ = baseZ + Math.sin(tilt) * neckLen;
-  const head = box(0.2, 0.22, 0.26, 0.06);
-  place(head, 0, headY, headZ);
+  // Rounded wedge instead of a box: a capsule along the head axis plus a
+  // tapered muzzle reads as a camelid/deer at both the RTS and close cameras.
+  const head = capsule(0.1, 0.16);
+  place(head, 0, headY, headZ, Math.PI / 2);
   parts.push({ geo: head, color: colors.head });
-  const muzzle = box(0.14, 0.13, 0.18, 0.05);
-  place(muzzle, 0, headY - 0.02, headZ + 0.16);
+  const muzzle = tapered(0.065, 0.085, 0.16, 7);
+  place(muzzle, 0, headY - 0.02, headZ + 0.22, Math.PI / 2);
   parts.push({ geo: muzzle, color: colors.head });
+  for (const side of [-1, 1]) {
+    const eye = sphere(0.022);
+    place(eye, side * 0.075, headY + 0.025, headZ + 0.085);
+    parts.push({ geo: eye, color: colors.hoof });
+  }
 
   const earH = llama ? 0.2 : 0.16;
   for (const side of [-1, 1]) {

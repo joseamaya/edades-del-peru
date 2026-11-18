@@ -8,6 +8,7 @@ import { TreeInstances, type TreeVariant } from './TreeInstances';
 import { HuntHerd } from './HuntHerd';
 import type { ResourceNode } from '../entities/ResourceNode';
 import { WATER_LEVEL, type BerryShrubId, type QuarryStyle } from '../model/defs/profiles';
+import { huntSpeciesFor } from '../model/defs/wildlife';
 import type { PropKitInstances } from './PropKitInstances';
 
 // Shared caches: geometries and materials reused between nodes (fewer draw calls and GC).
@@ -397,7 +398,7 @@ export class ResourceNodeView {
   }
 
   private buildHunt(rng: RNG): void {
-    this.huntHerd = new HuntHerd(rng.range(0, 1000));
+    this.huntHerd = new HuntHerd(rng.range(0, 1000), huntSpeciesFor(this.mapType));
     this.view.add(this.huntHerd.group);
   }
 

@@ -158,7 +158,8 @@ the engine. Do not rebuild the whole site as one GLB.
   turquoise ribbon.
 - **Paths:** embedded stone and compacted earth with soft edges. A path is not a ladder of floating blocks.
 - **Fauna:** llamas, birds and other source-backed animals; at least one group visible in each zone at default
-  zoom. No invented species.
+  zoom. Hunted herds use the vicuña in the highlands and the documented Caral deer as a generic game
+  abstraction on the coast/jungle; no new species is introduced. No invented species anywhere else.
 - **Composition:** every zone has a purpose: approach, camp, shrine, valley, foundation. A map is not a
   uniform surface with objects scattered on it.
 
