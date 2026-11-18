@@ -342,7 +342,7 @@ async function playJuntaCusco(page, plan) {
 
   // Act II — La Apacheta: reach the pass, then hold it while the royalist vanguard arrives.
   await move(page, await column(), plan.apacheta, true);
-  await look(page, plan.apacheta, 30, 'army');
+  await look(page, null, 30, 'column');
   await waitObjective(page, 'a2_apacheta', 'completed', 240_000, deadline, () => look(page, null, 30, 'army'));
   if (await hasEnded(page)) return;
   await holdLine(page, 'a2_batalla', plan.batalla, deadline);
@@ -350,7 +350,7 @@ async function playJuntaCusco(page, plan) {
 
   // Act III — Umachiri: the last resistance buys the Junta its withdrawal.
   await move(page, await column(), plan.umachiri, true);
-  await look(page, plan.umachiri, 30, 'army');
+  await look(page, null, 30, 'column');
   await waitObjective(page, 'a3_umachiri', 'completed', 300_000, deadline, () => look(page, null, 30, 'army'));
   if (await hasEnded(page)) return;
   await holdLine(page, 'a3_resistir', plan.resistir, deadline);
@@ -363,6 +363,7 @@ async function holdLine(page, id, spec, deadline) {
   const radius = spec.radius ?? 8;
   const want = Math.max(1, spec.minUnits ?? 1);
   let lastOrder = 0;
+  let lastLook = 0;
   while (Date.now() < until) {
     const snap = await page.evaluate(
       ({ id, point, radius }) => {
@@ -388,6 +389,10 @@ async function holdLine(page, id, spec, deadline) {
       await page.evaluate(() => document.querySelector('.ed-mission-card')?.click());
     }
     if (snap.state === 'completed' || snap.ended) return snap.state;
+    if (Date.now() - lastLook > 8000) {
+      lastLook = Date.now();
+      await look(page, null, 28, 'column');
+    }
     if (snap.inside < want || Date.now() - lastOrder > 6000) {
       lastOrder = Date.now();
       const ids = snap.away.length ? snap.away : await columnIds(page);
@@ -633,6 +638,9 @@ async function look(page, point, zoom, who = 'all') {
           if (u.owner !== 0 || u.dead) continue;
           if (who === 'workers' && u.kind !== 'worker') continue;
           if (who === 'army' && u.kind === 'worker') continue;
+          // The Junta parks Pumacahua at the camp; averaging him with the marching column lands the
+          // camera on empty grass between the two.
+          if (who === 'column' && (u.kind === 'worker' || u.tag === 'pumacahua')) continue;
           group.push(u);
         }
         if (group.length) {
