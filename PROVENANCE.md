@@ -789,6 +789,8 @@ downscaled 1920 shot would look smaller than the 1280 one.
 - **Runtime**: `src/model/defs/sites.ts` (scale `0.22`, origin `(96,96)`, anchor
   `(98,87.5)`), `src/rendering/siteModels.ts` (Draco/WebP), and
   `src/core/Game.ts` for heightfield, collision and heritage proxies.
+- **Human review**: the kit and its in-engine site views were approved on 2026-11-17 as a stylized
+  abstraction; contact sheet in [`docs/media/chavin-kit-review.webp`](docs/media/chavin-kit-review.webp).
 - **Historical caveat**: representative centre, not a survey. Roofs, heights and
   some reliefs are inferred; the Lanzón is an interpretation, not the scan. See
   `docs/design/chavin-sacred-site.md`.

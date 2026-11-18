@@ -97,6 +97,14 @@ They advance on what the player does and never repeat the briefing.
   Regenerate with
   `blender --background --python scripts/blender/build_site_intro.py -- --mission=m2_chavin`.
 
+## Human art review
+
+The kit and the four current in-engine site views were reviewed on 2026-11-17 and approved as a stylized
+abstraction: the temple massing, Plaza Circular, Portada and pilgrim fair read at the RTS camera, with
+representative rather than surveyed forms. Contact sheet:
+[`../media/chavin-kit-review.webp`](../media/chavin-kit-review.webp). The approved campaign intro remains
+`m2_chavin-intro`.
+
 ## Performance
 
 - `scripts/bench_scene.mjs` includes the Chavín opening and late (apogee) views; `yarn bench:check`
@@ -106,7 +114,6 @@ They advance on what the player does and never repeat the briefing.
 
 ## Open items
 
-1. Human review of the Chavín kit and captures (`reviewed: false` today); the intro render is approved.
-2. The kit is a source-derived simplification; the exact construction sequence is debated.
-3. Seasonal flood and the late-period details of the decline are not simulated.
-4. A manual 30–40 minute playtest is pending; the automated playtest reaches victory through the mission API (market/offerings use real commands).
+1. The kit is a source-derived simplification; the exact construction sequence is debated.
+2. Seasonal flood and the late-period details of the decline are not simulated.
+3. A manual 30–40 minute playtest is pending; the automated playtest reaches victory through the mission API (market/offerings use real commands).

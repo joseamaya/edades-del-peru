@@ -43,8 +43,9 @@ evidence. No model-mission rebuild remains.
 
 ## D2 · Art review order
 
-1. Chavín kit: record the human review. Caral's camp pieces and its Act III card were approved and closed on
-   2026-11-14; do not re-review them.
+1. Chavín kit: **Done (2026-11-17)** — the kit and its in-engine site views were approved as a stylized
+   abstraction (contact sheet in `docs/media/chavin-kit-review.webp`). Caral's camp pieces and its Act III
+   card were approved and closed on 2026-11-14; do not re-review them.
 2. Review every new `reviewed: false` record. The five Caral records were reconciled and the three Workbench
    mission intros were retired on 2026-11-16 (B5/B10 closed); the archived release snapshot lists the set as
    of 2026-10-30. Approve or reject each new record with `yarn art:review`.
