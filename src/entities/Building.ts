@@ -118,7 +118,7 @@ export class Building {
   beginConstruction(): void {
     this.constructionProgress = 0;
     this.constructionComplete = false;
-    if (this.view) this.view.group.visible = true;
+    if (this.view) this.view.setVisible(true);
     // semi-transparent construction
     this.setConstructionOpacity(0.45);
   }

@@ -5,6 +5,9 @@
 > Commit auditado: `7e8224ff3683346a9e728c1dcaad2b808a6ddc05`
 > Actualizado tras el merge de #121: `004dcc93e6e7dd73a8dc03ebd9f61140691788ed` (2026-10-21)
 > Fecha: 2026-10-20 (auditoría original); 2026-10-21 (actualización)
+> **Nota (2026-11-16):** esta auditoría precede el cambio del pase de sombras VSM → PCF y el límite de
+> silueta por rig (`limitShadowCasters`). Las reglas sobre receptores VSM que cita ya no describen el
+> renderer actual; se conservan como registro de la medición de esa fecha.
 > Entorno: Linux x64, Intel i7-13700 (24 hilos), Node 22.23.2, Chromium/SwiftShader (sin GPU),
 > viewport 1280×800, `?low=1`, niebla activada, seed 777 (escala) y seeds 777–796 (IA).
 

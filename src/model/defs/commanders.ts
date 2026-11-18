@@ -1,4 +1,5 @@
 import { CivId } from '../../core/types';
+import type { PersonGender } from './people';
 
 /** Portraits are stylized medallions; `status` describes the *likeness*, not the role. */
 export const PORTRAIT_IDS = [
@@ -32,6 +33,15 @@ export const PORTRAIT_IDS = [
 
 export type PortraitId = (typeof PORTRAIT_IDS)[number];
 
+/** Field-marker crest shape for heroes; presentation only, not a historical emblem. */
+export type HeroCrest = 'diamond' | 'tetra' | 'stone' | 'spire';
+
+/** Presentation-only silhouette fields; they do not claim a documented Ayar costume. */
+export type HeroWeapon = 'staff' | 'maul' | 'sling' | 'digging' | 'macana' | 'none';
+export type HeroHeaddress = 'band' | 'feathers' | 'turban' | 'none';
+export type HeroHair = 'loose' | 'bun' | 'braids' | 'topknot';
+export type HeroPattern = 'plain' | 'stripes' | 'checks' | 'zigzag';
+
 /** Accent used when a hero has none declared (all current Ayar declare one). */
 export const DEFAULT_HERO_ACCENT = '#e0b84a';
 
@@ -51,12 +61,33 @@ export interface CommanderDef {
   source?: string;
   /** Lead figure: gets a field banner, a hero ring and the hero card in the HUD. */
   hero?: boolean;
-  /** Presentation accent for the field marker, nameplate and unit panel (not a historical colour). */
+  /** Presentation accent for the field marker, nameplate, medallion and hero attire (not a historical colour). */
   accent?: string;
+  /**
+   * Presentation gender. It picks the shared rig's body/garments and the portrait silhouette; it is not
+   * a claim beyond the documented name. A named hero keeps its declared gender instead of the unit-id split.
+   */
+  gender: PersonGender;
+  /** Field-marker crest shape; a hero without one keeps the diamond. */
+  crest?: HeroCrest;
+  /** Hero mantle length; the Mamas wear the long cloth, everyone else the short one. */
+  mantle?: 'short' | 'long';
+  /** Presentation-only silhouette props, chosen so the eight siblings read apart without new bodies. */
+  weapon?: HeroWeapon;
+  headdress?: HeroHeaddress;
+  /** Procedural hair silhouette on the shared head; separate from the headdress. */
+  hair?: HeroHair;
+  /** A back bundle for the carrier of the party's stores. */
+  carryBundle?: boolean;
+  /** Woven pattern on the hero cloth; an abstraction of Andean textile motifs, not a specific garment. */
+  pattern?: HeroPattern;
+  /** Multiplier on the hero's build (Cachi is broader, the Mamas slightly lighter). */
+  bulk?: number;
 }
 
 export const COMMANDERS: Record<PortraitId, CommanderDef> = {
   cusi_yupanqui: {
+    gender: 'male',
     id: 'cusi_yupanqui',
     name: 'Cusi Yupanqui',
     role: 'Inca · Cusco',
@@ -65,6 +96,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/yahuar_pampa.md',
   },
   tupac_yupanqui: {
+    gender: 'male',
     id: 'tupac_yupanqui',
     name: 'Túpac Yupanqui',
     role: 'Inca · auqui',
@@ -73,6 +105,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/chimu_inca.md',
   },
   minchancaman: {
+    gender: 'male',
     id: 'minchancaman',
     name: 'Minchancaman',
     role: 'Chimú · Chan Chan',
@@ -81,6 +114,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/chimu_inca.md',
   },
   anccu_hualloc: {
+    gender: 'male',
     id: 'anccu_hualloc',
     name: 'Anccu Hualloc',
     role: 'Chanca · general',
@@ -89,6 +123,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/yahuar_pampa.md',
   },
   tupac_amaru: {
+    gender: 'male',
     id: 'tupac_amaru',
     name: 'Túpac Amaru II',
     role: 'Rebelión · Cusco',
@@ -97,6 +132,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/tupac_amaru.md',
   },
   micaela_bastidas: {
+    gender: 'female',
     id: 'micaela_bastidas',
     name: 'Micaela Bastidas',
     role: 'Rebelión · intendencia',
@@ -105,6 +141,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/tupac_amaru.md',
   },
   san_martin: {
+    gender: 'male',
     id: 'san_martin',
     name: 'José de San Martín',
     role: 'Patriotas · Protector',
@@ -113,6 +150,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/independencia.md',
   },
   bolivar: {
+    gender: 'male',
     id: 'bolivar',
     name: 'Simón Bolívar',
     role: 'Patriotas · Libertador',
@@ -121,6 +159,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/independencia.md',
   },
   sucre: {
+    gender: 'male',
     id: 'sucre',
     name: 'Antonio José de Sucre',
     role: 'Patriotas · Ayacucho',
@@ -129,6 +168,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/independencia.md',
   },
   grau: {
+    gender: 'male',
     id: 'grau',
     name: 'Miguel Grau',
     role: 'Perú · Huáscar',
@@ -137,6 +177,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/guerra_del_pacifico.md',
   },
   bolognesi: {
+    gender: 'male',
     id: 'bolognesi',
     name: 'Francisco Bolognesi',
     role: 'Perú · Arica',
@@ -145,6 +186,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/guerra_del_pacifico.md',
   },
   atahualpa: {
+    gender: 'male',
     id: 'atahualpa',
     name: 'Atahualpa',
     role: 'Inca · Quito',
@@ -153,6 +195,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/guerra_civil_inca.md',
   },
   huascar: {
+    gender: 'male',
     id: 'huascar',
     name: 'Huáscar',
     role: 'Inca · Cusco',
@@ -161,6 +204,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/guerra_civil_inca.md',
   },
   pumacahua: {
+    gender: 'male',
     id: 'pumacahua',
     name: 'Mateo García Pumacahua',
     role: 'Junta del Cusco · Chinchero',
@@ -169,6 +213,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/junta_cusco.md',
   },
   melgar: {
+    gender: 'male',
     id: 'melgar',
     name: 'Mariano Melgar',
     role: 'Junta del Cusco · auditor de guerra',
@@ -177,6 +222,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/junta_cusco.md',
   },
   ramirez_orozco: {
+    gender: 'male',
     id: 'ramirez_orozco',
     name: 'Juan Ramírez Orozco',
     role: 'Realistas · Alto Perú',
@@ -185,86 +231,142 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/junta_cusco.md',
   },
   manco_capac: {
+    gender: 'male',
     id: 'manco_capac',
     name: 'Ayar Manco',
     role: 'Ayar · jefe de la peregrinación',
     civ: CivId.INCA_KILLKE,
     hero: true,
     accent: '#e0b84a',
+    crest: 'spire',
+    weapon: 'staff',
+    headdress: 'band',
+    hair: 'loose',
+    pattern: 'checks',
+    bulk: 1.04,
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
   ayar_auca: {
+    gender: 'male',
     id: 'ayar_auca',
     name: 'Ayar Auca',
     role: 'Ayar · nombre del Cusco',
     civ: CivId.INCA_KILLKE,
     hero: true,
     accent: '#4a9a5a',
+    crest: 'diamond',
+    weapon: 'sling',
+    headdress: 'feathers',
+    hair: 'topknot',
+    pattern: 'zigzag',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
   ayar_cachi: {
+    gender: 'male',
     id: 'ayar_cachi',
     name: 'Ayar Cachi',
     role: 'Ayar · sepultado en Tambo Quiro',
     civ: CivId.INCA_KILLKE,
     hero: true,
     accent: '#c98a3a',
+    crest: 'stone',
+    weapon: 'maul',
+    headdress: 'band',
+    hair: 'loose',
+    pattern: 'stripes',
+    bulk: 1.12,
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
   ayar_uchu: {
+    gender: 'male',
     id: 'ayar_uchu',
     name: 'Ayar Uchu',
     role: 'Ayar · piedra de Huanacaure',
     civ: CivId.INCA_KILLKE,
     hero: true,
     accent: '#4a7ab6',
+    crest: 'tetra',
+    weapon: 'staff',
+    headdress: 'feathers',
+    hair: 'loose',
+    pattern: 'checks',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
   mama_huaco: {
+    gender: 'female',
     id: 'mama_huaco',
     name: 'Mama Huaco',
     role: 'Ayar · hermana de la peregrinación',
     civ: CivId.INCA_KILLKE,
     hero: true,
     accent: '#b64a3a',
+    crest: 'tetra',
+    mantle: 'long',
+    weapon: 'sling',
+    headdress: 'feathers',
+    hair: 'topknot',
+    pattern: 'stripes',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
   mama_ocllo: {
+    gender: 'female',
     id: 'mama_ocllo',
     name: 'Mama Ocllo',
     role: 'Ayar · hermana de la peregrinación',
     civ: CivId.INCA_KILLKE,
     hero: true,
     accent: '#8a5aa8',
+    crest: 'diamond',
+    mantle: 'long',
+    weapon: 'digging',
+    headdress: 'band',
+    hair: 'braids',
+    pattern: 'zigzag',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
   mama_ipacura: {
+    gender: 'female',
     id: 'mama_ipacura',
     name: 'Mama Ipacura',
     role: 'Ayar · hermana de la peregrinación',
     civ: CivId.INCA_KILLKE,
     hero: true,
     accent: '#3a9a9a',
+    crest: 'stone',
+    mantle: 'long',
+    weapon: 'digging',
+    headdress: 'turban',
+    hair: 'bun',
+    carryBundle: true,
+    pattern: 'checks',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
   mama_raua: {
+    gender: 'female',
     id: 'mama_raua',
     name: 'Mama Raua',
     role: 'Ayar · hermana de la peregrinación',
     civ: CivId.INCA_KILLKE,
     hero: true,
     accent: '#c86a2a',
+    crest: 'spire',
+    mantle: 'long',
+    weapon: 'digging',
+    headdress: 'band',
+    hair: 'loose',
+    pattern: 'stripes',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
   pizarro: {
+    gender: 'male',
     id: 'pizarro',
     name: 'Francisco Pizarro',
     role: 'Hueste indiana · Ciudad de los Reyes',
@@ -273,6 +375,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     source: 'docs/historia/campanas/lima.md',
   },
   quizu_yupanqui: {
+    gender: 'male',
     id: 'quizu_yupanqui',
     name: 'Quizu Yupanqui',
     role: 'Inca · general del cerco',
@@ -313,4 +416,22 @@ export function commanderById(id: string | undefined): CommanderDef | undefined 
 /** Nameplate / HUD title for a commander; heroes carry the star. */
 export function commanderLabel(commander: CommanderDef): string {
   return commander.hero ? `★ ${commander.name}` : commander.name;
+}
+
+const NAME_PARTICLES = new Set(['de', 'del', 'la', 'las', 'los', 'y', 'van', 'von']);
+
+/**
+ * Compact field/HUD name for a chip: the last meaningful word. «Ayar Manco» → «Manco», «Mama Ocllo» →
+ * «Ocllo», «Túpac Amaru II» → «Amaru», «José de San Martín» → «Martín». The full name stays in the tooltip.
+ */
+export function commanderShortName(commander: CommanderDef): string {
+  const words = commander.name
+    .split(/\s+/)
+    .filter((word) => word && !NAME_PARTICLES.has(word.toLowerCase()) && !/^[IVX]+$/.test(word));
+  return words[words.length - 1] ?? commander.name;
+}
+
+/** Accent used by markers, chips and attire; the single fallback for every presentation surface. */
+export function commanderAccent(commander: CommanderDef): string {
+  return commander.accent ?? DEFAULT_HERO_ACCENT;
 }

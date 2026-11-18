@@ -15,14 +15,24 @@ export interface Vec2 {
   y: number;
 }
 
+/** Distance in pixels from each screen edge at which edge scrolling runs at full speed. */
+export interface EdgeBand {
+  readonly sides: number;
+  readonly top: number;
+  readonly bottom: number;
+}
+
 /** Centralized camera tuning: no scattered magic numbers. */
 export const CAMERA_CONFIG = {
-  /** Distance from the play-area edge (px) at which edge scrolling begins. */
-  edgeZone: 10,
+  /**
+   * The side/bottom panels sit 18 px in (`--bar-gap`) so the band is clear. The top bar is 46–54 px
+   * tall and its controls start 8–10 px in, so the top band stays narrower.
+   */
+  edgeBand: { sides: 18, top: 10, bottom: 18 } satisfies EdgeBand,
   /** Delay before edge scrolling starts (s), so reaching a HUD panel does not pan by accident. */
-  edgeDelay: 0.25,
+  edgeDelay: 0.15,
   /** Time to reach full edge-scroll speed after the delay (s). */
-  edgeRampTime: 0.4,
+  edgeRampTime: 0.2,
   /** Edge-scroll speed, as a multiple of zoom (world units per second). */
   edgeSpeed: 1.6,
   /** Keyboard pan speed, as a multiple of zoom. */
@@ -32,7 +42,7 @@ export const CAMERA_CONFIG = {
   minZoom: 28,
   maxZoom: 210,
   /** Smoothing rate (per second) of the pan target. */
-  panLambda: 5,
+  panLambda: 8,
   /** Smoothing rate (per second) of the zoom. */
   zoomLambda: 6,
   /** Keep the camera focus near the map edge (0 A.D.-style, in world units). */
@@ -42,10 +52,6 @@ export const CAMERA_CONFIG = {
 /** Camera elevation and vertical field of view used by the ground-footprint math. */
 export const CAMERA_PITCH = 0.9;
 export const CAMERA_FOV_RAD = (48 * Math.PI) / 180;
-
-function clamp01(v: number): number {
-  return v < 0 ? 0 : v > 1 ? 1 : v;
-}
 
 function clampNum(v: number, min: number, max: number): number {
   return v < min ? min : v > max ? max : v;
@@ -58,21 +64,24 @@ export function normalize2D(x: number, y: number): Vec2 {
   return { x: x / len, y: y / len };
 }
 
-/** Progressive factor in [-1, 1] for one axis: 0 outside the zone, ±1 at the border. */
-export function edgeFactor(pos: number, min: number, max: number, zone: number): number {
-  if (zone <= 0) return 0;
-  if (pos < min + zone) return -clamp01((min + zone - pos) / zone);
-  if (pos > max - zone) return clamp01((pos - (max - zone)) / zone);
+/**
+ * Full-speed factor in [-1, 1] for one axis: 0 outside the zone, ±1 anywhere inside it. The
+ * old linear ramp made the usable band 1–2 px wide; the start delay already prevents accidental
+ * panning, so the zone is a plateau.
+ */
+export function edgeFactor(pos: number, min: number, max: number, zoneMin: number, zoneMax = zoneMin): number {
+  if (zoneMin > 0 && pos < min + zoneMin) return -1;
+  if (zoneMax > 0 && pos > max - zoneMax) return 1;
   return 0;
 }
 
 /**
- * Edge-scroll vector for a pointer at (px, py) inside `rect`: grows smoothly
- * toward the border and is normalized so a corner is not faster than an edge.
+ * Edge-scroll vector for a pointer at (px, py) inside `rect`: full speed inside the bands and
+ * normalized so a corner is not faster than an edge.
  */
-export function edgeVector(px: number, py: number, rect: Rect, zone: number): Vec2 {
-  const fx = edgeFactor(px, rect.left, rect.right, zone);
-  const fy = edgeFactor(py, rect.top, rect.bottom, zone);
+export function edgeVector(px: number, py: number, rect: Rect, band: EdgeBand): Vec2 {
+  const fx = edgeFactor(px, rect.left, rect.right, band.sides);
+  const fy = edgeFactor(py, rect.top, rect.bottom, band.top, band.bottom);
   const len = Math.hypot(fx, fy);
   if (len < 1e-6) return { x: 0, y: 0 };
   const mag = Math.min(1, len);

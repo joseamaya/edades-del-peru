@@ -1,8 +1,8 @@
 import { RNG, weightedPick } from '../../util/rng';
-import type { GeographicRegion, HistoricalMapProfile } from './profiles';
+import type { GeographicRegion, GroundCoverSpecies, HistoricalMapProfile } from './profiles';
 
-/** Low ground cover species; all are historical Andean/coastal/Amazonian ground flora or gravel. */
-export type GroundCoverSpecies = 'grass' | 'ichu' | 'fern' | 'pebble' | 'gravel';
+/** Re-exported for consumers of the ground-cover planner. */
+export type { GroundCoverSpecies };
 
 export const GROUND_COVER_SPECIES: readonly GroundCoverSpecies[] = ['grass', 'ichu', 'fern', 'pebble', 'gravel'];
 
@@ -106,7 +106,11 @@ export function planGroundCover(
   query: GroundCoverQuery,
 ): GroundCoverPlacement[] {
   const rng = new RNG((seed * 2654435761 + 0x7f4a7c15) >>> 0);
-  const region = REGION_WEIGHTS[profile.region];
+  const region = { ...REGION_WEIGHTS[profile.region] };
+  for (const id of GROUND_COVER_SPECIES) {
+    const value = profile.vegetation.groundCoverWeights?.[id];
+    if (value !== undefined) region[id] = value;
+  }
   const vegetation = profile.vegetation.density;
   const target = Math.max(0, Math.floor(count));
   const out: GroundCoverPlacement[] = [];

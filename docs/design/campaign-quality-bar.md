@@ -43,11 +43,11 @@ below, which record each mission's own review and are kept for history). **M** m
 | m2_chavin          | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | M    | M     |
 | m3_moche_recuay    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m4_wari            | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m_tambotoco        | M    | M     | P    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | P    | M     |
+| m_tambotoco        | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m5_yahuar_pampa    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6_chimu_inca      | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6b_guerra_civil   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | P    | M     |
+| m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | P    | M     |
 | m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_junta_cusco      | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | P    | M     |
 | m8_independencia   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
@@ -58,7 +58,22 @@ camp pieces, vegetation, household props and fauna approved by a recorded human 
 is approved; its kit and captures keep their own review status. Every released mission now
 follows the model pattern (256 m, painted ground, acts, in-engine intro and bench), including m8 in this
 pass. **m3–m9 meet the scale, opening and performance gates**; the m3, m4, m5, Tambotoco, Lima, La Junta and
-Arica intro renders are approved and the rest of the art review is pending.
+Arica intro renders are approved. Every render record in `src/art/manifest.json` is now approved: the five
+Caral education/tour records were reconciled and the three draft Workbench mission intros were removed. The
+open art review is the reused site GLBs (#343).
+
+**Tambotoco art pass (2026-11-16).** The ayllu kit now uses per-surface PBR detail (stone, rock, earth,
+plaster, thatch, wood, crops, people) with world-scale UVs; the cave is an arch in a scree apron, Huanacaure's
+monolith was re-proportioned, canchas are enclosures, the plaza has a kerb and four axes, fields follow the
+relief and the acequia skirts Inticancha with flowing water and a wet-crop response. The site is merged per
+surface family per phase; contact shadows are one instanced draw; the inland water grid and the dry-puna
+ground cover were trimmed. Measured `bench_scene` (Intel RPL-S, high): opening **479,630/264**, late
+**651,572/353**, under the ratcheted 500k/280 opening cap and the unchanged 660k/360 late cap; software is
+436,880/265 and 608,324/347. The eight Ayar gained per-commander props, headdresses, weaves and combat clips;
+`docs/design/tambotoco-model-mission.md` carries the site certainty table and the evidence commands.
+The 2026-11-16 pass was the baseline for the art-direction pilot, which closed in E6 on 2026-11-17: terrain
+shadows, palette, architecture finish, highland vegetation, the Manco hero variant, the presentation pass and
+the approved 3 × 3 captures ([`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md)).
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
@@ -75,9 +90,12 @@ in-engine intro and epilogue, bench scenes and the scale guard).
 
 1. **Invented outcomes:** fixed for m9 (#468) and m7 (#469). Both play their documented outcomes now.
 2. **No-cheat playtests:** HP pinning removed (2026-11-14) from Chavín, Tambotoco, Lima and the Junta;
-   Chavín and Tambotoco keep **Play P** because the harness still uses direct field-card/tech calls and
-   never fights the valley wave. A manual no-cheat playtest remains recommended.
-3. **Art review:** record the human review of the Chavín kit and the pending art of m6b, m7 and m8.
+   Chavín keeps **Play P** because the harness still uses direct field-card/tech calls. Tambotoco and Lima
+   are Met (automated): Tambotoco fights the valley wave and visits the shrine and the gate through the HUD;
+   Lima opens the Plaza Mayor card through the HUD and advances its tutorial. A manual no-cheat playtest
+   remains recommended for all of them.
+3. **Art review:** the render records are reconciled (0 `reviewed: false`); what remains is the human review
+   of the reused site GLBs and the Chavín kit (#343).
 4. **Model-mission rebuilds:** done for m3–m9 (2026-11-14), including m8. The quick wins are done too:
    m6's gate really closes (`canal_closed`) and m6b's victory holds Quipaipan and captures Huáscar instead
    of razing a building.
@@ -290,7 +308,7 @@ intro/epilogue and bench scenes); its art review is pending. The HUD layout has 
 | Gate        | Status               | Evidence                                                                                                                                                                                                               |
 | ----------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Opening     | Met                  | Three-beat in-engine intro (`capture_colonial_intro.mjs`), `MISSION_ART` and an epilogue capture; PROVENANCE records the captures.                                                                                     |
-| Art         | Pending human review | The reused `colonial_site` GLB and the draft `m7_colonial-intro` Blender record keep their `reviewed: false` status (#343).                                                                                            |
+| Art         | Pending (GLB)        | The draft `m7_colonial-intro` record was removed in the art reconciliation (a Workbench blockout with no ground, sky or people; the opening uses the in-engine capture). The reused `colonial_site` GLB keeps its own review status (#343).                                                                                            |
 | Performance | Met                  | `bench_scene.mjs`: opening ~537k tris / 661–665 calls, late ~811k / 1083, under the recorded first-pass caps; `yarn bench:check` green.                                                                                |
 | Scale       | Met                  | 256 m map, 128² painted ground over 256 m, `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                                             |
 | Pacing      | Pending (exception)  | The real-command bot reaches the ending in ~7 min of simulated time; the agreed 20–30 min human path is still unmeasured. The model pattern's 30–40 band is documented as an exception in `colonial-model-mission.md`. |
@@ -317,8 +335,8 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Docs        | Met                  | This document, dossier, `independencia-model-mission.md`, experience table, site note, art docs and README aligned.                           |
 | Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                 |
 | Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_independencia_intro.mjs`; `MISSION_ART` uses the Lima capture.    |
-| Art         | Pending human review | The reused Ayacucho GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                 |
-| Performance | Met                  | `bench_scene.mjs`: opening ~590k tris / 621 calls (under 600k, over 200 calls), Ayacucho ~867k / 1,246; within the recorded first-pass caps.  |
+| Art         | Pending (GLB)        | The draft `m8_independencia-intro` record (a Workbench blockout that did not show the tents its caption promised) was removed in the art reconciliation; the opening uses the in-engine Lima capture. The reused Ayacucho GLB keeps its review status (#343). |
+| Performance | Met                  | `bench_scene.mjs` 2026-11-16, after the PCF shadow pass and the rig silhouette rule: opening 567,865 tris / 603 calls (under 625k/660, over 200 calls), Ayacucho 808,151 / 959 (under 920k/1,325); the caps were not raised; the scene now measures under them. |
 | Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                            |
 
 ## Campaign IV playable status (m8–m9)
@@ -389,7 +407,7 @@ Quizu's hills) and starts as the traced plaza; the colonial church and the stree
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met: `docs/historia/campanas/lima.md` with a certainty table; the valley was inhabited and the defence relied on Andean allies.                                         |
 | Identity    | Met: found the city and hold the siege; the curaca pact is optional.                                                                                                    |
-| Play        | Met: three acts complete with real move/build/attack orders and no HP pinning; the plaza visit still uses the field-card API, and a human playtest remains recommended. |
+| Play        | Met (automated): three acts complete with real move/build/attack orders and no HP pinning. The plaza visit goes through the HUD — the E2E selects the Plaza Mayor on the map, presses «Visitar» and checks the tutorial advances from `traza` to `cabildo` — instead of calling `visitHeritage`. A human playtest remains recommended. |
 | Contract    | Met: Act II–III hidden, the curaca pact optional, Pizarro protected from the start.                                                                                     |
 | Onboarding  | Met: six-step tutorial, briefing and Codex.                                                                                                                             |
 | Closure     | Met: the epilogue states that Cusco remains besieged; no counterfactual is hidden.                                                                                      |
@@ -398,8 +416,8 @@ Quizu's hills) and starts as the traced plaza; the colonial church and the stree
 | Site        | Met: `traza` (cord, packed plaza, provisional shelters) → `ciudad` (church, ten houses, market, well, people) triggered by the cabildo.                                 |
 | Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                   |
 | Tests       | Met: `tests/lima.test.ts`, scale, campaign path and the campaign E2E specs.                                                                                             |
-| Docs        | Met: dossier, `lima-model-mission.md`, this table and the redesign status.                                                                                              |
-| Performance | Partial: opening ~767k / ~834 under 800k/860; the city with the siege crowd is ~1.06M / ~1,227 under the 1.1M/1,250 regression cap, still over §11's 600k/200 target.   |
+| Docs        | Met: dossier, `lima-model-mission.md`, this table and the redesign status; the 2026-11-16 pass refreshed the performance figures and removed the stale API-only Play claim. |
+| Performance | Partial (measured 2026-11-16): software `bench:check` opening ~645k tris (627–664k observed, the vegetation kit varies between runs) / 624 calls and the city with the siege crowd 927,198 / 928, under the 800k/860 and 1.1M/1,250 regression caps. Hardware high (`--gpu`, Intel iGPU) ~874k / 627 and 1,134,038 / 931, against 974,062 / 832 and 1,267,920 / 1,226 with VSM on the same scene: the PCF pass and the rig silhouette rule take ~100k/134k triangles and 205/295 calls off. Both views are still far over §11's 600k/200 target, so the row stays Partial until the hardware/LOD pass. |
 | Art         | Met: approved authored plaza/cathedral intro render; the streets remain procedural and the captures are in-engine.                                                      |
 | Structure   | Met: three acts with hidden objectives, two chapter cards and the documented siege.                                                                                     |
 | Opening     | Met: three narrated beats with in-engine captures, two act cards and the epilogue backdrop.                                                                             |
@@ -410,26 +428,26 @@ Quizu's hills) and starts as the traced plaza; the colonial church and the stree
 `m_tambotoco` is the released opening of El Tahuantinsuyo and the first **Leyenda** mission. It is built on
 the 256 m Pacaritambo–Huanacaure–Cusco transect and draws its own ayllu kit (cave, shrine, hamlets and the
 planned Inticancha).
-The table separates what is implemented from the performance pass that is still open; the intro render is approved.
+The table reflects the art-direction pilot, closed through E7 on 2026-11-17; the intro render is approved.
 
 | Gate        | m_tambotoco                                                                                                                                                              |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | History     | Met: `docs/historia/campanas/tambotoco.md` with a certainty table; the dossier states that Sarmiento is hostile and Garcilaso gives another version.                     |
 | Identity    | Met: water and land as leverage, not a pitched battle; the four canchas order the foundation.                                                                            |
-| Characters  | Met: the eight siblings march as named units; Cachi, Uchu and Auca leave a named huaca.                                                                                  |
-| Play        | Partial: no HP pinning and the acts build/visit correctly, but the E2E never fights the valley wave; `yarn record --mode=full` and a human playtest are still needed.    |
-| Contract    | Met: Acts II–IV hidden, the hualla visit is optional, and the acequia is the only required water step.                                                                   |
+| Characters  | Met: eight named siblings with declared genders, accent attire and a hero mantle; crests differ and far zoom keeps only the rings. Cachi, Uchu and Auca leave a named huaca. |
+| Play        | Met (automated): no HP pinning; the E2E holds Huanacaure through the valley wave, builds the optional irrigation farm and verifies `a3_acequia` is pending before the hold, then opens it. The heritage visit and the gate now go through the HUD — the test selects the monument on the map, presses «Visitar» and «Abrir compuerta» — instead of calling `visitHeritage`/`toggleCanal`. `yarn record --mode=full` completes with the wave; a human 30–40 min playtest is still recommended. |
+| Contract    | Met: Acts II–IV hidden; the hualla visit (pays 150 food / 100 wood) and the irrigation farm are optional; the defended intake (`a3_oleada`) gates the acequia, the only required water step.     |
 | Onboarding  | Met: six-step tutorial that teaches controls (move, camp store, hunt, visit, water, canchas), briefing with the eight siblings and Codex.                                |
 | Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden.                                                                |
-| UX          | Met: campaign layout at 1600×900, the eight-card briefing at 1280×720 and `hud-layout.spec.ts`.                                                                          |
-| Visuals     | Met: 256 m transect, the in-engine ayllu kit and the approved EEVEE intro render (`m_tambotoco-intro`).                                                                  |
+| UX          | Met: campaign layout at 1600×900, the eight-card briefing at 1280×720, a left dialogue dock above the minimap, portrait chips for a selected cast, a large-screen HUD scale at 1920×1080 and `hud-layout.spec.ts`. |
+| Visuals     | Met (E3a–E7): 256 m transect, the modular terrain-conformed ayllu kit (coursed stone, thatch houses, qollqas, terraced fields, paved plaza at grade), contact AO/macro colour, battered walls and a layered thatch eave, the cave and Huanacaure huaca GLBs, the highland molle/pacay kit (ichu ground-cover stand at a trimmed budget) with a 14 m LOD0 radius, soft stream banks and a dry ford bar, dirt-shouldered stone paths with bank/path stones, Killke/ayllu unit variants and the male-only Manco GLB (E4a/E4b), the E5 shot grammar (hero cave, detail Huanacaure, wide valley and traced Inticancha, a foundation beat with the Ayar Auca stone and the founded settlement as the victory backdrop), plus the approved EEVEE intro render (`m_tambotoco-intro`), the approved E6 reference captures and the E7 production pass (baked Manco proportions, `cusco_valley`-scoped terrain macro, Inticancha yard detail and Huanacaure offerings; [`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md)). The pilot is a quality gate, not a rebuild. |
 | Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                    |
 | Tests       | Met: `tests/tambotoco.test.ts` (cast, tags, huaca beats), scale, campaign path and the campaign E2E specs.                                                               |
 | Docs        | Met: dossier, `tambotoco-model-mission.md`, this table and the redesign status.                                                                                          |
-| Performance | Partial: opening ~567k triangles / ~339 calls under 600k/340 (hero markers and accents), Act IV 472k/217 under 620k/360; still over art-direction §11's 200-call target. |
+| Performance | Met (measured 2026-11-17; E3a–E7): software `bench:check` structural opening **425,328 / 269** and founded Inticancha **634,134 / 357** (vegetation kit 9,352/9 and 34,306/12); the pre-E1 baseline was 436,880/265 and 608,324/347, E1 measured 437,976/264 and 614,594/357, E2a 438,856/269 and 615,532/354, and E2b 430,488/269 and 613,692/354. Hardware high (Intel RPL-S iGPU) frames mode: **450,930 / 270** opening and **659,962 / 360** late (the late frames rides the call cap; the structural late 634,134 / 357 is what the caps ratify). The opening cap is **500k / 280** (ratcheted from 600k/340) and the late cap stays **660k / 360**, both met without raising them. The pass batched contact shadows into one instanced draw, merged the site by surface family per phase, cut the inland water grid and trimmed the dry-puna ground cover; E1 added the terrain shadow sample and trimmed the late plaster/earth/rock/wood casters; E2a baked contact AO/macro colour, battered walls, a thatch eave and qollqa details; E2b ships 2,090 cave/huaca GLB triangles for 1,196 procedural (the ~8k structural drop is culling after the cave leaves the merged cave-phase mesh) in ≈103 KB; E3a adds the molle/pacay/ichu kit (≈216 KB, inferred) and limits highland kit shadow casting to the near canopy. Frame time at high quality with post-processing on: **39 FPS** opening and **33 FPS** late (25.6 / 30.1 ms p50). `node scripts/bench_scene.mjs --mission=m_tambotoco [--stage=late] [--gpu] --assert` is the gate. |
 | Art         | Met: approved authored EEVEE intro render; the ayllu kit stays procedural; captures are in-engine and documented in PROVENANCE.                                          |
 | Structure   | Met: four acts with hidden objectives, three chapter cards and the documented foundation.                                                                                |
-| Opening     | Met: three narrated beats with in-engine captures, three act cards and the epilogue backdrop.                                                                            |
+| Opening     | Met: three narrated beats with in-engine hero/detail/wide captures, three act cards and the founded settlement as the epilogue backdrop.                               |
 | Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).                                                                     |
 
 ## Inca civil war playable status (m6b)

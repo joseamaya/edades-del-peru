@@ -1,0 +1,80 @@
+{
+  "asset_id": "tambotoco_cave",
+  "source_scene": "scenes/tambotoco_hero_kit.blend",
+  "script": "scripts/blender/build_tambotoco_hero_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "cave mouth threshold at ground level; the massif extends behind the mouth",
+  "collision": "none in the GLB; AylluSite/sites.ts owns the cave and shrine blockers",
+  "confidence": "assumed",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/historia/campanas/tambotoco.md",
+    "docs/design/tambotoco-art-pilot.md"
+  ],
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 1802,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Tambotoco_LightRock",
+        "MAT-Tambotoco_Mouth",
+        "MAT-Tambotoco_Rock",
+        "MAT-Tambotoco_RockDark"
+      ],
+      "bounds": {
+        "min": [
+          -6.585,
+          -3.405,
+          -0.696
+        ],
+        "max": [
+          6.569,
+          5.105,
+          6.584
+        ],
+        "size": [
+          13.154,
+          8.51,
+          7.281
+        ]
+      },
+      "file": "tambotoco_cave_lod0.glb",
+      "bytes": 187068
+    },
+    "LOD1": {
+      "triangles": 342,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Tambotoco_Mouth",
+        "MAT-Tambotoco_Rock",
+        "MAT-Tambotoco_RockDark"
+      ],
+      "bounds": {
+        "min": [
+          -6.488,
+          -3.17,
+          -0.693
+        ],
+        "max": [
+          4.19,
+          4.915,
+          6.584
+        ],
+        "size": [
+          10.678,
+          8.085,
+          7.277
+        ]
+      },
+      "file": "tambotoco_cave_lod1.glb",
+      "bytes": 37192
+    }
+  }
+}

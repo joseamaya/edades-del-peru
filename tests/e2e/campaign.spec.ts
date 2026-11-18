@@ -1211,16 +1211,26 @@ test('the Ayar cast is on the board and named after the briefing', async ({ page
     const heroMarkers = g.heroMarkers ? (g.heroMarkers.rings.count as number) : 0;
     const heroScale = manco.unitView?.view.group.scale.x ?? 0;
     const single = document.querySelector('#ed-desc')?.textContent ?? '';
+    const singleChips = document.querySelectorAll('#ed-desc .ed-hero-chip').length;
     g.selectUnits(tagged.map((u: any) => u.id));
     for (let i = 0; i < 20; i++) g.update(1 / 60, 20 / 60 + i / 60);
     const labels = g.characterLabels ? [...g.characterLabels.labels.values()] : [];
+    const chipEls = [...document.querySelectorAll('#ed-desc .ed-hero-chip')];
+    const chips = chipEls.length;
+    const chipTitles = chipEls.map((el) => el.getAttribute('title') ?? '');
+    const desc = document.getElementById('ed-desc');
+    const descFits = !!desc && desc.scrollHeight <= desc.clientHeight + 1;
     return {
       tags: tagged.map((u: any) => u.tag as string),
       labels: labels.length,
       visibleLabels: labels.filter((l: { visible: boolean }) => l.visible).length,
       single,
+      singleChips,
       heroMarkers,
       heroScale,
+      chips,
+      chipTitles,
+      descFits,
       party: document.querySelector('#ed-desc')?.textContent ?? '',
     };
   });
@@ -1243,9 +1253,15 @@ test('the Ayar cast is on the board and named after the briefing', async ({ page
   expect(info.heroScale).toBeGreaterThan(1.15);
   expect(info.single).toContain('★');
   // A box selection of the party still names its characters (not just "Soldado ×7").
+  // One chip per named character, with the short name visible and the full name on the tooltip.
+  expect(info.singleChips, 'a single hero keeps the plain panel').toBe(0);
+  expect(info.chips).toBe(8);
+  expect(info.chipTitles).toContain('Ayar Manco');
+  expect(info.descFits, 'the chips and the stat block fit without a scroll').toBe(true);
   expect(info.party).toContain('Grupo ×8');
-  expect(info.party).toContain('Ayar Manco');
-  expect(info.party).toContain('Mama Ocllo');
+  expect(info.party).toContain('Manco');
+  expect(info.party).toContain('Ocllo');
+  expect(info.party).not.toContain('Personajes');
   expect(errors).toEqual([]);
 });
 
@@ -1318,8 +1334,8 @@ test('the ayllu site grows through its phases', async ({ page }) => {
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     const visible = (): { name: string; visible: boolean }[] =>
-      (g.aylluSite.group.children as { visible: boolean; children: { name: string }[] }[]).map((group) => ({
-        name: group.children[0]?.name ?? '?',
+      (g.aylluSite.group.children as { visible: boolean; name: string }[]).map((group) => ({
+        name: group.name,
         visible: group.visible,
       }));
     const at = (phase: string) => {
@@ -1342,8 +1358,8 @@ test('the ayllu site grows through its phases', async ({ page }) => {
     return { before, shrine, inticancha, fundada, afterBogus: g.sitePhase, lifeCalls };
   });
   expect(states.before).toEqual([
+    { name: 'ayllu_hero', visible: true },
     { name: 'ayllu:cave', visible: true },
-    { name: 'ayllu:huanacaure', visible: false },
     { name: 'ayllu:inticancha', visible: false },
     { name: 'ayllu:fundada', visible: false },
   ]);

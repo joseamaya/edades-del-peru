@@ -163,14 +163,21 @@ const CIV_ARCH: Partial<Record<CivId, Partial<ArchBase>>> = {
     ornament: { megalithBlocks: true },
     silhouette: 'chullpa',
   },
-  // Killke/early Cusco: small circular-plaza centers before the imperial ushnu
+  // Killke/early Cusco: fieldstone, mud mortar and thatch before the imperial cut-stone and ushnu.
+  // The site kit (`aylluKit`) uses the same material language, so the player's base belongs to the valley.
   [CivId.INCA_KILLKE]: {
+    wall: 'fieldstone',
+    roof: 'thatch',
+    foundation: 'terrace',
     monumentalTiers: 2,
-    ornament: { niches: true },
+    ornament: {},
     silhouette: 'circular-plaza',
   },
-  // Ayllus: low terraced village walls with a perimeter enclosure
+  // Ayllus: low fieldstone village walls around a communal patio, no imperial niches or cut-stone.
   [CivId.AYLLUS]: {
+    wall: 'fieldstone',
+    roof: 'thatch',
+    foundation: 'terrace',
     monumentalTiers: 2,
     ornament: {},
     silhouette: 'perimeter-wall',

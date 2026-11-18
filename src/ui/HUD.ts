@@ -56,7 +56,14 @@ import { renderBriefing } from './MissionBriefing';
 import { decorateTitleScreen, renderCampaignPath, renderMainMenu } from './SeriesMenu';
 import { publicAsset } from '../util/publicAsset';
 import type { MissionDef, ObjectiveProgress, ObjState } from '../campaign/types';
-import { COMMANDERS, commanderById, commanderLabel, type PortraitId } from '../model/defs/commanders';
+import {
+  COMMANDERS,
+  commanderById,
+  commanderAccent,
+  commanderLabel,
+  commanderShortName,
+  type PortraitId,
+} from '../model/defs/commanders';
 import type { HeritageBuildingDef, HeritageBuildingId } from '../model/defs/heritage';
 import { portraitSvg } from './Portrait';
 import { DamageNumbers } from './DamageNumbers';
@@ -174,7 +181,7 @@ const CSS = /* css */ `
   .speed-btn.active { background: var(--gold); color: #14161a; border-color: var(--gold); }
 
   /* Minimapa */
-  #ed-minimap-wrap { position: absolute; left: 12px; bottom: 12px; width: var(--minimap-size); height: var(--minimap-size); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+  #ed-minimap-wrap { position: absolute; left: var(--bar-gap); bottom: var(--bar-gap); width: var(--minimap-size); height: var(--minimap-size); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
   #ed-minimap { width: 100%; height: 100%; display: block; cursor: crosshair; pointer-events: auto; }
   #ed-compass { position: absolute; inset: 0; pointer-events: none; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px rgba(0,0,0,0.9); }
   #ed-compass span { position: absolute; padding: 1px 3px; border-radius: 2px; background: rgba(6,8,12,0.55); }
@@ -185,14 +192,17 @@ const CSS = /* css */ `
 
   /* Command bar: one low horizontal strip right of the minimap (AoE/SC2 layout). Selection info on the
      left, actions in a row in the middle, orders on the right; it only grows when the actions wrap. */
-  #ui-root { --minimap-size: 190px; --bar-gap: 12px; --panel-floor: 150px; }
+  #ui-root { --minimap-size: 190px; --bar-gap: 18px; }
   #ed-bottom { position: absolute; left: calc(var(--minimap-size) + 2 * var(--bar-gap)); right: var(--bar-gap); bottom: var(--bar-gap); max-width: 1180px; margin: 0 auto; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; pointer-events: auto; display: flex; flex-direction: column; box-shadow: 0 6px 30px rgba(0,0,0,0.55); overflow: hidden; }
   #ed-bottom-header { padding: 3px 12px; font-size: 12px; font-weight: 700; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; background: rgba(232,195,106,0.06); background-image: var(--weave); background-repeat: repeat-x; background-position: bottom; }
   #ed-bottom-header:empty { display: none; }
   #ed-bottom-body { padding: 6px 8px; display: flex; flex-direction: row; align-items: flex-start; gap: 10px; }
-  #ed-desc { flex: 0 0 250px; max-height: 120px; overflow-y: auto; font-size: 12px; color: var(--text-dim); line-height: 1.35; padding-right: 10px; border-right: 1px solid var(--line); }
+  #ed-desc { flex: 0 0 250px; max-height: 140px; overflow-y: auto; font-size: 12px; color: var(--text-dim); line-height: 1.35; padding-right: 10px; border-right: 1px solid var(--line); }
   #ed-desc:empty { display: none; }
   #ed-desc h3 { margin: 0 0 3px; font-size: 14px; color: var(--text); }
+  #ed-desc .ed-hero-chips { display: flex; flex-wrap: wrap; gap: 3px; margin: 0 0 5px; }
+  #ed-desc .ed-hero-chip { display: inline-flex; align-items: center; gap: 3px; padding: 1px 5px 1px 2px; border: 1px solid var(--line); border-left: 2px solid var(--accent, var(--gold)); border-radius: 3px; background: var(--panel-2); color: var(--text); font-size: 11px; line-height: 1.2; }
+  #ed-desc .ed-hero-chip .ed-portrait { width: 18px; height: 18px; }
   .ed-grid { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 5px; min-width: 0; }
   #ed-commands { flex: 0 1 260px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 4px; padding-left: 10px; border-left: 1px solid var(--line); }
   #ed-commands:empty { display: none; }
@@ -459,7 +469,7 @@ const CSS = /* css */ `
   #ui-root.help-collapsed #ed-help-open { display: block; }
   #ed-cursor { position: absolute; width: 20px; height: 20px; pointer-events: none; }
   .ed-error { color: var(--red); font-size: 12px; margin-top: 8px; min-height: 16px; }
-  #ed-fps { position: absolute; top: 52px; right: 12px; font-size: 11px; color: var(--text-dim); background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 3px; }
+  #ed-fps { position: absolute; top: 52px; right: var(--bar-gap); font-size: 11px; color: var(--text-dim); background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 3px; }
   /* Hide the in-game HUD while a modal menu is open */
   #ui-root.menu-open .ed-topbar,
   #ui-root.menu-open #ed-bottom,
@@ -472,7 +482,7 @@ const CSS = /* css */ `
   /* Objectives panel (campaign) */
   /* Right-hand column: objectives, tutorial and shortcuts share one stack, so they never cover each
      other nor reach the command bar (issues 401 and 402). */
-  #ed-right-column { position: absolute; top: 56px; right: 12px; width: 240px; bottom: calc(var(--ed-command-bar-h, 0px) + 2 * var(--bar-gap)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  #ed-right-column { position: absolute; top: 56px; right: var(--bar-gap); width: 240px; bottom: calc(var(--ed-command-bar-h, 0px) + 2 * var(--bar-gap)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
   #ed-right-column > * { pointer-events: auto; }
   /* Final screens, the pause menu and every other modal own the screen: the objectives column
      must not show through the veil, not even its sticky archive summary (issue 415). */
@@ -505,10 +515,8 @@ const CSS = /* css */ `
   #ed-objectives .obj.failed { color: var(--red); }
   #ed-objectives .obj.failed .mark { color: var(--red); }
 
-  #ed-dialogue { position: absolute; left: 50%; transform: translateX(-50%); width: min(560px, 86vw); background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; background-image: var(--weave); background-repeat: repeat-x; background-position: top; }
-  /* The dialogue sits above the command bar, whose height changes with the selected
-     panel; the floor keeps them clear of the minimap while nothing is selected. */
-  #ed-dialogue { bottom: max(var(--panel-floor), calc(var(--ed-command-bar-h, 0px) + 2 * var(--bar-gap))); }
+  /* Dialogue dock: left, above the minimap, so a long mission line never covers the party. */
+  #ed-dialogue { position: absolute; left: var(--bar-gap); bottom: max(calc(var(--minimap-size) + 2 * var(--bar-gap)), calc(var(--ed-command-bar-h, 0px) + 2 * var(--bar-gap))); width: min(440px, 38vw); background: rgba(12,14,18,0.94); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; background-image: var(--weave); background-repeat: repeat-x; background-position: top; }
   #ed-dialogue.show { opacity: 1; }
   #ed-dialogue .who { font-size: 11px; letter-spacing: 1px; color: var(--gold); font-weight: 700; margin-bottom: 3px; }
   #ed-dialogue .txt { font-size: 13px; color: var(--text); line-height: 1.4; }
@@ -527,10 +535,43 @@ const CSS = /* css */ `
   .ed-dmg { position: absolute; left: 0; top: 0; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,0.95); pointer-events: none; white-space: nowrap; will-change: transform, opacity; }
   #ed-cursor { position: absolute; pointer-events: none; z-index: 62; display: none; font-size: 22px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.85)); }
   /* Top-left, clear of the objectives/tutorial column: a burst of alerts used to cover the goals. */
-  #ed-alerts { position: absolute; top: 56px; left: 12px; width: 244px; display: flex; flex-direction: column; gap: 6px; z-index: 57; pointer-events: none; }
+  #ed-alerts { position: absolute; top: 56px; left: var(--bar-gap); width: 244px; display: flex; flex-direction: column; gap: 6px; z-index: 57; pointer-events: none; }
   .ed-alert { pointer-events: auto; cursor: pointer; background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 6px 9px; font-size: 12px; color: var(--text); box-shadow: 0 4px 16px rgba(0,0,0,0.5); animation: alert-in 0.2s ease; }
   .ed-alert.warn { border-left-color: var(--red); }
   @keyframes alert-in { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+  /* Large screens: the same HUD at a readable size instead of 12 px labels on a 1920 panel. */
+  @media (min-width: 1700px) {
+    #ui-root { --minimap-size: 228px; --bar-gap: 18px; }
+    .ed-topbar { height: 54px; padding: 8px 16px; }
+    .ed-logo { font-size: 18px; }
+    .ed-logo svg { width: 26px; height: 26px; }
+    .ed-res { font-size: 15px; min-width: 104px; padding: 4px 12px; }
+    .ed-idle, #ed-pop, #ed-era { font-size: 14px; }
+    #ed-era { max-width: 300px; }
+    .ed-topbtn, .speed-btn { font-size: 14px; }
+    .speed-btn { width: 30px; height: 30px; }
+    #ed-alerts { top: 66px; width: 290px; }
+    #ed-right-column { top: 66px; right: var(--bar-gap); width: 300px; gap: 10px; }
+    #ed-objectives { padding: 12px 14px; min-height: 120px; }
+    #ed-objectives .obj { font-size: 14px; }
+    #ed-objectives details.obj-archive > summary { font-size: 12px; }
+    #ed-tutorial { padding: 14px 18px; }
+    #ed-tutorial .tut-head { font-size: 12px; }
+    #ed-tutorial .tut-step { font-size: 16px; }
+    #ed-dialogue { width: min(540px, 38vw); padding: 12px 18px; }
+    #ed-dialogue .who { font-size: 13px; }
+    #ed-dialogue .txt { font-size: 15px; }
+    #ed-bottom { max-width: 1500px; }
+    #ed-bottom-header { font-size: 14px; padding: 4px 14px; }
+    #ed-desc { flex-basis: 320px; max-height: 160px; font-size: 14px; }
+    #ed-desc h3 { font-size: 16px; }
+    #ed-desc .ed-hero-chip { font-size: 12px; }
+    #ed-desc .ed-hero-chip .ed-portrait { width: 20px; height: 20px; }
+    .ed-card { width: 70px; height: 70px; font-size: 12px; }
+    #ed-commands { flex-basis: 310px; }
+    #ed-commands .ed-command { padding: 6px 10px; font-size: 13px; }
+  }
+
 `;
 
 /**
@@ -1853,8 +1894,18 @@ export class HUD {
       const c = commanderById(u.tag);
       return c ? [c] : [];
     });
-    const castLine =
-      commander || cast.length === 0 ? '' : `<b>${t('hud.unit.cast')}:</b> ${cast.map((c) => c.name).join(' · ')}<br>`;
+    // One chip per named character: a portrait, a short name and the commander's accent, instead of a
+    // paragraph of eight names that wrapped over the unit stats.
+    const chips =
+      cast.length === 0
+        ? ''
+        : `<div class="ed-hero-chips">${cast
+            .map((c) => {
+              const accent = commanderAccent(c);
+              const name = escapeHtml(c.name);
+              return `<span class="ed-hero-chip" style="--accent:${accent}" title="${name}" aria-label="${name}">${portraitSvg(c, 18)}<span>${escapeHtml(commanderShortName(c))}</span></span>`;
+            })
+            .join('')}</div>`;
     const mixed = new Set(units.map((u) => u.kind)).size > 1;
     const title = commander
       ? commanderLabel(commander)
@@ -1866,7 +1917,7 @@ export class HUD {
       title,
       commander
         ? `${commander.hero ? `${t('hud.unit.hero')} · ` : ''}${commander.role}<br>${this.unitDesc(first)}`
-        : `${castLine}${this.unitDesc(first)}`,
+        : `${chips}${this.unitDesc(first)}`,
     );
     this.clearGrid();
     // summary by type (click = select only that type) — AoE2 style

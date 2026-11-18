@@ -3,6 +3,7 @@ import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import { RIG_CLIP_STATES, RIG_VARIANT_CLIPS, type RigClipState, type RigVariant } from '../model/defs/modelAssets';
 import type { LoadedModelAsset } from './ModelAssets';
 import { applyRigVariant, type RigVariantHandle } from './rigVariants';
+import { limitShadowCasters } from './shadowCasters';
 
 /**
  * One animated instance of a shared rigged asset. The clone owns its skeleton
@@ -62,6 +63,9 @@ export class RigInstance {
       this.model.updateMatrixWorld(true);
       this.variant = applyRigVariant(this, variant);
     }
+    // A humanoid rig is ~14 materials; only its silhouette needs to cast. Variant dressing has already
+    // shown/hidden parts, so this is the point where "visible" means what the player sees.
+    limitShadowCasters(this.model);
   }
 
   get currentState(): RigClipState | null {
@@ -143,6 +147,21 @@ export class RigInstance {
 
   setNetInHand(inHand: boolean): void {
     this.variant?.setNetInHand?.(inHand);
+  }
+
+  /**
+   * Re-map one gameplay state to another clip for this instance. The Ayar use it to give a slinger a
+   * throw and a digging-stick bearer a tool swing without forking the shared rig or its variant table.
+   */
+  setClipOverride(state: RigClipState, clipName: string): void {
+    if (this.disposed) return;
+    const clip = this.asset.clipNames.get(clipName);
+    if (!clip) return;
+    this.actions.set(state, this.mixer.clipAction(clip));
+    if (this.current === state) {
+      this.current = null;
+      this.play(state, 0);
+    }
   }
 
   update(dt: number): void {

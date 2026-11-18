@@ -2,13 +2,15 @@ import { CARAL_WORKER_SHADOW_SKIP_MESHES, type ModelAssetId, type RigClipState }
 
 /**
  * Local model files bundled by Vite. `?url` keeps them as separate assets
- * (hashed in production) instead of inlining them into the JS chunk.
+ * (hashed in production) instead of inlining them into the JS chunk. The
+ * list is explicit so the 1.9 MB demo mannequin stays out of the production bundle.
  */
-const modelUrls = import.meta.glob('../assets/models/*.glb', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-}) as Record<string, string>;
+import alpacaUrl from '../assets/models/quaternius_alpaca.glb?url';
+import caralWorkerUrl from '../assets/models/caral_worker.glb?url';
+import tambotocoHeroUrl from '../assets/models/tambotoco_hero.glb?url';
+import mountedRigUrl from '../assets/models/mounted_rig.glb?url';
+import siegeRigUrl from '../assets/models/siege_rig.glb?url';
+import vehicleRigUrl from '../assets/models/vehicle_rig.glb?url';
 
 export interface ModelAssetDefinition {
   readonly url: string;
@@ -26,16 +28,15 @@ export interface ModelAssetDefinition {
   readonly groundClearance?: number;
   /** Merge flat-coloured skinned primitives into one mesh/material (draw-call budget). */
   readonly consolidate?: boolean;
-  /** Tiny meshes that skip the VSM shadow pass (they cast no readable shadow). */
+  /** Tiny meshes that skip the shadow pass (they cast no readable shadow). */
   readonly shadowSkipMeshes?: readonly string[];
 }
 
-const UAL_URL = modelUrls['../assets/models/ual_mannequin.glb'] ?? '';
-const ALPACA_URL = modelUrls['../assets/models/quaternius_alpaca.glb'] ?? '';
-const CARAL_WORKER_URL = modelUrls['../assets/models/caral_worker.glb'] ?? '';
-const MOUNTED_RIG_URL = modelUrls['../assets/models/mounted_rig.glb'] ?? '';
-const SIEGE_RIG_URL = modelUrls['../assets/models/siege_rig.glb'] ?? '';
-const VEHICLE_RIG_URL = modelUrls['../assets/models/vehicle_rig.glb'] ?? '';
+const ALPACA_URL = alpacaUrl;
+const CARAL_WORKER_URL = caralWorkerUrl;
+const MOUNTED_RIG_URL = mountedRigUrl;
+const SIEGE_RIG_URL = siegeRigUrl;
+const VEHICLE_RIG_URL = vehicleRigUrl;
 
 /** Shared clip set and grounding for the mounted, siege and vehicle platform rigs. */
 const PLATFORM_RIG: Omit<ModelAssetDefinition, 'url'> = {
@@ -53,13 +54,13 @@ const PLATFORM_RIG: Omit<ModelAssetDefinition, 'url'> = {
 };
 
 /**
- * The mannequin is the pipeline's validation asset (Quaternius Universal
- * Animation Library, CC0). The base mesh is still a generic placeholder; a later
- * iteration replaces it with a bespoke historical mesh.
+ * The mannequin is the pipeline's validation fixture (Quaternius Universal
+ * Animation Library, CC0). It is not imported into the production bundle; the
+ * model tests load it from disk and `?rig=1` previews the shipped worker.
  */
 export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
   ual_mannequin: {
-    url: UAL_URL,
+    url: '',
     scale: 0.78,
     yawOffset: 0,
     ground: true,
@@ -86,15 +87,35 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     shadowSkipMeshes: CARAL_WORKER_SHADOW_SKIP_MESHES,
     // Farm_Harvest reads as the digging-stick harvest; the asset has no
     // construction clip, so Push_Loop is the explicit pushing/placing
-    // abstraction for building. Farm_PlantSeed and TreeChopping_Loop stay
-    // unused until a crop/wood variant needs them.
+    // abstraction for building. TreeChopping_Loop stays for the Caral tool swing.
     clips: {
       idle: 'Idle_Loop',
       walk: 'Walk_Loop',
       walk_carry: 'Walk_Carry_Loop',
       gather: 'Farm_Harvest',
       build: 'Push_Loop',
+      attack: 'Punch_Jab',
     },
+    deathClip: 'Death01',
+  },
+  /**
+   * Tambotoco hero: male-only derivation of the Caral worker with the Killke outfit and the
+   * combat/death clips. Built by `scripts/build_caral_worker.mjs --hero`.
+   */
+  tambotoco_hero: {
+    url: tambotocoHeroUrl,
+    scale: 1,
+    yawOffset: 0,
+    ground: true,
+    groundClearance: 0.01,
+    shadowSkipMeshes: CARAL_WORKER_SHADOW_SKIP_MESHES,
+    clips: {
+      idle: 'Idle_Loop',
+      walk: 'Walk_Loop',
+      walk_carry: 'Walk_Loop',
+      attack: 'Sword_Regular_A',
+    },
+    deathClip: 'Death01',
   },
   /**
    * Project-authored low-poly horse and rider. The source is

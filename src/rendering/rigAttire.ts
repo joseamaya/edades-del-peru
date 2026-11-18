@@ -1,4 +1,29 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+/** Merge same-bone accessories into one vertex-coloured geometry (one draw per bone). */
+export function mergeColoredGeometry(
+  pieces: readonly (readonly [THREE.BufferGeometry, THREE.Color])[],
+): THREE.BufferGeometry | null {
+  if (!pieces.length) return null;
+  const flat: THREE.BufferGeometry[] = [];
+  for (const [geometry, color] of pieces) {
+    const nonIndexed = geometry.index ? geometry.toNonIndexed() : geometry;
+    if (nonIndexed !== geometry) geometry.dispose();
+    const count = nonIndexed.getAttribute('position').count;
+    const colors = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      colors[i * 3] = color.r;
+      colors[i * 3 + 1] = color.g;
+      colors[i * 3 + 2] = color.b;
+    }
+    nonIndexed.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    flat.push(nonIndexed);
+  }
+  const merged = mergeGeometries(flat, false);
+  flat.forEach((geometry) => geometry.dispose());
+  return merged;
+}
 
 /** Shared helpers for project-authored, presentation-only rig accessories. */
 export interface RigAttireTools {

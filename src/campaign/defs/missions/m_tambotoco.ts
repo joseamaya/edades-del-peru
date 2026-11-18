@@ -7,10 +7,34 @@ import {
   TAMBOTOCO_SHRINE as TAMBOTOCO_HUANACAURE,
   TAMBOTOCO_VILLAGES,
 } from '../../../model/defs/tambotocoLayout';
+import { TAMBOTOCO_LANDSCAPE } from '../../../model/defs/landscape';
 
 // Los hijos de Tambotoco: the cave, the Huanacaure huaca, the valley and Inticancha.
 const TAMBOTOCO_TAMBO_QUIRO = { x: 70, z: 91 } as const;
 const TAMBOTOCO_ENEMY = { x: 212, z: 200 } as const;
+/** The stone plug sits at the canal's first point; the post-wave cue frames the gate, not the field intake. */
+export const TAMBOTOCO_CANAL_GATE = { x: 152, z: 160 } as const;
+/** Canal anchor for props/placement (the stone plug is `TAMBOTOCO_CANAL_GATE`), in world metres. */
+const TAMBOTOCO_INTAKE = { x: 158, z: 176 } as const;
+export const TAMBOTOCO_OUTLET = { x: 182, z: 194 } as const;
+/** The valley sortie starts on the Huanacaure approach, not at the far enemy base. */
+export const TAMBOTOCO_WAVE = { x: 142, z: 126 } as const;
+/** The defended ring south of the huaca; the wave marches here. */
+export const TAMBOTOCO_HOLD = { x: TAMBOTOCO_HUANACAURE.x, z: TAMBOTOCO_HUANACAURE.z + 12 } as const;
+/** Ground radius (m) revealed by the narrated camera beats. */
+const TAMBOTOCO_CAMERA_REVEAL = 45;
+/**
+ * Shot grammar for the narrated beats. The RTS camera's closest framing is 28 m, so a detail shot uses
+ * 32–34, a hero shot the 28–30 floor and a wide shot 46–52. The flight is presentation only: it does not
+ * stall the mission clock.
+ */
+const TAMBOTOCO_SHOT = {
+  huanacaure: { zoom: 34, seconds: 2.0 },
+  valley: { zoom: 46, seconds: 2.4 },
+  gate: { zoom: 36, seconds: 1.8 },
+  inticancha: { zoom: 48, seconds: 2.4 },
+  foundation: { zoom: 29, seconds: 2.2 },
+} as const;
 
 export const mTambotoco: MissionDef = {
   id: 'm_tambotoco',
@@ -41,6 +65,19 @@ export const mTambotoco: MissionDef = {
   playerName: 'Ayllus de Ayar',
   enemyName: 'Ayllus del valle',
   map: { seed: 1200, type: 'andes', size: 256 },
+  mapOverrides: {
+    culturalLandscape: TAMBOTOCO_LANDSCAPE,
+    // Tambotoco is a highland valley: the andes pack replaces the generic broad/needle trees with
+    // molle and pacay, keeps the riverbank willow and shifts the puna mix towards ichu at the E2b budget.
+    vegetationKit: 'andes',
+    vegetation: {
+      density: 0.22,
+      groundCover: 0.08,
+      groundCoverWeights: { grass: 0, ichu: 1.6, pebble: 0, gravel: 0 },
+      variants: { molle: 0.55, pacay: 0.25, sauce: 0.2, broad: 0, needle: 0 },
+    },
+    resources: { tree: 0.22 },
+  },
   layout: {
     labels: [
       { text: 'Pacaritambo', x: 40 / 256, z: 58 / 256, kind: 'region' },
@@ -74,21 +111,30 @@ export const mTambotoco: MissionDef = {
     },
     canal: {
       name: 'Acequia de los alcabizas',
-      x: 158 / 256,
-      z: 176 / 256,
+      x: TAMBOTOCO_INTAKE.x / 256,
+      z: TAMBOTOCO_INTAKE.z / 256,
       width: 1.6,
       path: [
-        { x: 152 / 256, z: 160 / 256 },
+        { x: TAMBOTOCO_CANAL_GATE.x / 256, z: TAMBOTOCO_CANAL_GATE.z / 256 },
         { x: 156 / 256, z: 168 / 256 },
-        { x: 162 / 256, z: 178 / 256 },
-        { x: 172 / 256, z: 188 / 256 },
-        { x: 182 / 256, z: 194 / 256 },
+        { x: 162 / 256, z: 174 / 256 },
+        // The channel skirts Inticancha on its north-east perimeter: it must not cross the plaza ring,
+        // the four cancha plots or the west/east fields, and it reaches the outlet along the field edge.
+        { x: 174 / 256, z: 166 / 256 },
+        { x: 186 / 256, z: 176 / 256 },
+        { x: 190 / 256, z: 182 / 256 },
+        { x: 188 / 256, z: 186 / 256 },
+        { x: 184 / 256, z: 188 / 256 },
+        { x: TAMBOTOCO_OUTLET.x / 256, z: TAMBOTOCO_OUTLET.z / 256 },
       ],
       initiallyOpen: false,
       irrigation: true,
+      // The farm keepout band is 3.2 m; a 4.5 m reach still gives a legal, irrigated farm on the bank.
+      irrigationReach: 4.5,
       heritageId: 'tambotoco_acequia',
+      // The gate is active only after t_oleada; the defended intake is the real lock.
       lockedUntilObjective: 'a3_acequia',
-      lockedHint: 'La acequia de los alcabizas está más adelante en la leyenda: primero llega al valle por Huanacaure.',
+      lockedHint: 'La compuerta espera a los alcabizas: primero llega a Huanacaure y resiste su oleada.',
     },
     roads: [
       // The path starts at the cave mouth and passes the Act I exit marker (a1_salida), so «sigue el camino»
@@ -109,6 +155,9 @@ export const mTambotoco: MissionDef = {
     ],
   },
   timeOfDay: 'morning',
+  // 0.5 is noon in Sky; 0.34 is a low mid-morning sun (~31°) from the east. The cave ring, the eaves
+  // and the walls cast; the late phases drop flat earth/rock to keep the draw-call cap.
+  timeOfDayValue: 0.34,
   startingEra: Era.TAHUANTINSUYO,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
   unitSpeedScale: 0.75,
@@ -191,9 +240,9 @@ export const mTambotoco: MissionDef = {
       id: 'a1_caza',
       kind: 'gather',
       fromNode: 'hunt',
-      count: 120,
+      count: 60,
       hidden: true,
-      title: 'Caza 120 de comida y llévala al depósito para sostener a las familias',
+      title: 'Caza 60 de comida y llévala al depósito para sostener a las familias',
     },
     {
       id: 'a1_manco',
@@ -213,10 +262,31 @@ export const mTambotoco: MissionDef = {
       title: 'Sube a Huanacaure y abre la ficha de la huaca',
     },
     {
+      id: 'a3_oleada',
+      kind: 'hold',
+      pos: { dx: TAMBOTOCO_HOLD.x, dz: TAMBOTOCO_HOLD.z },
+      radius: 10,
+      minUnits: 3,
+      time: 60,
+      hidden: true,
+      title: 'Resiste la oleada en Huanacaure',
+    },
+    {
       id: 'a3_acequia',
       kind: 'canal_open',
       hidden: true,
       title: 'Desvía el agua de los alcabizas: abre la compuerta de la acequia hacia tus campos',
+    },
+    {
+      id: 'a3_riego',
+      kind: 'build',
+      buildingKind: BuildingKind.FARM,
+      pos: { dx: TAMBOTOCO_OUTLET.x, dz: TAMBOTOCO_OUTLET.z },
+      radius: 4,
+      count: 1,
+      hidden: true,
+      optional: true,
+      title: 'Riega una chacra junto a la acequia',
     },
     {
       id: 'a3_hualla',
@@ -225,7 +295,7 @@ export const mTambotoco: MissionDef = {
       radius: 10,
       optional: true,
       hidden: true,
-      title: 'Visita la aldea hualla',
+      title: 'Visita la aldea hualla y aprovisiónate',
     },
     {
       id: 'a4_inticancha',
@@ -241,7 +311,9 @@ export const mTambotoco: MissionDef = {
       kind: 'network',
       buildingKind: BuildingKind.HOUSE,
       nodes: TAMBOTOCO_CANCHAS,
-      radius: 9,
+      // Adjacent plots are 17-24 m apart: 6 m leaves a dead band at the midpoint (the old 9 m could
+      // count one house twice) while absorbing a tree, rock or unit offset on the plot.
+      radius: 6,
       count: 4,
       hidden: true,
       title: 'Construye cuatro viviendas en las canchas marcadas de Inticancha',
@@ -296,6 +368,13 @@ export const mTambotoco: MissionDef = {
       id: 't_caza',
       condition: { type: 'objective', objectiveId: 'a1_caza', state: 'completed' },
       effects: [
+        // Act II opens on the destination: a detail shot of the huaca, revealed so it never reads as a black cut.
+        {
+          type: 'camera',
+          pos: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z },
+          reveal: TAMBOTOCO_CAMERA_REVEAL,
+          ...TAMBOTOCO_SHOT.huanacaure,
+        },
         {
           type: 'act',
           kicker: 'Acto II · La peregrinación',
@@ -330,8 +409,14 @@ export const mTambotoco: MissionDef = {
           image: 'media/tambotoco/intro-valle.webp',
           text: 'El valle del Cusco ya tiene ayllus: huallas, sauaseray y alcabizas. La tradición cuenta que los recién llegados quitaron el agua a los alcabizas para obligarlos a ceder tierras. El agua es la palanca.',
         },
-        { type: 'camera', pos: { dx: 170, dz: 186 } },
-        { type: 'objective', objectiveId: 'a3_acequia', state: 'activate', announce: true },
+        // Hold the camera on the wave/ring, not the far valley: the player must see what is coming.
+        {
+          type: 'camera',
+          pos: { dx: TAMBOTOCO_WAVE.x, dz: TAMBOTOCO_WAVE.z },
+          reveal: TAMBOTOCO_CAMERA_REVEAL,
+          ...TAMBOTOCO_SHOT.valley,
+        },
+        { type: 'objective', objectiveId: 'a3_oleada', state: 'activate', announce: true },
         { type: 'objective', objectiveId: 'a3_hualla', state: 'activate', announce: true },
         {
           type: 'wave',
@@ -340,11 +425,46 @@ export const mTambotoco: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 3 },
             { kind: UnitKind.MUSKETEER, count: 2 },
           ],
-          pos: { dx: TAMBOTOCO_ENEMY.x, dz: TAMBOTOCO_ENEMY.z },
-          radius: 10,
+          pos: { dx: TAMBOTOCO_WAVE.x, dz: TAMBOTOCO_WAVE.z },
+          radius: 8,
           // They come out to meet the party at Huanacaure, as the tutorial says; the truce stops them.
-          target: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z + 12 },
+          target: { dx: TAMBOTOCO_HOLD.x, dz: TAMBOTOCO_HOLD.z },
         },
+      ],
+    },
+    {
+      // The optional hualla visit pays in stores, not in a new system: the village shares its harvest.
+      id: 't_hualla',
+      condition: { type: 'objective', objectiveId: 'a3_hualla', state: 'completed' },
+      effects: [
+        {
+          type: 'dialogue',
+          speaker: 'Memoria de los Ayar',
+          duration: 7,
+          text: 'La partida se aprovisiona en la aldea hualla: comida y madera para el campamento.',
+        },
+        { type: 'resources', player: 0, amount: { food: 150, wood: 100 } },
+      ],
+    },
+    {
+      id: 't_oleada',
+      condition: { type: 'objective', objectiveId: 'a3_oleada', state: 'completed' },
+      effects: [
+        {
+          type: 'dialogue',
+          speaker: 'Memoria de los Ayar',
+          duration: 8,
+          text: 'La toma resiste. Los alcabizas ya no pueden cerrar el paso del agua: abre la compuerta y llévala a tus campos.',
+        },
+        // Point the camera at the stone plug so the unlocked gate is the next thing the player sees. The plug
+        // is a bar across the channel: aim a metre downstream so it sits in frame with the water.
+        {
+          type: 'camera',
+          pos: { dx: TAMBOTOCO_CANAL_GATE.x + 1, dz: TAMBOTOCO_CANAL_GATE.z + 1 },
+          reveal: TAMBOTOCO_CAMERA_REVEAL,
+          ...TAMBOTOCO_SHOT.gate,
+        },
+        { type: 'objective', objectiveId: 'a3_acequia', state: 'activate', announce: true },
       ],
     },
     {
@@ -369,8 +489,14 @@ export const mTambotoco: MissionDef = {
           text: 'Con el agua y la tierra aseguradas, los ayllus fundan Inticancha y ordenan el sitio en cuatro canchas. La leyenda del Cusco empieza aquí.',
         },
         { type: 'site_phase', phase: 'inticancha' },
-        { type: 'camera', pos: { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z } },
+        {
+          type: 'camera',
+          pos: { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z },
+          reveal: TAMBOTOCO_CAMERA_REVEAL,
+          ...TAMBOTOCO_SHOT.inticancha,
+        },
         { type: 'objective', objectiveId: 'a4_inticancha', state: 'activate', announce: true },
+        { type: 'objective', objectiveId: 'a3_riego', state: 'activate', announce: true },
       ],
     },
     {
@@ -378,16 +504,24 @@ export const mTambotoco: MissionDef = {
       condition: { type: 'objective', objectiveId: 'a4_inticancha', state: 'completed' },
       effects: [
         {
-          type: 'dialogue',
-          speaker: 'Memoria de los Ayar',
-          duration: 8,
-          text: 'Ayar Auca se convierte en piedra en el sitio y le da nombre. Inticancha se ordena en cuatro canchas: el valle ya tiene un centro.',
-        },
-        {
           type: 'memory',
           tag: 'ayar_auca',
           pos: { dx: TAMBOTOCO_INTICANCHA.x + 6, dz: TAMBOTOCO_INTICANCHA.z + 6 },
           label: 'Piedra de Ayar Auca',
+        },
+        // The foundation's reward beat: a hero shot of the plaza and the new store. The stone's own raise
+        // already fires the ritual dust, so no second burst is queued here.
+        {
+          type: 'camera',
+          pos: { dx: TAMBOTOCO_INTICANCHA.x + 3, dz: TAMBOTOCO_INTICANCHA.z + 3 },
+          reveal: TAMBOTOCO_CAMERA_REVEAL,
+          ...TAMBOTOCO_SHOT.foundation,
+        },
+        {
+          type: 'dialogue',
+          speaker: 'Memoria de los Ayar',
+          duration: 8,
+          text: 'Ayar Auca se convierte en piedra en el sitio y le da nombre. Inticancha se ordena en cuatro canchas: el valle ya tiene un centro.',
         },
         { type: 'objective', objectiveId: 'a4_canchas', state: 'activate', announce: true },
       ],

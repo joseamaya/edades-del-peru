@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test';
+import { TAMBOTOCO_HOLD, TAMBOTOCO_OUTLET } from '../../src/campaign/defs/missions/m_tambotoco';
+import type { HeritageBuildingId } from '../../src/model/defs/heritage';
+import { installHeritageClick, type HeritageClickWindow } from './heritage';
 
 /** Caral's Act III and IV objective ids, used by the real-command playtest. */
 const CARAL_ACTS_III_IV = [
@@ -1249,11 +1252,13 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
   test.setTimeout(240_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
+  await installHeritageClick(page);
   await page.goto('/?mission=m_tambotoco&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
   });
-  const out = await page.evaluate(() => {
+  const points = { hold: TAMBOTOCO_HOLD, outlet: TAMBOTOCO_OUTLET };
+  const out = await page.evaluate((points) => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
@@ -1269,13 +1274,14 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       }
       dismissCard();
     };
+    const clickHeritage = (id: HeritageBuildingId, labelSource: string) =>
+      (window as unknown as HeritageClickWindow).__heritageClick(id, labelSource);
     const move = (ids: number[], x: number, z: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
     const gather = (ids: number[], entityId: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'gather', entityId }, clear: true }, false);
     const build = (ids: number[], entityId: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'build', entityId }, clear: true }, false);
-
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker') as any;
     move([worker.id], 60, 92);
     for (let i = 0; i < Math.ceil(60 / dt) && !m.ended; i++) {
@@ -1335,18 +1341,38 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
-      if (m.getObjectiveState('a2_huanacaure') === 'active') break;
-      for (const u of g.units.values())
-        if (u.owner === 0 && !u.dead && Math.hypot(u.pos.x - 120, u.pos.z - 106) <= 15) {
-          g.visitHeritage('tambotoco_huanacaure');
-          break;
-        }
+      const near = [...g.units.values()].some(
+        (u: any) => u.owner === 0 && !u.dead && Math.hypot(u.pos.x - 120, u.pos.z - 106) <= 15,
+      );
+      // Inspect only once the card is active, or the hold would start during the travel loop.
+      if (near && m.getObjectiveState('a2_huanacaure') === 'active') break;
     }
-    g.visitHeritage('tambotoco_huanacaure');
+    clickHeritage('tambotoco_huanacaure', 'Visitar');
     step(2);
     const huanacaure = m.getObjectiveState('a2_huanacaure') as string;
 
-    g.toggleCanal();
+    // The acequia is locked until the party has held Huanacaure through the alcabizas' wave.
+    clickHeritage('tambotoco_acequia', 'Abrir compuerta');
+    const gateLocked = g.isCanalOpen();
+    const lockedAcequia = m.getObjectiveState('a3_acequia') as string;
+    const holdHpBefore = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead)
+      .reduce((sum: number, u: any) => sum + u.hp, 0);
+    move([...army, ...workers], points.hold.x, points.hold.z);
+    for (let i = 0; i < Math.ceil(90 / dt) && !m.ended; i++) {
+      if (i % 15 === 0) dismissCard();
+      // Keep the party in the hold ring; idle soldiers auto-attack the wave.
+      if (i % 600 === 0) move([...army, ...workers], points.hold.x, points.hold.z);
+      g.update(dt, t);
+      t += dt;
+      if (m.getObjectiveState('a3_oleada') === 'completed') break;
+    }
+    const holdHpAfter = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead)
+      .reduce((sum: number, u: any) => sum + u.hp, 0);
+    const holdDamage = holdHpBefore - holdHpAfter;
+    const oleada = m.getObjectiveState('a3_oleada') as string;
+    clickHeritage('tambotoco_acequia', 'Abrir compuerta');
     step(2);
     const acequia = m.getObjectiveState('a3_acequia') as string;
 
@@ -1365,6 +1391,24 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       }
       return null;
     };
+    // The optional irrigation farm: a legal centre 4 m from the outlet (the canal keepout is 3.2 m).
+    // 3.8 m from the outlet: outside the 3.2 m keepout and still above 0.1 canal strength.
+    const farmX = points.outlet.x + 3.8;
+    const riegoFarm = placeNear('farm', farmX, points.outlet.z);
+    if (riegoFarm) build(workers, riegoFarm.id);
+    for (let i = 0; i < Math.ceil(90 / dt) && !m.ended; i++) {
+      if (i % 15 === 0) dismissCard();
+      g.update(dt, t);
+      t += dt;
+      if (m.getObjectiveState('a3_riego') === 'completed') break;
+    }
+    const riego = m.getObjectiveState('a3_riego') as string;
+    const openYield = (riegoFarm as any)?.terrainYield ?? 0;
+    if (g.isCanalOpen()) g.toggleCanal();
+    const closedYield = (riegoFarm as any)?.terrainYield ?? 0;
+    if (!g.isCanalOpen()) g.toggleCanal();
+    const riegoYield = openYield - closedYield;
+
     const mill = placeNear('mill', 168, 190);
     if (mill) build(workers, mill.id);
     for (let i = 0; i < Math.ceil(150 / dt) && !m.ended; i++) {
@@ -1399,19 +1443,31 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       campamento,
       caza,
       huanacaure,
+      gateLocked,
+      lockedAcequia,
+      holdDamage,
+      oleada,
       acequia,
+      riego,
+      riegoYield,
       inticancha,
       canchas: m.getObjectiveState('a4_canchas') as string,
       phase: g.sitePhase as string,
       won: m.won as boolean | null,
     };
-  });
+  }, points);
   expect(out.salida).toBe('completed');
   expect(out.startBuildings, 'the Ayar leave the cave with nothing built').toBe(0);
   expect(out.campamento).toBe('completed');
   expect(out.caza).toBe('completed');
   expect(out.huanacaure).toBe('completed');
+  expect(out.gateLocked, 'the gate stays closed while the intake is defended').toBe(false);
+  expect(out.lockedAcequia, 'the water objective waits for the wave').toBe('pendiente');
+  expect(out.holdDamage, 'the wave must engage the party during the hold').toBeGreaterThan(0);
+  expect(out.oleada).toBe('completed');
   expect(out.acequia).toBe('completed');
+  expect(out.riego, 'the optional farm must be placeable and complete after the gate').toBe('completed');
+  expect(out.riegoYield, 'the farm yield drops when the canal closes').toBeGreaterThan(0);
   expect(out.inticancha).toBe('completed');
   expect(out.canchas).toBe('completed');
   // The goal that wins also founds Inticancha: its closing trigger must fire on the victory tick.
@@ -1424,6 +1480,7 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
   test.setTimeout(240_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
+  await installHeritageClick(page);
   await page.goto('/?mission=m_lima&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
@@ -1457,7 +1514,12 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
       );
     const build = (ids: number[], entityId: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'build', entityId }, clear: true }, false);
+    const clickHeritage = (id: HeritageBuildingId, labelSource: string) =>
+      (window as unknown as HeritageClickWindow).__heritageClick(id, labelSource);
 
+    // The tutorial is sequential: select the infantry first, or the `traza` step never shows.
+    const infantry = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'soldier') as any;
+    g.selectUnits([infantry.id]);
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker') as any;
     move([worker.id], 90, 152);
     for (let i = 0; i < Math.ceil(60 / dt) && !m.ended; i++) {
@@ -1466,9 +1528,11 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
       t += dt;
       if (Math.hypot(worker.pos.x - 90, worker.pos.z - 150) <= 14) break;
     }
-    g.visitHeritage('lima_plaza');
+    const tutorialBeforeVisit = g.tutorial?.toSave()?.stepId ?? null;
+    clickHeritage('lima_plaza', 'Visitar');
     step(2);
     const traza = m.getObjectiveState('a1_traza') as string;
+    const tutorialAfterVisit = g.tutorial?.toSave()?.stepId ?? null;
 
     const workers = [...g.units.values()]
       .filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead)
@@ -1520,6 +1584,8 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
     }
     return {
       traza,
+      tutorialBeforeVisit,
+      tutorialAfterVisit,
       cabildo,
       cerco,
       ruptura: m.getObjectiveState('a3_ruptura') as string,
@@ -1528,6 +1594,9 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
     };
   });
   expect(out.traza).toBe('completed');
+  // The plaza card was opened through the HUD, and that is the tutorial's `traza` step.
+  expect(out.tutorialBeforeVisit).toBe('traza');
+  expect(out.tutorialAfterVisit).toBe('cabildo');
   expect(out.cabildo).toBe('completed');
   expect(out.cerco).toBe('completed');
   expect(out.ruptura).toBe('completed');

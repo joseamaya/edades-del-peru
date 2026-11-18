@@ -150,14 +150,24 @@ describe('Blender art manifest', () => {
     expect(issues.some((i) => i.id === asset.id && i.field === 'asset')).toBe(true);
   });
 
-  it('ships draft intro records for the remaining missions', () => {
-    const missions = ['m6b_guerra_civil', 'm7_tupac_amaru', 'm8_independencia'];
-    for (const missionId of missions) {
-      const intro = ART_MANIFEST.assets.find((a) => a.missionId === missionId && a.type === 'campaign-intro');
-      expect(intro, `${missionId} has no intro`).toBeDefined();
-      expect(intro!.reviewed).toBe(false);
-      expect(intro!.asset).toContain('/intro.webp');
+  it('keeps the reconciled Caral records approved and the retired drafts out', () => {
+    for (const id of [
+      'caral-architecture-pyramid',
+      'caral-map-city',
+      'caral-religion-plaza',
+      'caral-tour-isometric',
+      'm1_caral-intro',
+    ]) {
+      expect(ART_MANIFEST.assets.find((a) => a.id === id)?.reviewed, `${id} was not approved`).toBe(true);
     }
+    for (const missionId of ['m7_tupac_amaru', 'm8_independencia']) {
+      const intro = ART_MANIFEST.assets.find((a) => a.missionId === missionId && a.type === 'campaign-intro');
+      expect(intro, `${missionId} still ships a removed draft intro`).toBeUndefined();
+    }
+    // m6b's grey Workbench blockout was retired; the authored EEVEE plaza draft is a separate record.
+    const m6b = ART_MANIFEST.assets.find((a) => a.id === 'm6b_guerra_civil-intro');
+    expect(m6b?.blender.renderer, 'm6b should not ship the retired Workbench blockout').toBe('eevee');
+    expect(m6b?.blender.sceneFile).toBe('site-intros/m6b_guerra_civil/m6b_guerra_civil.blend');
   });
 
   it('keeps the committed Caral manifest valid and consistent with its assets', async () => {

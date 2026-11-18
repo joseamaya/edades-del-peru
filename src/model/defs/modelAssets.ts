@@ -1,7 +1,7 @@
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../../core/types';
 import { getCiv } from './civs';
 import { getPeriod } from './periods';
-import { genderForId } from './people';
+import { genderForId, type PersonGender } from './people';
 import { unitBaseKind } from './units';
 import {
   ANDEAN_CULTURES,
@@ -31,13 +31,22 @@ import { SIEGE_VARIANTS, siegeVariantFor, type SiegeRigVariant } from './siegeCh
 
 /** Registered rigged models. Add the id here and to the rendering registry. */
 export type ModelAssetId =
-  'ual_mannequin' | 'quaternius_alpaca' | 'caral_worker' | 'mounted_rig' | 'siege_rig' | 'vehicle_rig';
+  | 'ual_mannequin'
+  | 'quaternius_alpaca'
+  | 'caral_worker'
+  | 'tambotoco_hero'
+  | 'mounted_rig'
+  | 'siege_rig'
+  | 'vehicle_rig';
 
-/** CC0 Quaternius mannequin: pipeline demo/fallback fixture. */
+/** CC0 Quaternius mannequin: pipeline fixture kept for the model tests, not shipped in `dist`. */
 export const MANNEQUIN_ASSET_ID: ModelAssetId = 'ual_mannequin';
-export const RIG_DEMO_ASSET_ID: ModelAssetId = MANNEQUIN_ASSET_ID;
 /** Finished Caral worker asset (CC0 body/hair/clips + project-authored cotton cloth). */
 export const CARAL_WORKER_ASSET_ID: ModelAssetId = 'caral_worker';
+/** Male-only Tambotoco hero (same CC0 body/skeleton/clips, hero outfit). */
+export const TAMBOTOCO_HERO_ASSET_ID: ModelAssetId = 'tambotoco_hero';
+/** `?rig=1` now previews the shipped worker instead of the 1.9 MB mannequin fixture. */
+export const RIG_DEMO_ASSET_ID: ModelAssetId = CARAL_WORKER_ASSET_ID;
 const MOUNTED_RIG_ASSET_ID: ModelAssetId = 'mounted_rig';
 const SIEGE_RIG_ASSET_ID: ModelAssetId = 'siege_rig';
 const VEHICLE_RIG_ASSET_ID: ModelAssetId = 'vehicle_rig';
@@ -81,14 +90,16 @@ const ANDEAN_NON_WORKER_CLIPS: Partial<Record<RigClipState, string | null>> = {
   walk: 'Walk_Loop',
   gather: null,
   build: null,
-  attack: 'Punch_Jab',
+  attack: 'Sword_Regular_A',
 };
 
 const ANDEAN_CLIP_OVERRIDES: Record<AndeanRole, Partial<Record<RigClipState, string | null>>> = {
-  worker: { attack: 'TreeChopping_Loop' },
-  scout: ANDEAN_NON_WORKER_CLIPS,
-  soldier: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'TreeChopping_Loop' },
-  ranged: ANDEAN_NON_WORKER_CLIPS,
+  // A worker has no war club: the existing jab is the least-wrong unarmed defence.
+  worker: { attack: 'Punch_Jab' },
+  scout: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'Punch_Jab' },
+  soldier: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'Sword_Regular_A' },
+  // A slinger throws: the old Punch_Jab made every hondero punch the air.
+  ranged: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'OverhandThrow' },
   amauta: { ...ANDEAN_NON_WORKER_CLIPS, attack: null },
 };
 
@@ -243,15 +254,24 @@ function postColonialFieldRole(kind: UnitKind): PostColonialRole | null {
  * the contemporary Republic humanoids and the Inca Amauta use the shared humanoid
  * rig; contemporary Republic vehicles use the dedicated vehicle rig.
  */
-export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): RigModelChoice | null {
+export function unitModelAsset(
+  kind: UnitKind,
+  era: Era,
+  civ: CivId,
+  id = 0,
+  gender?: PersonGender,
+  tag = '',
+): RigModelChoice | null {
+  // A named commander passes its declared gender; anonymous units keep the deterministic id split.
+  const unitGender = gender ?? genderForId(id);
   const baseKind = unitBaseKind(kind);
-  if (baseKind !== kind) return unitModelAsset(baseKind, era, civ, id);
-  // The Killke señorío and the valley ayllus share the Inca/Chanca kits until they get their own.
-  if (civ === CivId.INCA_KILLKE) return unitModelAsset(kind, era, CivId.CHANCA, id);
-  if (civ === CivId.HUESTE_INDIANA) return unitModelAsset(kind, era, CivId.REALISTAS, id);
-  if (civ === CivId.AYLLUS) return unitModelAsset(kind, era, CivId.CHANCA, id);
+  if (baseKind !== kind) return unitModelAsset(baseKind, era, civ, id, gender, tag);
+  if (tag === 'manco_capac' && civ === CivId.INCA_KILLKE) {
+    return { asset: TAMBOTOCO_HERO_ASSET_ID, variant: 'inca_killke_soldier_m' };
+  }
+  if (civ === CivId.HUESTE_INDIANA) return unitModelAsset(kind, era, CivId.REALISTAS, id, gender);
   if (civ === CivId.CARAL && era === Era.FORMATIVE) {
-    const female = genderForId(id) === 'female';
+    const female = unitGender === 'female';
     if (kind === UnitKind.WORKER) {
       return { asset: CARAL_WORKER_ASSET_ID, variant: female ? 'caral_worker_f' : 'caral_worker_m' };
     }
@@ -260,7 +280,7 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
     }
   }
   if (civ === CivId.INCA && era === Era.TAHUANTINSUYO && kind === UnitKind.SCOUT) {
-    const female = genderForId(id) === 'female';
+    const female = unitGender === 'female';
     return { asset: CARAL_WORKER_ASSET_ID, variant: female ? 'inca_chasqui_f' : 'inca_chasqui_m' };
   }
   const andeanCulture = andeanCultureForEra(civ, era);
@@ -279,7 +299,7 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
     // INCA has no Viceroyalty period; this is the m7 campaign override (1780).
     const role = postColonialFieldRole(kind);
     if (role) {
-      const suffix = genderForId(id) === 'female' ? 'f' : 'm';
+      const suffix = unitGender === 'female' ? 'f' : 'm';
       return { asset: CARAL_WORKER_ASSET_ID, variant: `rebelde_${role}_${suffix}` as RebeldeRigVariant };
     }
   }
@@ -300,7 +320,7 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
                   ? 'scout'
                   : null;
     if (role) {
-      const suffix = genderForId(id) === 'female' ? 'f' : 'm';
+      const suffix = unitGender === 'female' ? 'f' : 'm';
       return { asset: CARAL_WORKER_ASSET_ID, variant: `${modernCulture}_${role}_${suffix}` };
     }
   }
@@ -310,12 +330,12 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
   if (postColonial && postColonialEra) {
     const role = postColonialFieldRole(kind);
     if (role) {
-      const suffix = genderForId(id) === 'female' ? 'f' : 'm';
+      const suffix = unitGender === 'female' ? 'f' : 'm';
       return { asset: CARAL_WORKER_ASSET_ID, variant: `${postColonial}_${role}_${suffix}` };
     }
   }
   if (andeanCulture) {
-    const suffix = genderForId(id) === 'female' ? 'f' : 'm';
+    const suffix = unitGender === 'female' ? 'f' : 'm';
     const variant = (role: AndeanRole): RigVariant => `${andeanCulture}_${role}_${suffix}` as RigVariant;
     if (kind === UnitKind.WORKER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('worker') };
     if (kind === UnitKind.SCOUT) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('scout') };
@@ -341,6 +361,7 @@ export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly C
       if (choice) ids.add(choice.asset);
     }
   }
+  if (civs.includes(CivId.INCA_KILLKE)) ids.add(TAMBOTOCO_HERO_ASSET_ID);
   ids.add('quaternius_alpaca');
   return [...ids];
 }

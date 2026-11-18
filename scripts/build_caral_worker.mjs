@@ -8,6 +8,7 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
  * generated from the base body surface.
  *
  * Usage: node scripts/build_caral_worker.mjs [--out=src/assets/models/caral_worker.glb]
+ *        node scripts/build_caral_worker.mjs --hero --out=src/assets/models/tambotoco_hero.glb
  *
  * Sources are fetched from the pinned mirror commit and verified by SHA-256.
  * The generated GLB owns one skeleton, the body/hair meshes and the worker
@@ -44,15 +45,18 @@ const SOURCES = {
 const CLIPS = [
   ['ual1', 'Idle_Loop'],
   ['ual1', 'Walk_Loop'],
-  ['ual1', 'Jog_Fwd_Loop'],
-  ['ual1', 'Sprint_Loop'],
   ['ual2', 'Farm_Harvest'],
-  ['ual2', 'Farm_PlantSeed'],
   ['ual2', 'TreeChopping_Loop'],
   ['ual2', 'Walk_Carry_Loop'],
   ['ual1', 'Push_Loop'],
   ['ual1', 'Punch_Jab'],
+  // Combat and death states used by the ayllu/Ayar presentation; the generic UAL clips are CC0.
+  ['ual2', 'Sword_Regular_A'],
+  ['ual2', 'OverhandThrow'],
+  ['ual1', 'Death01'],
 ];
+const hero = process.argv.includes('--hero');
+const HERO_CLIPS = ['Idle_Loop', 'Walk_Loop', 'Sword_Regular_A', 'Death01'];
 const outFile = path.resolve(cliArg('out', 'review/caral_worker_test.glb'));
 
 const { base, close } = await withViteServer({ optimizeDeps: { noDiscovery: true } });
@@ -61,7 +65,7 @@ const page = await browser.newPage();
 try {
   await page.goto(`${base}/?noloop=1`, { waitUntil: 'domcontentloaded' });
   const result = await page.evaluate(
-    async ({ sources, clipsSpec }) => {
+    async ({ sources, clipsSpec, hero, heroClips }) => {
       const THREE = await import('/node_modules/three/build/three.module.js');
       const { GLTFLoader, GLTFExporter } = await import('/scripts/gltf_tools.mjs');
       const { HUMAN_HAIR, HUMAN_SKIN } = await import('/src/model/defs/people.ts');
@@ -557,6 +561,16 @@ try {
       };
       const tunicF = addSkinned(makeTunic(femaleBody), cotton, 'attire_tunic_f');
       const tunicM = addSkinned(makeTunic(maleBody, { sideX: 0.3 }), cotton, 'attire_tunic_m', maleBody.bindMatrix);
+      if (hero) {
+        // The hero's uncu is longer than the worker's: a second silhouette layer under the mantle.
+        tunicM.removeFromParent();
+        addSkinned(
+          makeTunic(maleBody, { topY: 1.48, bottomY: 0.68, sideX: 0.34, offset: 0.04 }),
+          cotton.clone(),
+          'attire_tunic_m',
+          maleBody.bindMatrix,
+        );
+      }
       const skirtF = addSkinned(
         makeTube({
           topY: 0.97,
@@ -636,12 +650,32 @@ try {
         'attire_sash',
       );
       const byName = (gltf, name) => gltf.animations.find((clip) => clip.name === name);
-      const animations = [];
+      let animations = [];
       for (const [source, name] of clipsSpec) {
         const gltf = source === 'ual1' ? ual1 : ual2;
         const clip = byName(gltf, name);
         if (!clip) throw new Error(`missing clip ${name} in ${source}`);
         animations.push(clip);
+      }
+
+      if (hero) {
+        // Male-only Tambotoco hero: drop the female body/garments and the clips a hero never plays.
+        for (const name of [
+          'Body_f',
+          'Hair_f',
+          'Eyes_f',
+          'Eyebrows_f',
+          'attire_tunic_f',
+          'attire_skirt_f',
+          'attire_skirt_chasqui_f',
+          'attire_belt_chasqui',
+        ]) {
+          baseGltf.scene.getObjectByName(name)?.removeFromParent();
+        }
+        animations = animations.filter((clip) => heroClips.includes(clip.name));
+        if (skinned(baseGltf.scene).length !== 7 || animations.length !== 4) {
+          throw new Error(`hero filter: ${skinned(baseGltf.scene).length} meshes / ${animations.length} clips`);
+        }
       }
 
       const bounds = new THREE.Box3().setFromObject(baseGltf.scene);
@@ -681,7 +715,7 @@ try {
         boneCount: skeleton.bones.length,
       };
     },
-    { sources: SOURCES, clipsSpec: CLIPS },
+    { sources: SOURCES, clipsSpec: CLIPS, hero, heroClips: HERO_CLIPS },
   );
 
   fs.mkdirSync(path.dirname(outFile), { recursive: true });

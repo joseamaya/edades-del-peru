@@ -4,11 +4,13 @@ import { launchChromium, withViteServer, reviewDir, cliArg } from './lib.mjs';
 
 /**
  * Capture game screenshots for the subagent visual review.
- * Usage: node scripts/screenshot.mjs [name] [--url=...] [--wait=ms] [--seed=...]
+ * Usage: node scripts/screenshot.mjs [name] [--url=...] [--wait=ms] [--seed=...] [--click]
+ * `--click` presses the first `.ed-primary` button (the mission briefing's start) before the wait.
  */
 const name = process.argv[2] ?? 'default';
 const urlArg = cliArg('url');
 const wait = parseInt(cliArg('wait', '6000'), 10);
+const clickStart = process.argv.includes('--click');
 const seed = parseInt(cliArg('seed', '12345'), 10);
 const numShots = parseInt(cliArg('shots', '1'), 10);
 
@@ -31,6 +33,13 @@ async function main() {
   await page.goto(url, { waitUntil: 'networkidle' });
   // wait for the game to be ready
   await page.waitForFunction(() => window.game !== undefined, null, { timeout: 30000 }).catch(() => {});
+  if (clickStart) {
+    await page
+      .locator('.ed-primary')
+      .first()
+      .click({ timeout: 3000 })
+      .catch(() => {});
+  }
   await page.waitForTimeout(wait);
 
   const files = [];

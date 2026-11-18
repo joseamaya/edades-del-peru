@@ -195,7 +195,7 @@ Definition of Done and the building audit see
   body/hair/clips plus project-authored cotton tunic/skirt/sash; `src/rendering/workerAttire.ts` only adds the
   headband, digging stick and carry bundle as rigid bone attachments. The carry bundle is tinted/shown by
   `RigInstance.setCarrying` from the unit's real carry state. The eyes (`shadowSkipMeshes` in the registry) skip
-  the VSM shadow pass to stay inside the worker budget; see
+  the shadow pass to stay inside the worker budget; see
   [`docs/development/performance-audit.md`](development/performance-audit.md). `?rig=1` mounts a visual demo
   with two independent instances and exposes `window.__rigDemo`; `window.__modelAssets()` is always available as
   a diagnostics snapshot.
@@ -421,12 +421,23 @@ Definition of Done and the building audit see
   `{key:buildFarm}` from `settings.hotkeys` instead of literal V/G. The field-card delivery button uses
   `SelectionController.deliveryGate` (a worker near the site and enough stock) and is disabled with the amount and
   the reason appended when it cannot run.
+- **Hero model chain**: `yarn models:hero` builds the male-only base hero, runs
+  `scripts/blender/build_tambotoco_hero_sculpt.py` to bake the head/hand proportions and shoulder/waist taper,
+  then meshopt-encodes with `simplify_caral_worker.mjs --hero` (which keeps the longer tunic). Blender is a
+  local authoring tool, not a CI dependency; the GLB is committed.
+- **Mission camera cues**: the `camera` trigger effect accepts optional `zoom`/`seconds`; a zoomed cue calls
+  `Camera.flyTo(..., holdClock=false)`, so it frames a place without stalling the mission clock. Only the
+  opening flight (`playIntro`) keeps `holdClock` true. The RTS camera looks at sea level, so `Mission` aims a
+  zoomed cue `ground / tan(pitch)` short of its subject along the camera's current yaw on an elevated site.
 - **Camera panning (`src/core/Camera.ts` + `src/core/cameraMath.ts`)**: the camera orbits a ground target; its
   ground basis is `forward = (−sin yaw, −cos yaw)`, `right = (cos yaw, −sin yaw)`, and **keyboard/edge pan vectors
   are rotated by that basis** (`rotateToWorld`, a rotation by `−yaw`). The default is **north-up** (`yaw = 0`), so
   `W`/arriba = north and the main map matches the north-up minimap; Z/X rotation is optional
-  (`settings.rotateCamera`). Edge scrolling is **progressive** (0 at the zone edge, ±1 at the border) and every pan
-  vector is **normalized** (a diagonal is not faster than an axis). The **wheel zooms toward the ground point under
+  (`settings.rotateCamera`). Edge scrolling is a **plateau** (full speed anywhere inside the band, zero outside) and
+  every pan vector is **normalized** (a diagonal is not faster than an axis). The band is **18 px** on the left,
+  right and bottom edges and **10 px** on top, where the 46–54 px bar and its controls start 8–10 px from the
+  screen edge and remain guarded by the pointer-over-UI check; the HUD panels sit `--bar-gap` (18 px) from the
+  edge so the band stays clear. The **wheel zooms toward the ground point under
   the cursor** (`groundOffsetAtNdc`: exact ray/plane `y=0` intersection, perspective included; anchored on the
   previous _desired_ zoom so repeated wheel events telescope), and the **middle-drag applies the ground-offset
   difference between successive cursor positions** (pitch/perspective corrected) with the target **snapped while
@@ -440,14 +451,18 @@ Definition of Done and the building audit see
   while a
   **blocking overlay** is open (`camera.setUiCaptured`); **edge scrolling is off while the pointer is over any HUD
   panel or control** (`hud.isPointerOverUi` — panel rects plus `document.elementFromPoint`, because `#ui-root` is
-  `pointer-events:none`). Its trigger is a narrow **10 px** band at the physical screen edge
-  (0 A.D./OpenRA-style): the top bar's background at the very top is part of that band, while its buttons keep
-  `pointer-events:auto` and remain guarded by the pointer-over-UI check (the 0.25 s delay covers crossing the
-  band on the way to them). It starts after a **0.25 s** delay and ramps to full speed over 0.4 s
-  (`edgeSpeedFactor`), and it can be turned off from Options (`settings.edgeScroll`, persisted in
-  `peru-settings`). Tuning lives in `CAMERA_CONFIG`; the pure math is unit-tested (`tests/camera.test.ts`),
-  the wiring in `tests/e2e/camera.spec.ts`. The **camera speed** option (Baja/Normal/Alta, `settings.cameraSpeed` →
-  `CAMERA_SPEED_SCALE`) scales the keyboard/edge speed only (the middle-drag is direct manipulation).
+  `pointer-events:none`). Its trigger is the physical screen edge (0 A.D./OpenRA-style): the top bar's background at
+  the very top is part of the top band, while its buttons keep `pointer-events:auto` and remain guarded by the
+  pointer-over-UI check. It starts after a **0.15 s** delay and ramps to full speed over 0.2 s (`edgeSpeedFactor`),
+  and it can be turned off from Options (`settings.edgeScroll`, persisted in `peru-settings`). `F` follows the
+  selected unit and **toggles off**; any manual pan (WASD/arrows, edge, middle drag) or map move (`moveTo`, which
+  includes the minimap and save restore) releases the follow, and a dead unit clears it. Losing focus (`blur`/`visibilitychange`) drops held keys, the drag flag and
+  the edge timer, so alt-tab cannot leave the camera drifting or the drag armed. Tuning lives in `CAMERA_CONFIG`;
+  the pure math is unit-tested (`tests/camera.test.ts`), the wiring in `tests/e2e/camera.spec.ts`. The **camera
+  speed** option (Baja/Normal/Alta, `settings.cameraSpeed` → `CAMERA_SPEED_SCALE`) scales the keyboard/edge speed
+  only (the middle-drag is direct manipulation). Evidence: `docs/media/camera-edge-{before,after}.webp`
+  (`node scripts/capture_camera_pan.mjs --tag=after` on this branch; copy the script into a worktree at
+  `origin/main` and run `--tag=before` there).
 - **Campaign intro (visual only)**: `Mission.start` calls `Game.playIntro()` from the briefing's onStart
   callback, which frames an overview and runs `RTSCamera.flyTo(x, z, zoom, seconds)` down to the player base;
   for the authored Caral site it settles at `CARAL_SITE_CAMERA.height` so the valley, base and city share the opening.
@@ -529,6 +544,12 @@ Definition of Done and the building audit see
   saves; `REPLAY_VERSION` is 32 (m9), 33 (m7), 34 (m3), 35 (m4), 36 (m5), 37 (m6), 38 (m6b) and 39 (m8),
   which rejects every stored replay (the version is global), not only that mission's. Guarded by
   `tests/save-migrations.test.ts`, `tests/campaign-scale.test.ts` and the mission E2E specs.
+- **Tambotoco ground paint** (E3b): the wet stream margin and the dry ford bar are baked into
+  `TAMBOTOCO_GROUND` (sand/dirt/grass weights) by `scripts/build_tambotoco_heightmap.py`. The heightfield
+  and walkable cells are unchanged, but `getAuthoredGround` also gates tree acceptance and resource
+  selection, so four procedural resource nodes move: `REPLAY_VERSION` is 40. Guarded by
+  `tests/tambotoco-layout.test.ts` (the paint is visible at the bank and ford) and
+  `tests/headless-game.test.ts` (the ford stays crossable).
 - **Caral late period** (issue 353): the Act IV drought is the late-period signal (`isLatePeriod` in
   `model/defs/sites.ts`; any drought level counts, because the event marks the start of the period), so it
   needs no save field of its own and a restored save rebuilds it from the environment state.
@@ -720,8 +741,13 @@ Definition of Done and the building audit see
   saturated (classic RTS style). `settings.cinematic` (toggle in Options) re-enables the set via
   `PostFX.setCinematic`. Tone `NeutralToneMapping` + `exposure 1.0`. Do not re-enable fog or raise exposure
   without checking that buildings are not washed out.
-- **The terrain shader samples the shadow map in VSM format by hand** (`Terrain.ts`): do not change
-  `renderer.shadowMap.type` or the `customProgramCacheKey`, or terrain shadows break.
+- **The terrain receives directional shadows** (`Terrain.ts`, B11, E1): the custom `ShaderMaterial` declares
+  `lights: true` and samples `directionalShadowMap[0]` with the same PCF settings as the rest of the scene.
+  Its uniform object must include `THREE.UniformsLib.lights`; without those placeholders three tries to wire
+  light uniforms that do not exist and the render throws. The old hand-written `terrain_shadow_hook` was
+  removed on 2026-11-16; the terrain now uses the real shadow map. Flat earth/rock/wood pieces do not cast, so
+  the low-sun shadow pass stays within budget. Evidence: `review/art-pilot-*` and
+  `node scripts/bench_scene.mjs --mission=m_tambotoco --assert`.
 - **The terrain material weights are a CPU splatmap** (`src/rendering/terrainSplat.ts`): a deterministic
   512² RGBA texture (grass, dirt, sand, rock) built once per match from `TerrainData`; snow stays procedural by
   height. `Terrain` uploads it as a `DataTexture`. Keep the generation pure and seed-stable; #304 paints
@@ -737,7 +763,8 @@ Definition of Done and the building audit see
   summit bands. `HistoricalMapProfile.region` selects the palette and `SiteTerrainStyle.palette` overrides it
   (Caral). The shader mixes one band colour with the tinted albedo by `textureMix`; do not reintroduce the old
   aridity/vegetation/temperature multiplier chain. Terrain lighting shares the scene hemisphere light
-  (`Terrain.setHemisphere`, fed by `Sky.getHemi`) plus the sun/cloud shadow. Before/after evidence:
+  (`Terrain.setHemisphere`, fed by `Sky.getHemi`) plus the shader's sun term and procedural cloud shadow
+  (not the shadow map: see the dead-hook note below). Before/after evidence:
   `docs/media/terrain-palettes-before-after.webp` (left `main`, right this palette pass).
 - **Terrain faces must point up**: in `Terrain.buildMesh` the indices go `(a,c,b)` and `(b,c,d)` (not `(a,b,c)`).
   Inverting the winding makes faces point down: backface culling hides the terrain and the sky dome appears as if
@@ -829,7 +856,7 @@ is not a breed reconstruction. `Attack` is the mounted charge/sword swing; `Deat
 the affected periods. The `.blend` source is in `art-src/blender/scenes/mounted_rig.blend` (Git LFS); the GLB
 SHA-256 is recorded in `PROVENANCE.md`. Measure it with
 `yarn bench --scenario=mounted --units=4,12,24 --assert`; `yarn bench:check` includes the mounted, siege, tank and vehicles scenarios
-(the merged meshes render at ~27 draws and ~10.1k triangles per unit including the VSM shadow pass).
+(the merged meshes render at ~27 draws and ~10.1k triangles per unit including the shadow pass).
 
 The siege rig (`siege_rig.glb`, #241b) is the project-authored companion for `ARTILLERY`, `MORTAR` and
 `TANK`: a 33-bone rig with hidden cannon/mortar/crew/tank groups, four clips and per-culture palette variants
@@ -882,9 +909,10 @@ The worker GLB is generated by `scripts/build_caral_worker.mjs`: it fetches the 
 their SHA-256, rebinds both bodies/hair sets onto one 65-bone skeleton, generates the cotton garments from each
 body surface and exports the ten clips. Rebuild with
 `yarn models:build`; record any new hash in
-[`PROVENANCE.md`](../PROVENANCE.md). The registry's `shadowSkipMeshes` keeps only the tiny eye meshes (`Eyes_f`, `Eyes_m`) out of the
-VSM shadow pass (both `castShadow` and `receiveShadow`), because VSM also renders receivers into the shadow map;
-this is what keeps the worker under 40k tris in the benchmark. Measure with
+[`PROVENANCE.md`](../PROVENANCE.md). The registry's `shadowSkipMeshes` and `workerAttire`'s body-only rule keep the worker's detail meshes out of
+the shadow pass (both `castShadow` and `receiveShadow`, so a later shadow-mode change cannot add them back);
+`limitShadowCasters` applies the same silhouette rule to every other rig. This is what keeps the worker under
+40k tris in the benchmark. Measure with
 `yarn bench --scenario=rigs --units=4,12,24,48 --runs=2 --steps=600 --assert`.
 
 To add a model:
@@ -960,9 +988,9 @@ rigged bird is added, and evaluate per-species LOD/update throttling at the 16-a
   `?fps=1` (show the debug FPS overlay, hidden by default), `?civ=ID` (force the player civilization; with
   `?period=N` it drives the geography), `?map=TYPE` (force the map type), `?intro=0` (skip the campaign
   camera flyover; `?noloop=1` skips it too) and `?cine=1` (disables the software-renderer fallback; `?low=1` wins).
-- Shared `scripts/lib.mjs` (`launchChromium`, `withViteServer`, `readPng`, `classify`). Scripts launch Vite on a
-  free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`. Run captures
-  with `?low=1`.
+- Shared `scripts/lib.mjs` (`launchChromium`, `withViteServer`, `readPng`, `classify`, `waitForHighlandKits`). Scripts
+  launch Vite on a free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`.
+  Run captures with `?low=1`.
 - `review/` holds generated PNG/JSON (gitignored); do not edit them by hand.
 - **Gameplay recordings**: `yarn record --mission=<id> --mode=clip|full` records the running game to
   `review/<mission>-<mode>.mp4` with a JSON timeline and a contact sheet. `clip` tours the opening;
@@ -1024,8 +1052,8 @@ groups' draw calls/triangles by rendering them visible vs hidden (shadow pass in
 `window.__directRender` on (bypasses post-processing so `renderer.info` is meaningful) it records FPS, frame
 time (avg/p50/p95/p99), long tasks and real scene draw calls/triangles, and it isolates the cultural
 landscape's draw calls (the layer rendered visible vs hidden). It **fails** (`exit ≠ 0`) when they exceed
-`2 × CulturalLandscape.featureBudget` (one merged mesh per drawable feature, times the
-VSM main+shadow passes; see [`docs/design/cultural-landscape.md`](design/cultural-landscape.md)). It writes
+`2 × CulturalLandscape.featureBudget` (one merged mesh per drawable feature, with room for
+a main and a shadow draw; see [`docs/design/cultural-landscape.md`](design/cultural-landscape.md)). It writes
 the JSON to `--out` (`review/bench.json` by default) and prints a table.
 
 **Hardware GPU and per-pass breakdown.** `--gpu` (or `GPU=1`) drops `--use-gl=swiftshader` and launches with
@@ -1102,11 +1130,12 @@ when quality ≠ `low`, one extra full-scene pass for water refraction — the `
 (disabling refraction) when the frame rate stays below its threshold, so measure on a real GPU before drawing
 conclusions from the SwiftShader numbers above.
 
-## GitHub Pages readiness (not deployed)
+## GitHub Pages
 
-The game is not published yet. `vite.config.ts` accepts `VITE_BASE` and defaults
-to `./`, so the itch.io zip keeps relative paths. For the future GitHub Pages
-project site, build with:
+The game is published as a project site at
+<https://joseamaya.github.io/edades-del-peru/> (the itch upload is deferred).
+`vite.config.ts` accepts `VITE_BASE` and defaults to `./`, so the itch.io zip keeps
+relative paths. For the GitHub Pages project site, build with:
 
 ```bash
 VITE_BASE=/edades-del-peru/ yarn build

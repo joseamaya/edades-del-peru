@@ -25,13 +25,10 @@ layout. `?lod=0` previews the master.
 | arica_battery | LOD1 | 17596 | `efe5d29daee3887255ab38d68b006db68747eb272f6635ba8c7dc8b44274b85a` |
 
 
-## Campaign intro renders
+## Campaign intro renders (retired)
 
-`renders/*.png` are 1600×900 draft hero renders produced by
-`scripts/blender/render_mission_decor.py`. Ingest them with:
-
-```bash
-yarn art:blender --manifest=art-src/blender/mission-decor/renders.json
-```
-
-The resulting records start `reviewed: false` and stay hidden until approved.
+The three 1600×900 Workbench hero renders (`renders/*.png`, produced by
+`scripts/blender/render_mission_decor.py`) were removed from `renders.json` on 2026-11-16. They were
+blockouts of the models above — no ground, sky, people or lighting — and every one of those missions opens
+with its in-engine capture instead. The PNGs and the script stay as sources; do not re-ingest them unless
+they are re-rendered with materials, light and context and a new manifest entry is approved.

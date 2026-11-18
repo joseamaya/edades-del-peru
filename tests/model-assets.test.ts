@@ -2,7 +2,6 @@ import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import {
   RIG_VARIANT_CLIPS,
   modelAssetIdsForMatch,
@@ -11,6 +10,7 @@ import {
 } from '../src/model/defs/modelAssets';
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
 import { CIVS } from '../src/model/defs/civs';
+import { andeanCultureForVariant, andeanPalette, andeanRoleForVariant } from '../src/model/defs/andeanCharacters';
 import { getPeriod } from '../src/model/defs/periods';
 import { unitTrainableInPeriod } from '../src/model/defs/units';
 import { MOUNTED_SPECS } from '../src/model/defs/mountedCharacters';
@@ -25,6 +25,7 @@ import {
   preloadModelAssets,
   type LoadedModelAsset,
 } from '../src/rendering/ModelAssets';
+import { MODEL_ASSET_DEFS } from '../src/rendering/modelAssetRegistry';
 
 const MODEL_URL = new URL('../src/assets/models/ual_mannequin.glb', import.meta.url);
 const WORKER_URL = new URL('../src/assets/models/caral_worker.glb', import.meta.url);
@@ -156,13 +157,14 @@ describe('rigged model assets', () => {
     expect(modelAssetStatus(['ual_mannequin'])[0].state).toBe('idle');
   });
 
-  it('reports a failed URL load and keeps the fallback available', async () => {
+  it('reports a failed load and keeps the fallback available', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockRejectedValue(new Error('404'));
+    // The demo mannequin is intentionally not registered in the production registry; the test
+    // asserts the fallback path for an unavailable asset, not a specific fetch error.
     const asset = await loadModelAsset('ual_mannequin');
     expect(asset).toBeNull();
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('using the procedural fallback'));
-    expect(modelAssetStatus(['ual_mannequin'])[0]).toMatchObject({ state: 'failed', error: '404' });
+    expect(modelAssetStatus(['ual_mannequin'])[0]).toMatchObject({ state: 'failed' });
     expect(acquireRig('ual_mannequin')).toBeNull();
   });
 
@@ -207,6 +209,55 @@ describe('rigged model assets', () => {
     expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.CARAL])).toContain('caral_worker');
     expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.MOCHE])).toEqual(['quaternius_alpaca']);
     expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.REALISTAS])).toContain('caral_worker');
+  });
+
+  it('selects the hero asset only for Manco in a Killke match', () => {
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 9, 'male', 'manco_capac')).toEqual({
+      asset: 'tambotoco_hero',
+      variant: 'inca_killke_soldier_m',
+    });
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 9, 'male', 'ayar_auca')?.asset).toBe(
+      'caral_worker',
+    );
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 9, 'male')?.asset).toBe(
+      'caral_worker',
+    );
+  });
+
+  it('preloads the Tambotoco hero for Killke matches', () => {
+    const file = fileURLToPath(new URL('../src/assets/models/tambotoco_hero.glb', import.meta.url));
+    expect(fs.statSync(file).size).toBeLessThan(1_600_000);
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_INTERMEDIATE, [CivId.INCA_KILLKE])).toContain('tambotoco_hero');
+  });
+
+  it('resolves the longest Andean culture prefix and its palette', () => {
+    expect(andeanCultureForVariant('inca_killke_soldier_f')).toBe('inca_killke');
+    expect(andeanRoleForVariant('inca_killke_soldier_f')).toBe('soldier');
+    expect(andeanPalette('inca_killke').primary).toBe(0xb08a4a);
+    expect(andeanCultureForVariant('ayllus_worker_m')).toBe('ayllus');
+    expect(andeanCultureForVariant('inca_chasqui_m')).toBeNull();
+  });
+
+  it('gives the Killke señorío and the valley ayllus their own variants', () => {
+    expect(unitModelAsset(UnitKind.WORKER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 1)?.variant).toBe(
+      'inca_killke_worker_m',
+    );
+    expect(unitModelAsset(UnitKind.WORKER, Era.TAHUANTINSUYO, CivId.AYLLUS, 1)?.variant).toBe('ayllus_worker_m');
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.AYLLUS, 2)?.variant).toBe('ayllus_soldier_f');
+  });
+
+  it('lets a named hero gender override the unit-id split for body and garments', () => {
+    const byId = unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 2);
+    expect(byId?.variant).toBe('inca_killke_soldier_f');
+    const hero = unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 2, 'male');
+    expect(hero?.variant).toBe('inca_killke_soldier_m');
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 3, 'female')?.variant).toBe(
+      'inca_killke_soldier_f',
+    );
+    // The Killke señorío has its own variant, and the recursion must carry the override.
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA_KILLKE, 3, 'female')?.asset).toBe(
+      'caral_worker',
+    );
   });
 
   it('maps post-1532 humanoid classes to colonial/republican rig variants', () => {
@@ -636,11 +687,12 @@ describe('rigged model assets', () => {
       expect.arrayContaining([
         'Idle_Loop',
         'Walk_Loop',
-        'Jog_Fwd_Loop',
-        'Sprint_Loop',
         'Farm_Harvest',
         'Walk_Carry_Loop',
         'Punch_Jab',
+        'Sword_Regular_A',
+        'OverhandThrow',
+        'Death01',
       ]),
     );
     expect(json.nodes.map((node) => node.name)).toEqual(
@@ -662,6 +714,14 @@ describe('rigged model assets', () => {
         'attire_belt_chasqui',
       ]),
     );
+  });
+
+  it('maps Andean combat and death clips from the shared worker GLB', () => {
+    expect(RIG_VARIANT_CLIPS.chanca_soldier_m?.attack).toBe('Sword_Regular_A');
+    expect(RIG_VARIANT_CLIPS.chanca_ranged_m?.attack).toBe('OverhandThrow');
+    expect(RIG_VARIANT_CLIPS.chanca_worker_m?.attack).toBe('Punch_Jab');
+    expect(MODEL_ASSET_DEFS.caral_worker.deathClip).toBe('Death01');
+    expect(MODEL_ASSET_DEFS.caral_worker.clips.attack).toBe('Punch_Jab');
   });
 
   it('adds the Caral accessories to a compatible rig and toggles the carried load', async () => {

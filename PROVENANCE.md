@@ -156,6 +156,72 @@ slot is absent (offline / without assets).
 - **Evidence**: `node scripts/shots_evidence.mjs --scene=caral-pacae --out=review/evidence/caral-pacae`
   captures a close-up and the RTS view; the two frames compose `docs/media/caral-pacae.webp`.
 
+### Tambotoco highland vegetation kit (molle, pacay, ichu)
+
+- **Location**: `src/assets/vegetation/andes/andes_{molle,pacay,ichu}_lod{0,1}.glb`.
+- **Source**: generated in Blender 5.3.0 by `scripts/blender/build_andes_vegetation_kit.py` (shared
+  bmesh helpers in `scripts/blender/build_caral_slice.py`); scene
+  `art-src/blender/scenes/tambotoco_vegetation_kit.blend` (Git LFS). Per-species manifests live in
+  `art-src/blender/exports/tambotoco/vegetation/`; game copies were meshopt-compressed with
+  `yarn art:models`.
+- **Content**: project-owned procedural geometry and a generated leaf-cluster atlas; no third-party scans
+  or textures. Molle LOD0 1,362 / LOD1 360 triangles; pacay 1,048 / 316; ichu 144 / 42. Total game copies
+  ≈216 KB.
+- **Confidence**: **inferred**. The species set comes from the pilot's plausible highland list
+  (`docs/design/tambotoco-art-pilot.md` §3) and the puna context in `docs/historia/mapas.md` (ichu);
+  no period source names molle or pacay for this valley. Molle (_Schinus molle_), pacay (_Inga feuillei_)
+  and ichu are real Andean species; their exact forms, leaf atlas and placement are a game reconstruction,
+  not a botanical survey or a documented individual.
+- **Runtime**: `MapOverrides.vegetationKit: 'andes'` in `m_tambotoco` selects the highland tree set
+  (`molle`, `pacay`, and the shared Caral willow for `sauce`); the loader is `vegetationKitLoader.ts`.
+  The ichu GLB is built and budget-verified, but the visible ground cover still uses the procedural
+  `GroundCover` ichu tufts; the generic `shrub` prop remains procedural on this map.
+- **SHA-256**:
+  - `andes_molle_lod0.glb` `f0491a78c5398fa9a3c229bef015b17232825f77376b6226470a8fe26d6024dc` (67 KB)
+  - `andes_molle_lod1.glb` `b6732848e50450e49144c62c2aca8a52d67c975b0b1a3c3fb2c9e40eafbd4a33` (46 KB)
+  - `andes_pacay_lod0.glb` `506f359fc73a033ec1c7971418cc2c5b9b2b928834ebd0ea3a7f2c6f64882c39` (55 KB)
+  - `andes_pacay_lod1.glb` `8390f97b433f4c68e8d325af5b123ca2b927cd80b4199d2274319201db5d9d91` (40 KB)
+  - `andes_ichu_lod0.glb` `50a1e9e561f1f97914e62622d6eb51ddae18a7f077f9fb58ceb11db8104f0f2b` (5 KB)
+  - `andes_ichu_lod1.glb` `851c1d4f7de916caeabae3cadc06e188daa276c2740dc7ca75f254622c81c0c4` (3 KB)
+
+### Tambotoco E3a highland vegetation captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e3a-wide-{before,after}.webp` and
+  `docs/media/tambotoco-e3a-trees-{before,after}.webp`, 960x540 WebP q58, ~88 KB.
+- **Source**: captured from the game by `scripts/capture_art_pilot.mjs` at 1600x900, seed 777, HUD hidden,
+  site at `fundada`, fog of war off. `before` is the E2b scene at `ae9e489`; `after` is the andes kit.
+  Regenerate the after set with
+  `yarn art:pilot --tag=e3a8 --quality=neutral --sizes=1600x900 --views=wide,trees,hualla`; the before
+  trees use the same view and script checked out at `ae9e489`.
+- **Content**: in-engine shots of the game's own scene. The highland tree kit is project-owned and
+  `confidence: inferred`; the ichu ground cover is the procedural instancer at a trimmed 0.08 budget.
+- **Review**: no human art-review gate applies to in-engine captures; the kit is reviewed through this PR.
+
+### Tambotoco E4 hero and Killke/ayllu variants (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e4b-hero-{before,after}.webp` and `tambotoco-e4b-hero54.webp`, 960x540 WebP q58,
+  ~55 KB.
+- **Source**: `yarn art:pilot --tag=e4b2 --quality=neutral --sizes=1600x900 --views=hero,hero54` on this branch;
+  `before` is `d32c526` (E3b, Chanca proxy). The `hero` view stages Ayar Manco and a worker at the hualla.
+- **Content**: the worker uses the CC0 `caral_worker` asset with the Killke variant; Manco uses the male-only
+  `tambotoco_hero.glb` (same body/skeleton, Killke outfit with a longer hero tunic, 4 clips; E4b shipped
+  1.38 MB, E7 replaced it with the 1.45 MB baked-proportion asset). E4a selects the Killke and
+  valley-ayllu palettes instead of the Chanca proxy.
+- **Review**: presentation abstraction; no attested Ayar likeness or garment survives, so the accent and
+  silhouettes remain a game convention.
+
+### Tambotoco E3b stream banks, ford and paths (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e3b-{bank,path,ford,close}-{before,after}.webp`, 960x540 WebP q58, ~181 KB.
+- **Source**: captured from the game by `scripts/capture_art_pilot.mjs` at 1600x900, seed 777, HUD hidden,
+  site at `fundada`, fog of war off; `before` is the E3a build (`184285b`), `after` this branch. Regenerate
+  with `yarn art:pilot --tag=e3b-final3 --quality=neutral --sizes=1600x900 --views=bank,path,ford,close,wide`.
+- **Content**: in-engine shots of the game's own terrain. The wet-margin and ford-bar weights are generated
+  by `scripts/build_tambotoco_heightmap.py` into `src/model/defs/tambotocoHeightmap.ts` (project-owned, no
+  third-party data; the heightfield and walkable cells are unchanged, but the paint feeds tree/resource
+  selection, hence `REPLAY_VERSION` 40). The path paint and instanced bank/path stones are procedural.
+- **Review**: no human art-review gate applies to in-engine captures; E3b is reviewed through its PR.
+
 ### Caral fauna kit (deer, riparian bird)
 
 - **Location**: `src/assets/fauna/caral/caral_deer.glb` and `caral_bird.glb`.
@@ -254,6 +320,34 @@ slot is absent (offline / without assets).
   review on 2026-11-14 (Miguel Amaya), together with the vegetation and household props; a rebuild exports
   every piece unreviewed again.
 
+### Tambotoco hero kit (cave and Huanacaure huaca)
+
+- **Location**: `src/assets/architecture/tambotoco/tambotoco_{cave,huaca}_lod{0,1}.glb`.
+- **Source**: generated in Blender 5.3.0 by `scripts/blender/build_tambotoco_hero_kit.py`; scene
+  `art-src/blender/scenes/tambotoco_hero_kit.blend` (Git LFS). Per-piece manifests with triangles,
+  materials, bounds, budget, sources and review state live in `art-src/blender/exports/tambotoco/`; the
+  game copies were meshopt-compressed with `yarn art:models`.
+- **Content**: project-owned procedural geometry, Principled materials only, no textures.
+  - Cave: an irregular rock massif around a dark five-sided recess, a rough front lintel/jambs, a scree
+    apron and two torch brackets. LOD0 1,802 triangles / 4 materials; LOD1 342 / 3.
+  - Huanacaure huaca: a tapered monolith with a carved niche, base, cap, offering ledge and two flanking
+    stones. LOD0 288 triangles / 3 materials; LOD1 104 / 3.
+- **Confidence**: **assumed**. The cave and the monolith are stylizations of the myth; the dossier records no
+  dated or documented form, and `docs/historia/arquitectura.md` marks the Huanacaure niche as a stylization,
+  not an imperial architectural niche.
+- **Runtime**: `AylluSite.setHeroAssets` swaps the procedural cave/huaca for the GLB after both LODs load
+  (`loadTambotocoHeroAssets`); a failed load keeps the procedural fallback. LOD0 draws below the 70-unit
+  camera zoom, LOD1 above. The models use the authored cave (40, 55) and shrine (120, 106) positions and
+  the shrine platform top; `WorldViewDecor` applies the site's fog mask after the swap.
+- **Pivot and collision**: the cave origin is the mouth threshold at ground level (the massif extends
+  behind it); the huaca origin is its base centre. The GLBs carry no collision: the cave and shrine blockers
+  in `src/model/defs/sites.ts` own pathing.
+- **SHA-256**:
+  - `tambotoco_cave_lod0.glb` `551b362873b93db44341921d087627947548d4f60c6dcdff63b7b21016355974` (65 KB)
+  - `tambotoco_cave_lod1.glb` `bfb63483207bfa92c0a70ed0a901845467c4ffafac7056bb25bf3ff06d9c401c` (16 KB)
+  - `tambotoco_huaca_lod0.glb` `3466c8908c9a086ac1f30bebf64cb5c4a8854009b894f9d381d4ca9bef086e67` (14 KB)
+  - `tambotoco_huaca_lod1.glb` `199ba0b82e57ae9b25f6b6c9f8d3295e681880066b7bdd7e3df4702dcee24dc1` (8 KB)
+
 ### Caral prop kit (quarries and household goods)
 
 - **Location**: `src/assets/props/caral/caral_<piece>_lod{0,1}.glb`: the `granodiorite` quarry outcrop and
@@ -315,12 +409,14 @@ slot is absent (offline / without assets).
 ### Los hijos de Tambotoco intro, chapter and epilogue images (in-engine recreations)
 
 - **Location**: `public/media/tambotoco/intro-{cueva,huanacaure,valle,traza,epilogo}.webp` (960x540, WebP q58,
-  ~71 KB in total).
+  ~112 KB in total; re-shot in E5 on 2026-11-17).
 - **Source**: captured from the game itself by `scripts/capture_tambotoco_intro.mjs`. The cave with the party
-  leaving it (no centre, dwellings or huts: the mission starts with nothing built; recaptured 2026-11-13),
-  the Huanacaure huaca and the valley are staged through the debug harness, rendered without the HUD at
-  1600x900 without hero nameplates and resized with `sharp`; the epilogue uses a low cinematic camera over
-  the valley at dusk. Regenerate them with `node scripts/capture_tambotoco_intro.mjs` (one with `--only=ID`) after art changes.
+  leaving it (no centre, dwellings or huts: the mission starts with nothing built), the Huanacaure monolith,
+  the inhabited hualla valley, the traced Inticancha and the founded settlement at dusk are staged through the
+  debug harness, rendered without the HUD, world labels, nameplates or hero markers at 1600x900 and resized
+  with `sharp`. The three beats follow a hero/detail/wide grammar (the eye is lifted above the local ground so
+  a low shot never ends up inside the slope). Regenerate them with
+  `node scripts/capture_tambotoco_intro.mjs` (one with `--only=ID`) after art changes.
 - **Runtime (menu)**: `intro-huanacaure` is the Inca campaign card; `intro-cueva` is the briefing art for
   `m_tambotoco`; the intro beats, the Act II–IV chapter cards and the victory epilogue use the captures.
 - **Content**: project-owned game renders (authored terrain, the procedural ayllu site and the
@@ -328,6 +424,124 @@ slot is absent (offline / without assets).
   that the Ayar myth happened.
 - **Review**: no human art-review gate applies to in-engine captures; the procedural ayllu site has no GLB
   manifest entry, and the Chanca pucará GLB is tracked in #343, not in the manifest.
+
+### Tambotoco E5 shot grammar and foundation beat (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e5-cards-{before,after}.webp` (2x3 contact sheets, 1280x1182 WebP q60,
+  ~112 KB in total) and `docs/media/tambotoco-e5-fundacion.webp` (960x540 WebP q60, ~20 KB).
+- **Source**: the `before` cards are `public/media/tambotoco/intro-*` at `cde2e9d`; the `after` cards are the
+  same files re-shot by `scripts/capture_tambotoco_intro.mjs` on this branch, and
+  `node scripts/compare_tambotoco_beats.mjs --before=cde2e9d` composes both sheets. The foundation capture is
+  produced by `node scripts/capture_tambotoco_foundation.mjs`: the in-game `t_inticancha` cue (camera at the
+  authored plaza, zoom 29, site phase `inticancha`, a scripted communal store and the Ayar Auca stone) staged
+  through the debug harness at 1600x900 with the HUD hidden.
+- **Content**: project-owned game renders of the game's own scene. The myth remains a **Leyenda**: the cave
+  and the huaca are abstractions, never historical photographs.
+- **Review**: no human art-review gate applies to in-engine captures; the ayllu site is procedural.
+
+### Tambotoco E7 production pass (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e7-{hualla,acequia,inticancha}-{after,final}.webp`, `tambotoco-e7-hero.webp`,
+  `tambotoco-e7-shrine.webp` and `tambotoco-e7-yard.webp` (960x540 WebP q58; nine files), `docs/media/tambotoco-e7-3x3-{after,final}.webp` and `docs/media/tambotoco-e7-before-after.webp`
+  (review grids, 1920x1182 / 1600x1452 WebP q62-64; ~550 KB in total).
+- **Source**: the E7 art-pilot captures on the same three cameras and resolutions as E6:
+  `yarn art:pilot --tag=e7 --quality=neutral --sizes=1280x720,1600x900,1920x1080 --views=hualla,acequia,inticancha`,
+  the same with `--quality=final`, then
+  `node scripts/capture_art_pilot.mjs --tag=e7-hero --quality=final --sizes=1600x900 --views=hero` and
+  `node scripts/capture_art_pilot.mjs --tag=e7-detail --quality=neutral --sizes=1600x900 --views=shrineClose,inticanchaClose`.
+  `node scripts/publish_tambotoco_e7.mjs` publishes the 960x540 copies (including the hero and the two detail views) and
+  `node scripts/compare_tambotoco_e7.mjs` composes the 3 x 3 sheets and the E6/E7 comparison.
+- **Content**: project-owned in-engine renders. The E7 pass adds the Inticancha yard detail (a backstrap loom,
+  two jars) and the Huanacaure offerings, bakes Manco's proportions, and softens the `cusco_valley` terrain
+  macro/AO; the hamlet household props, field cairns and plaza jars were trialed and reverted because the
+  high-quality late frames sample had only 842 triangles of headroom before E7 (the E6 frames read 659,158/359);
+  the retained detail leaves the E7 frames late at 659,962/360, 38 triangles and 0 calls under the cap
+  (structural late 634,134/357). No new fauna species and no andes rock GLB: the existing
+  llama/vicuña/condor groups and the site's procedural rocks were kept.
+- **Review**: authorized by the project owner on 2026-11-17 as the E7 production pass; the captures and the
+  3X recording are the review artifacts. The 3X recording is a local `review/` artifact (935 s JSON /
+  910.6 s MP4) that reaches Act III and ends with Manco lost at the Huanacaure hold: it is not a completed
+  victory run. It was produced with the local recorder's uncommitted working-tree changes, so it is not
+  reproducible from the committed recorder alone. No Blender review gate applies to in-engine captures.
+
+### Tambotoco E6 reference captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e6-{hualla,acequia,inticancha}-{before,after,final}.webp` (960x540 WebP
+  q58; nine files, ~215 KB in total) and `docs/media/tambotoco-e6-3x3-{before,after,final}.webp` (the 3 x 3
+  review sheets at 1920x1182 WebP q62, ~398 KB).
+- **Source**: captured from the game by the art-pilot harness on the three approved cameras
+  (`hualla`, `acequia`, `inticancha`) at 1280x720, 1600x900 and 1920x1080:
+  `yarn art:pilot --tag=e6 --quality=neutral --sizes=1280x720,1600x900,1920x1080 --views=hualla,acequia,inticancha`
+  and the same with `--quality=final`. The `before` set uses the same harness copied into a worktree at
+  `a0352d5` (the harness itself postdates the baseline; only the script is copied, because that commit has no
+  `art:pilot` package entry) with
+  `node scripts/capture_art_pilot.mjs --tag=e6-before --quality=neutral --sizes=1280x720,1600x900,1920x1080 --views=hualla,acequia,inticancha`.
+  `node scripts/publish_tambotoco_e6.mjs` resizes the 1600x900 representatives of each camera and quality to
+  960x540, and `node scripts/compare_tambotoco_e6.mjs` composes the 3 x 3 sheets; the full set was reviewed as
+  `review/e6-{before-neutral,after-neutral,after-final}.webp`.
+  The harness aims at the ground under each authored point (`ground / tan(pitch)`), so before and after share
+  the exact cameras.
+- **Content**: project-owned in-engine renders of the authored Tambotoco terrain, the ayllu site and the
+  units. They are recreations of the game's own scenes: never historical photographs and not a claim that the
+  Ayar myth happened.
+- **Review**: the project owner approved the 3 x 3 set on 2026-11-17 after reviewing the before/after contact
+  sheets. No Blender review gate applies to in-engine captures; the ayllu site is procedural.
+
+### Tambotoco ayllu kit captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-kit-{before,after}.webp` (Inticancha) and
+  `docs/media/tambotoco-kit-valley-{before,after}.webp` (hualla valley), 960x540 WebP q58, ~93 KB in total.
+- **Source**: captured from the game itself by `scripts/capture_ayllu_kit.mjs` (1600x900, HUD hidden, site
+  at `fundada`); the `before` set comes from the previous single-mesh `AylluSite` on `main`, captured by
+  copying the same script into a `main` worktree and running the same views. Regenerate the after set with
+  `node scripts/capture_ayllu_kit.mjs --tag=after` after kit changes.
+- **Content**: in-engine recreations of the game's own scene. No model, texture or manifest entry is added
+  by the kit; it is generated geometry.
+- **Review**: no human art-review gate applies to in-engine captures; the modular kit has no GLB asset and
+  the authored layout stays the source of truth for a later Blender kit.
+
+### Tambotoco E2a architecture captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e2a-{close,hualla}-{before,after}.webp`, 960x540 WebP q58, ~70 KB.
+- **Source**: captured from the game by `scripts/capture_art_pilot.mjs` at 1600x900, seed 777, HUD hidden,
+  site at `fundada`, acequia open and fog of war off. The `before` pair is the E1 capture
+  (`--tag=e1d --quality=neutral`); the `after` pair is E2a (`--tag=e2a3 --quality=neutral`). Regenerate with
+  `yarn art:pilot --tag=e2a --quality=neutral --sizes=1600x900 --views=close,hualla` and resize to 960x540.
+- **Content**: in-engine shots of the game's own scene. E2a adds contact AO/macro colour, battered walls, a
+  layered thatch eave and the qollqa footing/vent; no model, texture or manifest entry is added.
+- **Review**: no human art-review gate applies to in-engine captures; the procedural kit has no GLB asset.
+
+### Tambotoco E2b hero captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-e2b-{cave,huaca}-{before,after}.webp`, 960x540 WebP q58, ~105 KB.
+- **Source**: captured from the game by `scripts/capture_art_pilot.mjs` at 1600x900, seed 777, HUD hidden,
+  site at `fundada`, fog of war off. The `before` pair is E2a's procedural cave/huaca; the `after` pair is
+  the loaded GLB. Regenerate with
+  `yarn art:pilot --tag=e2b4 --quality=neutral --sizes=1600x900 --views=cave,shrine` and resize to 960x540.
+- **Content**: in-engine shots of the game's own scene. The cave and huaca GLBs are project-owned,
+  stylized (`confidence: assumed`); no textures or external assets are used.
+- **Review**: no human art-review gate applies to in-engine captures; the GLBs are reviewed through this PR.
+
+### Tambotoco HUD captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-hud-{1280,1600,1920}.webp` (native size, WebP q72).
+- **Source**: captured from the game by `scripts/capture_hud_dialogue.mjs` at 1280x720, 1600x900 and
+  1920x1080, with a mission line in the dialogue dock and the starting party selected. Native size, because a
+downscaled 1920 shot would look smaller than the 1280 one.
+- **Content**: in-engine recreations of the game's own HUD; no external art.
+- **Review**: no human art-review gate applies to in-engine captures.
+
+### Tambotoco Ayar identity captures (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-cast.webp` (briefing medallions), `docs/media/tambotoco-heroes-close.webp`
+  (four siblings) and `docs/media/tambotoco-heroes-far.webp` (strategic zoom), 960x540 WebP q58.
+- **Source**: captured from the game itself by `scripts/capture_ayar_identity.mjs`. The cast capture is the briefing screen with the eight SVG medallions; the close group repositions
+  four authored units under the debug harness and renders without the HUD; the far view is the RTS
+  camera at its map maximum.
+- **Content**: in-engine recreations of the game's own scene. The medallions and the accent colours are
+  stylized presentation, not likenesses or attested garments; the bodies use the shared ayllu rig.
+- **Review**: no human art-review gate applies to in-engine captures; no new model, texture or manifest
+  entry is added.
 
 ### La Junta del Cusco intro, chapter and epilogue images (in-engine recreations)
 
@@ -364,8 +578,8 @@ slot is absent (offline / without assets).
   the procedural port terrace and the units). They are recreations of the game's own scenes: never
   historical photographs, and not Blender renders (so not in `src/art/manifest.json`). The Morro is
   outside the playable range and is not depicted as a surveyed feature.
-- **Review**: no human art-review gate applies to in-engine captures; the `arica_site` GLB and the draft
-  Blender intro record keep their own review status in `src/art/manifest.json` (#343).
+- **Review**: no human art-review gate applies to in-engine captures; the `arica_site` GLB keeps its own
+  review status (#343). The authored `m9_arica-intro` render is approved.
 
 ### Cusco (Túpac Amaru) intro and epilogue images (in-engine recreations)
 
@@ -379,9 +593,9 @@ slot is absent (offline / without assets).
 - **Content**: project-owned game renders (authored Cusco heightfield, the reused `colonial_site` plaza and
   chapel, the procedural camp and the units). They are recreations of the game's own scenes: never
   historical photographs, and not Blender renders (so not in `src/art/manifest.json`).
-- **Review**: no human art-review gate applies to in-engine captures; the reused colonial plaza GLB and
-  the draft `m7_colonial-intro` Blender record keep their own review status in `src/art/manifest.json`
-  (#343).
+- **Review**: no human art-review gate applies to in-engine captures; the reused colonial plaza GLB keeps
+  its own review status (#343), and the draft `m7_colonial-intro` record was retired on 2026-11-16 (a
+  Workbench blockout of that GLB).
 
 ### Moche (m3) intro and epilogue images (in-engine recreations)
 
@@ -606,8 +820,10 @@ slot is absent (offline / without assets).
 
 - **Location**: `src/assets/models/*.glb` (loaded by `src/rendering/ModelAssets.ts`).
 - **`ual_mannequin.glb`**: Quaternius _Universal Animation Library_ (UAL1.glb), a generic rigged mannequin used
-  to validate the glTF/GLB + skeleton + mixer pipeline and as the `?rig=1` demo/fallback fixture. It is **not**
-  the Caral worker anymore; the finished asset is `caral_worker.glb` below.
+  to validate the glTF/GLB + skeleton + mixer pipeline. It is **not** the Caral worker anymore; the finished
+  asset is `caral_worker.glb` below. It is **not shipped in `dist`**: `modelAssetRegistry.ts` imports the five
+  gameplay models explicitly, the model tests load this fixture from disk, and `?rig=1` previews the shipped
+  `caral_worker`.
   - Source: <https://quaternius.com/packs/universalanimationlibrary.html> (CC0 1.0).
   - Downloaded from the CC0 mirror <https://github.com/Dallolz/moorfall-assets>
     (`animations/UAL1.glb`, licence in its `LICENSE.md`), 2026-10-20.
@@ -628,22 +844,26 @@ slot is absent (offline / without assets).
       — SHA-256 `5011951317431872ba7d9310b3bd953a9387e68f83e35c6f091395b8a49dc3ee`.
     - <https://raw.githubusercontent.com/Dallolz/moorfall-assets/1e83864f55ff8646e929ac9b73faa75df29161de/hair/Hair_SimpleParted.glb>
       — SHA-256 `1f21aeef18109c81080cb01bbbe4ad80e95550ca3e89e51f762e6d6df1981c13`.
-    - UAL1 `Idle_Loop`, `Walk_Loop`, `Push_Loop`, `Punch_Jab` — SHA-256
+    - UAL1 `Idle_Loop`, `Walk_Loop`, `Push_Loop`, `Punch_Jab`, `Death01` — SHA-256
       `69591853d817488edaa8fd9bf8fc1d821eaeaf789f8627b3cd23b41c4ed67997`.
-    - UAL2 `Farm_Harvest`, `Farm_PlantSeed`, `TreeChopping_Loop`, `Walk_Carry_Loop` — SHA-256
+    - UAL2 `Farm_Harvest`, `TreeChopping_Loop`, `Walk_Carry_Loop`, `Sword_Regular_A`, `OverhandThrow` — SHA-256
       `0815dd05531cae9bc313fc9c0ba81330bc72f8e19ec45f73738e74ddc5796a43`.
   - Generated by `scripts/build_caral_worker.mjs` (fetches and verifies every source hash); the GLB is
     reproducible with `yarn models:build`.
-  - SHA-256: `6d731024f924059fd768aa9d874809e1d4e0a39f3e6dc080f1e9a77b3da45671` (7,142,668 bytes).
+  - SHA-256: `d44b0d91dd98601510ab566d1435481ced98142cf92e5e5491633a57bc46cadf` (2,435,528 bytes). The
+    build now runs `resample`/`prune` before meshopt; the three added clips still grow the GLB, and the
+    committed asset keeps `dist/` at 24.60 MB of its 25 MB budget after E4b.
   - Contents: 15 skinned meshes (female/male bodies, hair, eyes and eyebrows, worker tunic/skirt/sash,
-    reserved chasqui skirt/belt, male wrap), one shared 65-bone skeleton, 10 clips (`Idle_Loop`, `Walk_Loop`,
-    `Jog_Fwd_Loop`, `Sprint_Loop`, `Farm_Harvest`, `Farm_PlantSeed`, `TreeChopping_Loop`, `Walk_Carry_Loop`,
-    `Push_Loop`, `Punch_Jab`), ~37.0k triangles across both gender sets (only one body/outfit set is visible per
-    instance), ~1.85 m tall. The game maps `idle` (`Idle_Loop`), `walk` (`Walk_Loop`), `walk_carry`
-    (`Walk_Carry_Loop`), `gather` (`Farm_Harvest`), `build` (`Push_Loop`) and `attack` (`TreeChopping_Loop` for
-    the worker, `Punch_Jab` for the Scout). `Jog_Fwd_Loop` and `Sprint_Loop` are exported for a future runner
-    garment; `Farm_PlantSeed` remains a future crop variant. There is no dedicated construction clip, so
-    `Push_Loop` is an explicit pushing/placing abstraction. The source hair-card eyebrows were rebuilt as
+    reserved chasqui skirt/belt, male wrap), one shared 65-bone skeleton, 13 clips (10 mapped: `Idle_Loop`, `Walk_Loop`,
+    `Farm_Harvest`, `TreeChopping_Loop`, `Walk_Carry_Loop`, `Push_Loop`, `Punch_Jab`, `Sword_Regular_A`,
+    `OverhandThrow`, `Death01`; plus 3 base clips), ~37.0k triangles across both gender sets (only one
+    body/outfit set is visible per instance), ~1.85 m tall. The game maps `idle` (`Idle_Loop`), `walk`
+    (`Walk_Loop`), `walk_carry` (`Walk_Carry_Loop`), `gather` (`Farm_Harvest`), `build` (`Push_Loop`), melee
+    attack (`Sword_Regular_A` for Andean soldiers, `TreeChopping_Loop` for the Caral worker, `Punch_Jab` for
+    workers/scouts), sling attack (`OverhandThrow`) and death (`Death01`). `Jog_Fwd_Loop`, `Sprint_Loop` and
+    `Farm_PlantSeed` were removed from the shipped clip list to keep `dist/` under budget; `Farm_PlantSeed`
+    remains available in the source library for a future crop variant. There is no dedicated construction clip,
+    so `Push_Loop` is an explicit pushing/placing abstraction. The source hair-card eyebrows were rebuilt as
     low-poly strips on each body's `Head` bone.
   - Historical basis: `docs/historia/atuendos.md` records **cotton textiles for Caral-Supe** but marks the
     specific garments, skin tone and facial features as **not documented**. The short-sleeved tunic, skirt/sash,
@@ -655,15 +875,36 @@ slot is absent (offline / without assets).
     division of labour is not documented. The shared `HUMAN_SKIN` (`#6b3f22`) / `HUMAN_HAIR` constants live in
     `src/model/defs/people.ts`; both CC0 body textures are recolored in the build script while preserving
     shading and facial features. No metal, footwear, horses or firearms.
-  - Runtime accessories (`src/rendering/workerAttire.ts`): headband, carry bundle, digging stick, scout manta
-    and reserved chasqui canteen are project-authored meshes on bones; they are not part of the GLB. The carry
-    bundle is shown/tinted from the unit's real carry state. The Caral scout hides the tool, carry bundle and
-    chasqui canteen. The reserved Inca chasqui set hides the tool and worker skirt/sash and shows the chasqui
-    outfit.
+  - Runtime accessories (`src/rendering/workerAttire.ts`, `UnitView.ts`): headband + face paint are merged into
+    one vertex-coloured head mesh; carry bundle, digging stick, scout manta and reserved chasqui canteen remain
+    project-authored bone meshes. Hero head/torso/weapon accessories are merged into three vertex-coloured
+    meshes per hero and the generic soldier kit is hidden, so the eight Ayar cost a handful of draws rather
+    than one per feather. None of these are part of the GLB. The carry bundle is shown/tinted from the unit's
+    real carry state. The Caral scout hides the tool, carry bundle and chasqui canteen. The reserved Inca
+    chasqui set hides the tool and worker skirt/sash and shows the chasqui outfit.
   - Budget: both `Eyes_f` and `Eyes_m` skip the VSM shadow pass (both `castShadow` and `receiveShadow` off)
     because they are too small to cast a readable shadow; the garments keep theirs. Hidden gender/outfit meshes
     do not render. This keeps the visible worker under the **40 draws / 40k tris** budget measured in
     `docs/development/performance-audit.md`.
+  - Presentation variants: `inca_killke_*` and `ayllus_*` (E4a) reuse this asset and its clips; they only
+    select the palette, garments and runtime hero attire. No new body/mesh is added, so other campaigns are
+    unchanged. The dedicated Tambotoco hero sculpt remains E4b.
+
+- **`tambotoco_hero.glb` (Tambotoco hero)**: male-only derivation of `caral_worker.glb` for Ayar Manco,
+  with the Killke tunic/wrap and the `Idle_Loop`, `Walk_Loop`, `Sword_Regular_A` and `Death01` clips. It uses
+  the same CC0 Quaternius body/hair and the project-authored cotton garment; the female body, the non-hero
+  clips and the unused garments are removed before export. E7 bakes the proportion pass: the head and hands
+  are +12% around their bone pivots and the shoulders/waist get a gentle taper, so the runtime bone scaling
+  is gone. A hand-sculpted replacement can still swap the same asset and clips.
+  - Built by `yarn models:hero`: `node scripts/build_caral_worker.mjs --hero --out=review/tambotoco_hero_base.glb`,
+    then `blender --background --python scripts/blender/build_tambotoco_hero_sculpt.py -- --in=review/tambotoco_hero_base.glb --out=src/assets/models/tambotoco_hero.glb`,
+    then `node scripts/simplify_caral_worker.mjs --file=src/assets/models/tambotoco_hero.glb --hero`.
+    Blender is a local authoring dependency; the committed GLB is the shipped asset.
+  - SHA-256: `aa74c6a5a3b0376604d7957e4da9bf7af46dfe686edc34c9fe13e8649f5f2a7e` (1,451,448 bytes).
+  - Contents: 7 meshes / 7 materials, 4 clips, one 65-bone skeleton, 6,913 GLB triangles; the scene probe
+    measures 7,230 visible triangles / 9 draws on Manco including the runtime attire (the common unit is
+    9,628 tris / 14 draws). It is preloaded for
+    matches whose civs include `INCA_KILLKE` (Tambotoco and a Killke skirmish).
 
 - **`mounted_rig.glb` (Viceroyalty/Republic cavalry)**: project-authored low-poly horse and rider used by
   #241a for `HUSSAR`/`CAVALRY` in the late-colonial rebel and post-colonial civilizations.

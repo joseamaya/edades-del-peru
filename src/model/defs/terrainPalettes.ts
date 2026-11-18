@@ -3,7 +3,15 @@ import { smoothstep } from '../../util/math';
 /** Data-driven terrain palettes: material tints and macro height bands. */
 
 export type TerrainPaletteId =
-  'north_coast' | 'central_coast' | 'south_coast' | 'andean_valley' | 'high_andes' | 'altiplano' | 'amazon' | 'caral';
+  | 'north_coast'
+  | 'central_coast'
+  | 'south_coast'
+  | 'andean_valley'
+  | 'high_andes'
+  | 'cusco_valley'
+  | 'altiplano'
+  | 'amazon'
+  | 'caral';
 
 /** Shared landform thresholds (world units; slope is the raw height delta used by the mesh). */
 const TERRAIN_BAND_RANGES = {
@@ -73,6 +81,8 @@ export interface TerrainPalette {
   textureMix: number;
   /** Extra aerial-perspective cap on authored high-relief sites. */
   fogCapBoost?: number;
+  /** Near/far macro blend, AO strength and contrast; lower values soften large turf patches. */
+  macro?: { blend: number; ao: number; contrast: number };
 }
 
 export const TERRAIN_PALETTES: Record<TerrainPaletteId, TerrainPalette> = {
@@ -119,6 +129,23 @@ export const TERRAIN_PALETTES: Record<TerrainPaletteId, TerrainPalette> = {
     },
     bands: { valley: '#4a7a2a', slope: '#7a8a4a', loma: '#9a9a60', summit: '#c0c8b8' },
     textureMix: 0.84,
+  },
+  // Cusco basin in the Intermedio Tardío: olive and ochre instead of the wet green valley used by
+  // Chavín/Recuay. Mission-scoped through tambotoco_site so the shared andean_valley profile is untouched.
+  cusco_valley: {
+    // Less yellow and less washed out than the old wash: the puna reads olive, the earth ochre.
+    materials: {
+      grass: '#d8d8b0',
+      dirt: '#d8c8a8',
+      sand: '#e0d8b8',
+      rock: '#d0ccc0',
+      snow: '#ffffff',
+    },
+    bands: { valley: '#6b7444', slope: '#8f8660', loma: '#a09368', summit: '#c8c0aa' },
+    textureMix: 0.82,
+    // E7: the 1920 captures exposed large turf patches around the hamlet; soften the macro/AO blend
+    // here instead of changing the shared terrain look for every campaign.
+    macro: { blend: 0.45, ao: 0.45, contrast: 1.06 },
   },
   high_andes: {
     materials: {

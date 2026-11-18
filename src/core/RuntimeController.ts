@@ -1,6 +1,5 @@
 import type { Game } from './Game';
 import type { GameSettings } from './Config';
-import { kitLod0RadiusFor } from '../rendering/TreeInstances';
 import { saveToStorage, serializeGame } from '../game/SaveGame';
 import * as THREE from 'three';
 import { bus } from './EventBus';
@@ -15,7 +14,7 @@ import { detachBuilding, detachUnit, modernizeUnit } from '../rendering/RenderSy
 import { elevationDamageMultiplier, ArmorProfile } from '../game/combat';
 import { Resources, PlayerState, UnitKind, BuildingKind, OrderKind, OrderTarget, RESOURCE_KEYS } from '../core/types';
 import { distance2D } from '../util/math';
-import { CANAL_DRY_DROUGHT, CANAL_WET_FLOW, canalIrrigationAt } from '../model/defs/canal';
+import { CANAL_DRY_DROUGHT, CANAL_IRRIGATION_REACH, CANAL_WET_FLOW, canalIrrigationAt } from '../model/defs/canal';
 import { getUnitStats, DamageClass, unitClassFor } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { saveReplay } from '../game/replay';
@@ -95,7 +94,7 @@ export class RuntimeController {
     if (path && path.length >= 2) {
       if (!this.game.canalOpen) return 0;
       if ((this.game.environment.drought ?? 0) >= CANAL_DRY_DROUGHT) return 0;
-      return canalIrrigationAt(path, x, z);
+      return canalIrrigationAt(path, x, z, spec.irrigationReach);
     }
     if (!this.game.canalOpen || !this.game.canalSite) return 0;
     const yaw = spec.yaw ?? 0;
@@ -104,7 +103,7 @@ export class RuntimeController {
     const along = dx * Math.cos(yaw) + dz * Math.sin(yaw);
     const across = -dx * Math.sin(yaw) + dz * Math.cos(yaw);
     if (Math.abs(along) > (spec.length ?? 24) / 2) return 0;
-    return Math.max(0, 1 - Math.abs(across) / 2.5);
+    return Math.max(0, 1 - Math.abs(across) / (spec.irrigationReach ?? CANAL_IRRIGATION_REACH));
   }
 
   updateCanalVisual(): void {
@@ -120,10 +119,24 @@ export class RuntimeController {
     material.color.setHex(flowing ? 0x2f6f7a : 0x5c4a33);
     material.transparent = true;
     material.needsUpdate = true;
+    this.game.aylluSite?.setIrrigated(flowing);
     if (this.game.canalGate) {
       if (authored) this.game.canalGate.visible = !flowing;
       else this.game.canalGate.position.y = this.game.canalOpen ? 1.55 : 0.8;
     }
+  }
+
+  /** Scroll the acequia's ripples while the gate is open; visual only, no simulation state. */
+  updateCanalFlow(dt: number): void {
+    const water = this.game.canalWater;
+    if (!water || !this.game.canalOpen) return;
+    const material = water.material as THREE.MeshStandardMaterial;
+    const ripple = material.normalMap;
+    if (!ripple) return;
+    ripple.offset.x = (ripple.offset.x + dt * 0.22) % 1;
+    ripple.offset.y = (ripple.offset.y + dt * 0.05) % 1;
+    const flow = material.map;
+    if (flow) flow.offset.x = (flow.offset.x + dt * 0.16) % 1;
   }
 
   /** Train a unit in a completed building of player 0. */
@@ -187,6 +200,8 @@ export class RuntimeController {
 
     for (const us of data.units) {
       const u = new Unit(us.kind, us.owner, us.era, this.game.makeBuildContext(us.owner), us.id);
+      // The tag is hero identity: the view picks body, garments and portrait from it when it is created.
+      u.tag = us.tag;
       u.setContext(this.game.unitContext);
       this.applyPlayerBonuses(u, this.game.players[us.owner]);
       this.game.attachUnit(u);
@@ -733,12 +748,12 @@ export class RuntimeController {
     for (const u of this.game.units.values()) {
       if (u.owner === 0) continue;
       const vis = this.game.fow.isVisible(u.pos.x, u.pos.z) || !this.game.settings.fogOfWar;
-      if (u.view) u.view.group.visible = vis;
+      if (u.view) u.view.setVisible(vis);
     }
     for (const b of this.game.buildings.values()) {
       if (b.owner === 0) continue;
       const vis = this.game.fow.isVisible(b.pos.x, b.pos.z) || !this.game.settings.fogOfWar;
-      if (b.view) b.view.group.visible = vis;
+      if (b.view) b.view.setVisible(vis);
     }
     this.game.revealOpeningWhileCinematic();
     this.game.fowTexture.upload();
@@ -774,8 +789,8 @@ export class RuntimeController {
     this.game.terrain.setFow(this.game.fowTexture.texture, on);
     this.game.fowUniforms.fowEnabled.value = on ? 1 : 0;
     if (!on) {
-      for (const u of this.game.units.values()) if (u.view) u.view.group.visible = true;
-      for (const b of this.game.buildings.values()) if (b.view) b.view.group.visible = true;
+      for (const u of this.game.units.values()) if (u.view) u.view.setVisible(true);
+      for (const b of this.game.buildings.values()) if (b.view) b.view.setVisible(true);
       for (const n of this.game.resourceNodes.values()) n.setVisibleEx(true);
       for (const grove of this.game.caralGroves) this.game.trees.setVisible(grove.slot, true);
     }
@@ -862,6 +877,7 @@ export class RuntimeController {
     this.game.water.setSunDir(this.game.sky.sunDir);
     this.game.water.setDayFactor(this.game.sky.getDayFactor());
     this.game.water.update(realTime);
+    this.updateCanalFlow(d);
     this.game.terrain.setSunLight(this.game.sky.sunDir, this.game.sky.getSunColor());
     const hemi = this.game.sky.getHemi();
     this.game.terrain.setHemisphere(hemi.color, hemi.groundColor, hemi.intensity);
@@ -893,6 +909,7 @@ export class RuntimeController {
     // edge scrolling is off while the pointer is over a HUD panel or control
     this.game.camera.setPointerOverUi(this.game.isPointerOverUi());
     this.game.camera.update(d, realTime);
+    this.game.aylluSite?.updateLod(this.game.camera.getZoom());
     // Fit the shadow frustum and the terrain LOD to where the camera is this frame, not the last one.
     this.frameShadows();
     this.game.terrain.updateLod(this.game.camera.camera.position);
@@ -941,7 +958,7 @@ export class RuntimeController {
       this.game.fow,
       this.game.settings.fogOfWar,
     );
-    this.game.heroMarkers?.sync(this.game.units.values());
+    this.game.heroMarkers?.sync(this.game.units.values(), this.game.camera.getZoom(), this.game.camera.maxZoom);
     // The mission card and the opening flight own the screen: plates and banners over the text are noise.
     const cinematic = this.game.isCinematicActive();
     this.game.characterLabels?.setVisible(!cinematic);
@@ -1230,8 +1247,7 @@ export class RuntimeController {
     if (this.game.renderer) this.game.renderer.shadowMap.needsUpdate = true;
     this.game.groundCover?.setEnabled(q !== 'low' && !this.game.usesSoftwareRenderer);
     // The governor can apply a preset before the world (and its trees) exists.
-    if (this.game.trees)
-      this.game.trees.kitLod0Radius = kitLod0RadiusFor(q === 'low' || this.game.usesSoftwareRenderer);
+    if (this.game.trees) this.game.trees.kitLod0Radius = this.game.kitLod0RadiusFor(q);
   }
 
   /** Force a render scale (`null` restores the default) and apply it immediately. */

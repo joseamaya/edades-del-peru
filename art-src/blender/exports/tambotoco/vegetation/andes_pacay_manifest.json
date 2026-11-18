@@ -1,0 +1,75 @@
+{
+  "asset_id": "andes_pacay",
+  "source_scene": "scenes/tambotoco_vegetation_kit.blend",
+  "script": "scripts/blender/build_andes_vegetation_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "trunk base at origin",
+  "collision": "none in the GLB; visual-only vegetation",
+  "confidence": "inferred",
+  "sources": [
+    "docs/design/tambotoco-art-pilot.md"
+  ],
+  "budget": {
+    "LOD0": 1100,
+    "LOD1": 320
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 1048,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Andes_Bark",
+        "MAT-Andes_PacayLeaf"
+      ],
+      "bounds": {
+        "min": [
+          -2.7114,
+          -2.9231,
+          -0.1183
+        ],
+        "max": [
+          2.7535,
+          2.8141,
+          3.9604
+        ],
+        "size": [
+          5.4649,
+          5.7373,
+          4.0787
+        ]
+      },
+      "file": "andes_pacay_lod0.glb",
+      "bytes": 120144
+    },
+    "LOD1": {
+      "triangles": 316,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Andes_Bark",
+        "MAT-Andes_PacayLeaf"
+      ],
+      "bounds": {
+        "min": [
+          -2.8146,
+          -3.3831,
+          -0.1252
+        ],
+        "max": [
+          3.0014,
+          2.8781,
+          4.5065
+        ],
+        "size": [
+          5.816,
+          6.2612,
+          4.6317
+        ]
+      },
+      "file": "andes_pacay_lod1.glb",
+      "bytes": 60456
+    }
+  }
+}

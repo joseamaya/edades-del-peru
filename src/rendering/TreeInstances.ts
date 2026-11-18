@@ -3,10 +3,11 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MaterialTex } from './Textures';
 import { applyGeneratedPbr } from './Biomes';
 import type { TreeVariant } from '../model/defs/profiles';
-import type { KitModel } from './vegetationKit';
+import { KIT_LOD0_RADIUS, KIT_LOD0_RADIUS_LOW, type KitModel } from './vegetationKit';
 import { preserveAlphaCoverage } from './alphaCoverage';
 
 export type { TreeVariant };
+export { KIT_LOD0_RADIUS, KIT_LOD0_RADIUS_LOW } from './vegetationKit';
 
 const MAX = 700;
 const VARIANTS: TreeVariant[] = ['broad', 'needle', 'frond', 'algarrobo', 'molle', 'sauce', 'pacay'];
@@ -19,14 +20,10 @@ const _scale = new THREE.Vector3();
 const _euler = new THREE.Euler();
 const _swayM = new THREE.Matrix4();
 
-/** Instances further than this from the camera focus use the far (LOD1) kit model. */
-export const KIT_LOD0_RADIUS = 45;
 /**
  * Smaller LOD0 radius on low quality / software rendering: LOD1 cards read as noisy discs up close,
  * while LOD0 near the camera costs only ~20k triangles.
  */
-export const KIT_LOD0_RADIUS_LOW = 25;
-
 export function kitLod0RadiusFor(lowQuality: boolean): number {
   return lowQuality ? KIT_LOD0_RADIUS_LOW : KIT_LOD0_RADIUS;
 }
@@ -324,14 +321,17 @@ export class TreeInstances {
    * Draw `variant` with a Blender kit model instead of the procedural trunk and cards. Instances
    * are packed every update (only visible trees are drawn) and split by distance into LOD0/LOD1.
    */
-  attachKit(variant: TreeVariant, model: KitModel): void {
+  attachKit(variant: TreeVariant, model: KitModel, options: { nearLeafShadows?: boolean } = {}): void {
     // Kit models are session-cached by the loader; the instancer only owns its meshes.
     if (this.disposed || this.kits.has(variant)) return;
+    const nearLeafShadows = options.nearLeafShadows ?? false;
     const meshes = model.lods.map((parts, lod) =>
       parts.map((part) => {
         const mesh = new THREE.InstancedMesh(part.geometry, part.material, MAX);
         mesh.count = 0;
-        mesh.castShadow = true;
+        // A dense pack casts from its near canopy only: the far LOD and the trunks were most of the
+        // added shadow cost, and the canopy still anchors each tree. Sparse packs keep every caster.
+        mesh.castShadow = nearLeafShadows ? part.leaf && lod === 0 : true;
         mesh.receiveShadow = !part.leaf;
         mesh.frustumCulled = false;
         mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -379,6 +379,8 @@ export class TreeInstances {
       kit.meshes.forEach((parts, lod) => {
         for (const mesh of parts) {
           mesh.count = kit.slots[lod].length;
+          // Hide an unused LOD outright: count 0 still sets up its program and counts as a draw call.
+          mesh.visible = mesh.count > 0;
           // Upload only the packed instances, not the whole MAX-sized buffer.
           mesh.instanceMatrix.clearUpdateRanges();
           mesh.instanceMatrix.addUpdateRange(0, mesh.count * 16);

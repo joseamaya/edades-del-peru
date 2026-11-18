@@ -25,6 +25,8 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
   `yarn test:e2e:slow` — those heavy specs (nightly).
   `PW_WORKERS=N` overrides workers.
 - `yarn shot <name> --seed=777 --wait=8000` — screenshot into `review/`
+- `yarn art:pilot [--tag=before|after] [--quality=neutral|final] [--sizes=…] [--views=…]` — Tambotoco
+  art-direction before/after captures (seed 777, site `fundada`, HUD hidden) into `review/`
 - `yarn record --mission=m_tambotoco --mode=clip` — simulated gameplay recording (MP4 + JSON in
   `review/`; `--mode=full` plays the whole mission with real orders and no cheats)
 - `yarn evidence` — list the captures a branch needs, as a PR-ready markdown block (warn-only)
@@ -48,7 +50,7 @@ described below.
 ## Authoring tools (Blender and GIMP)
 
 - Sources live in `art-src/blender`, `art-src/gimp` and `art-src/textures` (terrain source scans); `.blend`/`.xcf` are Git LFS.
-- Blender 5.2.2 is driven by `mcp-for-blender` on `localhost:9876` with safe mode; GIMP 3.2.6
+- Blender 5.3.0 is driven by `mcp-for-blender` on `localhost:9876` with safe mode; GIMP 3.2.6
   by `gimp3-mcp` on `localhost:9877`. Both are local authoring tools, **not** CI dependencies.
 - MCP client config is **project-scoped** in this repo's `opencode.json` (gitignored); do not add
   Blender/GIMP to the global opencode config. The tracked reference is

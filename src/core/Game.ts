@@ -31,7 +31,7 @@ import { PropKitInstances } from '../rendering/PropKitInstances';
 import type { SiteCrew } from '../rendering/SiteCrew';
 import type { CaralMayorPhase } from '../model/defs/caralPhases';
 import { loadPropsKit } from '../rendering/propsKit';
-import { isCoastalRegion, loadKitModel } from '../rendering/vegetationKit';
+import { isCoastalRegion, loadKitModel, VEGETATION_PACKS } from '../rendering/vegetationKit';
 import { attachVegetationKit } from '../rendering/vegetationKitLoader';
 import { Props } from '../rendering/Props';
 import { GroundCover } from '../rendering/GroundCover';
@@ -86,6 +86,7 @@ import {
   resolveMapProfile,
   type HistoricalMapProfile,
   type GeographicRegion,
+  type VegetationPack,
 } from '../model/defs/profiles';
 import { resolveColorGrade } from '../model/defs/grades';
 import type { SettlementPlan } from '../model/defs/settlementPlan';
@@ -333,6 +334,15 @@ export class Game {
   private readonly forceCinematic: boolean;
   /** True when the renderer is a software rasterizer (safe profile applied). */
   private softwareFallback = false;
+  /** Regional vegetation pack of the current map; drives the kit LOD radius. */
+  private vegetationPack: VegetationPack | null = null;
+
+  /** LOD0 radius for a quality preset; a pack keeps its own radius through governor steps. */
+  kitLod0RadiusFor(quality: GameSettings['quality']): number {
+    const low = quality === 'low' || this.usesSoftwareRenderer;
+    const pack = this.vegetationPack ? VEGETATION_PACKS[this.vegetationPack] : null;
+    return pack ? (low ? pack.lod0Radius.low : pack.lod0Radius.high) : kitLod0RadiusFor(low);
+  }
 
   /** True when the renderer fell back to the software-safe profile. */
   get usesSoftwareRenderer(): boolean {
@@ -589,6 +599,7 @@ export class Game {
     // No atmospheric fog over the board: classic RTS look, sharp.
     this.scene.fog = null;
     this.setTimeOfDay(s.timeOfDay);
+    if (this.missionDef?.timeOfDayValue !== undefined) this.sky.setTimeOfDay(this.missionDef.timeOfDayValue);
     this.water = new Water(
       this.scene,
       this.terrain.heightMap,
@@ -596,6 +607,7 @@ export class Game {
       this.mapProfile.water.level,
       this.mapProfile.water.inland,
       this.siteDef?.heightField?.coast?.x ?? null,
+      this.siteDef?.terrain?.water?.grid ?? 128,
     );
     const waterPalette = this.siteDef?.terrain?.water;
     if (waterPalette) this.water.setPalette(waterPalette);
@@ -628,8 +640,9 @@ export class Game {
       }
     }
     if (!this.headless) {
-      this.trees.kitLod0Radius = kitLod0RadiusFor(this.softwareFallback || this.settings.quality === 'low');
-      void attachVegetationKit(this.trees, this.props, isCoastalRegion(this.mapProfile.region));
+      this.vegetationPack = this.mapProfile.vegetationKit ?? (isCoastalRegion(this.mapProfile.region) ? 'caral' : null);
+      this.trees.kitLod0Radius = this.kitLod0RadiusFor(this.settings.quality);
+      void attachVegetationKit(this.trees, this.props, this.vegetationPack);
     }
     this.wildlife = new Wildlife(this.scene);
     this.fow = new Fow(s.mapSize, 128);
@@ -1060,7 +1073,7 @@ export class Game {
 
   /** True while the opening flight or the chapter title card is holding the mission clock. */
   isCinematicActive(): boolean {
-    return this.camera.isFlying() || this.hud.isMissionCardOpen();
+    return this.camera.isOpeningFlight() || this.hud.isMissionCardOpen();
   }
 
   /**
@@ -1269,6 +1282,11 @@ export class Game {
   private lifeTimer = 0;
   private lifeTurn = 0;
 
+  /** True when a ground point is explored, or fog is off; shared by presentation visibility checks. */
+  isExploredAt(x: number, z: number): boolean {
+    return !this.settings.fogOfWar || this.fow.isExplored(x, z);
+  }
+
   /**
    * The city in use (presentation only): cooking smoke behind the dwellings near the camera, the sacred
    * fire on the Pyramid Mayor once it is in use, and a large blaze while the community gathers for the
@@ -1283,7 +1301,7 @@ export class Game {
     const focus = this.camera.getTarget();
     // The ayllu kit owns its life sources (huts, altars) and reuses this presentation tick, so it
     // inherits the same 70 m camera cap as Caral's cooking smoke.
-    this.aylluSite?.updateLife(focus, this.particles, this.lifeTurn);
+    this.aylluSite?.updateLife(focus, this.particles, this.lifeTurn, (x, z) => this.isExploredAt(x, z));
     this.colonialSite?.updateLife(focus, this.particles, this.lifeTurn);
     const city = this.caralCity ?? this.chavinCity;
     if (!city) return;
@@ -2406,7 +2424,7 @@ export class Game {
       const u = this.units.get(id);
       if (!u) continue;
       u.garrisonedIn = null;
-      if (u.view) u.view.group.visible = true;
+      if (u.view) u.view.setVisible(true);
       const ang = this.rng.float() * Math.PI * 2;
       const px = b.pos.x + Math.cos(ang) * (b.radius + 0.6);
       const pz = b.pos.z + Math.sin(ang) * (b.radius + 0.6);

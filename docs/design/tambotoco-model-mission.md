@@ -18,20 +18,29 @@ history.
 
 | Act             | Place                   | Player action                                        | Historical idea                                                 |
 | --------------- | ----------------------- | ---------------------------------------------------- | --------------------------------------------------------------- |
-| I · La cueva    | Tambotoco / Pacaritambo | Leave the cave, raise the first camp, hunt 120 food  | The peregrination starts as a movement of families, not an army |
+| I · La cueva    | Tambotoco / Pacaritambo | Leave the cave, raise the first camp, hunt 60 food   | The peregrination starts as a movement of families, not an army |
 | II · Huanacaure | Huanacaure hill         | Reach and visit the huaca                            | Ayar Uchu becomes stone; the huaca marks the route              |
-| III · El agua   | Cusco valley            | Open the acequia to force the alcabizas to cede land | Water as political leverage (Sarmiento)                         |
+| III · El agua   | Cusco valley            | Hold Huanacaure through the wave, open the acequia, irrigate a farm (optional) | Water as political leverage (Sarmiento)                         |
 | IV · Inticancha | Cusco valley            | Build the communal store and lay out four canchas    | The ayllu settlement becomes the future Cusco                   |
+
+The four canchas accept a house centre within 6 m of the marked plot. Adjacent plots are 17–24 m apart, so
+6 m leaves a dead band at the midpoint; the earlier 9 m was wide enough for one house to satisfy two plots
+(the closest pair is 17.1 m). The radius also absorbs a tree, rock or unit offset on the uneven bank.
 
 Opening the acequia is the documented leverage made mechanical: its trigger fires a `truce` effect, so the
 valley ayllus join the player's team, their AI stops campaigning and their warriors return home. Without it
 the AI base, 45 m from Inticancha, razed the communal store and the cancha houses and Act IV could not be
-finished. The truce is re-applied on load. The valley wave of Act III marches on the party at Huanacaure
-(`target`), so the tutorial's «salen a tu encuentro» is true; the truce sends it home. The Act IV card shows
-the traced plaza (`intro-traza`), not the founded settlement, and `fundada` fires on the victory tick.
+finished. The truce is re-applied on load. The valley wave of Act III now starts on the Huanacaure approach
+and marches on the party (`target`); the tutorial's «salen a tu encuentro» is true. The gate stays locked
+until `a3_oleada` (a 60 s hold at Huanacaure with at least three units) completes; then `t_oleada`
+activates the acequia and the truce can fire. The wave is real pressure: the party takes damage and the enemy base can attack the camp during the hold;
+an earlier autopilot run lost Ayar Manco's optional protect, the latest kept him. The Act IV card shows the traced plaza (`intro-traza`), not the founded settlement,
+and `fundada` fires on the victory tick.
 
-Optional: keep Ayar Manco alive and visit the hualla village. Victory = Inticancha founded and four canchas
-built.
+Optional: keep Ayar Manco alive, visit the hualla village (it yields 150 food and 100 wood; a game abstraction
+noted in the dossier) and build one farm within 4.0 m of the acequia outlet (`a3_riego`). The 3.2 m building keepout leaves a legal, irrigated band at the bank; the canal's
+`authoredCanalAt` reach is 4.5 m for this mission, so the farm receives the yield. Victory = Inticancha
+founded and four canchas built.
 
 ## Map
 
@@ -53,15 +62,44 @@ Painted ground is sampled at 128 × 128 over 256 m; the worker crosses in ≈2:2
 ## Site and factions
 
 `tambotoco_site` is drawn by `AylluSite`: the cave mouth, the Huanacaure shrine, three valley hamlets and
-Inticancha, with smoke, fires, villagers and llamas. Inticancha grows in two phases: `inticancha` (Act IV)
-only traces the plaza, its ring and the four cancha plots for the player's store and houses; `fundada`
-(the four canchas built) adds the houses, terraces, fields, people and fire, so the settlement never stands
-before the ayllus build it. The plaza and the plots stay walkable and buildable; the ring houses block from
-the `fundada` phase.
+Inticancha, with smoke, fires, villagers and llamas. The kit is modular and terrain-conformed
+(`rendering/aylluKit.ts`). The 2026-11-16 art pass split it into per-surface materials (stone, rock, earth,
+plaster, thatch, wood, crops and the static villagers) with generated PBR detail, world-scale UVs and one
+merged mesh per family and phase. Houses now have fieldstone footings, dark base courses, corner stones,
+deep-eave thatch roofs with exposed ridge poles, a lintelled door and a vent; qollqas have a corbel ring and
+a raised threshold; ramadas have a brush roof and a stone back; canchas are packed-earth enclosures with low
+walls and a threshold rather than empty pads; the plaza has a low kerb, four packed-earth axes and a stepped
+altar; fields follow the relief with a retaining face, ridges and standing crop. The cave mouth is an
+extruded arch in a rock ring with a scree apron, and Huanacaure's monolith is a shorter tapered huaca with a
+carved niche. A stone footpath network ties the shrine, the hamlets, the fields and Inticancha.
+
+Every piece samples the ground it spans, so huts, canchas, terraces and fields sit on the Pacaritambo slope
+instead of floating; the fields and terraces also live on dry, gently sloping ground
+(`tests/tambotoco-layout.test.ts`). Inticancha grows in two phases: `inticancha` (Act IV) only traces the
+plaza, its ring and the four cancha plots for the player's store and houses; `fundada` (the four canchas
+built) adds the houses, terraces, fields, people and fire, so the settlement never stands before the ayllus
+build it. The plaza and the plots stay walkable and buildable; the ring houses block from the `fundada`
+phase.
+
+The **acequia** is authored around the north-east perimeter of Inticancha, not through its plaza or canchas.
+Its water scrolls a flow map while the gate is open, the banks keep their dry colour, and only the
+canal-side Inticancha field's crop material shifts to a wet green (`AylluSite.setIrrigated`); the hualla
+field upstream stays dry. The gate remains the Act III mechanic.
 
 - **Señorío del Cusco (Killke)**: the player; a new LATE_INTERMEDIATE civilization with a circular-plaza
   silhouette. No imperial Inca units or buildings.
 - **Ayllus del valle**: a new LATE_INTERMEDIATE minor civilization; honderos, porras and village defenses.
+
+### Site certainty
+
+| Element | Status | Basis |
+| --- | --- | --- |
+| Killke occupation, valley agriculture and canal irrigation | Documented (period) | Bauer & Covey 2002; Covey 2006; `docs/historia/campanas/tambotoco.md` |
+| Fieldstone/mud walls, thatch roofs, irregular plans | Plausible/inferred for Killke | Andean domestic construction; no imperial cut-stone or niches |
+| Round qollqas, four canchas, plaza with altar, terraced fields | Plausible reconstruction | Inticancha tradition and partial Cusco archaeology; game abstraction |
+| Molle, pacay, willow and ichu vegetation (E3a) | Inferred | Real highland-valley species named in the art pilot; forms are a game reconstruction, not a botanical survey |
+| Cave arch, Huanacaure monolith shape, exact hut proportions | Stylized | The myth has no date or documented form; the scene is not a reconstruction |
+| Ayar clothing, headdresses, props, textile patterns | Presentation abstraction | `docs/historia/atuendos.md`; no documented likeness |
 
 The period locks the match to the Intermedio Tardío; no horses, firearms or imperial Inca technology.
 
@@ -77,23 +115,52 @@ fortress, walls, gate or towers, since the valley yields to the water, not to a 
 party's cap would read «20/7», so a base-less start raises the cap to the party that left the cave. No market, silver, stable or artillery: the economy is an ayllu economy,
 and the only "engine" of the mission is water.
 
+The opening hunt is 60 food (about 90 s in the full recording); the optional hualla stop pays stores on the way
+to Inticancha, so Act IV starts with wood in hand.
+
 ## Characters
 
 The legend is about eight siblings, so all eight are on the board from the start and read as leads:
 
 - **In the party**: Ayar Manco, Ayar Auca, Ayar Cachi, Ayar Uchu, Mama Huaco, Mama Ocllo, Mama Ipacura and
-  Mama Raua are tagged start units. Each carries a gold hero ring, a banner pole (standing beside the
-  figure) with an accent crest, a `★` nameplate in the legible parchment colour and a tunic, headband and
-  macana tinted with its commander accent; the selection panel shows the portrait, name, hero badge and
-  role. The accent is a presentation device to tell the eight apart, **not** a claim about Inca attire: the
-  bodies are still the shared ayllu rig, and unique outfits are the next art pass.
+  Mama Raua are tagged start units. Each hero keeps its declared **gender**: the four Ayar men use the male
+  body, wrap and tunic; the four Mamas use the female body, skirt and tunic, including the three worker
+  Mamas. The unit-id split no longer decides a named character's body. Attire is the shared ayllu rig with
+  a per-commander presentation layer (`CommanderDef.weapon/headdress/pattern/bulk`): the accent now fills the
+  tunic and mantle (a longer mantle for the Mamas), a grayscale weave pattern breaks the cloth, a band, feather tuft or turban changes the head silhouette, the hair itself is a procedural bun, braid pair
+  or topknot, and the hero carries a staff, stone maul, sling or digging stick (Mama Ipacura also carries the
+  party's back bundle). Ayar Cachi is visibly broader and Mama Ocllo/Mama Ipacura differ in hair, headdress
+  and burden, not only in accent hue. These are **presentation abstractions**, not claims about a
+  documented Ayar costume; `docs/historia/atuendos.md` remains the source for the shared garments.
+- **Field markers**: every hero has a gold ring. Close in, a banner pole carries a **crest shape declared per commander**
+  (`CommanderDef.crest`: diamond, tetrahedron, stone or spire) in the accent colour, so the eight do not
+  read as eight identical diamonds. At the strategic zoom the banner and crest drop out and only the rings
+  remain; the `★` nameplates finish fading just past that cutoff, so labels never pile up at map scale.
+- **Animation**: the shared worker GLB now ships `Sword_Regular_A` (macana/maul), `OverhandThrow` (sling) and
+  `Death01`; Andean soldiers and honderos use the combat clips and every `caral_worker` variant falls with the
+  death clip instead of freezing. Workers keep `Punch_Jab` for unarmed defence. Heroes override the attack
+  clip from their prop (sling → `OverhandThrow`, digging stick → `TreeChopping_Loop` tool swing), so the eight read differently in combat
+  as well as in idle.
 - **In the briefing**: the eight portraits (Ayar Manco, Ayar Auca, Ayar Cachi, Ayar Uchu, Mama Huaco, Mama
-  Ocllo, Mama Ipacura, Mama Raua) use the procedural stylized medallions; no new art is needed.
+  Ocllo, Mama Ipacura, Mama Raua) use the procedural stylized medallions, now with the commander accent in
+  the gradient and frame and a gender silhouette (long hair and shoulder cloth for the Mamas); no new art
+  is needed.
 - **Myth beats**: Ayar Cachi is retired at Tambo Quiro, Ayar Uchu at Huanacaure and Ayar Auca at Inticancha.
   Each `memory` effect removes the unit without a death animation and raises a named huaca marker
   (`MemoryStones`); the narration explains the transformation.
 - **Optional goal**: keeping Ayar Manco alive is a bonus, not a defeat condition, so the mission stays
   playable without a healer.
+
+## HUD and dialogue
+
+Mission dialogue is a left dock above the minimap, so a long historical line does not cover the party at
+1280x720. A selected party names its characters as portrait chips (short name, full name on hover, commander
+accent), instead of a wrapped paragraph; the party nameplates keep a 3 px gap when the layer spreads them.
+
+At 1700 px and above the HUD (top bar, objectives, tutorial, dialogue, cards, minimap and command bar) scales
+up instead of staying at 12 px labels on a 1920 panel. `tests/e2e/hud-layout.spec.ts` still
+checks the panels geometrically at 1280x720, 1600x900 and 1920x1080. Captures:
+`docs/media/tambotoco-hud-{1280,1600,1920}.webp` (native size), `node scripts/capture_hud_dialogue.mjs`.
 
 ## Opening and closing
 
@@ -103,11 +170,18 @@ The legend is about eight siblings, so all eight are on the board from the start
   briefing name the eight.
 - The cave clearing is lit while the opening holds it and stays explored afterwards, so the landmark the
   story starts from never sits under black or blue-tinted fog.
-- The ayllu site is exempt from the injected fog shader: that shader whitens the merged vertex-coloured
-  site on software rendering (SwiftShader), which is how the captures and recordings are produced.
-- Three narrated beats: the cave, Huanacaure, the valley.
+- The ayllu site uses the same fog mask as the terrain. The old injection dimmed alpha as well as colour;
+  opaque landscape and site meshes then wrote alpha 0 and the post-processed SwiftShader frame showed
+  white slabs. `applyFow` now dims colour only. The cave clearing is explored by the opening reveal;
+  Huanacaure and the valley stay dark until reached or shown by the Act II–IV camera beats (`reveal: 45`).
+- Three narrated beats with a hero/detail/wide grammar: the cave (the party leaves the mouth), Huanacaure
+  (the monolith and its niche) and the valley (the inhabited hualla hamlet and its fields).
 - Three chapter cards open the act that follows: Ayar Uchu en Huanacaure, el agua de los alcabizas and
-  Ayar Auca en Inticancha.
+  Ayar Auca en Inticancha. The Act II/III/IV beats glide behind their cards to a framed shot (`zoom` 34/46/48, `reveal: 45`);
+  after the wave the camera flies to the stone plug (zoom 36), not the field intake.
+- The foundation beat (`t_inticancha`) is the reward moment: a close flight to the plaza (zoom 29) while
+  Ayar Auca's stone rises (its raise fires the dust). The four canchas then complete the `fundada` phase and
+  the victory backdrop shows the founded settlement, not the empty valley.
 - Victory: Inticancha and its four canchas; the epilogue tells the foundation as tradition and names the
   disagreement between Sarmiento and Garcilaso.
 - Defeat: the valley ayllus reject the newcomers.
@@ -129,35 +203,90 @@ The legend is about eight siblings, so all eight are on the board from the start
 Objectives say **what** to do and **where**; the tutorial only teaches **how**, the first time a control is
 needed, because the Inca campaign opens from a fresh save and can be a player's first mission. Six
 non-blocking steps, each gated on its objective: move the party (box select, right-click), place the
-communal store (build bar), hunt (right-click on animals), visit the huaca (card → «Visitar»), answer the
-valley wave and open the acequia in one step ({key:selectArmy}, right-click; card → «Abrir compuerta», so no
-«attack» advice outlives the truce) and place the four cancha houses ({key:buildHouse}). The eight siblings and the myth stay in the briefing and the dialogue.
+communal store (build bar), hunt (right-click on animals), visit the huaca (card → «Visitar»), hold
+Huanacaure through the valley wave and open the acequia in one step ({key:selectArmy}, right-click; the gate
+stays locked until the 60 s hold; card → «Abrir compuerta», so no «attack» advice outlives the truce) and
+place the four cancha houses ({key:buildHouse}). The eight siblings and the myth stay in the briefing and the
+dialogue.
 
 ## Tests
 
 - `tests/tambotoco.test.ts`: acts, hidden objectives, chapter cards, scale, roster, the Leyenda label,
-  the eight-portrait cast, the eight tagged siblings and the three huaca beats.
+  the eight-portrait cast, the eight tagged siblings, the three huaca beats, the `a3_oleada` hold →
+  `a3_acequia` chain, the locked gate hint and the optional `a3_riego` farm.
 - `tests/campaign-scale.test.ts`: 256 m, 128² ground, crossing band.
 - Campaign E2E: briefing (eight cards, no scroll at 1280×720), visible nameplates, a named party
   selection, epilogue, intro art, geography, layout, save/load and the campaign path.
-- A real-command playtest through the four acts.
+- A real-command playtest through the four acts that holds the Huanacaure ring through the wave, verifies the
+  gate stays locked before the hold and opens it after.
 - `yarn record --mission=m_tambotoco --mode=clip|full`: in-engine recording for review, with a JSON timeline.
 
 ## Evidence
 
+- E6 reference set: `docs/media/tambotoco-e6-{hualla,acequia,inticancha}-{before,after,final}.webp` (960×540;
+  approved 2026-11-17).
+- E7 production pass: `docs/media/tambotoco-e7-*` and `yarn record --mission=m_tambotoco --mode=full --speed=3`
+  (`review/`; the 3X recording is the review artifact).
 - `node scripts/shots_evidence.mjs --scene=tambotoco-cave` → `docs/media/tambotoco-cave.webp`: the cave
   with fog on, at the opening hold.
 - `node scripts/shots_evidence.mjs --scene=tambotoco-heroes` → `docs/media/tambotoco-heroes.webp` (close)
   and `docs/media/tambotoco-heroes-rts.webp` (field markers). Both scenes render at 1600×900 and the WebP
   copies are resized to 960×540, WebP q58.
+- `tests/e2e/fow-zones.spec.ts` (`@smoke`, SwiftShader) is the reproducible regression for the fog fix.
+  `docs/media/tambotoco-fow-before.webp` is the Huanacaure view on `main` (white slabs); the after capture
+  is `docs/media/tambotoco-fow-after.webp` (landscape and ayllu site dimmed, no white).
+- `node scripts/capture_ayllu_kit.mjs --tag=after` (and `--tag=before` on the previous single-mesh site,
+  same views) → `docs/media/tambotoco-kit-{before,after}.webp` for Inticancha and
+  `docs/media/tambotoco-kit-valley-{before,after}.webp` for the hualla valley. 1600×900 with the HUD
+  hidden, site at `fundada`, resized to 960×540 WebP q58. They show the mud plaza and box huts replaced by
+  coursed stone platforms, flagstones, thatch houses, qollqas and terraced fields.
+- `node scripts/capture_ayar_identity.mjs` → `docs/media/tambotoco-cast.webp` (the eight briefing
+  medallions), `docs/media/tambotoco-heroes-close.webp` (Manco, Huaco, Ocllo and Cachi: male/female bodies,
+  garments and three crest shapes), `docs/media/tambotoco-heroes-all.webp` (the eight siblings in two rows,
+  showing the hair, headdress, weave and prop splits) and `docs/media/tambotoco-heroes-far.webp` (strategic
+  zoom: rings only, no plates or banners).
+- `node scripts/capture_ayllu_quality.mjs --tag=before|after [--sizes=1280x720,1600x900,1920x1080]`
+  captures cave, Huanacaure, hualla, acequia, Inticancha, valley, close, wide, the acequia bridge and (after only)
+  the built base at each resolution with the HUD hidden, seed 777, `fundada` and the gate open. The 2026-11-16
+  before/after sets are in `review/ayllu-quality-*` (gitignored); attach the PNGs to the PR. The 1600×900
+  after captures are published as `docs/media/tambotoco-quality-{cave,shrine,hualla,acequia,inticancha,built,
+  close,valley}.webp` (960×540, WebP q58); the five `docs/media/tambotoco-quality-before-*.webp` frames were
+  captured with the same script from `origin/main` (84bc279) before this pass. The same pass is covered by `tests/ayllu-kit.test.ts` (surface
+  families, phase groups, plinths) and `tests/tambotoco-layout.test.ts`.
+
+## Art direction
+
+Tambotoco is the reference scene for the stylized-realism standard ([`art-direction.md`](./art-direction.md)).
+The 2026-11-16 kit pass is the baseline; the next pass is the art-direction pilot
+([`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md)): terrain shadows (B11, fixed in E1), `cusco_valley`
+palette (E1), architecture finish with contact AO/macro colour and battered walls (E2a), cave and Huanacaure
+huaca GLBs with a procedural fallback (E2b), highland molle/pacay kit and an ichu ground-cover stand (E3a) and an opt-in Tambotoco
+hero variant (E4) and the presentation pass (E5). The pilot runs E0–E6 and does not rebuild the mission, its
+layout or its economy; the E6 reference captures were approved on 2026-11-17. The E7 production pass was delivered on 2026-11-17 (baked hero proportions, `cusco_valley`-scoped terrain
+macro, Inticancha yard and Huanacaure offerings).
 
 ## Open items
 
-1. Performance: the opening measures ~567k triangles / ~339 draw calls in `bench_scene.mjs` (ayllu site,
-   eight nameplates, hero rings/banners and tunic accents) under the 600k/340 first-pass cap; the Act IV
-   Inticancha view measures 472k/217. The next pass should tighten toward art-direction §11's 200 calls.
-   The mission starts with a small force (5 workers, 7 militia, 2 slingers, 1 scout) to keep the rig count down.
-2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry); a Blender architecture
-   kit (cave, shrine, houses, terraces) is the next art pass.
+1. Performance (measured 2026-11-17; E7 numbers): software (SwiftShader) measures **425,328 triangles /
+   269 draw calls** at the opening and **634,134 / 357** on the founded Inticancha (vegetation kit 9,352/9 and
+   34,306/12); the pre-E1 baseline was 436,880 / 265 and 608,324 / 347, E1 measured 437,976 / 264 and
+   614,594 / 357, E2a 438,856 / 269 and 615,532 / 354, and E2b 430,488 / 269 and 613,692 / 354. E3b hardware
+   (`--gpu`, Intel RPL-S iGPU, high) measures **450,930 / 270** opening and **659,962 / 360** late in frames mode
+   (the scene pass; the late frames rides the call cap; structural late 634,134 / 357).
+   Frame time at high quality with post-processing on: **39 FPS** opening and **33 FPS** late (25.6 / 30.1 ms p50).
+   The opening cap is now **500k / 280** (ratcheted from 600k/340); the late cap stays
+   **660k / 360** and is met without raising it. The pass batched every entity contact shadow into one
+   instanced draw, merged the site by surface family per phase (instead of one mesh for the whole 256 m
+   site, which drew the cave and the valley together), cut the inland water grid to 64 and trimmed the
+   dry-puna ground cover to a fifth. The 2026-11-16 art pass dropped hardware triangles from
+   **625,811 / 808,827** (opening/late, pre-pass) to **479,630 / 651,572**; E2b measures **473,510** opening
+   in frames mode after swapping 1,196 procedural cave/huaca triangles for 2,090 GLB triangles (the ~8k
+   structural drop is culling). The late calls are
+   higher than the old 301 because the eight
+   heroes now carry readable props and the base has its cancha houses, but they remain inside the cap. The
+   performance row is **Met**. Run `node scripts/bench_scene.mjs --mission=m_tambotoco [--stage=late]
+   [--gpu] --assert`.
+2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry), now a modular,
+   terrain-conformed kit; a Blender architecture kit could replace it later without touching the layout.
 3. A manual 30–40 minute playtest without isolated attrition, checking that the eight nameplates stay
    readable at the default zoom.

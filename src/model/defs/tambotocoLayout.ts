@@ -6,6 +6,18 @@
 export const TAMBOTOCO_CAVE = { x: 40, z: 55 } as const;
 export const TAMBOTOCO_SHRINE = { x: 120, z: 106 } as const;
 export const TAMBOTOCO_INTICANCHA = { x: 168, z: 190 } as const;
+/** Levelled plaza radius and the cancha plot footprint the `inticancha` phase traces. */
+export const TAMBOTOCO_PLAZA_RADIUS = 6;
+export const AYLLU_CANCHA_SIZE = { w: 4.8, d: 4.0 } as const;
+/** Huanacaure's three stepped tiers (top-down) and the height of each. */
+export const TAMBOTOCO_SHRINE_TIERS = [
+  { w: 9, d: 7.5 },
+  { w: 7, d: 5.5 },
+  { w: 5, d: 4 },
+] as const;
+export const TAMBOTOCO_SHRINE_TIER_HEIGHT = 0.75;
+
+export type AylluHutKind = 'house' | 'storehouse' | 'shed';
 
 export interface AylluHut {
   readonly x: number;
@@ -15,11 +27,17 @@ export interface AylluHut {
   readonly wall: number;
   /** Chimney smoke while its phase is standing. */
   readonly smoke: boolean;
+  /** Silhouette the kit draws; defaults to a plastered house. */
+  readonly kind?: AylluHutKind;
+  /** Yaw in radians. */
+  readonly ry?: number;
+  /** Wall finish for a house; the qollqa and shed ignore it. */
+  readonly wallColor?: 'earth' | 'plaster';
 }
 
 export const TAMBOTOCO_SHRINE_HUTS: readonly AylluHut[] = [
-  { x: 112, z: 100, w: 2.6, d: 2.3, wall: 1.3, smoke: true },
-  { x: 128, z: 101, w: 2.6, d: 2.3, wall: 1.3, smoke: true },
+  { x: 112, z: 100, w: 2.6, d: 2.3, wall: 1.9, smoke: true },
+  { x: 128, z: 101, w: 2.6, d: 2.3, wall: 1.9, smoke: true, kind: 'storehouse' },
 ];
 
 export const TAMBOTOCO_CANCHAS = [
@@ -30,18 +48,17 @@ export const TAMBOTOCO_CANCHAS = [
 ];
 
 export const TAMBOTOCO_INTICANCHA_HUTS: readonly AylluHut[] = [
-  { x: 156, z: 176, w: 3.2, d: 2.8, wall: 1.5, smoke: true },
-  { x: 180, z: 176, w: 3.2, d: 2.8, wall: 1.5, smoke: false },
-  { x: 155, z: 203, w: 3.2, d: 2.8, wall: 1.5, smoke: true },
-  { x: 181, z: 203, w: 3.2, d: 2.8, wall: 1.5, smoke: false },
-  { x: 168, z: 172, w: 4.2, d: 2.8, wall: 1.5, smoke: true },
-  { x: 168, z: 210, w: 3.2, d: 2.8, wall: 1.5, smoke: false },
+  { x: 158, z: 176, w: 3.2, d: 2.8, wall: 2.1, smoke: true },
+  { x: 180, z: 176, w: 3.2, d: 2.8, wall: 2.1, smoke: false, ry: 0.16, wallColor: 'earth' },
+  { x: 162, z: 203, w: 3.2, d: 2.8, wall: 2.1, smoke: true },
+  { x: 181, z: 203, w: 3.2, d: 2.8, wall: 2.1, smoke: false, kind: 'storehouse' },
+  { x: 168, z: 172, w: 4.2, d: 2.8, wall: 2.1, smoke: true },
+  { x: 168, z: 210, w: 3.2, d: 2.8, wall: 2.1, smoke: false, kind: 'storehouse' },
 ];
 
 export const TAMBOTOCO_TERRACES = [
-  { x: 150, z: 201, w: 22, d: 1.1, ry: 0.06 },
+  { x: 140, z: 201, w: 21, d: 1.1, ry: 0.06 },
   { x: 187, z: 201, w: 20, d: 1.1, ry: -0.08 },
-  { x: 151, z: 176, w: 18, d: 1.1, ry: -0.04 },
 ] as const;
 
 export interface AylluField {
@@ -50,6 +67,8 @@ export interface AylluField {
   readonly w: number;
   readonly d: number;
   readonly rows: number;
+  /** Canal-side plot: its crop material shifts wet when the acequia opens. */
+  readonly irrigated?: boolean;
 }
 
 export interface AylluVillage {
@@ -66,22 +85,22 @@ export const TAMBOTOCO_VILLAGES: readonly AylluVillage[] = [
     x: 138,
     z: 162,
     huts: [
-      { x: 134, z: 160, w: 3, d: 2.6, wall: 1.4, smoke: true },
-      { x: 142, z: 163, w: 3, d: 2.6, wall: 1.4, smoke: true },
-      { x: 138, z: 167, w: 3, d: 2.6, wall: 1.4, smoke: false },
-      { x: 136, z: 168, w: 3, d: 2.6, wall: 1.4, smoke: false },
+      { x: 134, z: 160, w: 3, d: 2.6, wall: 2.0, smoke: true },
+      { x: 142, z: 163, w: 3, d: 2.6, wall: 2.0, smoke: true, ry: 0.26, wallColor: 'earth' },
+      { x: 138, z: 167, w: 3, d: 2.6, wall: 2.0, smoke: false, kind: 'storehouse' },
+      { x: 132, z: 166, w: 3, d: 2.6, wall: 2.0, smoke: false, kind: 'shed', ry: -0.18 },
     ],
-    field: { x: 147, z: 157, w: 10, d: 7, rows: 5 },
+    field: { x: 131, z: 175, w: 10, d: 7, rows: 5 },
   },
   {
     name: 'sauaseray',
     x: 188,
     z: 214,
     huts: [
-      { x: 184, z: 212, w: 3, d: 2.6, wall: 1.4, smoke: true },
-      { x: 192, z: 215, w: 3, d: 2.6, wall: 1.4, smoke: true },
-      { x: 188, z: 219, w: 3, d: 2.6, wall: 1.4, smoke: false },
-      { x: 186, z: 220, w: 3, d: 2.6, wall: 1.4, smoke: false },
+      { x: 184, z: 212, w: 3, d: 2.6, wall: 2.0, smoke: true },
+      { x: 192, z: 215, w: 3, d: 2.6, wall: 2.0, smoke: true, ry: -0.24, wallColor: 'earth' },
+      { x: 188, z: 219, w: 3, d: 2.6, wall: 2.0, smoke: false, kind: 'storehouse' },
+      { x: 182, z: 221, w: 3, d: 2.6, wall: 2.0, smoke: false, kind: 'shed', ry: 0.2 },
     ],
     field: { x: 197, z: 209, w: 10, d: 7, rows: 5 },
   },
@@ -90,16 +109,85 @@ export const TAMBOTOCO_VILLAGES: readonly AylluVillage[] = [
     x: 198,
     z: 166,
     huts: [
-      { x: 194, z: 164, w: 3, d: 2.6, wall: 1.4, smoke: true },
-      { x: 202, z: 167, w: 3, d: 2.6, wall: 1.4, smoke: true },
-      { x: 198, z: 171, w: 3, d: 2.6, wall: 1.4, smoke: false },
-      { x: 196, z: 172, w: 3, d: 2.6, wall: 1.4, smoke: false },
+      { x: 194, z: 164, w: 3, d: 2.6, wall: 2.0, smoke: true },
+      { x: 202, z: 167, w: 3, d: 2.6, wall: 2.0, smoke: true, ry: 0.22, wallColor: 'earth' },
+      { x: 198, z: 171, w: 3, d: 2.6, wall: 2.0, smoke: false, kind: 'storehouse' },
+      { x: 192, z: 174, w: 3, d: 2.6, wall: 2.0, smoke: false, kind: 'shed', ry: -0.22 },
     ],
     field: { x: 207, z: 161, w: 10, d: 7, rows: 5 },
   },
 ];
 
+export interface AylluBridge {
+  readonly x: number;
+  readonly z: number;
+  readonly yaw: number;
+  readonly w: number;
+  readonly d: number;
+}
+
+/** The east footpath crosses the acequia on a small stone slab bridge. */
+export const TAMBOTOCO_BRIDGES: readonly AylluBridge[] = [{ x: 186, z: 177, yaw: 2.18, w: 2.3, d: 4.2 }];
+
 export const TAMBOTOCO_FIELDS: readonly AylluField[] = [
   { x: TAMBOTOCO_INTICANCHA.x - 22, z: TAMBOTOCO_INTICANCHA.z + 2, w: 12, d: 8, rows: 6 },
-  { x: TAMBOTOCO_INTICANCHA.x + 22, z: TAMBOTOCO_INTICANCHA.z + 2, w: 12, d: 8, rows: 6 },
+  { x: TAMBOTOCO_INTICANCHA.x + 22, z: TAMBOTOCO_INTICANCHA.z + 2, w: 12, d: 8, rows: 6, irrigated: true },
+];
+
+/** Footpaths that tie the hamlets, the shrine and Inticancha together (visual only). */
+export interface AylluPath {
+  readonly points: readonly { readonly x: number; readonly z: number }[];
+  /** Metres. */
+  readonly width: number;
+  /** Site phase that raises the path; paths belong to the camp or to the founded Inticancha. */
+  readonly since: 'cave' | 'inticancha';
+}
+
+export const TAMBOTOCO_PATHS: readonly AylluPath[] = [
+  {
+    since: 'cave',
+    width: 1.5,
+    points: [
+      { x: 120, z: 106 },
+      { x: 126, z: 124 },
+      { x: 132, z: 142 },
+      { x: 138, z: 158 },
+    ],
+  },
+  {
+    since: 'cave',
+    width: 1.3,
+    points: [
+      { x: 150, z: 160 },
+      { x: 144, z: 160 },
+      { x: 139, z: 164 },
+    ],
+  },
+  {
+    since: 'cave',
+    width: 1.3,
+    points: [
+      { x: 176, z: 184 },
+      { x: 186, z: 177 },
+      { x: 196, z: 170 },
+    ],
+  },
+  {
+    since: 'cave',
+    width: 1.3,
+    points: [
+      { x: 176, z: 196 },
+      { x: 182, z: 206 },
+      { x: 188, z: 212 },
+    ],
+  },
+  {
+    since: 'inticancha',
+    width: 1.2,
+    points: [
+      { x: 162, z: 190 },
+      { x: 154, z: 191 },
+      { x: 147, z: 192 },
+    ],
+  },
 ];

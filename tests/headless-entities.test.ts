@@ -9,6 +9,17 @@ import { ResourceNode } from '../src/entities/ResourceNode';
 const noBuildContext = {} as never;
 
 describe('headless simulation entities', () => {
+  it('takes a named commander gender over the unit-id split', () => {
+    const manco = new Unit(UnitKind.SOLDIER, 0, Era.TAHUANTINSUYO, noBuildContext, 2);
+    expect(manco.gender).toBe('female');
+    manco.tag = 'manco_capac';
+    expect(manco.gender).toBe('male');
+    const ocllo = new Unit(UnitKind.WORKER, 0, Era.TAHUANTINSUYO, noBuildContext, 3);
+    expect(ocllo.gender).toBe('male');
+    ocllo.tag = 'mama_ocllo';
+    expect(ocllo.gender).toBe('female');
+  });
+
   it('creates and updates a unit without a view or DOM', () => {
     const unit = new Unit(UnitKind.WORKER, 0, Era.FORMATIVE, noBuildContext);
     expect(unit.view).toBeNull();

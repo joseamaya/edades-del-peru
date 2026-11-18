@@ -19,6 +19,8 @@ export const ANDEAN_CULTURES = [
   'chincha',
   'collas_lupaca',
   'huanca',
+  'inca_killke',
+  'ayllus',
 ] as const;
 export const ANDEAN_ROLES = ['worker', 'scout', 'soldier', 'ranged', 'amauta'] as const;
 export type AndeanCulture = (typeof ANDEAN_CULTURES)[number];
@@ -57,6 +59,8 @@ const ANDEAN_CIV: Record<AndeanCulture, CivId> = {
   chincha: CivId.CHINCHA,
   collas_lupaca: CivId.COLLAS_LUPACA,
   huanca: CivId.HUANCA,
+  inca_killke: CivId.INCA_KILLKE,
+  ayllus: CivId.AYLLUS,
 };
 
 const GENERAL_ANDEAN_SPEC: AndeanSpec = {
@@ -209,6 +213,12 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
   chincha: GENERAL_ANDEAN_SPEC,
   collas_lupaca: GENERAL_ANDEAN_SPEC,
   huanca: GENERAL_ANDEAN_SPEC,
+  // Killke ayllus: a plain tunic, short manta and sling; no imperial gear or metal.
+  // Killke/ayllu honderos and porras (tambotoco-model-mission.md): plain tunic and the documented rodela
+  // (atuendos.md); no imperial helmet, maskapaycha or metal. The dossier keeps the short manta; the runtime
+  // omits it so the late scene keeps one draw per unit. Presentation abstraction.
+  inca_killke: GENERAL_ANDEAN_SPEC,
+  ayllus: GENERAL_ANDEAN_SPEC,
 };
 
 function andeanCultureForCiv(civ: CivId): AndeanCulture | null {
@@ -222,7 +232,11 @@ export function andeanCultureForEra(civ: CivId, era: Era): AndeanCulture | null 
 
 export function andeanCultureForVariant(variant: string): AndeanCulture | null {
   if (variant.startsWith('inca_chasqui_')) return null;
-  return ANDEAN_CULTURES.find((culture) => variant.startsWith(`${culture}_`)) ?? null;
+  // Longest prefix wins: `inca_killke_*` also starts with `inca_`.
+  return (
+    [...ANDEAN_CULTURES].sort((a, b) => b.length - a.length).find((culture) => variant.startsWith(`${culture}_`)) ??
+    null
+  );
 }
 
 export function andeanRoleForVariant(variant: string): AndeanRole | null {

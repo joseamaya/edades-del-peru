@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { MISSIONS } from '../../src/campaign/defs/campaign';
+import { CAMERA_CONFIG } from '../../src/core/cameraMath';
 
 /**
  * Geometric check of the in-match HUD: the persistent panels must never cover each other at the
@@ -42,6 +43,7 @@ type State = Record<string, Box | null>;
 interface Snapshots {
   initial: State;
   dialogue: State;
+  chips: State;
   build: State;
   building: State;
   threePanels: State;
@@ -126,6 +128,14 @@ async function snapshots(page: Page): Promise<Snapshots> {
     await render();
     const dialogue = read();
 
+    // A selected party of named characters grows the description column with portrait chips.
+    const tagged = [...g.units.values()].filter((u: any) => u.owner === 0 && u.tag).map((u: any) => u.id);
+    if (tagged.length) {
+      g.selectUnits(tagged);
+      await render();
+    }
+    const chips = read();
+
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as
       { id: number } | undefined;
     if (!worker) throw new Error('the mission has no player worker to open the build panel');
@@ -178,6 +188,7 @@ async function snapshots(page: Page): Promise<Snapshots> {
     return {
       initial,
       dialogue,
+      chips,
       build,
       building: buildingSnap,
       threePanels,
@@ -207,6 +218,28 @@ function violations(state: State): string[] {
         found.push(`#${idA} ${JSON.stringify(a)} overlaps #${idB} ${JSON.stringify(b)}`);
       }
     }
+  }
+  return found;
+}
+
+/** Side/bottom panels must leave the camera's edge-scroll band clickable. */
+function bandViolations(state: State, width: number, height: number): string[] {
+  const gap = CAMERA_CONFIG.edgeBand.sides;
+  const found: string[] = [];
+  for (const id of [
+    'ed-bottom',
+    'ed-minimap-wrap',
+    'ed-objectives',
+    'ed-tutorial',
+    'ed-help',
+    'ed-help-open',
+    'ed-dialogue',
+  ]) {
+    const box = state[id];
+    if (!box) continue;
+    if (box.x < gap - 1) found.push(`${id} starts at x=${box.x}`);
+    if (box.x + box.w > width - gap + 1) found.push(`${id} ends at x=${box.x + box.w}`);
+    if (box.y + box.h > height - gap + 1) found.push(`${id} ends at y=${box.y + box.h}`);
   }
   return found;
 }
@@ -254,7 +287,20 @@ for (const { width, height, missions } of RESOLUTIONS) {
         expect(snap.threePanels['ed-help']).not.toBeNull();
 
         expect(violations(snap.initial), 'start state').toEqual([]);
-        expect(violations(snap.dialogue), 'dialogue over the command panel').toEqual([]);
+        expect(violations(snap.dialogue), 'dialogue dock against the other panels').toEqual([]);
+        expect(violations(snap.chips), 'selected cast with portrait chips').toEqual([]);
+        // `read()` returns null for a panel the current overlay makes unmeasurable; the overlap pass
+        // tolerates that, so only assert the dock shape when both boxes exist.
+        const dock = snap.dialogue['ed-dialogue'];
+        const minimap = snap.dialogue['ed-minimap-wrap'];
+        const command = snap.dialogue['ed-bottom'];
+        if (dock && minimap) {
+          expect(dock.x, 'dialogue dock on the left').toBeLessThan(200);
+          expect(dock.y + dock.h, 'dialogue above the minimap').toBeLessThanOrEqual(minimap.y + 1);
+        }
+        if (dock && command) {
+          expect(dock.y + dock.h, 'dialogue above the command bar').toBeLessThanOrEqual(command.y + 1);
+        }
         expect(violations(snap.build), 'worker build panel').toEqual([]);
         expect(violations(snap.building), 'building panel').toEqual([]);
         expect(violations(snap.threePanels), 'objectives, tutorial and shortcuts together').toEqual([]);
@@ -264,6 +310,15 @@ for (const { width, height, missions } of RESOLUTIONS) {
         expect(violations(snap.helpOpen), 'shortcuts open over a long objective list').toEqual([]);
         expect(objectivesFit(snap.archive), 'expanded objectives reach the command bar').toEqual([]);
         expect(objectivesFit(snap.helpOpen), 'objectives reach the command bar with the shortcuts open').toEqual([]);
+
+        for (const [label, state] of [
+          ['start', snap.initial],
+          ['dialogue', snap.dialogue],
+          ['build', snap.build],
+          ['shortcuts open', snap.helpOpen],
+        ] as const) {
+          expect(bandViolations(state, width, height), `edge band clear (${label})`).toEqual([]);
+        }
 
         // The real Act IV goal stays wholly visible, even with the archive open.
         const fit = await page.evaluate(() => {
@@ -635,4 +690,24 @@ test.describe('final screen layering', () => {
       expect(errors).toEqual([]);
     },
   );
+});
+
+test('the transient HUD keeps clear of the camera band', async ({ page }) => {
+  await page.goto('/?play=1&seed=777&fog=0&low=1&intro=0');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const root = document.getElementById('ui-root')!;
+    const gap = Number.parseFloat(getComputedStyle(root).getPropertyValue('--bar-gap'));
+    const alerts = document.getElementById('ed-alerts');
+    const fps = document.getElementById('ed-fps');
+    return {
+      gap,
+      alertsLeft: alerts ? Number.parseFloat(getComputedStyle(alerts).left) : null,
+      fpsRight: fps ? Number.parseFloat(getComputedStyle(fps).right) : null,
+    };
+  });
+  expect(out.alertsLeft).toBeGreaterThanOrEqual(out.gap);
+  expect(out.fpsRight).toBeGreaterThanOrEqual(out.gap);
 });

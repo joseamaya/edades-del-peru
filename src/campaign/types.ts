@@ -51,6 +51,8 @@ export interface MissionCanal {
   initiallyOpen?: boolean;
   /** Whether the authored canal contributes irrigation yield to nearby farms. */
   irrigation?: boolean;
+  /** Irrigation reach in metres from the trace; defaults to 2.5. */
+  irrigationReach?: number;
   /**
    * Objective that must be active before the gate answers (Caral's Act II canal). Until then the
    * gate is scenery: opening it would complete the objective the moment it appears.
@@ -319,7 +321,13 @@ export type TriggerEffect =
   | { type: 'environment'; event: string }
   | { type: 'resources'; player?: 0 | 1; amount: Partial<Resources> }
   | { type: 'objective'; objectiveId: string; state: 'activate' | 'complete' | 'fail'; announce?: boolean }
-  | { type: 'camera'; pos: MissionPoint }
+  /**
+   * Move the camera; `reveal` (metres) also marks that ground explored for a narrated look at a place.
+   * `zoom` frames the authored point (the RTS camera uses it as the shot's subject, terrain height
+   * included) and glides over `seconds` instead of cutting; the flight does not hold the mission clock.
+   * Without `zoom` the effect keeps the old instant focus.
+   */
+  | { type: 'camera'; pos: MissionPoint; reveal?: number; zoom?: number; seconds?: number }
   | { type: 'victory' }
   | { type: 'defeat'; text: string }
   /**
@@ -427,6 +435,11 @@ export interface MissionDef {
   /** Commanders shown as portrait cards in the briefing (stylized, not likenesses). */
   commanders?: PortraitId[];
   timeOfDay: 'morning' | 'noon' | 'dusk' | 'night';
+  /**
+   * Optional explicit sun time (0 night .. 1 day) when the named preset is not low enough for the
+   * scene, e.g. the long-shadow morning of the Tambotoco pilot.
+   */
+  timeOfDayValue?: number;
   startingEra: Era;
   /**
    * Multiplier on every unit's base speed for campaign pacing (1 = the skirmish speeds). Caral and Chavín use 0.75

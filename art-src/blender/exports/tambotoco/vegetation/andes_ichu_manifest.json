@@ -1,0 +1,74 @@
+{
+  "asset_id": "andes_ichu",
+  "source_scene": "scenes/tambotoco_vegetation_kit.blend",
+  "script": "scripts/blender/build_andes_vegetation_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "clump base at origin",
+  "collision": "none in the GLB; visual-only vegetation",
+  "confidence": "inferred",
+  "sources": [
+    "docs/design/tambotoco-art-pilot.md",
+    "docs/historia/mapas.md"
+  ],
+  "budget": {
+    "LOD0": 220,
+    "LOD1": 60
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 144,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Andes_Ichu"
+      ],
+      "bounds": {
+        "min": [
+          -0.6259,
+          -0.5602,
+          -0.05
+        ],
+        "max": [
+          0.6135,
+          0.4774,
+          0.7481
+        ],
+        "size": [
+          1.2395,
+          1.0376,
+          0.7981
+        ]
+      },
+      "file": "andes_ichu_lod0.glb",
+      "bytes": 13812
+    },
+    "LOD1": {
+      "triangles": 42,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Andes_Ichu"
+      ],
+      "bounds": {
+        "min": [
+          -0.3888,
+          -0.5602,
+          -0.05
+        ],
+        "max": [
+          0.4526,
+          0.4774,
+          0.6683
+        ],
+        "size": [
+          0.8414,
+          1.0376,
+          0.7183
+        ]
+      },
+      "file": "andes_ichu_lod1.glb",
+      "bytes": 5032
+    }
+  }
+}

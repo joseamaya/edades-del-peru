@@ -12,10 +12,16 @@ import pacaeLod0 from '../assets/vegetation/caral/caral_pacae_lod0.glb?url';
 import pacaeLod1 from '../assets/vegetation/caral/caral_pacae_lod1.glb?url';
 import totoraLod0 from '../assets/vegetation/caral/caral_totora_lod0.glb?url';
 import totoraLod1 from '../assets/vegetation/caral/caral_totora_lod1.glb?url';
+import molleLod0 from '../assets/vegetation/andes/andes_molle_lod0.glb?url';
+import molleLod1 from '../assets/vegetation/andes/andes_molle_lod1.glb?url';
+import pacayLod0 from '../assets/vegetation/andes/andes_pacay_lod0.glb?url';
+import pacayLod1 from '../assets/vegetation/andes/andes_pacay_lod1.glb?url';
+import ichuLod0 from '../assets/vegetation/andes/andes_ichu_lod0.glb?url';
+import ichuLod1 from '../assets/vegetation/andes/andes_ichu_lod1.glb?url';
 import { loadStaticGltf } from './StaticModel';
 import { preserveAlphaCoverage } from './alphaCoverage';
 import { dequantize } from './mergeStatic';
-import type { GeographicRegion, TreeVariant } from '../model/defs/profiles';
+import type { GeographicRegion, TreeVariant, VegetationPack } from '../model/defs/profiles';
 import type { PropId } from '../model/defs/props';
 
 /**
@@ -23,7 +29,16 @@ import type { PropId } from '../model/defs/props';
  * docs/design/art-direction.md §7). Each species ships a LOD0 and a LOD1 GLB; every LOD holds one
  * mesh per material (bark/stems and alpha-masked leaf or plume cards).
  */
-export type VegetationKitId = 'huarango' | 'sauce' | 'cana_brava' | 'carrizo' | 'totora' | 'pacae';
+export type VegetationKitId =
+  'huarango' | 'sauce' | 'cana_brava' | 'carrizo' | 'totora' | 'pacae' | 'molle' | 'pacay' | 'ichu';
+
+/** Kit LOD0 radii by pack; a pack owns its own policy. */
+export const KIT_LOD0_RADIUS = 45;
+export const KIT_LOD0_RADIUS_LOW = 25;
+export const KIT_LOD0_RADIUS_ANDES = 18;
+
+/** A regional kit set; the mission chooses its pack explicitly (`MapOverrides.vegetationKit`). */
+export type { VegetationPack };
 
 const VEGETATION_KIT_URLS: Record<VegetationKitId, { lod0: string; lod1: string }> = {
   huarango: { lod0: huarangoLod0, lod1: huarangoLod1 },
@@ -32,14 +47,24 @@ const VEGETATION_KIT_URLS: Record<VegetationKitId, { lod0: string; lod1: string 
   carrizo: { lod0: carrizoLod0, lod1: carrizoLod1 },
   totora: { lod0: totoraLod0, lod1: totoraLod1 },
   pacae: { lod0: pacaeLod0, lod1: pacaeLod1 },
+  molle: { lod0: molleLod0, lod1: molleLod1 },
+  pacay: { lod0: pacayLod0, lod1: pacayLod1 },
+  ichu: { lod0: ichuLod0, lod1: ichuLod1 },
 };
 
 /**
- * Tree variants drawn with the kit. The game's `algarrobo` is Prosopis, i.e. the huarango. The kit
- * is authored for the Supe valley, so it only replaces trees on coastal maps (`isCoastalRegion`).
+ * Tree variants drawn with the kit. The game's `algarrobo` is Prosopis, i.e. the huarango. A mission
+ * opts into a regional pack (`MapOverrides.vegetationKit`); Caral's coastal profile does so by region.
  */
 export const KIT_TREE_VARIANTS: Partial<Record<TreeVariant, VegetationKitId>> = {
   algarrobo: 'huarango',
+  sauce: 'sauce',
+};
+
+/** Tambotoco's highland valley: the two valley trees plus the shared riverbank willow. */
+export const KIT_TREE_VARIANTS_ANDES: Partial<Record<TreeVariant, VegetationKitId>> = {
+  molle: 'molle',
+  pacay: 'pacay',
   sauce: 'sauce',
 };
 
@@ -52,6 +77,35 @@ export const KIT_PROPS: Partial<Record<PropId, VegetationKitId>> = {
   totora: 'totora',
   cana_brava: 'cana_brava',
   carrizo: 'carrizo',
+};
+
+/** Highland pack: the shared reeds; the ichu tufts stay in the procedural ground-cover instancer. */
+export const KIT_PROPS_ANDES: Partial<Record<PropId, VegetationKitId>> = {
+  totora: 'totora',
+  carrizo: 'carrizo',
+};
+
+export interface VegetationPackDef {
+  trees: Partial<Record<TreeVariant, VegetationKitId>>;
+  props: Partial<Record<PropId, VegetationKitId>>;
+  /** Dense pack: only the near leaf cards cast, keeping the shared shadow pass inside its cap. */
+  nearLeafShadows: boolean;
+  lod0Radius: { high: number; low: number };
+}
+
+export const VEGETATION_PACKS: Record<VegetationPack, VegetationPackDef> = {
+  caral: {
+    trees: KIT_TREE_VARIANTS,
+    props: KIT_PROPS,
+    nearLeafShadows: false,
+    lod0Radius: { high: KIT_LOD0_RADIUS, low: KIT_LOD0_RADIUS_LOW },
+  },
+  andes: {
+    trees: KIT_TREE_VARIANTS_ANDES,
+    props: KIT_PROPS_ANDES,
+    nearLeafShadows: true,
+    lod0Radius: { high: 14, low: 14 },
+  },
 };
 
 export interface KitPart {

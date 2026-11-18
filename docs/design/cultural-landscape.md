@@ -144,10 +144,10 @@ exposes it via `getCanal`.
   `RENDERED_FEATURES.length` — the same bound the E2E asserts in
   `tests/e2e/landscape.spec.ts`. Basing the budget on the declared vocabulary (not
   on the measured mesh count) makes it non-circular: un-merging a road/path into
-  per-segment meshes exceeds the budget and fails. The factor 2 is three's
-  `VSMShadowMap`: it renders every shadow **receiver** into the shadow map as well,
-  and every landscape mesh sets `receiveShadow`, so each merged mesh costs one
-  main-pass plus one shadow-pass draw. Numbers are only comparable on the same
+  per-segment meshes exceeds the budget and fails. The factor 2 leaves room for one
+  main-pass plus one shadow-pass draw per feature; under `PCFShadowMap` only
+  casters enter the shadow map, so the bound is a ceiling rather than a measurement
+  of the current pass. Numbers are only comparable on the same
   machine/browser; `bench.json` records the OS/CPU/Node so runs can be compared
   (see [`docs/development.md`](../development.md) §Performance).
 

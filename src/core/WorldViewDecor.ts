@@ -12,6 +12,7 @@ import { loadSiteModel } from '../rendering/siteModels';
 import { mergeStaticByMaterial } from '../rendering/mergeStatic';
 import { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
 import { AylluSite } from '../rendering/AylluSite';
+import { loadTambotocoHeroAssets } from '../rendering/tambotocoHeroKit';
 import { ColonialLife } from '../rendering/ColonialLife';
 import { COLONIAL_LAYOUTS } from '../model/defs/colonialLayout';
 import {
@@ -32,9 +33,10 @@ import { fishingApproach, type Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
 import { SiteCrew } from '../rendering/SiteCrew';
 import type { CaralMayorPhase } from '../model/defs/caralPhases';
-import { buildCanalGeometry } from '../rendering/canal';
+import { buildCanalGeometry, canalFlowTexture } from '../rendering/canal';
+import { MaterialTex } from '../rendering/Textures';
 import { DEFAULT_CANAL_WIDTH } from '../model/defs/canal';
-import { planProps, propCountFor } from '../model/defs/props';
+import { planProps, propCountFor, type PropPlacement } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
 import { attachFaunaKit } from '../rendering/faunaKit';
 import { BuildingKind } from '../core/types';
@@ -67,6 +69,10 @@ import { getMission } from '../campaign/defs/campaign';
 
 const AMBIENT_PROP_SEED = 7;
 const AMBIENT_FAUNA_SEED = 13;
+/** Visual-only ayllu stones: cap, minimum gap and seed salt (they reuse the `rock` instancer). */
+const AYLLU_STONE_LIMIT = 24;
+const AYLLU_STONE_MIN_GAP = 2.4;
+const AYLLU_STONE_SEED = 271;
 const FISHING_SCAN_MARGIN = 4;
 /** Fishing banks keep a large reserve: the anchoveta shoals off Áspero fed the village. */
 const FISHING_RESERVE = { min: 280, max: 380 } as const;
@@ -291,10 +297,25 @@ export class WorldViewDecor {
           def.phases ?? { phases: ['cave'], initial: 'cave' },
         );
         ayllu.setPhase(this.game.sitePhase);
-        // No fog patch here: the injected shader whitens the merged vertex-coloured site on software
-        // rendering, and the cave is the mission's opening image. The site phases follow the cast, so
-        // their geometry is explored when it appears.
+        // The site is fogged like every other cultural layer: the cave stays explored by the opening
+        // reveal, while Huanacaure and the valley stay dark until reached or shown by the Act III/IV
+        // camera beats.
+        applyFowToObject(ayllu.group, this.game.fowUniforms);
         this.game.aylluSite = ayllu;
+        // Hero GLBs are optional: the procedural cave and huaca stay until both LODs of a piece
+        // arrive, and a failed load never leaves a hole in the opening.
+        void loadTambotocoHeroAssets().then((assets) => {
+          if (!current()) {
+            for (const model of [assets.cave, assets.huaca]) {
+              if (!model) continue;
+              disposeStaticGltf(model.lod0);
+              disposeStaticGltf(model.lod1);
+            }
+            return;
+          }
+          ayllu.setHeroAssets(assets);
+          applyFowToObject(ayllu.group, this.game.fowUniforms);
+        });
       }
       return;
     }
@@ -826,13 +847,22 @@ export class WorldViewDecor {
     bed.receiveShadow = true;
     const water = new THREE.Mesh(
       geometry.water,
-      new THREE.MeshStandardMaterial({
-        color: 0x2f6f7a,
-        roughness: 0.45,
-        metalness: 0.1,
-        transparent: true,
-        side: THREE.DoubleSide,
-      }),
+      (() => {
+        const ripple = MaterialTex.normal(41).clone();
+        ripple.wrapS = ripple.wrapT = THREE.RepeatWrapping;
+        ripple.repeat.set(2.5, 1);
+        ripple.needsUpdate = true;
+        return new THREE.MeshStandardMaterial({
+          color: 0x3a8a94,
+          roughness: 0.28,
+          metalness: 0.05,
+          transparent: true,
+          side: THREE.DoubleSide,
+          map: canalFlowTexture(),
+          normalMap: ripple,
+          normalScale: new THREE.Vector2(0.55, 0.55),
+        });
+      })(),
     );
     water.name = 'canal_water';
     water.receiveShadow = true;
@@ -1143,10 +1173,67 @@ export class WorldViewDecor {
         { id: 'llama', x: 142, z: 168, rotY: 4.2, scale: 1.05 },
         { id: 'llama', x: 194, z: 160, rotY: 1.2, scale: 0.9 },
       ];
+      placements = [...placements, ...this.planAylluStones()];
     }
     this.game.props.place(placements, heightAt);
     this.game.wildlife.spawn(fauna, heightAt);
     if (!this.game.headless) void attachFaunaKit(this.game.wildlife);
+  }
+
+  /**
+   * Visual-only stones on the ayllu path shoulders and the stream banks. It reuses the `rock` prop
+   * mesh, so the additions cost no draw call; the cap keeps the triangle delta small.
+   */
+  private planAylluStones(): PropPlacement[] {
+    const rng = new RNG(this.game.settings.mapSeed * AYLLU_STONE_SEED + 7);
+    const out: PropPlacement[] = [];
+    const tryStone = (x: number, z: number, scale: number): void => {
+      if (out.length >= AYLLU_STONE_LIMIT) return;
+      if (this.game.terrain.isWater(x, z)) return;
+      if (this.game.isReserved(x, z)) return;
+      if (out.some((p) => Math.hypot(p.x - x, p.z - z) < AYLLU_STONE_MIN_GAP)) return;
+      out.push({ id: 'rock', x, z, rotY: rng.range(0, Math.PI * 2), scale });
+    };
+    const scatter = (
+      ax: number,
+      az: number,
+      bx: number,
+      bz: number,
+      spacing: number,
+      offset: number,
+      jitter: number,
+      chance: number,
+      scale: readonly [number, number],
+    ): void => {
+      const len = Math.hypot(bx - ax, bz - az);
+      if (len < 1) return;
+      const nx = -(bz - az) / len;
+      const nz = (bx - ax) / len;
+      const steps = Math.max(1, Math.round(len / spacing));
+      for (let s = 1; s < steps; s++) {
+        const t = s / steps;
+        for (const side of [-1, 1]) {
+          if (!rng.chance(chance)) continue;
+          const off = offset + rng.range(0, jitter);
+          tryStone(ax + (bx - ax) * t + nx * off * side, az + (bz - az) * t + nz * off * side, rng.range(...scale));
+        }
+      }
+    };
+    for (const road of this.game.missionLayout?.roads ?? []) {
+      if (!road.stonePath) continue;
+      const a = this.game.resolveMissionPoint(road.from);
+      const b = this.game.resolveMissionPoint(road.to);
+      scatter(a.x, a.z, b.x, b.z, 10, (road.width ?? 4) / 2 + 0.8, 1.2, 0.55, [0.45, 0.75]);
+    }
+    const river = this.game.siteDef?.heightField?.river;
+    if (river) {
+      for (let i = 0; i < river.path.length - 1; i++) {
+        const [ax, az] = river.path[i];
+        const [bx, bz] = river.path[i + 1];
+        scatter(ax, az, bx, bz, 4, river.halfWidth + 0.7, 1.4, 0.5, [0.5, 1.0]);
+      }
+    }
+    return out;
   }
 
   /** Geography-driven resource pick: profile weights, gated by height, beach, moisture and slope. */
@@ -1218,7 +1305,11 @@ export class WorldViewDecor {
     for (const road of roads) {
       if (!road.stonePath) continue;
       const points = [this.game.resolveMissionPoint(road.from), this.game.resolveMissionPoint(road.to)];
-      this.game.terrain.paintStonePath(points, road.width ?? 4, 0.95);
+      const width = road.width ?? 4;
+      // A wide dirt shoulder first, then a narrower stone core: the stones read as embedded in the
+      // path instead of as a stone carpet with a hard cut on both sides.
+      this.game.terrain.paintPath(points, width + 2.5, 0.45);
+      this.game.terrain.paintStonePath(points, Math.max(2.4, width * 0.8), 0.95);
     }
   }
 

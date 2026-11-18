@@ -4,6 +4,12 @@ Art direction for Edades del Perú. It fixes how terrain, architecture, material
 vegetation and colour read on screen so that **a player can recognise the period,
 the region and the civilization without reading the mission name**.
 
+The current reference scene is **Tambotoco** (`m_tambotoco`): the target rules live in
+[`art-direction.md`](./art-direction.md) and the pilot audit, asset inventory and backlog in
+[`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md). The **Caral visual pilot** below remains the
+implementation precedent and the measured performance baseline; it is no longer the scene that sets the
+standard.
+
 This is an implementation-facing document: it names the code that owns each
 decision and links the historical claims to [`docs/historia/`](../historia/).
 Where a value is a gameplay abstraction rather than a reconstruction it is marked
@@ -278,8 +284,9 @@ features are not documented, so this is a plausible Andean representation, not a
 The same constants drive the procedural humanoids and the recoloured CC0 body texture. Historical models must follow the
 period dossiers and their source/licence must be recorded in [`PROVENANCE.md`](../../PROVENANCE.md) before they
 are used in a campaign. See [`docs/development.md`](../development.md) for the clip convention, the build script
-and the migration steps. Only the eyes (too small to cast a readable shadow) skip the VSM shadow pass; the
-garments keep their shadows, which keeps the worker inside its budget without cutting visible geometry.
+and the migration steps. Only the meshes that make up the silhouette cast a shadow: the worker keeps its body
+(`workerAttire`), and every other rig keeps the meshes covering most of its triangles (`limitShadowCasters`).
+That keeps each unit inside the shadow budget without cutting visible geometry.
 Gender is a **presentation-only** mix: `genderForId` assigns female/male 50/50 deterministically. The rigged
 Caral worker and scout use male and female CC0 bodies with the same skeleton; the male worker wears the tunic +
 short wrap, the female worker the tunic + long skirt. The scout uses the same commoner tunic/skirt or wrap, a
@@ -459,7 +466,9 @@ structures or anachronistic materials.
 ## See also
 
 - [`art-direction.md`](./art-direction.md) — the stylized-realism quality target, palette, budgets and
-  quality gate, with Caral as the reference scene.
+  quality gate, with Tambotoco as the reference scene.
+- [`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md) — the current pilot audit, reference scene, asset
+  inventory and staged plan.
 - [`caral-sacred-city.md`](./caral-sacred-city.md) — the source-backed Caral
   scenario set-piece (Upper/Lower halves, six pyramids, river valley).
 - [`cultural-landscape.md`](./cultural-landscape.md) — design proposal for a

@@ -26,6 +26,29 @@ export const SURFACES = [
     note: 'Player-facing Spanish copy stays in `src/i18n/es.ts` behind `t()`; DOM ids and URL params stay stable.',
   },
   {
+    id: 'tambotoco-pilot',
+    label: 'Tambotoco art-direction pilot',
+    prefixes: [
+      'src/rendering/ayllu',
+      'src/rendering/AylluSite',
+      'src/rendering/tambotocoHero',
+      'src/assets/architecture/tambotoco',
+      'src/model/defs/terrainPalettes',
+      'src/model/defs/sites',
+      'src/campaign/defs/missions/m_tambotoco',
+    ],
+    captures: [
+      'yarn art:pilot --tag=after --quality=neutral --sizes=1280x720,1600x900,1920x1080',
+      'yarn art:pilot --tag=after --quality=final --sizes=1280x720,1600x900,1920x1080',
+      'node scripts/bench_scene.mjs --mission=m_tambotoco --assert',
+    ],
+    note:
+      'Compare with seed 777, site `fundada`, acequia open and HUD hidden; attach the hualla/acequia/inticancha ' +
+      'before/after. Fog of war is off in both modes. The shared terrain shadow change (B11) also needs one ' +
+      `non-pilot capture: yarn shot m1-b11-after --url='/?play=1&mission=m1_caral&seed=777&fog=0&low=1&intro=0' ` +
+      '--click --wait=8000.',
+  },
+  {
     id: 'world',
     label: 'World / rendering',
     prefixes: ['src/rendering/'],

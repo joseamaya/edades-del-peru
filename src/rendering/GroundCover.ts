@@ -78,7 +78,10 @@ export class GroundCover {
     this.fadeStart = terrain.size * FADE_START;
     this.fadeEnd = terrain.size * FADE_END;
     const chunkSize = CHUNK_SIZE;
-    const count = groundCoverCount(terrain.size, profile.vegetation.density, this.instanceBudget);
+    const count = Math.round(
+      groundCoverCount(terrain.size, profile.vegetation.density, this.instanceBudget) *
+        (profile.vegetation.groundCover ?? 1),
+    );
     const placements = planGroundCover(profile, seed, count, {
       size: terrain.size,
       getHeight: (x, z) => terrain.getHeight(x, z),

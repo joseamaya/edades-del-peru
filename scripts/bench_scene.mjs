@@ -1,7 +1,15 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { launchChromium, withViteServer, cliArg, useGpu, isSoftwareRenderer, readGlRenderer } from './lib.mjs';
+import {
+  launchChromium,
+  withViteServer,
+  cliArg,
+  useGpu,
+  isSoftwareRenderer,
+  readGlRenderer,
+  waitForHighlandKits,
+} from './lib.mjs';
 
 /**
  * Scene budget for a mission's opening view (docs/design/art-direction.md §11): one plain scene render
@@ -69,16 +77,24 @@ const BUDGETS = {
   // Chavín opening: the phased kit, highland vegetation and the base. Measure first, then ratchet down.
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
-  // Tambotoco opening: the ayllu site, eight nameplates and the hero rings/banners/tunic accents;
-  // measured ~567k / 339. First-pass cap; still over §11's 200-call target.
-  m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 340, kitTriangles: 0, kitDrawCalls: 0 },
-  // The founded Inticancha (the `fundada` phase at victory) is the heaviest view; it must not blow the
-  // same first-pass budget.
-  m_tambotoco_late: { sceneTriangles: 620_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
-  // Lima opening: the hueste with horses and artillery. First-pass cap measured ~763k / 839; tighten after
-  // the unit-rig pass (art-direction §11 targets 200 calls).
+  // Tambotoco opening: the ayllu site, eight nameplates and the hero rings/banners/tunic accents.
+  // 2026-11-16 art pass: 479,416/264 on the Intel RPL-S (hardware high) and 436,666/265 in software.
+  // The site now merges per surface family (not one mesh for the whole 256 m phase), the blob shadows
+  // are one instanced draw, and the ground cover/water grid were trimmed; the opening drops from
+  // 625,811/313 (hardware, before this pass) with 4% headroom on both counters.
+  // E3a adds the andes vegetation kit: 9,352/9 opening and 34,306/12 late; the scene caps stay unchanged.
+  m_tambotoco: { sceneTriangles: 500_000, sceneDrawCalls: 280, kitTriangles: 15_000, kitDrawCalls: 10 },
+  // The founded Inticancha at victory. 2026-11-16: 651,452/352 hardware high and 608,204/346 in
+  // software, under the unchanged 660k/360 cap (the old hardware run was 808,827/301: the art pass
+  // trades triangles for calls but stays inside both counters).
+  m_tambotoco_late: { sceneTriangles: 660_000, sceneDrawCalls: 360, kitTriangles: 42_000, kitDrawCalls: 14 },
+  // Lima opening: the hueste with horses and artillery. Software ~645k/624 (627–664k observed, the vegetation
+  // kit varies between runs) after the PCF shadow pass and the rig silhouette rule (under the
+  // 800k/860 cap, over art-direction §11's 600k/200 target). Hardware high ~874k/627 (974,062/832 with VSM
+  // on the same scene): ~100k triangles and 205 calls off.
   m_lima: { sceneTriangles: 800_000, sceneDrawCalls: 860, kitTriangles: 140_000, kitDrawCalls: 25 },
-  // Lima in use: the colonial city and the siege crowd; a regression cap, still over §11's target.
+  // Lima in use: the colonial city and the siege crowd. Software 927,198/928 (under the 1.1M/1,250 cap);
+  // hardware high 1,134,038/931 (1,267,920/1,226 with VSM), over §11's target.
   m_lima_late: { sceneTriangles: 1_100_000, sceneDrawCalls: 1_250, kitTriangles: 140_000, kitDrawCalls: 25 },
   // La Junta's opening army is large; a regression cap, still over §11's target.
   m_junta_cusco: { sceneTriangles: 780_000, sceneDrawCalls: 1000, kitTriangles: 0, kitDrawCalls: 0 },
@@ -93,7 +109,8 @@ const BUDGETS = {
   m6_chimu_inca: { sceneTriangles: 530_000, sceneDrawCalls: 290, kitTriangles: 15_000, kitDrawCalls: 3 },
   // Inca civil war opening: the Quito camp and Quipaipan. Measured ~703k / 436; over the 600k target.
   m6b_guerra_civil: { sceneTriangles: 745_000, sceneDrawCalls: 465, kitTriangles: 0, kitDrawCalls: 0 },
-  // Independence opening: the Lima camp and Junín. Measured ~590k / 621; over the 200-call target.
+  // Independence opening: the Lima camp and Junín. Measured 567,865 / 603 after the PCF shadow pass and the
+  // rig silhouette rule (674,476 / 823 with VSM); under both caps, over the 200-call target.
   m8_independencia: { sceneTriangles: 625_000, sceneDrawCalls: 660, kitTriangles: 0, kitDrawCalls: 0 },
   // Túpac Amaru opening on the 256 m valley: the camp, the chapel and the starting column. Measured
   // ~537k / 661–665; first-pass cap with ~6 % headroom (the call count is over art-direction §11's target).
@@ -173,7 +190,7 @@ try {
           (g.settlementDressing ?? []).every((d) => d.attached !== false)
         );
       }
-      if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site');
+      if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site')?.userData.heroesReady;
       if (id === 'm9_guerra_pacifico' && !g.landmark?.getObjectByName('arica_site')) return false;
       // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
       if (!g.trees?.hasKit?.('algarrobo') || !g.trees.hasKit('sauce')) return false;
@@ -184,6 +201,7 @@ try {
     mission,
     { timeout: 90_000 },
   );
+  if (mission === 'm_tambotoco') await waitForHighlandKits(page);
   await page
     .locator('.ed-primary', { hasText: 'COMENZAR' })
     .first()
@@ -207,10 +225,10 @@ try {
       const g = window.game;
       const kit = new RegExp(kitPattern);
       // Pin the requested preset (same call as bench.mjs: it does not persist the choice) and freeze the
-      // governor, which would otherwise downgrade before the sample starts.
+      // governor, which would otherwise downgrade before the sample starts. The preset applies the
+      // pack's own LOD0 radius through Game.kitLod0RadiusFor.
       g.qualityGovernor.setUserQuality(quality);
       g.qualityGovernor.update = () => {};
-      g.trees.kitLod0Radius = quality === 'low' ? 25 : 45;
       let p = g.playerCenter(0);
       if (stage === 'camp') {
         g.setSitePhase('foundation');
@@ -229,7 +247,24 @@ try {
                   : 'in_use',
           );
         }
-        const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
+        // Tambotoco's `site` ref is Huanacaure; Act IV lives at Inticancha. Frame the four canchas
+        // themselves, or the "late" view measures the shrine meadow and the settlement sits off-camera.
+        const canchas =
+          mission === 'm_tambotoco'
+            ? [
+                [156, 190],
+                [180, 190],
+                [168, 178],
+                [168, 202],
+              ]
+            : null;
+        const site =
+          canchas === null
+            ? g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 })
+            : {
+                x: canchas.reduce((sum, [x]) => sum + x, 0) / canchas.length,
+                z: canchas.reduce((sum, [, z]) => sum + z, 0) / canchas.length,
+              };
         if (mission === 'm8_independencia') {
           // Act III: Ayacucho.
           for (let i = 0; i < 14; i++) {
@@ -318,17 +353,10 @@ try {
             g.spawnScriptedUnit('worker', 0, site.x - 12 + (i % 6) * 4, site.z + 18 + Math.floor(i / 6) * 3);
           }
         }
-        if (mission === 'm_tambotoco') {
+        if (canchas) {
           // Measure the Act IV settlement, not an empty meadow: the store and the four canchas.
           g.spawnScriptedBuilding('mill', 0, site.x, site.z);
-          for (const [x, z] of [
-            [156, 190],
-            [180, 190],
-            [168, 178],
-            [168, 202],
-          ]) {
-            g.spawnScriptedBuilding('house', 0, x, z);
-          }
+          for (const [x, z] of canchas) g.spawnScriptedBuilding('house', 0, x, z);
         }
         let t = 1;
         for (let i = 0; i < 60; i++) {

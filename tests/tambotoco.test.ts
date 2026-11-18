@@ -1,13 +1,35 @@
 import { describe, expect, it } from 'vitest';
+import pkg from '../package.json';
 import { MISSIONS } from '../src/campaign/defs/campaign';
+import {
+  TAMBOTOCO_CANAL_GATE,
+  TAMBOTOCO_HOLD,
+  TAMBOTOCO_OUTLET,
+  TAMBOTOCO_WAVE,
+} from '../src/campaign/defs/missions/m_tambotoco';
 import { getEducational } from '../src/campaign/defs/educational';
 import { tutorialForMission } from '../src/campaign/defs/tutorials';
+import { canalIrrigationAt } from '../src/model/defs/canal';
+import {
+  TAMBOTOCO_INTICANCHA as TAMBOTOCO_INTICANCHA_LAYOUT,
+  TAMBOTOCO_SHRINE,
+} from '../src/model/defs/tambotocoLayout';
 import { getAuthoredSite } from '../src/model/defs/sites';
 import { commanderById } from '../src/model/defs/commanders';
 import { unitTrainableInPeriod } from '../src/model/defs/units';
 import { BuildingKind, CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
 
 const TAMBOTOCO = MISSIONS.find((m) => m.id === 'm_tambotoco')!;
+const HIDDEN_OBJECTIVE_IDS = [
+  'a1_campamento',
+  'a1_caza',
+  'a2_huanacaure',
+  'a3_oleada',
+  'a3_acequia',
+  'a3_riego',
+  'a4_inticancha',
+  'a4_canchas',
+] as const;
 
 describe('Los hijos de Tambotoco', () => {
   it('is the 256 m legendary opening of El Tahuantinsuyo', () => {
@@ -32,7 +54,7 @@ describe('Los hijos de Tambotoco', () => {
 
   it('plays four acts with the later ones hidden and revealed by triggers', () => {
     expect(TAMBOTOCO.objectives.find((o) => o.id === 'a1_salida')!.hidden).toBeFalsy();
-    for (const id of ['a1_campamento', 'a1_caza', 'a2_huanacaure', 'a3_acequia', 'a4_inticancha', 'a4_canchas']) {
+    for (const id of HIDDEN_OBJECTIVE_IDS) {
       expect(TAMBOTOCO.objectives.find((o) => o.id === id)!.hidden, id).toBe(true);
     }
     const acts = TAMBOTOCO.triggers.flatMap((t) => t.effects.filter((fx) => fx.type === 'act'));
@@ -46,9 +68,95 @@ describe('Los hijos de Tambotoco', () => {
         t.effects.flatMap((fx) => (fx.type === 'objective' && fx.state === 'activate' ? [fx.objectiveId] : [])),
       ),
     );
-    for (const id of ['a1_campamento', 'a1_caza', 'a2_huanacaure', 'a3_acequia', 'a4_inticancha', 'a4_canchas']) {
+    for (const id of HIDDEN_OBJECTIVE_IDS) {
       expect(activated.has(id), id).toBe(true);
     }
+  });
+
+  it('frames the narrated beats with a hero/detail/wide shot grammar', () => {
+    const cameras = (triggerId: string) => {
+      const trigger = TAMBOTOCO.triggers.find((t) => t.id === triggerId)!;
+      return trigger.effects.filter((fx) => fx.type === 'camera');
+    };
+    const shot = (triggerId: string) => {
+      const [fx] = cameras(triggerId);
+      expect(fx, triggerId).toBeDefined();
+      if (fx?.type !== 'camera') throw new Error(`${triggerId} has no camera effect`);
+      return fx;
+    };
+
+    // Detail: the huaca is framed where the pilgrimage arrives, and the ground is revealed before the card closes.
+    const huanacaure = shot('t_caza');
+    expect(huanacaure.pos).toEqual({ dx: TAMBOTOCO_SHRINE.x, dz: TAMBOTOCO_SHRINE.z });
+    expect(huanacaure.zoom).toBe(34);
+    expect(huanacaure.reveal).toBe(45);
+
+    // Wide: the wave's approach, not the far valley.
+    const valley = shot('t_huanacaure');
+    expect(valley.pos).toEqual({ dx: TAMBOTOCO_WAVE.x, dz: TAMBOTOCO_WAVE.z });
+    expect(valley.zoom).toBeGreaterThan(huanacaure.zoom!);
+
+    // Detail: the stone plug that the wave unlocks.
+    const gate = shot('t_oleada');
+    expect(gate.pos).toEqual({ dx: TAMBOTOCO_CANAL_GATE.x + 1, dz: TAMBOTOCO_CANAL_GATE.z + 1 });
+    expect(gate.zoom).toBe(36);
+    expect(gate.reveal).toBe(45);
+
+    // Wide: the traced Inticancha.
+    const traced = shot('t_acequia');
+    expect(traced.pos).toEqual({ dx: TAMBOTOCO_INTICANCHA_LAYOUT.x, dz: TAMBOTOCO_INTICANCHA_LAYOUT.z });
+    expect(traced.zoom).toBeGreaterThan(huanacaure.zoom!);
+
+    // Hero: the foundation reward, with the stone rising and the ritual dust.
+    const foundation = shot('t_inticancha');
+    expect(foundation.zoom).toBe(29);
+    expect(foundation.seconds).toBeGreaterThanOrEqual(2);
+    const effects = TAMBOTOCO.triggers.find((t) => t.id === 't_inticancha')!.effects;
+    expect(effects.some((fx) => fx.type === 'memory' && fx.tag === 'ayar_auca')).toBe(true);
+  });
+
+  it('makes the defended intake the gate to the water', () => {
+    const wave = TAMBOTOCO.objectives.find((o) => o.id === 'a3_oleada')!;
+    expect(wave.kind).toBe('hold');
+    expect(wave.pos).toEqual({ dx: TAMBOTOCO_HOLD.x, dz: TAMBOTOCO_HOLD.z });
+    expect(wave.radius).toBe(10);
+    expect(wave.minUnits).toBe(3);
+    expect(wave.time).toBe(60);
+    expect(wave.hidden).toBe(true);
+
+    const gate = TAMBOTOCO.triggers.find((t) => t.id === 't_huanacaure')!;
+    expect(gate.effects.some((fx) => fx.type === 'objective' && fx.objectiveId === 'a3_acequia')).toBe(false);
+    expect(gate.effects.some((fx) => fx.type === 'objective' && fx.objectiveId === 'a3_oleada')).toBe(true);
+    const spawn = gate.effects.find((fx) => fx.type === 'wave')!;
+    expect(spawn.type).toBe('wave');
+    if (spawn.type === 'wave') {
+      expect(spawn.pos).toEqual({ dx: TAMBOTOCO_WAVE.x, dz: TAMBOTOCO_WAVE.z });
+      expect(spawn.target).toEqual({ dx: TAMBOTOCO_HOLD.x, dz: TAMBOTOCO_HOLD.z });
+      expect(spawn.units.reduce((n, u) => n + u.count, 0)).toBe(5);
+    }
+
+    const afterWave = TAMBOTOCO.triggers.find((t) => t.id === 't_oleada')!;
+    expect(afterWave.condition).toEqual({ type: 'objective', objectiveId: 'a3_oleada', state: 'completed' });
+    expect(
+      afterWave.effects.some(
+        (fx) => fx.type === 'objective' && fx.objectiveId === 'a3_acequia' && fx.state === 'activate',
+      ),
+    ).toBe(true);
+
+    const riego = TAMBOTOCO.objectives.find((o) => o.id === 'a3_riego')!;
+    expect(riego.kind).toBe('build');
+    expect(riego.buildingKind).toBe(BuildingKind.FARM);
+    expect(riego.optional).toBe(true);
+    expect(riego.pos).toEqual({ dx: TAMBOTOCO_OUTLET.x, dz: TAMBOTOCO_OUTLET.z });
+    expect(riego.radius).toBe(4);
+    const water = TAMBOTOCO.triggers.find((t) => t.id === 't_acequia')!;
+    expect(
+      water.effects.some((fx) => fx.type === 'objective' && fx.objectiveId === 'a3_riego' && fx.state === 'activate'),
+    ).toBe(true);
+
+    const agua = tutorialForMission('m_tambotoco')!.steps.find((step) => step.id === 'agua')!;
+    expect(agua.gateObjective).toBe('a3_oleada');
+    expect(agua.check).toEqual({ type: 'objectiveCompleted', objectiveId: 'a3_acequia' });
   });
 
   it('starts with the party only: no centre or dwellings, and the workers raise the first camp', () => {
@@ -89,8 +197,9 @@ describe('Los hijos de Tambotoco', () => {
     expect(TAMBOTOCO.objectives.find((o) => o.id === 'a3_acequia')!.kind).toBe('canal_open');
     expect(TAMBOTOCO.layout?.canal?.heritageId).toBe('tambotoco_acequia');
     expect(TAMBOTOCO.layout?.canal?.lockedUntilObjective).toBe('a3_acequia');
-    // Its own locked-gate hint: the shared default talks about Caral's valley fields.
-    expect(TAMBOTOCO.layout?.canal?.lockedHint).toContain('Huanacaure');
+    // Its own locked-gate hint: the gate waits for the defended intake, not Caral's valley fields.
+    expect(TAMBOTOCO.layout?.canal?.lockedHint).toContain('oleada');
+    expect(TAMBOTOCO.layout?.canal?.lockedHint).toContain('compuerta');
     const inticancha = TAMBOTOCO.objectives.find((o) => o.id === 'a4_inticancha')!;
     expect(inticancha.kind).toBe('build');
     expect(inticancha.buildingKind).toBe(BuildingKind.MILL);
@@ -98,6 +207,51 @@ describe('Los hijos de Tambotoco', () => {
     expect(canchas.kind).toBe('network');
     expect(canchas.buildingKind).toBe(BuildingKind.HOUSE);
     expect(canchas.nodes).toHaveLength(4);
+  });
+
+  it('keeps the opening hunt short and its title in step with the count', () => {
+    const caza = TAMBOTOCO.objectives.find((o) => o.id === 'a1_caza')!;
+    expect(caza.count).toBe(60);
+    expect(caza.title).toContain('60');
+  });
+
+  it('makes the optional hualla visit pay stores once and never gate victory', () => {
+    const goal = TAMBOTOCO.objectives.find((o) => o.id === 'a3_hualla')!;
+    expect(goal.optional).toBe(true);
+    const hualla = TAMBOTOCO.triggers.find((t) => t.id === 't_hualla')!;
+    expect(hualla.condition).toEqual({ type: 'objective', objectiveId: 'a3_hualla', state: 'completed' });
+    expect(hualla.effects).toContainEqual({ type: 'resources', player: 0, amount: { food: 150, wood: 100 } });
+    expect(hualla.effects.some((fx) => fx.type === 'dialogue')).toBe(true);
+    expect(hualla.repeat).toBeFalsy();
+  });
+
+  it('keeps each cancha house on its marked plot and never lets one house satisfy two', () => {
+    const canchas = TAMBOTOCO.objectives.find((o) => o.id === 'a4_canchas')!;
+    expect(canchas.radius).toBe(6);
+    const nodes = canchas.nodes ?? [];
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i]!;
+        const b = nodes[j]!;
+        const ax = a.x ?? a.dx ?? 0;
+        const az = a.z ?? a.dz ?? 0;
+        const bx = b.x ?? b.dx ?? 0;
+        const bz = b.z ?? b.dz ?? 0;
+        expect(Math.hypot(ax - bx, az - bz)).toBeGreaterThan(2 * (canchas.radius ?? 0));
+      }
+    }
+  });
+
+  it('puts the optional farm inside the acequia reach and not on the plaza', () => {
+    const size = TAMBOTOCO.map.size;
+    const path = (TAMBOTOCO.layout?.canal?.path ?? []).map((p) => ({ x: p.x * size, z: p.z * size }));
+    const reach = TAMBOTOCO.layout?.canal?.irrigationReach;
+    expect(reach).toBe(4.5);
+    // A farm centre 3.8 m from the outlet is legal (keepout 3.2 m) and gets a real yield (>0.1).
+    expect(canalIrrigationAt(path, TAMBOTOCO_OUTLET.x + 3.8, TAMBOTOCO_OUTLET.z, reach)).toBeGreaterThan(0.1);
+    // The reach is local: the west side of the plaza and the cave stay dry.
+    expect(canalIrrigationAt(path, 160, 190, reach)).toBe(0);
+    expect(canalIrrigationAt(path, 40, 55, reach)).toBe(0);
   });
 
   it('keeps the roster inside the Intermedio Tardío', () => {
@@ -196,6 +350,11 @@ describe('Los hijos de Tambotoco', () => {
     const site = getAuthoredSite('tambotoco_site')!;
     expect(site.modelName).toBe('ayllu_site');
     expect(site.phases?.phases).toEqual(['cave', 'huanacaure', 'inticancha', 'fundada']);
+  });
+
+  it('is covered by the performance gate, opening and founded Inticancha', () => {
+    expect(pkg.scripts['bench:check']).toContain('--mission=m_tambotoco --assert');
+    expect(pkg.scripts['bench:check']).toContain('--mission=m_tambotoco --stage=late --assert');
   });
 
   it('raises a huaca when the legend leaves a sibling behind', () => {

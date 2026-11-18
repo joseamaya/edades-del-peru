@@ -21,6 +21,7 @@ import { allocId } from '../sim/ids';
 import { Order, OrderKind, OrderTarget, GatherAnchor } from '../core/types';
 import { angleDelta, angleTo, distance2D, clamp, facingRotation, lerp } from '../util/math';
 import { tradeIncomeForDistance } from '../game/market';
+import { commanderById } from '../model/defs/commanders';
 import { genderForId, type PersonGender } from '../model/defs/people';
 import type { UnitSave } from '../game/saveTypes';
 import { fishingApproach, type ApproachOptions } from '../game/Pathfinding';
@@ -184,7 +185,6 @@ export class Unit {
   owner: number;
   kind: UnitKind;
   era: Era;
-  readonly gender: PersonGender;
   stats: UnitStats;
   pos = new Vec3();
   vel = new Vec3();
@@ -250,7 +250,6 @@ export class Unit {
     this.kind = kind;
     this.owner = owner;
     this.era = era;
-    this.gender = genderForId(this.id);
     // Deterministic spawn facing: no Math.random here, so saves/replays and
     // AI-vs-AI runs keep the same yaw. The golden angle gives visual variety.
     this.yaw = (this.id * 2.399963229728653) % (Math.PI * 2);
@@ -270,6 +269,14 @@ export class Unit {
 
   get rig(): RigInstance | null {
     return this.unitView?.rig ?? null;
+  }
+
+  /**
+   * Presentation gender. A named commander's declared gender wins, so the eight Ayar keep their real
+   * bodies and garments instead of the unit-id split; everyone else keeps the deterministic split.
+   */
+  get gender(): PersonGender {
+    return commanderById(this.tag)?.gender ?? genderForId(this.id);
   }
 
   /** Presentation hooks used by UnitView. */
@@ -1795,7 +1802,7 @@ export class Unit {
       if (bld.garrisonedIds.length < capacity) {
         bld.garrisonUnit(this.id, this.owner);
         this.garrisonedIn = bld.id;
-        if (this.view) this.view.group.visible = false;
+        if (this.view) this.view.setVisible(false);
         this.finishOrder();
       } else {
         // building full: stay nearby waiting
@@ -1978,7 +1985,7 @@ export class Unit {
     if (s.tag) this.tag = s.tag;
     this.view?.setPosition(this.pos.x, this.pos.y, this.pos.z);
     this.view?.setFacing(this.yaw);
-    if (this.view) this.view.group.visible = this.garrisonedIn === null;
+    if (this.view) this.view.setVisible(this.garrisonedIn === null);
     this.view?.updateHealth(this.hp / this.maxHp);
   }
 }

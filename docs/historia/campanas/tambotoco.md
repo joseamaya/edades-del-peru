@@ -43,6 +43,7 @@
 | Inticancha y las cuatro canchas | Tradición | Sarmiento; planta arqueológica del Cusco, parcial. |
 | Fechas | No aplica | El relato es mítico; la ocupación Killke es c. 1000–1400. |
 | Violencia de Mama Huaco | Tradición, elidida | Se sugiere, no se muestra. |
+| Aprovisionarse en la aldea hualla | Abstracción de juego | La tradición solo dice que los huallas huyen tras la muerte de uno a manos de Mama Huaco; la recompensa (150 comida, 100 madera) es una concesión de juego, no un episodio narrado. |
 
 ## Fuentes
 

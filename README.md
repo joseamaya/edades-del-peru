@@ -37,7 +37,7 @@ Requires Node.js ≥ 20.19. The package manager is **Yarn 1** (`yarn.lock` exist
 yarn install
 yarn dev          # development (http://localhost:5173)
 yarn build        # typecheck + production build (dist/) + size budget
-VITE_BASE=/edades-del-peru/ yarn build   # future GitHub Pages project-site build
+VITE_BASE=/edades-del-peru/ yarn build   # GitHub Pages project-site build
 yarn preview      # serve the build
 yarn typecheck    # tsc --noEmit
 yarn lint         # ESLint
@@ -122,7 +122,7 @@ The game teaches history while you play:
 | Last battle / center base    | Space / **H** (centro de la ciudad)           |
 | Build platform / dwelling    | G / V                                 |
 | Rotate camera (optional)     | Z / X                                 |
-| Follow unit                  | **F**                                 |
+| Follow unit (toggle)         | **F**                                 |
 | Pause                        | P · **☰** menu                       |
 
 ## Historical periods (10)
