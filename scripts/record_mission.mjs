@@ -224,6 +224,7 @@ async function playMission(page, plan) {
   }
 
   await selectAll(page);
+  await hideTutorial(page);
   await look(page, null, 36, 'all');
   const worker = await firstUnit(page, 'worker');
   if (worker) await move(page, [worker], plan.start);
@@ -316,6 +317,7 @@ async function playJuntaCusco(page, plan) {
     (await units(page)).filter((u) => u.kind !== 'worker' && u.tag !== 'pumacahua').map((u) => u.id);
 
   await selectAll(page);
+  await hideTutorial(page);
   await look(page, null, 36, 'all');
   await page.waitForTimeout(4000);
 
@@ -327,8 +329,15 @@ async function playJuntaCusco(page, plan) {
   await move(page, await column(), plan.church);
   await look(page, plan.cabildo, 28);
   await page.waitForTimeout(3000);
-  await visitWhenNear(page, plan.cabildoHeritage, plan.church, 15, 150_000, deadline);
-  await waitObjective(page, 'a1_cabildo', 'completed', 30_000, deadline, () => look(page, plan.cabildo, 26));
+  if (!(await visitWhenNear(page, plan.cabildoHeritage, plan.church, 15, 150_000, deadline))) {
+    throw new Error('Junta: the cabildo heritage card was not registered');
+  }
+  if (
+    (await waitObjective(page, 'a1_cabildo', 'completed', 30_000, deadline, () => look(page, plan.cabildo, 26))) !==
+    'completed'
+  ) {
+    throw new Error('Junta: a1_cabildo did not complete');
+  }
   if (await hasEnded(page)) return;
 
   // Act I — the five workers raise the cuartel beside the camp.
@@ -336,24 +345,44 @@ async function playJuntaCusco(page, plan) {
   await select(page, workers);
   await look(page, null, 28, 'workers');
   const cuartel = await place(page, 'barracks', { x: plan.base.x + 8, z: plan.base.z - 6 });
-  if (cuartel) await issue(page, { kind: 'build', entityId: cuartel }, workers);
-  await waitObjective(page, 'a1_cuartel', 'completed', 180_000, deadline, () => look(page, null, 26, 'workers'));
+  if (!cuartel) throw new Error('Junta: could not place the cuartel');
+  await issue(page, { kind: 'build', entityId: cuartel }, workers);
+  if (
+    (await waitObjective(page, 'a1_cuartel', 'completed', 180_000, deadline, () => look(page, null, 26, 'workers'))) !==
+    'completed'
+  ) {
+    throw new Error('Junta: a1_cuartel did not complete');
+  }
   if (await hasEnded(page)) return;
 
   // Act II — La Apacheta: reach the pass, then hold it while the royalist vanguard arrives.
   await move(page, await column(), plan.apacheta, true);
   await look(page, null, 30, 'column');
-  await waitObjective(page, 'a2_apacheta', 'completed', 240_000, deadline, () => look(page, null, 30, 'army'));
+  if (
+    (await waitObjective(page, 'a2_apacheta', 'completed', 240_000, deadline, () => look(page, null, 30, 'column'))) !==
+    'completed'
+  ) {
+    throw new Error('Junta: a2_apacheta did not complete');
+  }
   if (await hasEnded(page)) return;
-  await holdLine(page, 'a2_batalla', plan.batalla, deadline);
+  if (!(await holdLine(page, 'a2_batalla', plan.batalla, deadline)) && !(await hasEnded(page))) {
+    throw new Error('Junta: a2_batalla did not complete');
+  }
   if (await hasEnded(page)) return;
 
   // Act III — Umachiri: the last resistance buys the Junta its withdrawal.
   await move(page, await column(), plan.umachiri, true);
   await look(page, null, 30, 'column');
-  await waitObjective(page, 'a3_umachiri', 'completed', 300_000, deadline, () => look(page, null, 30, 'army'));
+  if (
+    (await waitObjective(page, 'a3_umachiri', 'completed', 300_000, deadline, () => look(page, null, 30, 'column'))) !==
+    'completed'
+  ) {
+    throw new Error('Junta: a3_umachiri did not complete');
+  }
   if (await hasEnded(page)) return;
-  await holdLine(page, 'a3_resistir', plan.resistir, deadline);
+  if (!(await holdLine(page, 'a3_resistir', plan.resistir, deadline)) && !(await hasEnded(page))) {
+    throw new Error('Junta: a3_resistir did not complete');
+  }
   await page.waitForFunction(() => window.game.gameEnded === true, null, { timeout: 60_000 }).catch(() => {});
 }
 
@@ -393,7 +422,7 @@ async function holdLine(page, id, spec, deadline) {
       lastLook = Date.now();
       await look(page, null, 28, 'column');
     }
-    if (snap.inside < want || Date.now() - lastOrder > 6000) {
+    if (snap.inside < want && Date.now() - lastOrder > 3000) {
       lastOrder = Date.now();
       const ids = snap.away.length ? snap.away : await columnIds(page);
       if (ids.length) await move(page, ids, spec.point, true);
@@ -427,6 +456,11 @@ async function visitWhenNear(page, heritageId, point, radius, timeoutMs, deadlin
     await page.waitForTimeout(600);
   }
   return false;
+}
+
+/** Hide the tutorial panel for a full-mission capture; the briefing still teaches the controls. */
+async function hideTutorial(page) {
+  await page.addStyleTag({ content: '#ed-tutorial { display: none !important; }' });
 }
 
 async function hasEnded(page) {
