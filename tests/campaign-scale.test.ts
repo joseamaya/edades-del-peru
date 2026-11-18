@@ -44,6 +44,8 @@ describe('model-mission scale', () => {
       'm6_chimu_inca',
       'm6b_guerra_civil',
       'm_lima',
+      'm_cusco_1536',
+      'm_vilcabamba',
       'm7_tupac_amaru',
       'm_junta_cusco',
       'm_lima_1821',

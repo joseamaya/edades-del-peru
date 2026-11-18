@@ -63,7 +63,7 @@ describe('campaign series', () => {
     );
     // every planned mission of the launch catalogue is placed exactly once and none is playable
     expect(planned.sort()).toEqual(Object.keys(PLANNED_MISSIONS).sort());
-    expect(planned).toHaveLength(2);
+    expect(planned).toHaveLength(0);
     for (const id of planned) expect(getReleasedMission(id)).toBeUndefined();
     expect(CAMPAIGNS.map((c) => c.path.length)).toEqual([4, 4, 4, 4, 4]);
   });
@@ -93,8 +93,8 @@ describe('campaign series', () => {
     expect(missionPosition('m5_yahuar_pampa')).toEqual({ n: 2, total: 4 });
     expect(missionPosition('m6b_guerra_civil')).toEqual({ n: 4, total: 4 });
     expect(missionPosition('m_lima')).toEqual({ n: 1, total: 4 });
-    expect(missionPosition('p_vir_cusco')).toEqual({ n: 2, total: 4 });
-    expect(missionPosition('p_vir_vilcabamba')).toEqual({ n: 3, total: 4 });
+    expect(missionPosition('m_cusco_1536')).toEqual({ n: 2, total: 4 });
+    expect(missionPosition('m_vilcabamba')).toEqual({ n: 3, total: 4 });
     expect(missionPosition('m7_tupac_amaru')).toEqual({ n: 4, total: 4 });
     expect(missionPosition('m_lima_1821')).toEqual({ n: 2, total: 4 });
     expect(missionPosition('m_real_felipe')).toEqual({ n: 4, total: 4 });
@@ -124,6 +124,8 @@ describe('campaign series', () => {
       'm6_chimu_inca',
       'm6b_guerra_civil',
       'm_lima',
+      'm_cusco_1536',
+      'm_vilcabamba',
       'm7_tupac_amaru',
       'm_junta_cusco',
       'm_lima_1821',
@@ -143,7 +145,9 @@ describe('campaign series', () => {
     expect(nextReleasedMission('m5_yahuar_pampa')?.id).toBe('m6_chimu_inca');
     expect(nextReleasedMission('m6_chimu_inca')?.id).toBe('m6b_guerra_civil');
     expect(nextReleasedMission('m6b_guerra_civil')).toBeUndefined();
-    expect(nextReleasedMission('m_lima')?.id).toBe('m7_tupac_amaru');
+    expect(nextReleasedMission('m_lima')?.id).toBe('m_cusco_1536');
+    expect(nextReleasedMission('m_cusco_1536')?.id).toBe('m_vilcabamba');
+    expect(nextReleasedMission('m_vilcabamba')?.id).toBe('m7_tupac_amaru');
     expect(nextReleasedMission('m7_tupac_amaru')).toBeUndefined();
     expect(nextReleasedMission('m_junta_cusco')?.id).toBe('m_lima_1821');
     expect(nextReleasedMission('m_lima_1821')?.id).toBe('m8_independencia');
@@ -159,6 +163,8 @@ describe('campaign series', () => {
     expect(getCampaignForMission('m1_caral')?.id).toBe('preinca');
     expect(getCampaignForMission('m5_yahuar_pampa')?.id).toBe('inca');
     expect(getCampaignForMission('m6b_guerra_civil')?.id).toBe('inca');
+    expect(getCampaignForMission('m_cusco_1536')?.id).toBe('virreinato');
+    expect(getCampaignForMission('m_vilcabamba')?.id).toBe('virreinato');
     expect(getCampaignForMission('m7_tupac_amaru')?.id).toBe('virreinato');
     expect(getCampaignForMission('m_junta_cusco')?.id).toBe('independencia');
     expect(getCampaignForMission('m_lima_1821')?.id).toBe('independencia');
@@ -169,7 +175,7 @@ describe('campaign series', () => {
     expect(getCampaignForMission('m_miraflores')?.id).toBe('republica');
     expect(getCampaignForMission('m_brena')?.id).toBe('republica');
     expect(getCampaign('preinca')?.releasedMissionIds).toEqual(['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari']);
-    expect(getCampaignForMission('p_vir_cusco')?.id).toBe('virreinato');
+    expect(getCampaignForMission('m_cusco_1536')?.id).toBe('virreinato');
   });
 
   it('ships the title and chapter prologues with readable beats', () => {

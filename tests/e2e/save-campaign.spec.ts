@@ -971,6 +971,8 @@ test('saves and loads the later campaign missions', async ({ context }) => {
     'm6b_guerra_civil',
     'm7_tupac_amaru',
     'm_lima',
+    'm_cusco_1536',
+    'm_vilcabamba',
     'm_junta_cusco',
     'm_lima_1821',
     'm8_independencia',

@@ -296,6 +296,71 @@ export const TUTORIALS: Record<string, TutorialDef> = {
       },
     ],
   },
+  m_cusco_1536: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a los guerreros incas: la infantería debe tomar Sacsayhuamán.',
+        check: { type: 'selectUnit', unitKind: UnitKind.INCA_WARRIOR },
+      },
+      {
+        id: 'sacsay',
+        text: 'Ocupa Sacsayhuamán, resiste el contraataque y sostén la fortaleza con al menos seis unidades.',
+        highlight: '#ed-objectives',
+        check: { type: 'objectiveCompleted', objectiveId: 'a1_sacsay' },
+      },
+      {
+        id: 'cerco',
+        text: 'Cierra el cerco sobre la plaza. La comida del ejército sostiene la siembra: si falta, el cerco se detiene.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a2_cerco' },
+      },
+      {
+        id: 'manco',
+        text: 'Manco Inca debe seguir con vida: sin él, la resistencia pierde su jefe.',
+        check: { type: 'elapsed', seconds: 12 },
+      },
+      {
+        id: 'retirada_cusco',
+        text: 'El calendario manda: retira el ejército hacia Ollantaytambo antes de que la siembra se pierda.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a3_retirada' },
+      },
+    ],
+  },
+  m_vilcabamba: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a los guerreros de Vilcabamba: la defensa se apoya en la infantería y los senderos.',
+        check: { type: 'selectUnit', unitKind: UnitKind.INCA_WARRIOR },
+      },
+      {
+        id: 'huayna',
+        text: 'Defiende Huayna Pucará con al menos cinco unidades durante cuarenta y cinco segundos.',
+        highlight: '#ed-objectives',
+        check: { type: 'objectiveCompleted', objectiveId: 'a1_huayna' },
+      },
+      {
+        id: 'evacua',
+        text: 'Evacúa Vilcabamba y abre la huida hacia el bajo Urubamba.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a2_evacua' },
+      },
+      {
+        id: 'senderos',
+        text: 'Abre los senderos laterales: una ruta de huida vale tanto como una victoria.',
+        check: { type: 'elapsed', seconds: 10 },
+      },
+      {
+        id: 'curi',
+        text: 'Curi Paucar y los capitanes deben sobrevivir para organizar la salida.',
+        check: { type: 'elapsed', seconds: 12 },
+      },
+      {
+        id: 'huida',
+        text: 'Salva a la corte: sostén el punto de salida con al menos cinco unidades.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a3_huida' },
+      },
+    ],
+  },
   m9_guerra_pacifico: {
     steps: [
       {

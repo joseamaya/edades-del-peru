@@ -43,6 +43,7 @@ const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: stri
   // Lima (1535) reuses the colonial plaza/church on its own coast transect.
   lima_site: { lod0: colonialLod0Url, lod1: colonialLod1Url },
   miraflores_site: { lod0: colonialLod0Url, lod1: colonialLod1Url },
+  vilcabamba_site: { lod0: chancaLod0Url, lod1: chancaLod1Url },
 };
 
 /** Load the campaign site; LOD1 is the RTS default, `?lod=0` previews the master when the bundle ships it. */

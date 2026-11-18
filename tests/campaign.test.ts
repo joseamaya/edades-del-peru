@@ -399,6 +399,8 @@ describe('campaign educational content', () => {
 
   it('chapter IV has briefings and guided tutorials', () => {
     for (const [id, steps] of [
+      ['m_cusco_1536', 5],
+      ['m_vilcabamba', 6],
       ['m_lima_1821', 5],
       ['m8_independencia', 5],
       ['m_real_felipe', 5],
@@ -416,6 +418,8 @@ describe('campaign educational content', () => {
 
   it('the late campaign missions have acts, triggers and documented outcomes', () => {
     for (const [id, period] of [
+      ['m_cusco_1536', HistoricalPeriod.VICEROYALTY],
+      ['m_vilcabamba', HistoricalPeriod.VICEROYALTY],
       ['m_lima_1821', HistoricalPeriod.INDEPENDENCE],
       ['m_real_felipe', HistoricalPeriod.INDEPENDENCE],
       ['m_tarapaca', HistoricalPeriod.REPUBLIC],

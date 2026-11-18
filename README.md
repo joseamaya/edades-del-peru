@@ -71,15 +71,15 @@ Debug URL parameters:
 
 The first release is **campaign-only**. _La Senda del Sol_ is the series; it contains **five campaigns divided by
 Peruvian historical epochs**. Each campaign's launch catalogue has **four missions** and opens with its first
-released mission; all five chapters are open from the start today. Eighteen missions are playable and the
-two catalogue entries that are still in development are marked as such. The other thirteen missions of the
-approved redesign are reserved for a later expansion.
+released mission; all five chapters are open from the start today. Twenty missions are playable and no
+catalogue entries remain in development. The other thirteen missions of the approved redesign are reserved
+for a later expansion.
 
 | Campaign                      | Focus                                         | Launch catalogue            |
 | ----------------------------- | --------------------------------------------- | --------------------------- |
 | **Culturas Preincas**         | Caral, Chavín, Moche/Recuay, Wari             | **4 playable**              |
 | **El Tahuantinsuyo**          | From the Ayar myth to the civil war           | **4 playable**              |
-| **El Virreinato**             | From the founding of Lima to Túpac Amaru II   | **2 playable · 2 planned**  |
+| **El Virreinato**             | From the founding of Lima to Túpac Amaru II   | **4 playable**              |
 | **La Independencia**          | From the Cusco junta to the Real Felipe       | **4 playable**              |
 | **La República**              | From Tarapacá to the Breña                    | **4 playable**              |
 
@@ -87,7 +87,7 @@ The launch catalogue is recorded in [`docs/design/campaign-redesign.md`](./docs/
 the thirteen expansion missions keep their ids and copy but are not shown in the menu. Skirmish is hidden
 from the menu for this release (the `?play=1` debug harness remains for tests).
 
-Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`, plus `m6b_guerra_civil`, `m_junta_cusco`, `m_tambotoco`, `m_lima`, `m_lima_1821`, `m_real_felipe`, `m_tarapaca`, `m_miraflores` and `m_brena`). All released missions appear in
+Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`, plus `m6b_guerra_civil`, `m_junta_cusco`, `m_tambotoco`, `m_lima`, `m_lima_1821`, `m_real_felipe`, `m_tarapaca`, `m_miraflores`, `m_brena`, `m_cusco_1536` and `m_vilcabamba`). All released missions appear in
 menus, the Codex and progress; `?mission=ID` remains available for QA.
 The campaign [quality bar](./docs/design/campaign-quality-bar.md) records the gates a mission must meet.
 Caral, Chavín, Moche and Wari have authored, source-backed sites; m5–m9 and m6b add dedicated low-poly GLB
@@ -197,7 +197,7 @@ src/
   rendering/   Renderer, PostFX, Sky, Water, Terrain (coast/andes/altiplano), Particles, Textures
   model/       Defs for periods, civs, units, buildings, techs + parametric model generator
   entities/    Unit, Building, Resource node, Projectile, Views
-  campaign/    Mission engine (objectives, triggers, waves) + 18 historical missions in five campaigns
+  campaign/    Mission engine (objectives, triggers, waves) + 20 historical missions in five campaigns
   game/        A* pathfinding, Fog of war, Opponent AI, Economy (worker assignment)
   ui/          Full Spanish HUD (menu by period)
   audio/       Procedural AudioEngine (WebAudio)

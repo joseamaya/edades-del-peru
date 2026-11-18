@@ -8,6 +8,8 @@ import { m5YahuarPampa } from './missions/m5_yahuar_pampa';
 import { m6ChimuInca } from './missions/m6_chimu_inca';
 import { m6bGuerraCivil } from './missions/m6b_guerra_civil';
 import { mLima } from './missions/m_lima';
+import { mCusco1536 } from './missions/m_cusco_1536';
+import { mVilcabamba } from './missions/m_vilcabamba';
 import { m7TupacAmaru } from './missions/m7_tupac_amaru';
 import { mJuntaCusco } from './missions/m_junta_cusco';
 import { mLima1821 } from './missions/m_lima_1821';
@@ -29,6 +31,8 @@ export const MISSIONS: MissionDef[] = [
   m6ChimuInca,
   m6bGuerraCivil,
   mLima,
+  mCusco1536,
+  mVilcabamba,
   m7TupacAmaru,
   mJuntaCusco,
   mLima1821,

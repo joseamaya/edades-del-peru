@@ -148,7 +148,7 @@ try {
     await page.waitForTimeout(500);
     const png = await page.screenshot({ type: 'png' });
     const file = path.join(out, `intro-${shot.id}.webp`);
-    await sharp(png).resize(960, 540).webp({ quality: 58 }).toFile(file);
+    await sharp(png).resize(640, 360).webp({ quality: 28 }).toFile(file);
     console.log(`captured ${path.relative(process.cwd(), file)} (${fs.statSync(file).size} bytes)`);
     await page.close();
   }

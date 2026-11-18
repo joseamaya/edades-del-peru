@@ -141,7 +141,8 @@ export type AuthoredSiteId =
   | 'cusco_junta_site'
   | 'tambotoco_site'
   | 'lima_site'
-  | 'miraflores_site';
+  | 'miraflores_site'
+  | 'vilcabamba_site';
 
 /** Dedicated visual-only decor GLBs for the later campaigns. */
 export type DecorModelId =
@@ -1130,6 +1131,32 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       moisture: { valleyHeight: 6.2, valleyRange: 3.2, bankStart: 0.12, bankRange: 0.1 },
       water: { deep: '#0f2a2e', shallow: '#2a5652', sheen: 0.15, foam: 0.12, fog: 0.3, refraction: 0.2 },
     },
+  },
+  // Vilcabamba (1572) reuses the Chanca stone-fort composition and heightfield as a labelled
+  // cloud-forest refuge; the real site is Espíritu Pampa and has no surveyed heightfield in the repo.
+  vilcabamba_site: {
+    id: 'vilcabamba_site',
+    label: 'Vilcabamba y Huayna Pucará',
+    modelName: 'chanca_site',
+    scale: chancaLength(0.7),
+    origin: chancaPoint({ x: 112.4, z: 60.8 }),
+    anchor: chancaPoint({ x: 112.4, z: 60.8 }),
+    cameraHeight: chancaLength(48),
+    framing: 'site-biased',
+    heightField: {
+      size: CHANCA_HEIGHTMAP_SIZE,
+      worldSize: CHANCA_HEIGHTMAP_WORLD_SIZE,
+      heights: CHANCA_HEIGHTMAP,
+      ground: { size: CHANCA_GROUND_SIZE, weights: CHANCA_GROUND },
+    },
+    pathCellSize: 1,
+    heritageProxies: [],
+    blockers: [{ ...chancaPoint({ x: 112.4, z: 60.8 }), w: chancaLength(11), d: chancaLength(9) }],
+    blockerPadding: chancaLength(0.5),
+    buildKeepout: [{ x: 0.7025, z: 0.38, rx: 0.085, rz: 0.075 }],
+    wallCollision: { meshPatterns: [], maxStartYAboveBase: chancaLength(1.2) },
+    walkableCorridor: { width: chancaLength(8) },
+    terrain: { ...DEFAULT_SITE_TERRAIN, flatNormals: true, suppressSnow: true },
   },
   // Huanacaure (legendary Ayar route) on a new 256 m Pacaritambo–Cusco transect. The ayllu world is
   // drawn by `AylluSite`: cave mouth, Huanacaure shrine, valley hamlets and the planned Inticancha.

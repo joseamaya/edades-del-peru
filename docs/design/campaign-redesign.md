@@ -161,9 +161,10 @@ Patriotas, República, Chile. New ones, by the mission that first needs them:
 | Coastal fortification set (Real Felipe, batteries, redoubts) | Independencia 3, 7; República 2, 4, 5 | reusable buildings |
 | Afro-Peruvian units | Virreinato (Girón, 18th-century militias) | unit, not faction |
 
-Engine gaps: the **seasonal calendar** (Virreinato 2, in the launch catalogue; Tahuantinsuyo 7, in the
-expansion), **water and ships** (Virreinato 7, República 2 and the Pacific voyage, all in the expansion) and
-the **selva biome** (Virreinato 8, Antisuyo and Chachapoyas optionals, also expansion).
+Engine gaps: **water and ships** (Virreinato 7, República 2 and the Pacific voyage, all in the expansion) and
+the **selva biome** (Virreinato 8, Antisuyo and Chachapoyas optionals, also expansion). Cusco 1536 uses a
+food-consuming «siembra» hold as a seasonal abstraction; a full calendar remains future work. Tahuantinsuyo 7
+(Huarco) would still need the calendar if it is built.
 
 ## Rollout
 
@@ -179,11 +180,12 @@ The chapters cannot all be rebuilt at once, and every mission has to reach Caral
 order, one mission at a time through the model-mission pattern:
 
 1. **Close the released missions**: art review, performance and pacing (D2–D3).
-2. **Virreinato**: Cusco 1536 (seasonal calendar) and Vilcabamba 1572.
+2. **Virreinato**: Cusco 1536 (food-consuming «siembra» abstraction) and Vilcabamba 1572 — **Built (2026-11-18); art review pending**.
 3. **Independencia**: El cerco de Lima 1821 and the Real Felipe 1826 — **Built (2026-11-18); art review pending**.
 4. **República**: Tarapacá 1879, San Juan y Miraflores 1881 and the Breña 1882–1883 — **Built (2026-11-18); art review pending**.
-5. **Engine work in parallel**: the seasonal calendar for Cusco; navigable water and ships, then the selva
-   biome for the expansion missions that need them (Callao 1624, Dos de Mayo 1866, Juan Santos).
+5. **Engine work in parallel**: navigable water and ships, then the selva biome for the expansion missions
+   that need them (Callao 1624, Dos de Mayo 1866, Juan Santos). A full seasonal calendar remains future work;
+   Cusco 1536 currently uses the food-consuming abstraction.
 
 ## Launch catalogue (2026-11-18)
 
@@ -195,11 +197,11 @@ to the milestones that complete each arc. The other thirteen missions keep their
 | --- | --- | ---: | ---: |
 | Culturas Preincas | Caral, Chavín, Moche–Recuay, Wari | 4 | 0 |
 | El Tahuantinsuyo | Tambotoco, Yahuar Pampa, Chimú–Inca, Guerra Civil | 4 | 0 |
-| El Virreinato | Lima, Cusco en llamas, El último Inca, Túpac Amaru II | 2 | 2 |
+| El Virreinato | Lima, Cusco en llamas, El último Inca, Túpac Amaru II | 4 | 0 |
 | La Independencia | Junta del Cusco, El cerco de Lima, Independencia, El último bastión | 4 | 0 |
 | La República | La quebrada, Arica, San Juan y Miraflores, El brujo de los Andes | 4 | 0 |
 
-The two planned catalogue entries are `p_vir_cusco` and `p_vir_vilcabamba`.
+No planned catalogue entries remain: the launch catalogue is fully released.
 
 The thirteen expansion missions are:
 

@@ -12,6 +12,8 @@ const MISSIONS = [
   ['m6_chimu_inca', 'La Guerra del Norte'],
   ['m6b_guerra_civil', 'La Guerra Civil'],
   ['m_lima', 'La Ciudad de los Reyes'],
+  ['m_cusco_1536', 'Cusco en llamas'],
+  ['m_vilcabamba', 'El último Inca'],
   ['m7_tupac_amaru', 'La Gran Rebelión'],
   ['m_junta_cusco', 'La Junta del Cusco'],
   ['m_lima_1821', 'El cerco de Lima'],
