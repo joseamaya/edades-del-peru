@@ -976,6 +976,9 @@ test('saves and loads the later campaign missions', async ({ context }) => {
     'm8_independencia',
     'm_real_felipe',
     'm9_guerra_pacifico',
+    'm_tarapaca',
+    'm_miraflores',
+    'm_brena',
   ]) {
     const page = await context.newPage();
     // Save/load is under test, not the narrated intros (Tambotoco's runs ~29 s, past the 15 s wait).

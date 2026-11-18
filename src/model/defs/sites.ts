@@ -135,10 +135,13 @@ export type AuthoredSiteId =
   | 'independence_site'
   | 'arica_site'
   | 'real_felipe_site'
+  | 'tarapaca_site'
+  | 'brena_site'
   | 'cusco_inca_site'
   | 'cusco_junta_site'
   | 'tambotoco_site'
-  | 'lima_site';
+  | 'lima_site'
+  | 'miraflores_site';
 
 /** Dedicated visual-only decor GLBs for the later campaigns. */
 export type DecorModelId =
@@ -911,6 +914,57 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       suppressSnow: true,
     },
   },
+  // Tarapacá (1879) reuses the Arica coastal-desert composition as a labelled abstraction: the
+  // quebrada and village are not a surveyed heightfield, but the desert terrace and camp read correctly.
+  tarapaca_site: {
+    id: 'tarapaca_site',
+    label: 'Quebrada y pueblo de Tarapacá',
+    modelName: 'arica_site',
+    scale: aricaLength(0.8),
+    origin: ARICA_SITE_POINT,
+    anchor: ARICA_SITE_POINT,
+    cameraHeight: 60,
+    framing: 'site-biased',
+    heightField: {
+      size: ARICA_HEIGHTMAP_SIZE,
+      worldSize: ARICA_HEIGHTMAP_WORLD_SIZE,
+      heights: ARICA_HEIGHTMAP,
+      ground: { size: ARICA_GROUND_SIZE, weights: ARICA_GROUND },
+    },
+    pathCellSize: 1,
+    heritageProxies: [],
+    blockers: [{ ...ARICA_SITE_POINT, w: aricaLength(13), d: aricaLength(9) }],
+    blockerPadding: aricaLength(0.5),
+    buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.08, rz: 0.07 }],
+    wallCollision: { meshPatterns: [/arica/i], maxStartYAboveBase: 1.2 },
+    walkableCorridor: { width: aricaLength(8) },
+    terrain: { ...DEFAULT_SITE_TERRAIN, flatNormals: true, suppressSnow: true },
+  },
+  // La Breña (1882–1883) reuses the Ayacucho chapel/camp as a labelled sierra-central abstraction.
+  brena_site: {
+    id: 'brena_site',
+    label: 'Sierra central y campamento de la Breña',
+    modelName: 'independence_site',
+    scale: independenceLength(0.65),
+    origin: INDEPENDENCE_SITE_POINT,
+    anchor: INDEPENDENCE_SITE_POINT,
+    cameraHeight: independenceLength(54),
+    framing: 'site-biased',
+    heightField: {
+      size: INDEPENDENCE_HEIGHTMAP_SIZE,
+      worldSize: INDEPENDENCE_HEIGHTMAP_WORLD_SIZE,
+      heights: INDEPENDENCE_HEIGHTMAP,
+      ground: { size: INDEPENDENCE_GROUND_SIZE, weights: INDEPENDENCE_GROUND },
+    },
+    pathCellSize: 1,
+    heritageProxies: [],
+    blockers: [{ ...INDEPENDENCE_SITE_POINT, w: independenceLength(9), d: independenceLength(9) }],
+    blockerPadding: independenceLength(0.5),
+    buildKeepout: [{ x: 0.702, z: 0.37, rx: 0.065, rz: 0.065 }],
+    wallCollision: { meshPatterns: [/independence/i], maxStartYAboveBase: independenceLength(1.2) },
+    walkableCorridor: { width: independenceLength(8) },
+    terrain: { ...DEFAULT_SITE_TERRAIN, flatNormals: true, suppressSnow: true },
+  },
   cusco_inca_site: {
     id: 'cusco_inca_site',
     label: 'Cusco incaico y Quipaipan',
@@ -1030,6 +1084,44 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       meshPatterns: [/colonial/i],
       maxStartYAboveBase: 1.2,
     },
+    walkableCorridor: { width: 8 },
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      flatNormals: true,
+      suppressSnow: true,
+      moisture: { valleyHeight: 6.2, valleyRange: 3.2, bankStart: 0.12, bankRange: 0.1 },
+      water: { deep: '#0f2a2e', shallow: '#2a5652', sheen: 0.15, foam: 0.12, fog: 0.3, refraction: 0.2 },
+    },
+  },
+  // Miraflores (1881) reuses the Lima colonial kit at the city phase, with its own labelled site.
+  miraflores_site: {
+    id: 'miraflores_site',
+    label: 'Lima y la línea de Miraflores',
+    modelName: 'colonial_site',
+    style: 'colonial',
+    modelSince: 'ciudad',
+    scale: 0.65,
+    origin: { ...LIMA_SITE_ORIGIN },
+    anchor: { ...LIMA_SITE_ORIGIN },
+    cameraHeight: 56,
+    framing: 'site-biased',
+    heightField: {
+      size: LIMA_HEIGHTMAP_SIZE,
+      worldSize: LIMA_HEIGHTMAP_WORLD_SIZE,
+      heights: LIMA_HEIGHTMAP,
+      ground: { size: LIMA_GROUND_SIZE, weights: LIMA_GROUND },
+      river: { path: LIMA_RIVER_PATH, halfWidth: LIMA_RIVER_HALF_WIDTH },
+    },
+    pathCellSize: 1,
+    phases: { phases: ['ciudad'], initial: 'ciudad' },
+    heritageProxies: [{ id: 'lima_plaza', x: LIMA_SITE_ORIGIN.x, z: LIMA_SITE_ORIGIN.z, w: 12, d: 10, h: 6 }],
+    blockers: [
+      { x: LIMA_SITE_ORIGIN.x, z: LIMA_SITE_ORIGIN.z, w: 12, d: 10 },
+      ...colonialBlockers(LIMA_COLONIAL, true),
+    ],
+    blockerPadding: 0.5,
+    buildKeepout: [{ x: LIMA_SITE_ORIGIN.x / 256, z: LIMA_SITE_ORIGIN.z / 256, rx: 0.07, rz: 0.065 }],
+    wallCollision: { meshPatterns: [/colonial/i], maxStartYAboveBase: 1.2 },
     walkableCorridor: { width: 8 },
     terrain: {
       ...DEFAULT_SITE_TERRAIN,

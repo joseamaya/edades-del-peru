@@ -206,6 +206,96 @@ export const TUTORIALS: Record<string, TutorialDef> = {
       },
     ],
   },
+  m_tarapaca: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a los defensores republicanos: son la infantería disponible en la quebrada.',
+        check: { type: 'selectUnit', unitKind: UnitKind.REPUBLICA_DEFENSOR },
+      },
+      {
+        id: 'pueblo',
+        text: 'Sostén el pueblo de Tarapacá con al menos seis unidades durante cuarenta y cinco segundos.',
+        highlight: '#ed-objectives',
+        check: { type: 'objectiveCompleted', objectiveId: 'a1_pueblo' },
+      },
+      {
+        id: 'alturas',
+        text: 'Reconquista las alturas de la quebrada. Sin caballería ni artillería, la infantería debe ganar el terreno a pie.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a2_alturas' },
+      },
+      {
+        id: 'caceres',
+        text: 'Cáceres debe seguir con vida: su experiencia será necesaria en Arica y en la Breña.',
+        check: { type: 'elapsed', seconds: 12 },
+      },
+      {
+        id: 'resistir',
+        text: 'Sostén las alturas hasta la retirada chilena. Los cañones capturados pasan a la artillería peruana.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a3_resistir' },
+      },
+    ],
+  },
+  m_miraflores: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a los defensores: muchos son reservistas limeños, no tropa veterana.',
+        check: { type: 'selectUnit', unitKind: UnitKind.REPUBLICA_DEFENSOR },
+      },
+      {
+        id: 'reductos',
+        text: 'Levanta los reductos 1, 2 y 3. La línea de Miraflores es la última defensa antes de Lima.',
+        highlight: '#ed-objectives',
+        check: { type: 'objectiveCompleted', objectiveId: 'a1_reductos' },
+      },
+      {
+        id: 'linea',
+        text: 'Sostén la línea con al menos ocho unidades durante noventa segundos.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a2_linea' },
+      },
+      {
+        id: 'caceres_miraflores',
+        text: 'Cáceres manda el sector derecho: si cae, la retirada a la sierra se pierde.',
+        check: { type: 'elapsed', seconds: 12 },
+      },
+      {
+        id: 'retirada',
+        text: 'Cuando la línea aguante, retira a Cáceres y a la fuerza hacia la sierra. Lima caerá; la guerra continúa.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a3_retirada' },
+      },
+    ],
+  },
+  m_brena: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a la caballería: en la sierra se necesita movilidad para hostigar y retirarse.',
+        check: { type: 'selectUnit', unitKind: UnitKind.CAVALRY },
+      },
+      {
+        id: 'comunidades',
+        text: 'Organiza la red de comunidades del Mantaro. Cada comunidad da apoyo, alimentos y terreno.',
+        highlight: '#ed-objectives',
+        check: { type: 'objectiveCompleted', objectiveId: 'a1_comunidades' },
+      },
+      {
+        id: 'galgas',
+        text: 'Embosca la columna chilena en el paso y sostén la posición con al menos cinco unidades.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a2_galgas' },
+      },
+      {
+        id: 'huamachuco',
+        text: 'En Huamachuco la munición se agota: sostén el campo sesenta segundos y mantén vivo a Cáceres.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a3_huamachuco' },
+      },
+      {
+        id: 'retirada_brena',
+        text: 'Retira a Cáceres hacia Ayacucho. La resistencia no gana la guerra, pero sobrevive.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a3_retirada' },
+      },
+    ],
+  },
   m9_guerra_pacifico: {
     steps: [
       {

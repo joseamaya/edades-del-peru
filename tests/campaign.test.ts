@@ -403,6 +403,9 @@ describe('campaign educational content', () => {
       ['m8_independencia', 5],
       ['m_real_felipe', 5],
       ['m9_guerra_pacifico', 5],
+      ['m_tarapaca', 5],
+      ['m_miraflores', 5],
+      ['m_brena', 5],
     ] as const) {
       const mis = MISSIONS.find((m) => m.id === id)!;
       expect(mis.tutorial, `${id} tutorial flag`).toBe(true);
@@ -411,10 +414,16 @@ describe('campaign educational content', () => {
     }
   });
 
-  it('the Independencia arc missions have acts, triggers and documented outcomes', () => {
-    for (const id of ['m_lima_1821', 'm_real_felipe']) {
+  it('the late campaign missions have acts, triggers and documented outcomes', () => {
+    for (const [id, period] of [
+      ['m_lima_1821', HistoricalPeriod.INDEPENDENCE],
+      ['m_real_felipe', HistoricalPeriod.INDEPENDENCE],
+      ['m_tarapaca', HistoricalPeriod.REPUBLIC],
+      ['m_miraflores', HistoricalPeriod.REPUBLIC],
+      ['m_brena', HistoricalPeriod.REPUBLIC],
+    ] as const) {
       const mis = MISSIONS.find((m) => m.id === id)!;
-      expect(mis.period, `${id} period`).toBe(HistoricalPeriod.INDEPENDENCE);
+      expect(mis.period, `${id} period`).toBe(period);
       expect(mis.modelMission, `${id} model mission`).toBe(true);
       expect(mis.objectives.length, `${id} objectives`).toBeGreaterThanOrEqual(5);
       expect(

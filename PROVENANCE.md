@@ -723,6 +723,23 @@ downscaled 1920 shot would look smaller than the 1280 one.
 - **Review**: no human art-review gate applies to in-engine captures; the reused chapel GLB keeps its own
   review status in `src/art/manifest.json` (#343).
 
+
+### Tarapacá, Miraflores and La Breña intro/epilogue images (in-engine recreations)
+
+- **Location**: `public/media/{tarapaca,miraflores,brena}/intro-*.webp` (640×360, WebP q28).
+- **Source**: captured from the game itself by `scripts/capture_republica_arc.mjs` on the Republic
+  missions: the Tarapacá quebrada, the Miraflores redoubt line, the Mantaro valley and the Huamachuco
+  heights. Rendered without the HUD at 1600×900 and resized with `sharp`. Regenerate with
+  `node scripts/capture_republica_arc.mjs --mission=ID --only=ID` after art changes.
+- **Runtime**: `m_tarapaca` uses `intro-{quebrada,alturas,retirada,epilogo}`; `m_miraflores` uses
+  `intro-{lima,reductos,retirada,epilogo}`; `m_brena` uses `intro-{mantaro,galgas,huamachuco,epilogo}`.
+- **Content**: project-owned game renders (the reused Arica desert terrace, the Lima colonial kit at the
+  `ciudad` phase and the Ayacucho chapel/camp, plus procedural units and camps). The sites are labelled
+  abstractions where the repo has no surveyed heightfield (Tarapacá, La Breña); they are recreations of
+  the game's own scenes, never historical photographs.
+- **Review**: no human art-review gate applies to in-engine captures; the reused `arica_site`,
+  `colonial_site` and `independence_site` GLBs keep their own review status (#343).
+
 ### Caral Pyramid Mayor modular scenery
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.

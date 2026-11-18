@@ -35,11 +35,14 @@ const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: stri
   arica_site: { lod0: aricaLod0Url, lod1: aricaLod1Url },
   // Real Felipe (1824–1826) reuses the Arica coastal-fort composition as a labelled abstraction.
   real_felipe_site: { lod0: aricaLod0Url, lod1: aricaLod1Url },
+  tarapaca_site: { lod0: aricaLod0Url, lod1: aricaLod1Url },
+  brena_site: { lod0: independenceLod0Url, lod1: independenceLod1Url },
   cusco_inca_site: { lod0: cuscoLod0Url, lod1: cuscoLod1Url },
   // La Junta del Cusco (1814) reuses the colonial plaza model on its own 256 m transect.
   cusco_junta_site: { lod0: colonialLod0Url, lod1: colonialLod1Url },
   // Lima (1535) reuses the colonial plaza/church on its own coast transect.
   lima_site: { lod0: colonialLod0Url, lod1: colonialLod1Url },
+  miraflores_site: { lod0: colonialLod0Url, lod1: colonialLod1Url },
 };
 
 /** Load the campaign site; LOD1 is the RTS default, `?lod=0` previews the master when the bundle ships it. */

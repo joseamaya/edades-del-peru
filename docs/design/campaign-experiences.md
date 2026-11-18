@@ -86,6 +86,9 @@ enemy. The feria uses the game's `Mercado` building as an abstraction and says s
 | m8 Independencia       | Campaign logistics and coordination      | Move, take the royalist centre, hold              | Timing and concentration           | Patriotic victory                      |
 | m_real_felipe         | The last royalist bastion                | Build batteries, blockade, resist sorties, wait   | Siege vs. assault                  | Capitulation after a costly siege      |
 | m9 Guerra del Pacífico | The documented defence and fall of Arica  | Refuse the summons, mine the approaches, hold the battery | Prepare vs. hold the last line    | The plaza falls; the defence becomes a symbol |
+| m_tarapaca             | Tactical victory, strategic retreat       | Hold the village, recover the heights, take the guns | Assault vs. hold                    | Victory, retreat and lost province     |
+| m_miraflores           | The redoubt line and the fall of Lima     | Build redoubts, hold the line, withdraw Cáceres | Hold vs. withdraw                   | Lima falls; the sierra resists          |
+| m_brena                | Guerrilla war and community networks      | Build communities, ambush, withdraw from Huamachuco | Resist vs. survive                  | War ends at Ancón; Cáceres escapes      |
 
 The released missions are implemented across the five chapters. m7 and m9 now play their documented outcomes;
 no released mission wins with an undeclared counterfactual. Each mission remains reviewed against its dossier

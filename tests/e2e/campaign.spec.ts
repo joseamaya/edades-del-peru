@@ -104,6 +104,9 @@ test('every campaign mission shows its educational epilogue on victory', async (
     'm8_independencia',
     'm_real_felipe',
     'm9_guerra_pacifico',
+    'm_tarapaca',
+    'm_miraflores',
+    'm_brena',
   ]) {
     const page = await context.newPage();
     await page.goto(`/?mission=${mission}&seed=777&fog=0&low=1&noloop=1`);
@@ -338,6 +341,9 @@ test('later campaign briefing and tutorial fit 1600x900 (m7-m9)', async ({ conte
     'm8_independencia',
     'm_real_felipe',
     'm9_guerra_pacifico',
+    'm_tarapaca',
+    'm_miraflores',
+    'm_brena',
   ]);
 });
 
@@ -355,6 +361,9 @@ test('later campaign briefings show their draft intro art with art=all', async (
     'm8_independencia',
     'm_real_felipe',
     'm9_guerra_pacifico',
+    'm_tarapaca',
+    'm_miraflores',
+    'm_brena',
   ]) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&art=all&intro=0`);
     const img = page.locator('.ed-briefing .ed-art img');
@@ -380,6 +389,9 @@ test('the missions with corrected rosters boot with units and no errors', async 
     'm_lima_1821',
     'm_real_felipe',
     'm9_guerra_pacifico',
+    'm_tarapaca',
+    'm_miraflores',
+    'm_brena',
   ];
   for (const id of ids) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
@@ -1127,7 +1139,7 @@ test('chapter endings name the right campaign ordinal', async ({ page }) => {
     ['m6b_guerra_civil', 'Fin de la segunda campaña.'],
     ['m7_tupac_amaru', 'Fin de la tercera campaña.'],
     ['m_real_felipe', 'Fin de la cuarta campaña.'],
-    ['m9_guerra_pacifico', 'Fin de la quinta campaña.'],
+    ['m_brena', 'Fin de la quinta campaña.'],
   ]) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&noloop=1`);
     await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {

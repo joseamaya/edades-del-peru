@@ -76,6 +76,10 @@ name.
 | `m8_independencia` | Antonio José de Sucre | `sucre` | Documented | Briefing portrait; protected field nameplate; narrator | [`independencia.md`](../historia/campanas/independencia.md) |
 | `m_real_felipe` | Bartolomé Salom | `salom` | Documented | Briefing portrait; protected field nameplate | [`real_felipe.md`](../historia/campanas/real_felipe.md) |
 | `m_real_felipe` | José Ramón Rodil | `rodil` | Documented | Briefing portrait only | [`real_felipe.md`](../historia/campanas/real_felipe.md) |
+| `m_tarapaca` | Juan Buendía | `buendia` | Documented | Briefing portrait only | [`tarapaca.md`](../historia/campanas/tarapaca.md) |
+| `m_tarapaca` | Andrés A. Cáceres | `caceres` | Documented | Briefing portrait; protected field nameplate | [`tarapaca.md`](../historia/campanas/tarapaca.md) |
+| `m_miraflores` | Andrés A. Cáceres | `caceres` | Documented | Briefing portrait; protected field nameplate | [`miraflores.md`](../historia/campanas/miraflores.md) |
+| `m_brena` | Andrés A. Cáceres | `caceres` | Documented | Briefing portrait; protected field nameplate | [`brena.md`](../historia/campanas/brena.md) |
 | `m9_guerra_pacifico` | Francisco Bolognesi | `bolognesi` | Documented | Briefing portrait; protected field nameplate | [`guerra_del_pacifico.md`](../historia/campanas/guerra_del_pacifico.md) |
 | `m9_guerra_pacifico` | Miguel Grau | `grau` | Documented | Narration/education only; not fielded | [`guerra_del_pacifico.md`](../historia/campanas/guerra_del_pacifico.md) |
 

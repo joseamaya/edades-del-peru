@@ -13,6 +13,9 @@ import { mJuntaCusco } from './missions/m_junta_cusco';
 import { mLima1821 } from './missions/m_lima_1821';
 import { m8Independencia } from './missions/m8_independencia';
 import { mRealFelipe } from './missions/m_real_felipe';
+import { mTarapaca } from './missions/m_tarapaca';
+import { mMiraflores } from './missions/m_miraflores';
+import { mBrena } from './missions/m_brena';
 import { m9GuerraPacifico } from './missions/m9_guerra_pacifico';
 
 /** Every released mission in campaign order; each one lives in its own file under `missions/`. */
@@ -31,7 +34,10 @@ export const MISSIONS: MissionDef[] = [
   mLima1821,
   m8Independencia,
   mRealFelipe,
+  mTarapaca,
   m9GuerraPacifico,
+  mMiraflores,
+  mBrena,
 ];
 
 export function getMission(id: string): MissionDef | undefined {

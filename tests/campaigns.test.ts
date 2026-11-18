@@ -63,7 +63,7 @@ describe('campaign series', () => {
     );
     // every planned mission of the launch catalogue is placed exactly once and none is playable
     expect(planned.sort()).toEqual(Object.keys(PLANNED_MISSIONS).sort());
-    expect(planned).toHaveLength(5);
+    expect(planned).toHaveLength(2);
     for (const id of planned) expect(getReleasedMission(id)).toBeUndefined();
     expect(CAMPAIGNS.map((c) => c.path.length)).toEqual([4, 4, 4, 4, 4]);
   });
@@ -98,9 +98,10 @@ describe('campaign series', () => {
     expect(missionPosition('m7_tupac_amaru')).toEqual({ n: 4, total: 4 });
     expect(missionPosition('m_lima_1821')).toEqual({ n: 2, total: 4 });
     expect(missionPosition('m_real_felipe')).toEqual({ n: 4, total: 4 });
-    expect(missionPosition('m9_guerra_pacifico')).toEqual({ n: 1, total: 4 });
-    expect(missionPosition('p_rep_tarapaca')).toEqual({ n: 2, total: 4 });
-    expect(missionPosition('p_rep_brena')).toEqual({ n: 4, total: 4 });
+    expect(missionPosition('m_tarapaca')).toEqual({ n: 1, total: 4 });
+    expect(missionPosition('m9_guerra_pacifico')).toEqual({ n: 2, total: 4 });
+    expect(missionPosition('m_miraflores')).toEqual({ n: 3, total: 4 });
+    expect(missionPosition('m_brena')).toEqual({ n: 4, total: 4 });
     expect(missionPosition('p_inca_collao')).toBeNull();
     expect(missionPosition('p_rep_dos_de_mayo')).toBeNull();
   });
@@ -128,7 +129,10 @@ describe('campaign series', () => {
       'm_lima_1821',
       'm8_independencia',
       'm_real_felipe',
+      'm_tarapaca',
       'm9_guerra_pacifico',
+      'm_miraflores',
+      'm_brena',
     ]);
     expect(getReleasedMission('m1_caral')?.title).toBe('La Ciudad Sagrada');
     expect(getReleasedMission('m2_chavin')?.title).toBe('El Oráculo de Chavín');
@@ -145,7 +149,10 @@ describe('campaign series', () => {
     expect(nextReleasedMission('m_lima_1821')?.id).toBe('m8_independencia');
     expect(nextReleasedMission('m8_independencia')?.id).toBe('m_real_felipe');
     expect(nextReleasedMission('m_real_felipe')).toBeUndefined();
-    expect(nextReleasedMission('m9_guerra_pacifico')).toBeUndefined();
+    expect(nextReleasedMission('m_tarapaca')?.id).toBe('m9_guerra_pacifico');
+    expect(nextReleasedMission('m9_guerra_pacifico')?.id).toBe('m_miraflores');
+    expect(nextReleasedMission('m_miraflores')?.id).toBe('m_brena');
+    expect(nextReleasedMission('m_brena')).toBeUndefined();
   });
 
   it('maps every mission to its campaign', () => {
@@ -158,6 +165,9 @@ describe('campaign series', () => {
     expect(getCampaignForMission('m8_independencia')?.id).toBe('independencia');
     expect(getCampaignForMission('m_real_felipe')?.id).toBe('independencia');
     expect(getCampaignForMission('m9_guerra_pacifico')?.id).toBe('republica');
+    expect(getCampaignForMission('m_tarapaca')?.id).toBe('republica');
+    expect(getCampaignForMission('m_miraflores')?.id).toBe('republica');
+    expect(getCampaignForMission('m_brena')?.id).toBe('republica');
     expect(getCampaign('preinca')?.releasedMissionIds).toEqual(['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari']);
     expect(getCampaignForMission('p_vir_cusco')?.id).toBe('virreinato');
   });
@@ -187,7 +197,7 @@ describe('campaign series', () => {
     expect(INDEPENDENCIA_PROLOGUE).toHaveLength(4);
     expect(INDEPENDENCIA_PROLOGUE.at(-1)?.kicker).toContain('1824–1826');
     expect(REPUBLICA_PROLOGUE).toHaveLength(4);
-    expect(REPUBLICA_PROLOGUE[0].kicker).toContain('ARICA');
+    expect(REPUBLICA_PROLOGUE[0].kicker).toContain('TARAPACÁ');
     expect(REPUBLICA_PROLOGUE.some((beat) => beat.text.includes('1866'))).toBe(false);
   });
 });
@@ -234,7 +244,8 @@ describe('campaign unlocks', () => {
     expect(isMissionUnlocked(fresh, 'm_lima')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm_junta_cusco')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm8_independencia')).toBe(false);
-    expect(isMissionUnlocked(fresh, 'm9_guerra_pacifico')).toBe(true);
+    expect(isMissionUnlocked(fresh, 'm_tarapaca')).toBe(true);
+    expect(isMissionUnlocked(fresh, 'm9_guerra_pacifico')).toBe(false);
     for (const campaign of CAMPAIGNS) {
       expect(isCampaignUnlocked(fresh, campaign.id), campaign.id).toBe(true);
     }
