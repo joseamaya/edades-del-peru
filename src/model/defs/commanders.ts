@@ -17,6 +17,7 @@ export const PORTRAIT_IDS = [
   'caceres',
   'buendia',
   'tupac_amaru_i',
+  'manco_inca',
   'grau',
   'bolognesi',
   'atahualpa',
@@ -216,6 +217,15 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.INCA,
     status: 'abstraction',
     source: 'docs/historia/campanas/vilcabamba.md',
+  },
+  manco_inca: {
+    gender: 'male',
+    id: 'manco_inca',
+    name: 'Manco Inca',
+    role: 'Rebelión · Cusco',
+    civ: CivId.INCA,
+    status: 'abstraction',
+    source: 'docs/historia/campanas/cusco_1536.md',
   },
   grau: {
     gender: 'male',

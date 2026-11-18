@@ -9,7 +9,7 @@ const CUSCO_1536_RETREAT = { x: 77, z: 218 } as const;
 
 export const mCusco1536: MissionDef = {
   id: 'm_cusco_1536',
-  commanders: ['manco_capac'],
+  commanders: ['manco_inca'],
   title: 'Cusco en llamas',
   subtitle: 'Cusco · 1536',
   history:
@@ -83,7 +83,7 @@ export const mCusco1536: MissionDef = {
       { kind: UnitKind.INCA_WARRIOR, dx: 8, dz: 0, count: 12 },
       { kind: UnitKind.SOLDIER, dx: 12, dz: 2, count: 6 },
       { kind: UnitKind.SCOUT, dx: 14, dz: 0, count: 1 },
-      { kind: UnitKind.INCA_WARRIOR, dx: 6, dz: 0, count: 1, tag: 'manco' },
+      { kind: UnitKind.INCA_WARRIOR, dx: 6, dz: 0, count: 1, tag: 'manco_inca' },
     ],
   },
   enemy: { active: true, difficulty: 'normal', aggression: 0.8 },
@@ -174,7 +174,7 @@ export const mCusco1536: MissionDef = {
     {
       id: 'a3_manco',
       kind: 'protect',
-      entityTag: 'manco',
+      entityTag: 'manco_inca',
       title: 'Mantén con vida a Manco Inca',
     },
   ],
