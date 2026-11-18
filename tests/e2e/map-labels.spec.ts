@@ -21,11 +21,11 @@ test('m1 names the Supe river on the board', async ({ page }) => {
   await boot(page, 0);
   const state = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const sprite = g.scene.getObjectByName('geo-label:Río Supe');
+    const label = (g.mapLabels as any)?.items?.find((item: any) => item.label.text === 'Río Supe');
     return {
       names: g.placeNames.map((l: { text: string }) => l.text),
-      visible: sprite?.visible ?? false,
-      opacity: (sprite?.material as { opacity?: number } | undefined)?.opacity ?? 0,
+      visible: label?.view.visible ?? false,
+      opacity: label?.view.opacity ?? 0,
     };
   });
   expect(state.names).toContain('Río Supe');
@@ -41,8 +41,8 @@ test('place names fade out when the camera zooms out to the whole map', async ({
     const g = (window as unknown as { game: any }).game;
     g.camera.setHeight(200);
     for (let i = 0; i < 240; i++) g.update(1 / 60, i / 60);
-    const sprite = g.scene.getObjectByName('geo-label:Río Supe');
-    return { visible: sprite?.visible ?? false, zoom: g.camera.getZoom(), max: g.camera.maxZoom };
+    const label = (g.mapLabels as any)?.items?.find((item: any) => item.label.text === 'Río Supe');
+    return { visible: label?.view.visible ?? false, zoom: g.camera.getZoom(), max: g.camera.maxZoom };
   });
   expect(faded.zoom).toBeCloseTo(faded.max, 0);
   expect(faded.visible).toBe(false);
@@ -55,8 +55,8 @@ test('place names respect the fog of war', async ({ page }) => {
     const size = g.settings.mapSize;
     const label = g.placeNames.find((l: { x: number; z: number }) => !g.fow.isExplored(l.x * size, l.z * size));
     if (!label) return null;
-    const sprite = g.scene.getObjectByName(`geo-label:${label.text}`);
-    return { text: label.text, x: label.x, z: label.z, size, visible: sprite?.visible ?? true };
+    const item = (g.mapLabels as any)?.items?.find((entry: any) => entry.label === label);
+    return { text: label.text, x: label.x, z: label.z, size, visible: item?.view.visible ?? true };
   });
   expect(hidden).not.toBeNull();
   expect(hidden!.visible).toBe(false);
@@ -65,8 +65,8 @@ test('place names respect the fog of war', async ({ page }) => {
     const g = (window as unknown as { game: any }).game;
     g.fow.reveal(info.x * info.size, info.z * info.size, 40);
     for (let i = 0; i < 6; i++) g.update(1 / 60, i / 60);
-    const sprite = g.scene.getObjectByName(`geo-label:${info.text}`);
-    return sprite?.visible ?? false;
+    const item = (g.mapLabels as any)?.items?.find((entry: any) => entry.label.text === info.text);
+    return item?.view.visible ?? false;
   }, hidden!);
   expect(revealed).toBe(true);
 });

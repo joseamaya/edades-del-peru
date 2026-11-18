@@ -46,10 +46,12 @@ test('local GLB rigs load, clone independently and animate without touching the 
     };
   });
 
-  const mannequin = state.assets.find((entry) => entry.id === 'ual_mannequin');
-  expect(mannequin?.state).toBe('ready');
-  expect(mannequin?.clips).toContain('Idle_Loop');
-  expect(mannequin?.refs).toBe(2);
+  // `?rig=1` previews the shipped worker now; the 1.9 MB mannequin fixture is no longer loaded.
+  const worker = state.assets.find((entry) => entry.id === 'caral_worker');
+  expect(worker?.state).toBe('ready');
+  expect(worker?.clips).toContain('Idle_Loop');
+  // The shipped worker is also referenced by the match units, so the demo is not the only owner.
+  expect(worker?.refs).toBeGreaterThanOrEqual(2);
   expect(state.snapshot.states).toEqual(['idle', 'gather']);
   expect(state.units).toBeGreaterThan(0);
 
@@ -75,7 +77,7 @@ test('local GLB rigs load, clone independently and animate without touching the 
   expect(modelWarnings).toEqual([]);
 });
 
-test('m7 cavalry, artillery and rebel infantry load their rigs instead of procedural models', async ({ page }) => {
+test('m7 cavalry, rebel infantry and riflemen load their rigs instead of procedural models', async ({ page }) => {
   const warnings: string[] = [];
   page.on('console', (msg) => {
     if (msg.type() === 'warning' && msg.text().includes('[models]')) warnings.push(msg.text());
@@ -116,12 +118,11 @@ test('m7 cavalry, artillery and rebel infantry load their rigs instead of proced
   });
   expect(state.cavalry.length).toBeGreaterThan(0);
   expect(state.cavalry.every((name) => name === 'rig:mounted_rig')).toBe(true);
-  expect(state.artillery.length).toBeGreaterThan(0);
-  expect(state.artillery.every((name) => name === 'rig:siege_rig')).toBe(true);
+  // The m7 dossier records that the rebels had no artillery train; this mission ships none.
+  expect(state.artillery.length).toBe(0);
   expect(state.infantry.length).toBeGreaterThan(0);
   expect(state.infantry.every((name) => name === 'rig:caral_worker')).toBe(true);
   expect(state.mounted).toBe('ready');
-  expect(state.siege).toBe('ready');
   expect(state.worker).toBe('ready');
   expect(warnings).toEqual([]);
 });
