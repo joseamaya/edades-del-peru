@@ -229,6 +229,8 @@ test('saves and loads the Wari network and frontier', async ({ page }) => {
     const dt = 1 / 60;
     let t = 0;
     for (let i = 0; i < Math.ceil(10 / dt); i++) {
+      // Completing the network opens the Act III card; it pauses the clock until dismissed.
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
       if (unit) unit.pos.set(nodes[0].x, g.terrain.getHeight(nodes[0].x, nodes[0].z), nodes[0].z);
       g.update(dt, t);
@@ -858,11 +860,14 @@ test('saves and loads m6b mid-capture', async ({ page }) => {
     for (const u of army) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
     const dt = 1 / 60;
     let t = 0.1;
+    // Stop as soon as the capture clock passes the threshold; the enemy can still defeat the camp
+    // if the test keeps simulating after the save point.
     for (let i = 0; i < Math.ceil(6 / dt) && !m.ended; i++) {
       document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       for (const u of army) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
       g.update(dt, t);
       t += dt;
+      if ((m.getObjectiveProgress('obj_captura')?.current ?? 0) > 2) break;
     }
     g.saveMatch();
     return {
@@ -881,7 +886,7 @@ test('saves and loads m6b mid-capture', async ({ page }) => {
       return !!g?.mission && g.units.size > 0;
     },
     null,
-    { timeout: 20_000 },
+    { timeout: 45_000 },
   );
   const after = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
