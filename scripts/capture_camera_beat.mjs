@@ -52,8 +52,8 @@ async function main() {
       await page.evaluate(
         ({ step }) => {
           const g = window.game;
-          if (step === 15) window.dispatchEvent(new KeyboardEvent('keydown', { key: 'd' }));
-          if (step === 45) window.dispatchEvent(new KeyboardEvent('keyup', { key: 'd' }));
+          if (step === 15) window.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'd' }));
+          if (step === 45) window.dispatchEvent(new window.KeyboardEvent('keyup', { key: 'd' }));
           g.update(1 / 60, step / 60);
           g.camera.camera.updateMatrixWorld();
           g.renderer.render(g.scene, g.camera.camera);
