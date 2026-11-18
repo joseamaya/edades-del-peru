@@ -32,7 +32,7 @@ The audit is the authority. If this summary and the quality bar disagree, the qu
 | **D1 · Close the model-mission gap** | `m5`–`m9`, `m6b`, `m8` and the remaining chapters                                                                            | **Done (2026-11-14):** every released mission follows the model pattern and has a model-mission document; the remaining art and performance gaps are D2/D3 |
 | **D2 · Art review and capture**      | Pending `reviewed: false` records, the Chavín kit, and the art of the model missions (m3–m9, m6b, Tambotoco, Lima, La Junta) | No unreviewed record ships; the human review is recorded; the captures are current                                                                         |
 | **D2b · Art-direction pilot**        | Tambotoco becomes the stylized-realism reference: light/shadows, palette, architecture, highland vegetation, hero variant, presentation | **Done (2026-11-17):** E0–E6 of [`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md) close and E7 delivered (baked hero proportions, scoped terrain macro, Inticancha/shrine detail, 3 × 3 E7 set and the 3X recording); caps 500k/280 and 660k/360; `dist` 24.63/25 MB |
-| **D3 · Real-GPU performance**        | The remaining model-mission site views (m3–m9, m6b, La Junta) and late views                                                 | A measured pass at 1280×800 and 1600×900 is recorded; optimization work is either scheduled or explicitly rejected                                         |
+| **D3 · Real-GPU performance**        | The remaining model-mission site views (m3–m9, m6b, La Junta) and late views                                                 | **Done (2026-11-17):** 17 site views measured at 1280×800 and 1600×900 on the Intel iGPU, all hardware; 28–38 FPS high at 1600×900. Decision in [`../development/site-view-performance.md`](../development/site-view-performance.md); B13 schedules the m6b/m8 late-view optimization |
 | **D4 · Release packaging**           | itch build, Pages artifact, publish checklist                                                                                | The checklist is green on a build that matches the tagged commit                                                                                           |
 
 ## D1 · Closed (2026-11-14)
@@ -54,22 +54,16 @@ evidence. No model-mission rebuild remains.
 The release-candidate document is an **archived snapshot** from 2026-10-30. Use its checklist as a template,
 but record today's counts and hashes in a new status document or PR, not by editing the snapshot.
 
-## D3 · Performance
+## D3 · Performance — Done (2026-11-17)
 
-The `mixed` benchmark already has a real-GPU pass (`yarn bench --gpu`, Intel iGPU), recorded in
-[`../development/performance-audit.md`](../development/performance-audit.md). Real-GPU openings are also
-recorded for m1, m2, Tambotoco and Lima (#447). The remaining gap is the **site views of m3–m9, m6b and
-La Junta**, plus the late view of any mission whose late game fills the screen; their bench numbers are
-structural SwiftShader numbers unless their design document says otherwise.
+The pass is recorded in [`../development/site-view-performance.md`](../development/site-view-performance.md):
+17 site views (m3–m9, m6b and La Junta) at 1280×800 and 1600×900 on the Intel RPL-S iGPU, all rows on
+hardware. The shipped high preset runs **28–38 FPS** at 1600×900 and **32–48 FPS** at 1280×800; the low
+fallback is 46–50 FPS on the three tightest late views.
 
-The next pass must run on a real GPU and record:
-
-- draw calls, triangles, meshes and materials per site;
-- frame time at 1280×800 and 1600×900;
-- the effect of the quality governor and of `?low=1`;
-- a decision: optimize geometry/materials, lower the target, or accept the measured result.
-
-`yarn bench:check` validates structural budgets; it is not a GPU benchmark.
+Decision: accept the measured high-quality frame times, keep the SwiftShader structural caps unchanged,
+and schedule the m6b/m8 late-view optimization as **B13**. Re-run `yarn bench:site-views` before D4.
+`yarn bench:check` remains the SwiftShader ratchet; the pre-existing m8 row is still red.
 
 ## D4 · Release
 
