@@ -428,8 +428,8 @@ Definition of Done and the building audit see
 - **Mission camera cues**: the `camera` trigger effect accepts optional `zoom`/`seconds`; a zoomed cue calls
   `Camera.flyTo(..., holdClock=false)`, so it frames a place without stalling the mission clock. Only the
   opening flight (`playIntro`) keeps `holdClock` true. A manual pan (WASD/arrows, the edge band after its
-  delay, the middle drag past 2 px) or a minimap move (`moveTo`) cancels a cue with `holdClock=false`; the
-  opening flight does not. Evidence: `docs/media/camera-beat-{before,after}.webp`
+  delay, the middle drag past 2 px) or a map move (`moveTo`: minimap, save restore, scripted focus) cancels
+  a cue with `holdClock=false`; the opening flight does not. Evidence: `docs/media/camera-beat-{before,after}.webp`
   (`node scripts/capture_camera_beat.mjs --tag=after` on this branch; copy the script into an `origin/main`
   worktree and run `--tag=before` there). The RTS camera looks at sea level, so `Mission` aims a zoomed cue
   `ground / tan(pitch)` short of its subject along the camera's current yaw on an elevated site.

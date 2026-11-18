@@ -7,7 +7,8 @@ import { launchChromium, withViteServer, cliArg, reviewDir } from './lib.mjs';
  * Evidence animation for a mid-mission camera beat: the camera starts a non-opening flight to the
  * left and the player holds D after 0.25 s. A fix makes the beat yield and the camera pan right; the
  * old code keeps the scripted flight. The flight is long (60 s) so real-time screenshot waits cannot
- * end it before D; fixed 1/60 s steps, so the capture is deterministic.
+ * end it before D. The flight follows real time, so the frames are not bit-identical run to run; the
+ * left-vs-right contrast is the evidence, not a frame-exact repeat.
  *
  * Usage: node scripts/capture_camera_beat.mjs [--tag=after] [--frames=50] [--width=800]
  * Writes review/camera-beat-<tag>-last.png and the animated WebP docs/media/camera-beat-<tag>.webp.

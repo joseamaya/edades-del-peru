@@ -480,6 +480,47 @@ test('the opening flight keeps the camera until it ends', async ({ page }) => {
   expect(out.target.x).toBeLessThan(out.centre - 1);
 });
 
+test('every manual camera input cancels a presentation beat', async ({ page }) => {
+  await bootMatch(page);
+  await stopLoop(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const centre = g.settings.mapSize / 2;
+    const start = () => {
+      g.camera.updateMouse(640, 360);
+      g.camera.moveTo(centre, centre, true);
+      g.camera.setHeight(40);
+      for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
+      g.camera.flyTo(centre + 60, centre, 40, 60, false);
+      g.update(1 / 60, 0);
+      return g.camera.isFlying();
+    };
+
+    start();
+    g.camera.updateMouse(1, 300);
+    for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
+    const edge = !g.camera.isFlying();
+
+    start();
+    g.renderer.domElement.dispatchEvent(
+      new MouseEvent('mousedown', { button: 1, clientX: 640, clientY: 360, bubbles: true }),
+    );
+    window.dispatchEvent(new MouseEvent('mousemove', { clientX: 700, clientY: 360, bubbles: true }));
+    window.dispatchEvent(new MouseEvent('mouseup', { button: 1, clientX: 700, clientY: 360, bubbles: true }));
+    const drag = !g.camera.isFlying();
+
+    const started = start();
+    g.camera.moveTo(centre + 10, centre + 10, true);
+    const move = !g.camera.isFlying();
+
+    return { edge, drag, started, move };
+  });
+  expect(out.edge).toBe(true);
+  expect(out.drag).toBe(true);
+  expect(out.started).toBe(true);
+  expect(out.move).toBe(true);
+});
+
 test('moving from the bottom edge onto the command bar stops the camera', async ({ page }) => {
   await bootMatch(page);
   const bar = await page.evaluate(() => {
