@@ -62,6 +62,12 @@ test('the campaign intro flies the camera from an overview to the authored openi
   await page.locator('.ed-cinematic-skip').click({ timeout: 30_000 });
   await dismissBriefing(page);
   await page.waitForTimeout(120);
+  const opening = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    return { flying: g.camera.isOpeningFlight(), cinematic: g.isCinematicActive() };
+  });
+  expect(opening.flying).toBe(true);
+  expect(opening.cinematic).toBe(true);
   const start = await target(page);
   const b = await base(page);
   expect(Math.hypot(start.x - b.x, start.z - b.z)).toBeGreaterThan(25); // starts away from the base
