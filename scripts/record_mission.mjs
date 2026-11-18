@@ -9,9 +9,10 @@
  *     (no video: writes a JSON with HUD warnings, stuck units, objective times and effective speed)
  *
  * `clip` records the opening (briefing, intro cards, the starting party and the mission's named
- * places) in about two minutes. `full` autoplays the `m_tambotoco` act shape (leave the cave, hunt,
- * Huanacaure, acequia, Inticancha) with real move/gather/build commands, no cheats, and records until
- * victory, defeat or the time limit; for another mission use `clip`.
+ * places) in about two minutes. `full` autoplays a mission's act shape with real move/build/attack
+ * commands, no cheats, and records until victory, defeat or the time limit: `m_tambotoco` (leave the
+ * cave, hunt, Huanacaure, acequia, Inticancha) and `m_junta_cusco` (cabildo, cuartel, La Apacheta,
+ * Umachiri). A mission without an autopilot needs `clip`.
  *
  * The result is in-engine footage of the game itself, never a historical film. The JSON next to
  * the video lists every objective and the second it changed.
@@ -50,6 +51,12 @@ function ffmpeg(args) {
 
 const elapsed = () => Math.round((Date.now() - started) / 1000);
 
+/** Full-mode autopilots: each mission's act shape, driven with the player's own commands. */
+const AUTOPILOTS = {
+  m_tambotoco: playMission,
+  m_junta_cusco: playJuntaCusco,
+};
+
 async function main() {
   const { base, close } = await withViteServer();
   const browser = await launchChromium();
@@ -85,7 +92,11 @@ async function main() {
     const plan = await readPlan(page);
     if (diagnose) await startDiagnostics(page);
     if (mode === 'clip') await recordClip(page, plan);
-    else await playMission(page, plan);
+    else {
+      const autopilot = AUTOPILOTS[mission];
+      if (!autopilot) throw new Error(`full mode has no autopilot for ${mission}; use --mode=clip`);
+      await autopilot(page, plan);
+    }
 
     await page.waitForTimeout(4000);
     const summary = await page.evaluate(() => ({
@@ -213,6 +224,7 @@ async function playMission(page, plan) {
   }
 
   await selectAll(page);
+  await hideTutorial(page);
   await look(page, null, 36, 'all');
   const worker = await firstUnit(page, 'worker');
   if (worker) await move(page, [worker], plan.start);
@@ -231,7 +243,10 @@ async function playMission(page, plan) {
   await waitObjective(page, 'a1_campamento', 'completed', 180_000, deadline, () => look(page, null, 30, 'workers'));
   if (await hasEnded(page)) return;
   await gather(page);
-  await waitObjective(page, 'a1_caza', 'completed', 420_000, deadline, () => look(page, null, 31, 'workers'));
+  await waitObjective(page, 'a1_caza', 'completed', 600_000, deadline, async () => {
+    await regather(page);
+    await look(page, null, 31, 'workers');
+  });
   if (await hasEnded(page)) return;
 
   const army = (await units(page)).filter((u) => u.kind !== 'worker').map((u) => u.id);
@@ -287,6 +302,173 @@ async function playMission(page, plan) {
   }
   await waitObjective(page, 'a4_canchas', 'completed', 300_000, deadline, () => look(page, plan.inticancha, 30));
   await page.waitForFunction(() => window.game.gameEnded === true, null, { timeout: 60_000 }).catch(() => {});
+}
+
+/**
+ * The Junta del Cusco (m_junta_cusco): the cabildo, the cuartel, La Apacheta and Umachiri, played with
+ * the orders a player issues. Pumacahua watches the camp: his death ends the mission.
+ */
+async function playJuntaCusco(page, plan) {
+  const deadline = started + limitMinutes * 60_000;
+  if (!plan.cabildo || !plan.church || !plan.apacheta || !plan.umachiri || !plan.batalla || !plan.resistir) {
+    throw new Error('the Junta autopilot needs the mission objectives to resolve; the layout changed');
+  }
+  const column = async () =>
+    (await units(page)).filter((u) => u.kind !== 'worker' && u.tag !== 'pumacahua').map((u) => u.id);
+
+  await selectAll(page);
+  await hideTutorial(page);
+  await look(page, null, 36, 'all');
+  await page.waitForTimeout(4000);
+
+  // Keep the commander out of the line: `a3_pumacahua` is a required guard, not a bonus.
+  const hero = (await units(page)).filter((u) => u.tag === 'pumacahua').map((u) => u.id);
+  if (hero.length) await move(page, hero, { x: plan.base.x + 6, z: plan.base.z + 6 });
+
+  // Act I — the Junta meets at the Cabildo; the church card is registered standing at the monument.
+  await move(page, await column(), plan.church);
+  await look(page, plan.cabildo, 28);
+  await page.waitForTimeout(3000);
+  if (
+    !(await visitWhenNear(page, plan.cabildoHeritage, plan.church, 15, 150_000, deadline)) &&
+    !(await hasEnded(page))
+  ) {
+    throw new Error('Junta: the cabildo heritage card was not registered');
+  }
+  if (
+    (await waitObjective(page, 'a1_cabildo', 'completed', 30_000, deadline, () => look(page, plan.cabildo, 26))) !==
+      'completed' &&
+    !(await hasEnded(page))
+  ) {
+    throw new Error('Junta: a1_cabildo did not complete');
+  }
+  if (await hasEnded(page)) return;
+
+  // Act I — the five workers raise the cuartel beside the camp.
+  const workers = (await units(page, 'worker')).map((u) => u.id);
+  await select(page, workers);
+  await look(page, null, 28, 'workers');
+  const cuartel = await place(page, 'barracks', { x: plan.base.x + 8, z: plan.base.z - 6 });
+  if (!cuartel && !(await hasEnded(page))) throw new Error('Junta: could not place the cuartel');
+  if (cuartel) await issue(page, { kind: 'build', entityId: cuartel }, workers);
+  if (
+    (await waitObjective(page, 'a1_cuartel', 'completed', 180_000, deadline, () => look(page, null, 26, 'workers'))) !==
+      'completed' &&
+    !(await hasEnded(page))
+  ) {
+    throw new Error('Junta: a1_cuartel did not complete');
+  }
+  if (await hasEnded(page)) return;
+
+  // Act II — La Apacheta: reach the pass, then hold it while the royalist vanguard arrives.
+  await move(page, await column(), plan.apacheta, true);
+  await look(page, null, 30, 'column');
+  if (
+    (await waitObjective(page, 'a2_apacheta', 'completed', 240_000, deadline, () => look(page, null, 30, 'column'))) !==
+      'completed' &&
+    !(await hasEnded(page))
+  ) {
+    throw new Error('Junta: a2_apacheta did not complete');
+  }
+  if (await hasEnded(page)) return;
+  if (!(await holdLine(page, 'a2_batalla', plan.batalla, deadline)) && !(await hasEnded(page))) {
+    throw new Error('Junta: a2_batalla did not complete');
+  }
+  if (await hasEnded(page)) return;
+
+  // Act III — Umachiri: the last resistance buys the Junta its withdrawal.
+  await move(page, await column(), plan.umachiri, true);
+  await look(page, null, 30, 'column');
+  if (
+    (await waitObjective(page, 'a3_umachiri', 'completed', 300_000, deadline, () => look(page, null, 30, 'column'))) !==
+      'completed' &&
+    !(await hasEnded(page))
+  ) {
+    throw new Error('Junta: a3_umachiri did not complete');
+  }
+  if (await hasEnded(page)) return;
+  if (!(await holdLine(page, 'a3_resistir', plan.resistir, deadline)) && !(await hasEnded(page))) {
+    throw new Error('Junta: a3_resistir did not complete');
+  }
+  await page.waitForFunction(() => window.game.gameEnded === true, null, { timeout: 60_000 }).catch(() => {});
+}
+
+/** Keep the column inside a hold ring until its clock runs out, re-ordering the stragglers. */
+async function holdLine(page, id, spec, deadline) {
+  const until = Math.min(Date.now() + (spec.time + 180) * 1000, deadline);
+  const radius = spec.radius ?? 8;
+  const want = Math.max(1, spec.minUnits ?? 1);
+  let lastOrder = 0;
+  let lastLook = 0;
+  while (Date.now() < until) {
+    const snap = await page.evaluate(
+      ({ id, point, radius }) => {
+        const g = window.game;
+        const m = g.mission;
+        const line = [...g.units.values()].filter(
+          (u) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.tag !== 'pumacahua',
+        );
+        const away = line.filter((u) => Math.hypot(u.pos.x - point.x, u.pos.z - point.z) > radius - 2);
+        const inside = line.filter((u) => Math.hypot(u.pos.x - point.x, u.pos.z - point.z) <= radius);
+        return {
+          state: m.getObjectiveState(id),
+          ended: !!m.ended,
+          inside: inside.length,
+          away: away.map((u) => u.id),
+          card: !!document.querySelector('.ed-mission-card'),
+        };
+      },
+      { id, point: spec.point, radius },
+    );
+    if (snap.card) {
+      await page.waitForTimeout(2600);
+      await page.evaluate(() => document.querySelector('.ed-mission-card')?.click());
+    }
+    if (snap.state === 'completed' || snap.ended) return snap.state;
+    if (Date.now() - lastLook > 8000) {
+      lastLook = Date.now();
+      await look(page, null, 28, 'column');
+    }
+    if (snap.inside < want && Date.now() - lastOrder > 3000) {
+      lastOrder = Date.now();
+      const ids = snap.away.length ? snap.away : await columnIds(page);
+      if (ids.length) await move(page, ids, spec.point, true);
+    }
+    await page.waitForTimeout(1000);
+  }
+  return null;
+}
+
+/** The units that form the moving column (the commander and the workers stay behind). */
+async function columnIds(page) {
+  return (await units(page)).filter((u) => u.kind !== 'worker' && u.tag !== 'pumacahua').map((u) => u.id);
+}
+
+/** Register a heritage card once a unit stands close enough for the game to accept the visit. */
+async function visitWhenNear(page, heritageId, point, radius, timeoutMs, deadline) {
+  const until = Math.min(Date.now() + timeoutMs, deadline);
+  while (Date.now() < until) {
+    const done = await page.evaluate(
+      ({ heritageId, point, radius }) => {
+        const g = window.game;
+        if (g.mission?.ended) return false;
+        if (g.isHeritageVisited(heritageId)) return true;
+        const near = [...g.units.values()].some(
+          (u) => u.owner === 0 && !u.dead && Math.hypot(u.pos.x - point.x, u.pos.z - point.z) <= radius,
+        );
+        return near && g.visitHeritage(heritageId);
+      },
+      { heritageId, point, radius },
+    );
+    if (done) return true;
+    await page.waitForTimeout(600);
+  }
+  return false;
+}
+
+/** Hide the tutorial panel for a full-mission capture; the briefing still teaches the controls. */
+async function hideTutorial(page) {
+  await page.addStyleTag({ content: '#ed-tutorial { display: none !important; }' });
 }
 
 async function hasEnded(page) {
@@ -449,6 +631,21 @@ async function readPlan(page) {
     const memory = (tag) =>
       m.def.triggers.flatMap((t) => t.effects).find((fx) => fx.type === 'memory' && fx.tag === tag);
     const heritage = objective('a2_huanacaure');
+    const inspect = objective('a1_cabildo');
+    const inspectHeritage = inspect?.heritageIds?.[0] ?? null;
+    const proxy = inspectHeritage
+      ? window.game.siteDef?.heritageProxies?.find((entry) => entry.id === inspectHeritage)
+      : null;
+    const holdSpec = (id) => {
+      const goal = objective(id);
+      if (!goal?.pos) return null;
+      return {
+        point: point(goal.pos),
+        radius: goal.radius ?? 8,
+        minUnits: goal.minUnits ?? 1,
+        time: goal.time ?? 0,
+      };
+    };
     return {
       start: objective('a1_salida')?.pos ? point(objective('a1_salida').pos) : null,
       heritage: heritage?.pos ? point(heritage.pos) : null,
@@ -458,6 +655,14 @@ async function readPlan(page) {
       tamboQuiro: memory('ayar_cachi')?.pos ? point(memory('ayar_cachi').pos) : null,
       hualla: objective('a3_hualla')?.pos ? point(objective('a3_hualla').pos) : null,
       site: window.game.siteCenter ? { ...window.game.siteCenter } : null,
+      base: window.game.playerCenter(0),
+      cabildo: inspect?.pos ? point(inspect.pos) : null,
+      cabildoHeritage: inspectHeritage,
+      church: proxy ? { x: proxy.x, z: proxy.z } : null,
+      apacheta: objective('a2_apacheta')?.pos ? point(objective('a2_apacheta').pos) : null,
+      umachiri: objective('a3_umachiri')?.pos ? point(objective('a3_umachiri').pos) : null,
+      batalla: holdSpec('a2_batalla'),
+      resistir: holdSpec('a3_resistir'),
     };
   });
 }
@@ -475,33 +680,33 @@ async function look(page, point, zoom, who = 'all') {
           if (u.owner !== 0 || u.dead) continue;
           if (who === 'workers' && u.kind !== 'worker') continue;
           if (who === 'army' && u.kind === 'worker') continue;
+          // The Junta parks Pumacahua at the camp; averaging him with the marching column lands the
+          // camera on empty grass between the two.
+          if (who === 'column' && (u.kind === 'worker' || u.tag === 'pumacahua')) continue;
           group.push(u);
         }
         if (group.length) {
-          if (who === 'all') {
-            // Frame the whole party once, at the opening.
-            let minX = Infinity;
-            let maxX = -Infinity;
-            let minZ = Infinity;
-            let maxZ = -Infinity;
-            for (const u of group) {
-              x += u.pos.x;
-              z += u.pos.z;
-              minX = Math.min(minX, u.pos.x);
-              maxX = Math.max(maxX, u.pos.x);
-              minZ = Math.min(minZ, u.pos.z);
-              maxZ = Math.max(maxZ, u.pos.z);
-            }
-            x /= group.length;
-            z /= group.length;
-            const spread = Math.max(maxX - minX, maxZ - minZ);
-            zoom = Math.max(zoom, Math.min(72, spread * 1.1 + 6));
-          } else {
-            // Follow a working unit, not the empty centroid of a spread group.
-            const lead = group[0];
-            x = lead.pos.x;
-            z = lead.pos.z;
+          // Frame the group itself: a lone straggler in empty terrain reads as a broken capture, and the
+          // hunt spreads the workers across several carcasses.
+          let minX = Infinity;
+          let maxX = -Infinity;
+          let minZ = Infinity;
+          let maxZ = -Infinity;
+          for (const u of group) {
+            x += u.pos.x;
+            z += u.pos.z;
+            minX = Math.min(minX, u.pos.x);
+            maxX = Math.max(maxX, u.pos.x);
+            minZ = Math.min(minZ, u.pos.z);
+            maxZ = Math.max(maxZ, u.pos.z);
           }
+          x /= group.length;
+          z /= group.length;
+          const spread = Math.max(maxX - minX, maxZ - minZ);
+          zoom =
+            who === 'all'
+              ? Math.max(zoom, Math.min(72, spread * 1.1 + 6))
+              : Math.max(zoom, Math.min(40, spread * 0.9 + 14));
         } else {
           const c = g.playerCenter(0);
           x = c.x;
@@ -583,6 +788,32 @@ async function gather(page) {
         false,
       );
     });
+  });
+}
+
+/** Send the idle workers back to the nearest live carcass: a herd runs out mid-act and stalls the gate. */
+async function regather(page) {
+  await page.evaluate(() => {
+    const g = window.game;
+    const hunts = [...g.resourceNodes.values()].filter((n) => n.kind === 'hunt' && !n.dead);
+    if (hunts.length === 0) return;
+    for (const worker of g.units.values()) {
+      if (worker.owner !== 0 || worker.dead || worker.kind !== 'worker') continue;
+      if (worker.orderQueue.length > 0 || worker.carryCountNow() > 0) continue;
+      let best = hunts[0];
+      let bestDist = Infinity;
+      for (const node of hunts) {
+        const d = Math.hypot(node.pos.x - worker.pos.x, node.pos.z - worker.pos.z);
+        if (d < bestDist) {
+          bestDist = d;
+          best = node;
+        }
+      }
+      g.executeCommand(
+        { kind: 'order', unitIds: [worker.id], order: { kind: 'gather', entityId: best.id }, clear: true },
+        false,
+      );
+    }
   });
 }
 

@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { Tutorial, tutorialText } from '../src/campaign/Tutorial';
 import { DEFAULT_KEYMAP } from '../src/core/hotkeys';
-import { tutorialForMission } from '../src/campaign/defs/tutorials';
+import { TUTORIALS, tutorialForMission } from '../src/campaign/defs/tutorials';
 import type { TutorialDef } from '../src/campaign/types';
-import { UnitKind } from '../src/core/types';
+import { BuildingKind, UnitKind } from '../src/core/types';
 
 function stubGame() {
   return { buildings: new Map(), units: new Map() };
@@ -262,4 +262,22 @@ it('walks the player through the canal gate in Caral', () => {
   const canal = tutorialForMission('m1_caral')!.steps.find((step) => step.id === 'canal');
   expect(canal?.gateObjective).toBe('a2_canal');
   expect(canal?.check).toMatchObject({ type: 'objectiveCompleted', objectiveId: 'a2_canal' });
+});
+
+describe('tutorial build baselines', () => {
+  it('bases every build step on its own building kind', () => {
+    const baseline = new Map([
+      [BuildingKind.HOUSE, 'houses'],
+      [BuildingKind.BARRACKS, 'barracks'],
+      [BuildingKind.FARM, 'farms'],
+      [BuildingKind.MILL, 'mills'],
+      [BuildingKind.MARKET, 'markets'],
+    ]);
+    for (const [missionId, def] of Object.entries(TUTORIALS)) {
+      for (const step of def.steps) {
+        if (step.check.type !== 'build') continue;
+        expect(step.check.baseline, `${missionId}/${step.id}`).toBe(baseline.get(step.check.buildingKind));
+      }
+    }
+  });
 });
