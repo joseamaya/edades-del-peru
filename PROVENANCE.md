@@ -459,10 +459,12 @@ slot is absent (offline / without assets).
   (structural late 634,134/357). No new fauna species and no andes rock GLB: the existing
   llama/vicuña/condor groups and the site's procedural rocks were kept.
 - **Review**: authorized by the project owner on 2026-11-17 as the E7 production pass; the captures and the
-  3X recording are the review artifacts. The 3X recording is a local `review/` artifact (935 s JSON /
-  910.6 s MP4) that reaches Act III and ends with Manco lost at the Huanacaure hold: it is not a completed
-  victory run. It was produced with the local recorder's uncommitted working-tree changes, so it is not
-  reproducible from the committed recorder alone. No Blender review gate applies to in-engine captures.
+  3X recording are the review artifacts. The 3X recording is a local `review/` artifact (188 s JSON /
+  181.5 s MP4) that completes Inticancha in victory; Manco falls and `a3_riego`/`a3_hualla` stay
+  unmet, all optional goals. The
+  worker-hold fix is committed in the recorder, so the run is reproducible with
+  `yarn record --mission=m_tambotoco --mode=full --speed=3`. Contact sheet:
+  `docs/media/m_tambotoco-3x-contact.webp`. No Blender review gate applies to in-engine captures.
 
 ### Tambotoco E6 reference captures (in-engine evidence)
 

@@ -390,7 +390,7 @@ certainty"; the historical basis is [`../historia/campanas/tambotoco.md`](../his
    (captured as `docs/media/tambotoco-e7-{hero,shrine,yard}.webp`). The
    hamlet props, field cairns and plaza jars were reverted by the late frames cap; unique outfits/portraits
    for the eight Ayar, a hand-sculpted body, an andes rock GLB and new fauna species remain future work. The
-   3 x 3 E7 captures and the 3X recording (Act III; Manco lost at the hold, not a victory run) are the
+   3 x 3 E7 captures and the 3X recording (a victory; the optional goals are missed) are the
    review artifacts.
 
 **Standardization.** After the pilot, future campaigns share the quality bar, the pipeline, the palette
