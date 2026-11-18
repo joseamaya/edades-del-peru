@@ -73,12 +73,13 @@ export type RigVariant =
   | VehicleRigVariant;
 
 /** Animation states mapped to clips; `eat` is fauna-only. A rig may omit any state except `idle`. */
-export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'gather' | 'build' | 'attack' | 'eat';
+export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'run' | 'gather' | 'build' | 'attack' | 'eat';
 
 export const RIG_CLIP_STATES: readonly RigClipState[] = [
   'idle',
   'walk',
   'walk_carry',
+  'run',
   'gather',
   'build',
   'attack',
@@ -205,6 +206,8 @@ export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigCli
 export const WALK_CLIP_REFERENCE_SPEED = 1.4;
 export const WALK_CLIP_RATE_MIN = 0.6;
 export const WALK_CLIP_RATE_MAX = 1.6;
+/** Speed above which a rig with a `run` clip switches from its walk/trot to its gallop. */
+export const RUN_CLIP_SPEED_THRESHOLD = 1.9;
 
 export interface RigStateInput {
   moving: boolean;
@@ -212,6 +215,7 @@ export interface RigStateInput {
   building: boolean;
   attacking: boolean;
   carrying: boolean;
+  running?: boolean;
 }
 
 /**
@@ -219,7 +223,10 @@ export interface RigStateInput {
  * Walking with a load uses the carry locomotion clip, never a work gesture.
  */
 export function rigClipStateFor(input: RigStateInput): RigClipState {
-  if (input.moving) return input.carrying ? 'walk_carry' : 'walk';
+  if (input.moving) {
+    if (input.running && !input.carrying) return 'run';
+    return input.carrying ? 'walk_carry' : 'walk';
+  }
   if (input.gathering) return 'gather';
   if (input.building) return 'build';
   if (input.attacking) return 'attack';

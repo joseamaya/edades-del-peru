@@ -1,6 +1,12 @@
 import * as THREE from 'three';
 import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
-import { RIG_CLIP_STATES, RIG_VARIANT_CLIPS, type RigClipState, type RigVariant } from '../model/defs/modelAssets';
+import {
+  RIG_CLIP_STATES,
+  RIG_VARIANT_CLIPS,
+  WALK_CLIP_REFERENCE_SPEED,
+  type RigClipState,
+  type RigVariant,
+} from '../model/defs/modelAssets';
 import type { LoadedModelAsset } from './ModelAssets';
 import { applyRigVariant, type RigVariantHandle } from './rigVariants';
 import { limitShadowCasters } from './shadowCasters';
@@ -91,10 +97,24 @@ export class RigInstance {
     return this.actions.has(state);
   }
 
+  /** World units/s the locomotion clip was authored for, or null outside locomotion. */
+  referenceSpeed(state: RigClipState): number | null {
+    if (state === 'walk' || state === 'walk_carry') {
+      return this.asset.definition.walkReferenceSpeed ?? WALK_CLIP_REFERENCE_SPEED;
+    }
+    if (state === 'run') {
+      return (
+        this.asset.definition.runReferenceSpeed ?? this.asset.definition.walkReferenceSpeed ?? WALK_CLIP_REFERENCE_SPEED
+      );
+    }
+    return null;
+  }
+
   /** Crossfade to a gameplay state; missing states fall back to `idle`. */
   play(state: RigClipState, fade = 0.2): void {
     if (this.disposed) return;
-    const actual = this.actions.has(state) ? state : 'idle';
+    // A rig without a gallop should keep its walk/trot, not freeze in idle.
+    const actual = this.actions.has(state) ? state : state === 'run' && this.actions.has('walk') ? 'walk' : 'idle';
     if (state === 'attack' && actual === 'idle' && !this.warnedMissingAttack) {
       this.warnedMissingAttack = true;
       console.warn(`[rig] ${this.root.name} (${this.variantId ?? 'no variant'}) has no attack clip`);

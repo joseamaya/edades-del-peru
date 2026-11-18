@@ -104,9 +104,9 @@ field commander is Bolognesi. Do not add him to the mission's `commanders` list 
 
 ## Animation minimums
 
-The shared rig states are `idle | walk | walk_carry | gather | build | attack | eat` (`RIG_CLIP_STATES` in
-`src/model/defs/modelAssets.ts`). Only `idle` is mandatory; a missing state falls back to `idle`. `eat` is
-fauna-only.
+The shared rig states are `idle | walk | walk_carry | run | gather | build | attack | eat` (`RIG_CLIP_STATES` in
+`src/model/defs/modelAssets.ts`). Only `idle` is mandatory; a missing state falls back to `idle`, except `run`,
+which falls back to `walk`. `eat` is fauna-only.
 
 - A named commander who is tagged to a unit uses the clip set of that unit role (worker, scout, soldier,
   ranged, mounted, siege or vehicle). A commander with no field unit has no field animation.

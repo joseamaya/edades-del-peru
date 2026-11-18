@@ -20,6 +20,10 @@ export interface ModelAssetDefinition {
   readonly yawOffset: number;
   /** Gameplay state -> clip name in the GLB. `idle` is required. */
   readonly clips: Partial<Record<RigClipState, string>>;
+  /** World units/s the walk/trot clip was authored for; defaults to the shared 1.4. */
+  readonly walkReferenceSpeed?: number;
+  /** World units/s the run/gallop clip was authored for; defaults to the walk reference. */
+  readonly runReferenceSpeed?: number;
   /** Optional one-shot clip used by `RigInstance.playDeath`. */
   readonly deathClip?: string;
   /** Ground the bind-pose feet at y=0 (units and terrestrial fauna). */
@@ -125,6 +129,11 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
   mounted_rig: {
     url: MOUNTED_RIG_URL,
     ...PLATFORM_RIG,
+    clips: { ...PLATFORM_RIG.clips, run: 'Gallop_Loop' },
+    // The horse's Walk_Loop is a working trot and Gallop_Loop a full gallop;
+    // their cadence follows the unit speed instead of the shared infantry 1.4.
+    walkReferenceSpeed: 1.6,
+    runReferenceSpeed: 2.2,
   },
   /**
    * Project-authored siege crew and vehicles. The source is
