@@ -430,7 +430,8 @@ test('a mid-mission camera beat yields to manual input', async ({ page }) => {
     g.camera.moveTo(centre, centre, true);
     g.camera.setHeight(40);
     for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
-    g.camera.flyTo(centre + 60, centre, 40, 1.8, false);
+    // Fly left, then ask to go right: only a cancelled flight can end right of the centre.
+    g.camera.flyTo(centre - 60, centre, 40, 1.8, false);
     g.update(1 / 60, 0);
     const flying = g.camera.isFlying();
     const opening = g.camera.isOpeningFlight();
