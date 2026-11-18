@@ -352,7 +352,7 @@ export interface MissionAtmosphere {
   sunWarmth?: number;
 }
 
-export type TutorialBuildBaseline = 'houses' | 'farms' | 'mills' | 'markets';
+export type TutorialBuildBaseline = 'houses' | 'barracks' | 'farms' | 'mills' | 'markets';
 
 export type TutorialCheck =
   | { type: 'selectUnit'; unitKind: UnitKind }

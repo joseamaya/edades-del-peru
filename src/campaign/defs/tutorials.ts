@@ -3,7 +3,7 @@ import type { TutorialDef } from '../types';
 
 const buildBottom = '#ed-bottom';
 
-const TUTORIALS: Record<string, TutorialDef> = {
+export const TUTORIALS: Record<string, TutorialDef> = {
   // The objectives say what to do and where; the tutorial only teaches the control a step needs, the
   // first time it is needed, so a player who opens the Inca campaign first can play it.
   m_tambotoco: {
@@ -62,7 +62,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       {
         id: 'cabildo',
         text: 'Levanta el cabildo y la plaza junto al Rímac.',
-        check: { type: 'build', buildingKind: BuildingKind.MARKET, baseline: 'houses' },
+        check: { type: 'build', buildingKind: BuildingKind.MARKET, baseline: 'markets' },
       },
       {
         id: 'jinetes',
@@ -97,7 +97,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       {
         id: 'cuartel',
         text: 'Levanta un cuartel: la Junta necesita instruir milicias antes de marchar.',
-        check: { type: 'build', buildingKind: BuildingKind.BARRACKS, baseline: 'houses' },
+        check: { type: 'build', buildingKind: BuildingKind.BARRACKS, baseline: 'barracks' },
       },
       {
         id: 'fusiles',
@@ -213,7 +213,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       {
         id: 'cuartel',
         text: 'Levanta un cuartel: la rebelión necesita instruir milicias y reunir a los curacas antes de marchar.',
-        check: { type: 'build', buildingKind: BuildingKind.BARRACKS, baseline: 'houses' },
+        check: { type: 'build', buildingKind: BuildingKind.BARRACKS, baseline: 'barracks' },
       },
       {
         id: 'avituallamiento',
