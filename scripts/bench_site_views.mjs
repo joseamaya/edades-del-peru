@@ -101,11 +101,11 @@ for (const row of rows) {
     const prev = readJson(row.out);
     if (prev && prev.gpu && !prev.gpu.software) continue;
   }
-  fs.rmSync(row.out, { force: true });
   if (dryRun) {
     console.log(`node ${argsFor(row).join(' ')}`);
     continue;
   }
+  fs.rmSync(row.out, { force: true });
   let data = null;
   for (let attempt = 0; attempt < 2 && !data; attempt++) {
     const result = spawnSync(process.execPath, argsFor(row), { stdio: 'inherit' });
@@ -118,8 +118,7 @@ for (const row of rows) {
       continue;
     }
     if (result.status !== 0 && !data) {
-      console.error(`[site-views] FAILED ${row.mission} ${row.stage} ${row.mode} ${row.viewport}`);
-      process.exitCode = 1;
+      console.error(`[site-views] attempt failed on ${path.basename(row.out)}; retrying`);
     }
   }
   if (!data) {
