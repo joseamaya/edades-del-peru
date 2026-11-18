@@ -984,6 +984,15 @@ Used only as FLUX.2 multi-reference inputs (never redistributed) for the Andean 
   attested likenesses. Data and status live in `src/model/defs/commanders.ts`; pre-Hispanic figures are
   marked `abstraction`. Roles, dates and events follow [`docs/historia/`](./docs/historia/).
 
+## D2 model-mission site-review captures (in-engine evidence)
+
+- **Location**: [`docs/media/site-review-2026-11-17.webp`](docs/media/site-review-2026-11-17.webp)
+  (1600×894 WebP q60 contact sheet).
+- **Source**: `node scripts/capture_site_review.mjs` on the current build, 1600×900, seed 777, HUD hidden,
+  each site advanced to its final phase; individual PNGs stay in the gitignored `review/site-review/`.
+- **Content**: one current site view per mission for m3–m9, m6b, Tambotoco, Lima and La Junta. These are
+  review evidence for the pending D2 art review, not approvals and not historical photographs.
+
 ## External references (technical only, no code)
 
 - [VOIDSTRIKE](https://github.com/braedonsaunders/voidstrike) (MIT): only the **idea** of the
