@@ -829,9 +829,11 @@ Definition of Done and the building audit see
 
 Local `*.glb` files live in `src/assets/models/`. The registry (`src/rendering/modelAssetRegistry.ts`) maps an
 asset id to its bundled URL, scale, yaw offset and **clip names**; the game states are
-`idle | walk | walk_carry | gather | build | attack | eat` (`RIG_CLIP_STATES` in
+`idle | walk | walk_carry | run | gather | build | attack | eat` (`RIG_CLIP_STATES` in
 `src/model/defs/modelAssets.ts`; `eat` is used by fauna). Only `idle` is mandatory; a missing state falls back to
-`idle`, and a requested attack with no action logs a `[rig]` warning instead of failing silently. Death uses the rig's `Death` clip when present (`RigInstance.playDeath`) and the shared topple/corpse FX; rigs without one freeze their current pose.
+`idle`, except `run`, which falls back to `walk` so a rig without a gallop keeps its locomotion. A requested
+attack with no action logs a `[rig]` warning instead of failing silently. Death uses the rig's `Death` clip when
+present (`RigInstance.playDeath`) and the shared topple/corpse FX; rigs without one freeze their current pose.
 
 Audit of the path this pipeline mirrors: procedural templates are cached by `type|scale|barrel|civ|era`
 (plus a `|late` suffix on the late-period farm),
@@ -851,16 +853,23 @@ visible tunic and the macana material to tint them with the commander accent, an
 view; the shared rig geometry is untouched. The order-driven poses are captured by
 `node scripts/shots_evidence.mjs --scene=caral-worker-tasks --out=review/evidence/caral-worker-tasks`.
 
-The mounted rig (`mounted_rig.glb`, #241a) is a project-authored low-poly horse and rider built by
-`scripts/blender/build_mounted_rig.py`. It is a skinned 30-bone rig with four clips (`Idle_Loop`, `Walk_Loop`,
-`Attack`, `Death`), and it maps `HUSSAR`/`CAVALRY` in the Viceroyalty and Republic eras: the late-colonial rebel and the
-four post-colonial civilizations. The rider coat, trim, trousers and headwear are tinted/selected by
-`src/rendering/mountedAttire.ts` from `src/model/defs/mountedCharacters.ts`; the horse is brown by design and
-is not a breed reconstruction. `Attack` is the mounted charge/sword swing; `Death` plays once during the topple when the rig provides it. There is no mounted mapping before 1532, and `modelAssetIdsForMatch` preloads the asset for
-the affected periods. The `.blend` source is in `art-src/blender/scenes/mounted_rig.blend` (Git LFS); the GLB
-SHA-256 is recorded in `PROVENANCE.md`. Measure it with
-`yarn bench --scenario=mounted --units=4,12,24 --assert`; `yarn bench:check` includes the mounted, siege, tank and vehicles scenarios
-(the merged meshes render at ~27 draws and ~10.1k triangles per unit including the shadow pass).
+The mounted rig (`mounted_rig.glb`) is a project-authored low-poly horse and rider built by
+`scripts/blender/build_mounted_rig.py`. It is a 34-bone rig with five clips (`Idle_Loop`, `Walk_Loop` trot,
+`Gallop_Loop`, `Attack`, `Death`), and it maps `HUSSAR`/`CAVALRY` in the Viceroyalty and Republic eras: the
+late-colonial rebel and the four post-colonial civilizations. The horse uses a 1.62 m withers and ~2.7 m
+mounted height against the 1.86 m infantry; its walk clip is a working trot and `run` switches to the gallop
+above the rig's `runSpeedThreshold` (or immediately for an `attack`/`attack_move` charge). Per-asset
+`walkReferenceSpeed`/`runReferenceSpeed` and the `RUN_CLIP_RATE_MAX` ceiling keep the cadence matched to the
+unit velocity instead of clamping the gallop at the infantry walk ceiling. The rider coat, trim, trousers and
+headwear are tinted/selected by
+`src/rendering/mountedAttire.ts` from `src/model/defs/mountedCharacters.ts`; the coat/points palette varies by
+variant as a presentation abstraction and is not a breed reconstruction. `Attack` is the mounted charge/sword
+swing; `Death` plays once during the topple when the rig provides it. There is no mounted mapping before 1532,
+and `modelAssetIdsForMatch` preloads the asset for the affected periods. The `.blend` source is in
+`art-src/blender/scenes/mounted_rig.blend` (Git LFS); the GLB SHA-256 is recorded in `PROVENANCE.md`. Measure it
+with `yarn bench --scenario=mounted --units=4,12,24 --assert`; `yarn bench:check` includes the mounted, siege,
+tank and vehicles scenarios. The current merged rig renders at ~20 draws and ~8.4k triangles per unit including
+the shadow pass, inside the 40-draw / 12k-triangle budget.
 
 The siege rig (`siege_rig.glb`, #241b) is the project-authored companion for `ARTILLERY`, `MORTAR` and
 `TANK`: a 33-bone rig with hidden cannon/mortar/crew/tank groups, four clips and per-culture palette variants

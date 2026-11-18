@@ -511,22 +511,40 @@ describe('rigged model assets', () => {
     const asset = await loadModelAssetFromData('mounted_rig', buffer);
     expect(asset.clipNames.has('Idle_Loop')).toBe(true);
     expect(asset.clipNames.has('Walk_Loop')).toBe(true);
+    expect(asset.clipNames.has('Gallop_Loop')).toBe(true);
     expect(asset.clipNames.has('Attack')).toBe(true);
     const rig = acquireRig('mounted_rig', 'mounted_realistas')!;
     expect(rig.hasState('idle')).toBe(true);
     expect(rig.hasState('walk')).toBe(true);
+    expect(rig.hasState('run')).toBe(true);
     expect(rig.hasState('attack')).toBe(true);
     expect(rig.hasDeathClip()).toBe(true);
+    expect(rig.referenceSpeed('walk')).toBe(2.4);
+    expect(rig.referenceSpeed('run')).toBe(2.2);
+    expect(rig.runSpeedThreshold()).toBe(3.8);
     expect(rig.root.getObjectByName('GEO-Hat-Morion-Crown')?.visible).toBe(true);
     expect(rig.root.getObjectByName('GEO-Hat-Bicorn-Crown')?.visible).toBe(false);
     const trousers = rig.root.getObjectByName('GEO-Merged-Rider-Trousers') as THREE.Mesh;
     expect((trousers.material as THREE.MeshStandardMaterial).color.getHex()).toBe(
       MOUNTED_SPECS.mounted_realistas.trousers,
     );
+    const horse = rig.root.getObjectByName('GEO-Merged-Horse') as THREE.Mesh;
+    expect((horse.material as THREE.MeshStandardMaterial).color.getHex()).toBe(
+      MOUNTED_SPECS.mounted_realistas.horseCoat,
+    );
     const sword = rig.root.getObjectByName('GEO-Rider-Sword-Blade') as THREE.Mesh;
     expect((sword.material as THREE.MeshStandardMaterial).color.getHex()).not.toBe(
       MOUNTED_SPECS.mounted_realistas.hatColor,
     );
+    rig.dispose();
+  });
+
+  it('falls back from run to walk on rigs without a gallop', async () => {
+    await load();
+    const rig = acquireRig('ual_mannequin')!;
+    rig.play('run', 0);
+    expect(rig.currentState).toBe('walk');
+    expect(rig.currentClipName).toBe('Walk_Loop');
     rig.dispose();
   });
 
@@ -921,6 +939,16 @@ describe('rigged model assets', () => {
     expect(rigClipStateFor({ moving: true, gathering: true, building: false, attacking: true, carrying: false })).toBe(
       'walk',
     );
+    expect(
+      rigClipStateFor({
+        moving: true,
+        gathering: false,
+        building: false,
+        attacking: false,
+        carrying: false,
+        running: true,
+      }),
+    ).toBe('run');
     expect(rigClipStateFor({ moving: true, gathering: false, building: false, attacking: false, carrying: true })).toBe(
       'walk_carry',
     );

@@ -8,7 +8,7 @@ import { getUnitModel } from '../model/defs/units';
 import {
   unitModelAsset,
   rigClipStateFor,
-  WALK_CLIP_REFERENCE_SPEED,
+  RUN_CLIP_RATE_MAX,
   WALK_CLIP_RATE_MIN,
   WALK_CLIP_RATE_MAX,
 } from '../model/defs/modelAssets';
@@ -298,20 +298,21 @@ export class UnitView {
       const speed = Math.hypot(u.vel.x, u.vel.z);
       // Preparing a field is digging with the stick, not raising a building: play the work clip.
       const tilling = working && order === 'build' && !!u.ctx?.buildings.get(u.orderQueue[0]?.entityId ?? -1)?.isFarm;
+      const charging = order === 'attack' || order === 'attack_move';
+      const running = this.rig.hasState('run') && (charging || speed > this.rig.runSpeedThreshold());
       const state = rigClipStateFor({
         moving: speed > 0.15,
         gathering: working && (order === 'gather' || tilling),
         building: working && order === 'build' && !tilling,
         attacking: u.isAttackingTarget() || (order === 'attack' && u.targetEntityId !== null),
         carrying: u.carryCountNow() > 0,
+        running,
       });
       this.rig.play(state);
       this.animateFishing(state === 'gather', time);
-      this.rig.setPlaybackRate(
-        state === 'walk' || state === 'walk_carry'
-          ? clamp(speed / WALK_CLIP_REFERENCE_SPEED, WALK_CLIP_RATE_MIN, WALK_CLIP_RATE_MAX)
-          : 1,
-      );
+      const reference = this.rig.referenceSpeed(state);
+      const maxRate = state === 'run' ? RUN_CLIP_RATE_MAX : WALK_CLIP_RATE_MAX;
+      this.rig.setPlaybackRate(reference ? clamp(speed / reference, WALK_CLIP_RATE_MIN, maxRate) : 1);
       this.rig.update(dt);
       this.bobY = 0;
       return;

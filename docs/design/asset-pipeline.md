@@ -64,12 +64,12 @@ game integration               StaticModel / modelAssets / UI
    dossier; a pre-Hispanic face is an abstraction.
 2. Model the body/garments in Blender. Use the shared humanoid skeleton; do not bake a unique scale or
    orientation into the asset.
-3. Produce the mandatory `idle` clip and, where the role needs them, `walk`, `walk_carry`, `gather`, `build`
-   and `attack`. `Death` is optional. Root motion is ignored. Clip names are declared in the registry, not
-   inferred.
-4. Export the GLB to `src/assets/models/` and run `yarn art:models --only=<file>` to meshopt-compress the
-   game copy. Add the id to `ModelAssetId`, the variant to `RigVariant` and the clip overrides to
-   `modelAssets.ts`; register the URL in `modelAssetRegistry.ts`.
+3. Produce the mandatory `idle` clip and, where the role needs them, `walk`, `walk_carry`, `run`, `gather`,
+   `build` and `attack`. `Death` is optional. Root motion is ignored. Clip names are declared in the registry,
+   not inferred.
+4. Export the GLB to `src/assets/models/` and run `yarn art:models --only=<id>` (the basename without
+   `.glb`, e.g. `mounted_rig`) to meshopt-compress the game copy. Add the id to `ModelAssetId`, the variant
+   to `RigVariant` and the clip overrides to `modelAssets.ts`; register the URL in `modelAssetRegistry.ts`.
 5. Keep the procedural model as the fallback. The simulation never depends on the GLB.
 6. Preview with `?rig=1` (`window.__rigDemo`) and in a real mission; check scale, shadow flags, accessories
    and the `RigClipState` fallbacks.
