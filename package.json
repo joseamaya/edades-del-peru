@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Edades del Per\u00fa \u2014 Peruvian history RTS (Caral to present) in Three.js",
+  "description": "Edades del Perú — Peruvian history RTS (Caral to present) in Three.js",
   "license": "MIT",
   "author": "Miguel Amaya <miguel.amaya99@gmail.com>",
   "repository": {

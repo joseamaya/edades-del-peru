@@ -12,14 +12,15 @@ reference iGPU and decides what to do with the result. The per-mission structura
 - Intel i7-13700, Intel Graphics (RPL-S) via ANGLE/Vulkan in headless Chromium. The pass fails a row
   instead of recording it if the page falls back to SwiftShader.
 - `yarn bench:site-views` (new) runs, for every mission and stage:
-  - one **structural** row at 1600×900 with `--assert` (the viewport where the ratchet caps are
-    calibrated), which owns the triangle/call/mesh/material counts;
+  - one **structural** row at 1600×900, which owns the triangle/call/mesh/material counts. It runs
+    with `--gpu` and no `--assert`: the caps are calibrated on SwiftShader, so the software cap is
+    shown for context, not enforced against the hardware-high row;
   - **shipped-frame** rows at 1280×800 and 1600×900 (`--frames --quality=high`), which own the frame
     time. Post-processing, the cinematic grade and water refraction are on.
 - The quality governor is pinned to `high` and frozen for the sample, so these are worst-case numbers,
   not the low/medium presets the governor falls back to. Each frame value is a 2 s rAF sample.
-- The three tightest late views are also sampled at `--quality=low` (the same preset `?low=1` applies)
-  to record the governor's fallback.
+- The three tightest late views are also sampled with `yarn bench:site-views --low` at the low preset
+  (the same preset `?low=1` applies) to record the governor's fallback.
 - Raw per-row JSON and `summary.md` are written to `review/site-views/` (gitignored); the command is
   reproducible from this commit.
 
@@ -64,20 +65,20 @@ views into ~46–50 FPS views, so the governor's fallback is doing its job.
 - **Frame time:** every view is at or above **28 FPS p50 at 1600×900** and **32 FPS at 1280×800** in the
   worst-case high preset. The tightest are m8 late (28.2), m6b late (29.2) and m7 late (30.4). The
   governor steps down below its 45 FPS window, so low/medium stay above 30 by construction.
-- **Counts:** the hardware-high scene is 0.62–1.27M triangles, 187–911 calls and 146–870 materials. The
-  CI ratchet is **SwiftShader** and is intentionally lower; for example m4 measures 362,911 / 187 in
-  software and 618,807 / 192 here. The delta is the high-quality LOD/kit and the shadow pass, not a
-  regression. The global Tambotoco caps (500k/280 opening, 660k/360 late) and the per-mission ratchets
-  are unchanged.
-- **Late views** are 1.5–2× the opening: the unit crowds, their gear and the site's late dressing.
-  m6b late is the heaviest (1.27M / 663), m8 late has the most calls (911).
+- **Counts:** the hardware-high scene is 0.62–1.27M triangles, 192–911 calls and 146–870 materials. The
+  local SwiftShader ratchet (`yarn bench:check`, not a CI job) is intentionally lower; for example m4
+  measures 362,911 / 187 in software and 618,807 / 192 here. The delta is the high-quality LOD/kit and
+  the shadow pass, not a regression. The global Tambotoco caps (500k/280 opening, 660k/360 late) and
+  the per-mission ratchets are unchanged.
+- **Late views** add 13–46% triangles and 41–92% calls over the opening: the unit crowds, their gear and
+  the site's late dressing. m6b late is the heaviest (1.27M / 663), m8 late has the most calls (911).
 
 ## Decision
 
 1. **Accept** the measured high-quality frame times on the reference iGPU. No site view is below 28 FPS
    p50 at 1600×900, and the governor's low/medium presets are the playable path; 1280×800 is 32–48 FPS.
-2. **Do not raise the scene caps.** They remain the SwiftShader ratchet; the hardware-high counts are
-   recorded here so a future pass can compare like with like.
+2. **Do not raise the scene caps.** They remain the local SwiftShader ratchet (`yarn bench:check`); the
+   hardware-high counts are recorded here so a future pass can compare like with like.
 3. **Schedule one optimization follow-up** (backlog B13): reduce the late-view cost of m6b (1.27M tris,
    29.2 FPS) and m8 (1.14M tris, 911 calls, 28.2 FPS), starting with unit-crowd LOD/shadow silhouette
    and material consolidation. Re-measure with `yarn bench:site-views` before and after.

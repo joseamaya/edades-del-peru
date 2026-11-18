@@ -2,15 +2,14 @@
 /**
  * Run the roadmap's real-GPU site-view pass at the two recorded resolutions.
  *
- * Each mission/stage gets one structural row at 1600x900 (the viewport where the ratchet budgets are
- * calibrated, so it keeps `--assert`) and shipped-frame rows at 1280x800 and 1600x900. The structural
- * row owns the draw-call/triangle/mesh/material counts; the frame rows own the frame time. A row that
- * silently falls back to SwiftShader is discarded and retried once, because a software number would
- * misrepresent both the counts and the frame time.
+ * Each mission/stage gets one structural row at 1600x900 (hardware-high counts; the SwiftShader
+ * ratchet in `bench_scene.mjs` is shown for context but is not enforced here) and shipped-frame rows
+ * at 1280x800 and 1600x900. `--low` also samples the three tightest late views at the low preset.
+ * A row that falls back to SwiftShader is discarded and retried.
  *
  * Usage:
  *   node scripts/bench_site_views.mjs [--viewports=1280x800,1600x900] [--stages=opening,late]
- *     [--only=m3_moche_recuay,m4_wari] [--out=review/site-views] [--dry-run] [--resume]
+ *     [--only=m3_moche_recuay,m4_wari] [--out=review/site-views] [--dry-run] [--resume] [--low]
  */
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -29,6 +28,7 @@ const MISSIONS = [
   { id: 'm9_guerra_pacifico', late: true },
   { id: 'm_junta_cusco', late: false },
 ];
+const LOW_VIEWS = ['m6b_guerra_civil', 'm8_independencia', 'm7_tupac_amaru'];
 
 const viewports = cliArg('viewports', '1280x800,1600x900').split(',');
 const stageFilter = cliArg('stages', 'opening,late').split(',');
@@ -36,11 +36,14 @@ const only = cliArg('only', '').split(',').filter(Boolean);
 const outDir = cliArg('out', 'review/site-views');
 const dryRun = process.argv.includes('--dry-run');
 const resume = process.argv.includes('--resume');
+const low = process.argv.includes('--low');
 const rows = [];
 
 for (const mission of MISSIONS) {
   if (only.length && !only.includes(mission.id)) continue;
-  const stages = stageFilter.includes('late') && mission.late ? ['opening', 'late'] : ['opening'];
+  const stages = [];
+  if (stageFilter.includes('opening')) stages.push('opening');
+  if (stageFilter.includes('late') && mission.late) stages.push('late');
   for (const stage of stages) {
     const suffix = stage === 'late' ? '-late' : '';
     rows.push({
@@ -49,7 +52,7 @@ for (const mission of MISSIONS) {
       stage,
       viewport: '1600x900',
       out: path.join(outDir, `${mission.id}${suffix}-structural.json`),
-      args: ['--assert'],
+      args: [],
     });
     for (const viewport of viewports) {
       rows.push({
@@ -59,6 +62,16 @@ for (const mission of MISSIONS) {
         viewport,
         out: path.join(outDir, `${mission.id}${suffix}-frames-${viewport}.json`),
         args: ['--frames', '--quality=high', `--viewport=${viewport}`],
+      });
+    }
+    if (low && stage === 'late' && LOW_VIEWS.includes(mission.id)) {
+      rows.push({
+        mode: 'low',
+        mission: mission.id,
+        stage,
+        viewport: '1600x900',
+        out: path.join(outDir, `${mission.id}-late-low-1600x900.json`),
+        args: ['--frames', '--quality=low', '--viewport=1600x900'],
       });
     }
   }
@@ -84,7 +97,11 @@ const readJson = (file) => {
 };
 
 for (const row of rows) {
-  if (resume && fs.existsSync(row.out)) continue;
+  if (resume && fs.existsSync(row.out)) {
+    const prev = readJson(row.out);
+    if (prev && prev.gpu && !prev.gpu.software) continue;
+  }
+  fs.rmSync(row.out, { force: true });
   if (dryRun) {
     console.log(`node ${argsFor(row).join(' ')}`);
     continue;
@@ -93,15 +110,17 @@ for (const row of rows) {
   for (let attempt = 0; attempt < 2 && !data; attempt++) {
     const result = spawnSync(process.execPath, argsFor(row), { stdio: 'inherit' });
     data = readJson(row.out);
-    if (!data) break;
-    if (data.gpu?.software) {
+    if (data?.gpu?.software) {
       console.error(`[site-views] software fallback on ${path.basename(row.out)}; retrying`);
       fs.rmSync(row.out);
       data = null;
       await sleep(2500);
       continue;
     }
-    row.passed = result.status === 0;
+    if (result.status !== 0 && !data) {
+      console.error(`[site-views] FAILED ${row.mission} ${row.stage} ${row.mode} ${row.viewport}`);
+      process.exitCode = 1;
+    }
   }
   if (!data) {
     console.error(`[site-views] FAILED ${row.mission} ${row.stage} ${row.mode} ${row.viewport}`);
@@ -116,7 +135,7 @@ if (dryRun) {
 
 const fmt = (n) => (Number.isFinite(n) ? n.toFixed(1) : '—');
 const lines = [
-  '| Mode | Mission | Stage | Viewport | Frame p50/p95 (ms) | FPS p50 | Scene tris / calls | Meshes / materials | Budget |',
+  '| Mode | Mission | Stage | Viewport | Frame p50/p95 (ms) | FPS p50 | Scene tris / calls | Meshes / materials | Software cap |',
   '| --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- |',
 ];
 for (const row of rows) {
@@ -125,18 +144,18 @@ for (const row of rows) {
     lines.push(`| ${row.mode} | ${row.mission} | ${row.stage} | ${row.viewport} | missing | — | — | — | — |`);
     continue;
   }
-  const budget = data.budget;
-  const budgetState =
+  const cap =
     row.mode === 'structural'
-      ? data.scene.triangles <= budget.sceneTriangles && data.scene.calls <= budget.sceneDrawCalls
-        ? 'pass'
-        : `FAIL (${budget.sceneTriangles.toLocaleString()} / ${budget.sceneDrawCalls})`
+      ? `${data.budget.sceneTriangles.toLocaleString()} / ${data.budget.sceneDrawCalls} ` +
+        (data.scene.triangles <= data.budget.sceneTriangles && data.scene.calls <= data.budget.sceneDrawCalls
+          ? '(within)'
+          : '(over, informational)')
       : '—';
   lines.push(
     `| ${row.mode} | ${row.mission} | ${row.stage} | ${row.viewport} | ` +
-      (row.mode === 'frames' ? `${fmt(data.frame?.frameMsP50)} / ${fmt(data.frame?.frameMsP95)}` : '—') +
-      ` | ${row.mode === 'frames' ? fmt(data.frame?.fpsP50) : '—'} | ${data.scene.triangles.toLocaleString()} / ${data.scene.calls} | ` +
-      `${data.sceneStats.meshes} / ${data.sceneStats.uniqueMaterials} | ${budgetState} |`,
+      (row.mode === 'structural' ? '—' : `${fmt(data.frame?.frameMsP50)} / ${fmt(data.frame?.frameMsP95)}`) +
+      ` | ${row.mode === 'structural' ? '—' : fmt(data.frame?.fpsP50)} | ${data.scene.triangles.toLocaleString()} / ${data.scene.calls} | ` +
+      `${data.sceneStats.meshes} / ${data.sceneStats.uniqueMaterials} | ${cap} |`,
   );
 }
 const report = lines.join('\n') + '\n';
