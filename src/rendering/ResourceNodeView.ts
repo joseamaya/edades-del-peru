@@ -9,6 +9,7 @@ import { HuntHerd } from './HuntHerd';
 import type { ResourceNode } from '../entities/ResourceNode';
 import { WATER_LEVEL, type BerryShrubId, type QuarryStyle } from '../model/defs/profiles';
 import { huntSpeciesFor } from '../model/defs/wildlife';
+import type { MapType } from '../core/types';
 import type { PropKitInstances } from './PropKitInstances';
 
 // Shared caches: geometries and materials reused between nodes (fewer draw calls and GC).
@@ -119,7 +120,7 @@ export class ResourceNodeView {
   private readonly swaySeed = cosmeticRandom() * Math.PI * 2;
   private readonly timers: ReturnType<typeof setTimeout>[] = [];
   private readonly swayParts: THREE.Object3D[] = [];
-  private readonly mapType: string;
+  private readonly mapType: MapType;
   private readonly treeMgr?: TreeInstances;
   private readonly treeVariants?: TreeVariants;
   private readonly berryShrub?: BerryShrubId;
@@ -137,7 +138,7 @@ export class ResourceNodeView {
   constructor(
     private readonly scene: THREE.Scene,
     private readonly node: ResourceNode,
-    mapType = 'andes',
+    mapType: MapType = 'andes',
     look: ResourceLook = {},
   ) {
     this.mapType = mapType;

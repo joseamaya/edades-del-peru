@@ -1037,8 +1037,18 @@ downscaled 1920 shot would look smaller than the 1280 one.
     normalised to the game's stylised camelid scale and grounded at its bind-pose feet.
   - Runtime uses: the ambient llama keeps the bare rig. The `CARAVAN` unit uses the presentation-only
     `caravan` variant (`src/rendering/caravanAttire.ts`), which attaches code-generated pack, sacks and ropes
-    to the `Back` bone; it adds no new model or texture to this GLB. Hunt herds are procedural
-    (`faunaModels.ts`): vicuña in the highlands and the documented Caral deer as generic coast/jungle game.
+    to the `Back` bone; it adds no new model or texture to this GLB.
+
+## Fauna (procedural hunt herds)
+
+- **Hunt herds**: `HuntHerd` (`src/rendering/HuntHerd.ts`) is presentation-only; the resource amount, carcass
+  states and save data are unchanged. The herd species follows the map type via `huntSpeciesFor`
+  (`src/model/defs/wildlife.ts`): vicuña in `andes`/`altiplano`, deer in `coast`/`jungle`.
+- **Sourcing**: the deer is documented for the Supe riparian forest in
+  [`docs/historia/campanas/caral.md`](./docs/historia/campanas/caral.md). Reusing that model on other coasts
+  and in the jungle is an **inferred generic game abstraction**, not a species claim. The Caral ambient deer
+  uses the Blender kit `caral_deer.glb`; the hunt deer uses the procedural `faunaModels.ts` template. No new
+  asset or SHA is introduced.
 
 ## Reference images (AI generation input)
 

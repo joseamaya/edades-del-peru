@@ -80,6 +80,21 @@ export async function withViteServer(options = {}) {
   return { base, close: () => server.close() };
 }
 
+/** Boot a campaign mission from the menu/briefing into a live match. */
+export async function bootMatch(page, url, { timeout = 30_000 } = {}) {
+  await page.goto(url, { waitUntil: 'networkidle' });
+  await page.waitForFunction(() => window.game?.mission !== undefined, null, { timeout });
+  await page
+    .locator('.ed-primary')
+    .first()
+    .click({ timeout: 3000 })
+    .catch(() => {});
+  await page
+    .getByRole('button', { name: /omitir tutorial/i })
+    .click({ timeout: 2000 })
+    .catch(() => {});
+}
+
 /** Screenshot output directory (review/), created if missing. */
 export function reviewDir() {
   const dir = path.resolve('review');

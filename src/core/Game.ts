@@ -68,6 +68,7 @@ import {
   Team,
   RESOURCE_KEYS,
   ResourceKind,
+  type MapType,
 } from '../core/types';
 import { getCiv } from '../model/defs/civs';
 import { CANAL_PROP_MARGIN, DEFAULT_CANAL_WIDTH, canalEdgeHalfWidth } from '../model/defs/canal';
@@ -1744,7 +1745,7 @@ export class Game {
 
   attachResourceNode(
     node: ResourceNode,
-    mapType: string,
+    mapType: MapType,
     trees?: typeof this.trees,
     variants?: typeof this.mapProfile.vegetation.variants,
   ): void {

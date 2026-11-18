@@ -37,9 +37,7 @@ export function dressCaravan(rig: RigInstance): RigVariantHandle | null {
     return null;
   }
 
-  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
-  tools.ownedMaterials.push(material);
-  const pack = new THREE.Mesh(tools.track(merged), material);
+  const pack = new THREE.Mesh(tools.track(merged), tools.vertexMaterial(0.92));
   pack.name = 'attire_caravan_pack';
   tools.attach('Back', pack, back.clone().add(new THREE.Vector3(0, 0.18, 0)));
 

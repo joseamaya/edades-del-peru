@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { cliArg, launchChromium, reviewDir, withViteServer } from './lib.mjs';
+import { bootMatch, cliArg, launchChromium, reviewDir, withViteServer } from './lib.mjs';
 
 /**
  * Capture the hunt herds by biome and the caravan pack.
@@ -26,27 +26,16 @@ const out = reviewDir();
 async function openMission(browser, base, mission, seed) {
   const context = await browser.newContext({ viewport: { width: 1600, height: 900 } });
   const page = await context.newPage();
-  const errors = [];
-  page.on('pageerror', (e) => errors.push(`page: ${e.message}`));
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on('pageerror', (e) => pageErrors.push(`page: ${e.message}`));
   page.on('console', (m) => {
-    if (m.type() === 'error') errors.push(`console: ${m.text()}`);
+    if (m.type() === 'error') consoleErrors.push(`console: ${m.text()}`);
   });
-  await page.goto(base + `/?play=1&mission=${mission}&seed=${seed}&intro=0&fog=0&low=0`, {
-    waitUntil: 'networkidle',
-  });
-  await page.waitForFunction(() => window.game?.mission !== undefined, null, { timeout: 30_000 });
-  await page
-    .locator('.ed-primary')
-    .first()
-    .click({ timeout: 3000 })
-    .catch(() => {});
-  await page
-    .getByRole('button', { name: /omitir tutorial/i })
-    .click({ timeout: 2000 })
-    .catch(() => {});
+  await bootMatch(page, base + `/?play=1&mission=${mission}&seed=${seed}&intro=0&fog=0&low=0`);
   await page.waitForTimeout(1400);
   await page.addStyleTag({ content: '#ui-root { display: none !important; }' });
-  return { context, page, errors };
+  return { context, page, pageErrors, consoleErrors };
 }
 
 async function main() {
@@ -56,7 +45,7 @@ async function main() {
   try {
     for (const scene of wanted) {
       const def = SCENES[scene];
-      const { context, page, errors } = await openMission(browser, base, def.mission, def.seed);
+      const { context, page, pageErrors, consoleErrors } = await openMission(browser, base, def.mission, def.seed);
       try {
         const state = await page.evaluate((sceneName) => {
           const g = window.game;
@@ -93,9 +82,9 @@ async function main() {
         await page.waitForTimeout(1200);
         const file = path.join(out, `fauna-${scene}.png`);
         await page.screenshot({ path: file });
-        results.push({ scene, ...def, state, file, errors });
+        results.push({ scene, ...def, state, file, pageErrors, consoleErrors });
         console.log(file, JSON.stringify(state));
-        if (state.error || errors.length) process.exitCode = 1;
+        if (state.error || pageErrors.length) process.exitCode = 1;
       } finally {
         await context.close();
       }
@@ -105,7 +94,10 @@ async function main() {
     await close();
   }
   const summary = path.join(out, 'fauna-capture.json');
-  fs.writeFileSync(summary, JSON.stringify(results, null, 2));
+  const previous = fs.existsSync(summary) ? JSON.parse(fs.readFileSync(summary, 'utf8')) : [];
+  const byScene = new Map((Array.isArray(previous) ? previous : []).map((entry) => [entry.scene, entry]));
+  for (const entry of results) byScene.set(entry.scene, entry);
+  fs.writeFileSync(summary, JSON.stringify([...byScene.values()], null, 2));
   console.log(summary);
 }
 

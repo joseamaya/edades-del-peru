@@ -976,8 +976,8 @@ The **caravan** reuses the same alpaca with a presentation-only `caravan` varian
 (`src/rendering/caravanAttire.ts`): a cargo pack, side sacks and ropes attached to the `Back` bone, so the trade
 unit is no longer a bare animal. The ambient llama keeps the bare variant. Hunt herds select their species from
 the map type (`huntSpeciesFor`): vicuña in the highlands, deer on the coast and jungle. The procedural quadruped
-head is a rounded capsule + tapered muzzle instead of three boxes, which improves both the ambient vicuña and
-the coast/jungle hunted deer.
+head is a capsule + tapered muzzle instead of a head box and a muzzle box; it improves the ambient vicuña, the
+procedural hunt deer and the llama fallback. The Caral ambient deer uses `caral_deer.glb` and is unchanged.
 
 The rig plays `walk` while it advances its deterministic orbit and stops to play `eat` on a deterministic
 sinusoidal cycle per animal; walk playback follows the orbit speed. The root sits at `Terrain.getHeight`, the model

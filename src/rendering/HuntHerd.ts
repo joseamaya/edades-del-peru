@@ -43,7 +43,7 @@ export class HuntHerd {
   private fadeStart = -1;
   private fadeSeconds = 0;
 
-  constructor(seed = 0, species: HuntSpecies = 'vicuna') {
+  constructor(seed: number, species: HuntSpecies) {
     this.template = faunaTemplate(species);
     this.liveMaterial = new THREE.MeshStandardMaterial({
       vertexColors: true,
