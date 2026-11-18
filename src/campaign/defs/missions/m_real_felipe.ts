@@ -85,7 +85,7 @@ export const mRealFelipe: MissionDef = {
   enemy: { active: true, difficulty: 'normal', aggression: 0.5 },
   tutorial: true,
   modelMission: true,
-  epilogueImage: 'media/independencia/intro-epilogo.webp',
+  epilogueImage: 'media/real-felipe/intro-epilogo.webp',
   intro: [
     {
       kicker: 'CALLAO · DESPUÉS DE AYACUCHO',
@@ -93,7 +93,7 @@ export const mRealFelipe: MissionDef = {
       text: 'La capitulación de Ayacucho no termina la guerra. José Ramón Rodil, ya al mando del Real Felipe, se niega a acogerse a ella y mantiene la fortaleza con los últimos realistas.',
       seconds: 9,
       source: 'docs/historia/campanas/real_felipe.md',
-      image: 'media/independencia/intro-ayacucho.webp',
+      image: 'media/real-felipe/intro-bastion.webp',
     },
     {
       kicker: 'CALLAO · 1824–1826',
@@ -101,7 +101,7 @@ export const mRealFelipe: MissionDef = {
       text: 'Bartolomé Salom sitia la fortaleza por tierra y la escuadra patriota la bloquea por mar. Miles de civiles se refugian dentro; la comida y el agua se vuelven el problema central.',
       seconds: 9,
       source: 'docs/historia/campanas/real_felipe.md',
-      image: 'media/arica/intro-bateria.webp',
+      image: 'media/real-felipe/intro-sitio.webp',
     },
     {
       kicker: 'CALLAO · ENERO DE 1826',
@@ -109,7 +109,7 @@ export const mRealFelipe: MissionDef = {
       text: 'Tras más de un año de sitio, Rodil capitula y sale con honores. Es el último bastión español en el Perú; la independencia queda sellada también en el Callao.',
       seconds: 10,
       source: 'docs/historia/campanas/real_felipe.md',
-      image: 'media/independencia/intro-epilogo.webp',
+      image: 'media/real-felipe/intro-epilogo.webp',
     },
   ],
   allowedUnits: [
@@ -226,7 +226,7 @@ export const mRealFelipe: MissionDef = {
           type: 'act',
           kicker: 'Acto II · El cerco',
           title: 'El hambre y las salidas',
-          image: 'media/arica/intro-bateria.webp',
+          image: 'media/real-felipe/intro-sitio.webp',
           text: 'El bloqueo cierra el puerto. Dentro del Real Felipe se refugian miles de civiles; Rodil intenta salidas para romper el cerco y buscar víveres. La guerra se vuelve una prueba de resistencia.',
         },
         { type: 'objective', objectiveId: 'a3_salidas', state: 'activate', announce: true },
@@ -252,7 +252,7 @@ export const mRealFelipe: MissionDef = {
           type: 'act',
           kicker: 'Acto III · Enero de 1826',
           title: 'La capitulación',
-          image: 'media/independencia/intro-epilogo.webp',
+          image: 'media/real-felipe/intro-epilogo.webp',
           text: 'Las salidas fracasan y los víveres se agotan. Rodil acepta capitular; sale con honores y dos banderas. El último bastión español en el Perú deja de existir.',
         },
         { type: 'objective', objectiveId: 'a4_capitulacion', state: 'activate', announce: true },

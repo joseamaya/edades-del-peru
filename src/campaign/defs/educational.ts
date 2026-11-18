@@ -300,7 +300,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'guerra continúa en la sierra. La historia recuerda el debate entre una independencia «concedida» y una ' +
       '«conseguida»: la campaña de 1821 muestra que ambas cosas se mezclaron.',
     sources: [
-      { text: 'Dossier: Lima y el Callao, 1821', url: 'docs/historia/campanas/lima_1821.md' },
+      { text: 'Primer sitio del Callao (Wikipedia)', url: 'https://es.wikipedia.org/wiki/Primer_sitio_del_Callao' },
+      { text: 'Independencia del Perú (Wikipedia)', url: 'https://es.wikipedia.org/wiki/Independencia_del_Per%C3%BA' },
       { text: 'Basadre, Historia de la República del Perú' },
       { text: "O'Phelan, La independencia del Perú" },
     ],
@@ -338,7 +339,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'del sitio es parte de la historia: miles de personas refugiadas murieron por hambre y enfermedad. La ' +
       'resistencia de Rodil y el sufrimiento del Callao se recuerdan sin convertirlos en una gesta épica.',
     sources: [
-      { text: 'Dossier: El último bastión', url: 'docs/historia/campanas/real_felipe.md' },
+      { text: 'Segundo sitio del Callao (Wikipedia)', url: 'https://es.wikipedia.org/wiki/Segundo_sitio_del_Callao' },
+      { text: 'Sublevación del Callao (Wikipedia)', url: 'https://es.wikipedia.org/wiki/Sublevaci%C3%B3n_del_Callao' },
       { text: 'García Camba, Memorias para la historia de las armas españolas en el Perú' },
       { text: 'Paz Soldán, Historia del Perú independiente' },
     ],

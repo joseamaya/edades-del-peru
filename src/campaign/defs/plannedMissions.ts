@@ -18,7 +18,7 @@ export interface PlannedMission {
   label?: 'Leyenda' | 'Tradición';
 }
 
-/** The seven planned missions that complete the four-entry launch catalogue. */
+/** The five planned missions that complete the four-entry launch catalogue. */
 export const PLANNED_MISSIONS: Record<string, PlannedMission> = {
   // El Virreinato
   p_vir_cusco: {

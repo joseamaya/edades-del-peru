@@ -51,9 +51,11 @@ evidence. No model-mission rebuild remains.
 2. Review every new `reviewed: false` record. The five Caral records were reconciled and the three Workbench
    mission intros were retired on 2026-11-16 (B5/B10 closed); the archived release snapshot lists the set as
    of 2026-10-30. Approve or reject each new record with `yarn art:review`.
-3. Capture the model missions whose art review is pending (m3–m9, m6b, Tambotoco, Lima, La Junta, Lima 1821 and Real Felipe) with the
+3. Capture the model missions whose art review is pending (m3–m9, m6b, Tambotoco, Lima, La Junta) with the
    current build. **Done (2026-11-17):** the current site views are in
-   `docs/media/site-review-2026-11-17.webp` (human review still pending).
+   `docs/media/site-review-2026-11-17.webp` (human review still pending). Lima 1821 and Real Felipe have
+   current captures in `public/media/lima-1821/` and `public/media/real-felipe/`; their human art review and
+   bench rows remain (B15).
 
 The release-candidate document is an **archived snapshot** from 2026-10-30. Use its checklist as a template,
 but record today's counts and hashes in a new status document or PR, not by editing the snapshot.

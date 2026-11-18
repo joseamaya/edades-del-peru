@@ -33,6 +33,8 @@ const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: stri
   colonial_site: { lod0: colonialLod0Url, lod1: colonialLod1Url },
   independence_site: { lod0: independenceLod0Url, lod1: independenceLod1Url },
   arica_site: { lod0: aricaLod0Url, lod1: aricaLod1Url },
+  // Real Felipe (1824–1826) reuses the Arica coastal-fort composition as a labelled abstraction.
+  real_felipe_site: { lod0: aricaLod0Url, lod1: aricaLod1Url },
   cusco_inca_site: { lod0: cuscoLod0Url, lod1: cuscoLod1Url },
   // La Junta del Cusco (1814) reuses the colonial plaza model on its own 256 m transect.
   cusco_junta_site: { lod0: colonialLod0Url, lod1: colonialLod1Url },

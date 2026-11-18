@@ -405,8 +405,37 @@ slot is absent (offline / without assets).
   procedural settlements). They are recreations of the game's own scenes: never historical photographs.
 - **Review**: no human art-review gate applies to in-engine captures; the reused colonial plaza GLB keeps
   its own review status in `src/art/manifest.json`.
-- **Reused by `m_lima_1821`**: the briefing uses `intro-cerco`; the intro and act cards use `intro-cerco`,
-  `intro-rimac` and the Independencia proclamation capture; the mission adds no new capture yet.
+
+
+### Lima 1821 intro and epilogue images (in-engine recreations)
+
+- **Location**: `public/media/lima-1821/intro-{camino,plaza,callao,epilogo}.webp` (960×540, WebP q58).
+- **Source**: captured from the game itself by `scripts/capture_independencia_arc.mjs` on the 1821 Lima
+  coast transect: the Lurín road and patriot camp, the Plaza Mayor, the Callao beach and a low epilogue.
+  Rendered without the HUD at 1600×900 and resized with `sharp`. Regenerate with
+  `node scripts/capture_independencia_arc.mjs --only=ID` after art changes.
+- **Runtime**: the briefing uses `intro-plaza`; the intro beats use `intro-camino`, `intro-callao` and
+  `intro-plaza`; the Act II/III cards use `intro-plaza` and `intro-callao`; the epilogue uses `intro-epilogo`.
+- **Content**: project-owned game renders (the reused `lima_site` colonial kit at the `ciudad` phase and the
+  procedural camp/wildlife). They are recreations of the game's own scenes: never historical photographs,
+  and not Blender renders (so not in `src/art/manifest.json`).
+- **Review**: no human art-review gate applies to in-engine captures; the reused colonial plaza GLB keeps
+  its own review status in `src/art/manifest.json`.
+
+### Real Felipe intro and epilogue images (in-engine recreations)
+
+- **Location**: `public/media/real-felipe/intro-{bastion,baterias,sitio,epilogo}.webp` (960×540, WebP q58).
+- **Source**: captured from the game itself by `scripts/capture_independencia_arc.mjs` on the Callao
+  terrace: the bastion from the sea side, the battery line, the siege camp and a low epilogue. Rendered
+  without the HUD at 1600×900 and resized with `sharp`. Regenerate with
+  `node scripts/capture_independencia_arc.mjs --only=ID` after art changes.
+- **Runtime**: the briefing and first beat use `intro-bastion`; the second beat and Act II use `intro-sitio`
+  and `intro-baterias`; the third beat, Act III and the epilogue use `intro-epilogo`.
+- **Content**: project-owned game renders (the reused `arica_site` coastal-fort composition and the
+  procedural camp). The Real Felipe is a labelled abstraction, not a survey of the star fort; the images
+  are recreations of the game's own scenes, never historical photographs.
+- **Review**: no human art-review gate applies to in-engine captures; the reused `arica_site` GLB keeps its
+  own review status (#343). A dedicated star-fort kit is future work.
 
 ### Los hijos de Tambotoco intro, chapter and epilogue images (in-engine recreations)
 
@@ -584,9 +613,6 @@ downscaled 1920 shot would look smaller than the 1280 one.
   outside the playable range and is not depicted as a surveyed feature.
 - **Review**: no human art-review gate applies to in-engine captures; the `arica_site` GLB keeps its own
   review status (#343). The authored `m9_arica-intro` render is approved.
-- **Reused by `m_real_felipe`**: the briefing and chapter card use `intro-bateria`; the intro and epilogue
-  also reuse the Independencia epilogue capture. The mission adds no new capture yet and labels the
-  `arica_site` composition as the Real Felipe abstraction.
 
 ### Cusco (Túpac Amaru) intro and epilogue images (in-engine recreations)
 
@@ -696,8 +722,6 @@ downscaled 1920 shot would look smaller than the 1280 one.
   historical photographs, and not Blender renders (so not in `src/art/manifest.json`).
 - **Review**: no human art-review gate applies to in-engine captures; the reused chapel GLB keeps its own
   review status in `src/art/manifest.json` (#343).
-- **Reused by `m_lima_1821` and `m_real_felipe`**: the proclamation and epilogue beats use `intro-lima` and
-  `intro-epilogo`; neither mission adds a new capture yet.
 
 ### Caral Pyramid Mayor modular scenery
 

@@ -32,7 +32,9 @@ Optional/failure: if Salom dies or the camp falls, the mission is lost.
   abstraction**: the real Real Felipe is a larger bastion, but the terrace, battery and sea approach read
   correctly at RTS zoom. No heritage card is attached; the fortress is the objective area, not a museum.
 - Player camp inland, two battery nodes between the camp and the fort, coast on the west.
-- No new GLB. The reused site is recorded in `PROVENANCE.md`; a dedicated star-fort kit is future work.
+- No new GLB. The reused site is recorded in `PROVENANCE.md`; the mission has its own in-engine captures
+  (`scripts/capture_independencia_arc.mjs`) for the bastion, the batteries and the siege camp. A dedicated
+  star-fort kit is future work.
 
 ## Economy and cast
 
@@ -45,8 +47,8 @@ Optional/failure: if Salom dies or the camp falls, the mission is lost.
 ## Opening and closing
 
 - Three narrated beats: the last bastion after Ayacucho, the siege and civilian crisis, the capitulation.
-- Briefing art: `media/arica/intro-bateria.webp`; chapter cards reuse `media/arica/intro-bateria.webp` and
-  `media/independencia/intro-epilogo.webp`; epilogue uses `media/independencia/intro-epilogo.webp`.
+- Briefing art: `media/real-felipe/intro-bastion.webp`; chapter cards use `intro-baterias` and
+  `intro-epilogo`; epilogue uses `intro-epilogo`.
 - The epilogue states the civilian deaths and Rodil's honours without turning the siege into a heroic
   massacre.
 

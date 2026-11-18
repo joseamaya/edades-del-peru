@@ -4,7 +4,7 @@ import { LIMA_SITE_ORIGIN } from '../../../model/defs/sites';
 
 // Lima 1821: the patriot camp, the capital, the Callao fortress and the supply roads.
 const LIMA_1821_CITY = LIMA_SITE_ORIGIN;
-const LIMA_1821_CALLAO = { x: 210, z: 74 } as const;
+const LIMA_1821_CALLAO = { x: 52, z: 120 } as const;
 const LIMA_1821_CAMP = { x: 62, z: 192 } as const;
 const LIMA_1821_LURIN = { x: 154, z: 206 } as const;
 const LIMA_1821_CARABAYLLO = { x: 96, z: 96 } as const;
@@ -103,7 +103,7 @@ export const mLima1821: MissionDef = {
   enemy: { active: true, difficulty: 'normal', aggression: 0.7 },
   tutorial: true,
   modelMission: true,
-  epilogueImage: 'media/independencia/intro-lima.webp',
+  epilogueImage: 'media/lima-1821/intro-epilogo.webp',
   intro: [
     {
       kicker: 'COSTA PERUANA · 1820–1821',
@@ -111,7 +111,7 @@ export const mLima1821: MissionDef = {
       text: 'San Martín desembarca en Paracas y extiende la campaña a la sierra. Cochrane bloquea el Callao y las montoneras cortan los caminos que abastecen Lima.',
       seconds: 9,
       source: 'docs/historia/campanas/lima_1821.md',
-      image: 'media/lima/intro-cerco.webp',
+      image: 'media/lima-1821/intro-camino.webp',
     },
     {
       kicker: 'LIMA · JULIO DE 1821',
@@ -119,7 +119,7 @@ export const mLima1821: MissionDef = {
       text: 'El virrey La Serna abandona Lima y se repliega a la sierra. San Martín entra en la capital sin combatirla: la independencia se decide en la política y en el cerco, no en un asalto.',
       seconds: 9,
       source: 'docs/historia/campanas/lima_1821.md',
-      image: 'media/lima/intro-rimac.webp',
+      image: 'media/lima-1821/intro-callao.webp',
     },
     {
       kicker: 'LIMA · 28 DE JULIO DE 1821',
@@ -127,7 +127,7 @@ export const mLima1821: MissionDef = {
       text: 'En la Plaza Mayor, San Martín proclama la independencia del Perú. El primer sitio del Callao sigue hasta septiembre; la guerra continuará en la sierra.',
       seconds: 10,
       source: 'docs/historia/campanas/lima_1821.md',
-      image: 'media/independencia/intro-lima.webp',
+      image: 'media/lima-1821/intro-plaza.webp',
     },
   ],
   allowedUnits: [
@@ -190,15 +190,6 @@ export const mLima1821: MissionDef = {
       title: 'Proclama la independencia en la Plaza Mayor',
     },
     {
-      id: 'a2_pacto',
-      kind: 'reach',
-      pos: { dx: LIMA_1821_CARABAYLLO.x, dz: LIMA_1821_CARABAYLLO.z },
-      radius: 12,
-      optional: true,
-      hidden: true,
-      title: 'Pacta con los pueblos de Carabayllo',
-    },
-    {
       id: 'a2_san_martin',
       kind: 'protect',
       entityTag: 'san_martin',
@@ -252,11 +243,10 @@ export const mLima1821: MissionDef = {
           type: 'act',
           kicker: 'Acto II · Julio de 1821',
           title: 'La proclamación',
-          image: 'media/independencia/intro-lima.webp',
+          image: 'media/lima-1821/intro-plaza.webp',
           text: 'Lima se ha quedado sin virrey. San Martín entra en la ciudad y convoca a sus vecinos: la independencia se proclama en la Plaza Mayor, no en un campo de batalla.',
         },
         { type: 'objective', objectiveId: 'a2_plaza', state: 'activate', announce: true },
-        { type: 'objective', objectiveId: 'a2_pacto', state: 'activate' },
         { type: 'objective', objectiveId: 'a2_san_martin', state: 'activate' },
       ],
     },
@@ -268,7 +258,7 @@ export const mLima1821: MissionDef = {
           type: 'act',
           kicker: 'Acto III · Agosto–septiembre de 1821',
           title: 'El primer sitio del Callao',
-          image: 'media/lima/intro-cerco.webp',
+          image: 'media/lima-1821/intro-callao.webp',
           text: 'La independencia está proclamada, pero el Callao sigue en manos realistas. La Mar defiende las fortalezas; Canterac baja de la sierra para socorrerlas y se retira sin dar batalla.',
         },
         { type: 'objective', objectiveId: 'a3_sitio', state: 'activate', announce: true },

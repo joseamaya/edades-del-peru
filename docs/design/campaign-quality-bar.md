@@ -411,13 +411,14 @@ The 2026-11-18 pass closed the 1814–1826 arc with two model missions:
 
 - **`m_lima_1821`** reuses `lima_site` at the `ciudad` phase and the colonial kit. The mechanic is pressure:
   montoneras cut the Lurín road, San Martín proclaims independence at the Plaza Mayor, and the player holds
-  the first siege of Callao. Real-command test: `tests/e2e/lima-1821.spec.ts`. Open: current in-engine
-  captures, art review of the reused kit, and a performance row if the late view warrants it.
+  the first siege of Callao. Real-command test: `tests/e2e/lima-1821.spec.ts`. Captures are current in
+  `public/media/lima-1821/`; open: human art review of the reused kit and a performance row if the late view
+  warrants it.
 - **`m_real_felipe`** adds the `real_felipe_site` entry, which reuses the Arica coastal-fort composition and
   heightfield as a labelled abstraction. The mechanic is siege economy: two batteries, a coastal blockade,
   sorties against the camp and a food-consuming final hold. Real-command test:
-  `tests/e2e/real-felipe.spec.ts`. Open: a dedicated star-fort GLB, art review, current captures and a
-  performance row.
+  `tests/e2e/real-felipe.spec.ts`. Captures are current in `public/media/real-felipe/`; open: a dedicated
+  star-fort GLB, human art review and a performance row.
 
 Both have dossier, design document, tutorial, educational entry, briefing art, epilogue and the generic
 completable path; both pass `tests/campaign-scale.test.ts` and the HUD layout gate. The human no-cheat

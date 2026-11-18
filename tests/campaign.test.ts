@@ -411,6 +411,26 @@ describe('campaign educational content', () => {
     }
   });
 
+  it('the Independencia arc missions have acts, triggers and documented outcomes', () => {
+    for (const id of ['m_lima_1821', 'm_real_felipe']) {
+      const mis = MISSIONS.find((m) => m.id === id)!;
+      expect(mis.period, `${id} period`).toBe(HistoricalPeriod.INDEPENDENCE);
+      expect(mis.modelMission, `${id} model mission`).toBe(true);
+      expect(mis.objectives.length, `${id} objectives`).toBeGreaterThanOrEqual(5);
+      expect(
+        mis.objectives.some((o) => o.hidden),
+        `${id} hidden objectives`,
+      ).toBe(true);
+      expect(mis.triggers.length, `${id} triggers`).toBeGreaterThanOrEqual(4);
+      expect(
+        mis.triggers.some((t) => t.effects.some((e) => e.type === 'act')),
+        `${id} act cards`,
+      ).toBe(true);
+      expect(mis.victory.trim().length, `${id} victory text`).toBeGreaterThan(40);
+      expect(mis.defeat.trim().length, `${id} defeat text`).toBeGreaterThan(40);
+    }
+  });
+
   it('chapter III has a briefing and a six-step guided tutorial', () => {
     const mis = MISSIONS.find((m) => m.id === 'm7_tupac_amaru')!;
     expect(mis.tutorial).toBe(true);

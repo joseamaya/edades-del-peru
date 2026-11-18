@@ -59,6 +59,51 @@ function stubGame(unit: { id: number; tag: string; owner: number; dead: boolean;
 }
 
 describe('mission objective progress', () => {
+  it('measures a defend objective from activation, not from the mission start', () => {
+    const unit = { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } };
+    const camp = {
+      id: 2,
+      tag: 'camp',
+      owner: 0,
+      dead: false,
+      kind: BuildingKind.CENTER,
+      pos: { x: 0, z: 0 },
+    };
+    const game = stubGame(unit) as any;
+    game.buildings = new Map([[camp.id, camp]]);
+    const missionDef: MissionDef = {
+      ...def,
+      objectives: [
+        {
+          id: 'def',
+          kind: 'defend',
+          entityTag: 'camp',
+          time: 60,
+          hidden: true,
+          title: 'defender',
+        },
+      ],
+      triggers: [
+        {
+          id: 'activate',
+          condition: { type: 'time', seconds: 5 },
+          effects: [{ type: 'objective', objectiveId: 'def', state: 'activate' }],
+        },
+      ],
+    };
+    const mission = new Mission(game, missionDef, () => {});
+    mission.start();
+    const step = (seconds: number) => {
+      for (let i = 0; i < seconds * 60; i++) mission.update(1 / 60, i / 60);
+    };
+    step(6);
+    expect(mission.getObjectiveState('def')).toBe('activo');
+    step(30);
+    expect(mission.getObjectiveState('def'), '30 s after activation is not enough').toBe('activo');
+    step(35);
+    expect(mission.getObjectiveState('def')).toBe('completed');
+  });
+
   it('reports count/time progress and accepts an untagged reach objective', () => {
     const unit = {
       id: 1,

@@ -21,7 +21,6 @@ Sources and certainty: [`docs/historia/campanas/lima_1821.md`](../historia/campa
    column from Carabayllo marches on the siege line. Victory ends with La Mar's capitulation; the epilogue
    states that the war continues in the sierra.
 
-Optional: reach Carabayllo to pact with the valley towns.
 
 ## Map and site
 
@@ -29,8 +28,9 @@ Optional: reach Carabayllo to pact with the valley towns.
 - Reuses `lima_site` (colonial city) with `phase: 'ciudad'`: Lima is a living capital in 1821, not the
   traced plaza of 1535. The cathedral, Plaza Mayor and streets are the same authored kit used by `m_lima`.
 - Player camp south-west of the city, Callao on the coast, Lurín and Carabayllo on the supply roads.
-- No new GLB. The site is a documented reuse; the opening captures are reused in-engine shots from
-  `m_lima` and `m8_independencia` and documented as such in `PROVENANCE.md`.
+- No new GLB. The site is a documented reuse; the mission has its own in-engine captures
+  (`scripts/capture_independencia_arc.mjs`) for the Lurín road, the Plaza Mayor and the Callao coast,
+  documented in `PROVENANCE.md`.
 
 ## Economy and cast
 
@@ -43,8 +43,8 @@ Optional: reach Carabayllo to pact with the valley towns.
 ## Opening and closing
 
 - Three narrated beats: expedition and blockade, the evacuated city, the proclamation.
-- Briefing art: `media/lima/intro-cerco.webp`; chapter cards reuse `media/independencia/intro-lima.webp`
-  and `media/lima/intro-cerco.webp`; epilogue uses `media/independencia/intro-lima.webp`.
+- Briefing art: `media/lima-1821/intro-plaza.webp`; chapter cards use `intro-plaza` and `intro-callao`;
+  epilogue uses `intro-epilogo`.
 - The epilogue explains the "independencia concedida / conseguida" debate without resolving it.
 
 ## Tests and evidence
