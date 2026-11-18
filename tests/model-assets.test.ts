@@ -519,8 +519,9 @@ describe('rigged model assets', () => {
     expect(rig.hasState('run')).toBe(true);
     expect(rig.hasState('attack')).toBe(true);
     expect(rig.hasDeathClip()).toBe(true);
-    expect(rig.referenceSpeed('walk')).toBe(1.6);
+    expect(rig.referenceSpeed('walk')).toBe(2.4);
     expect(rig.referenceSpeed('run')).toBe(2.2);
+    expect(rig.runSpeedThreshold()).toBe(3.8);
     expect(rig.root.getObjectByName('GEO-Hat-Morion-Crown')?.visible).toBe(true);
     expect(rig.root.getObjectByName('GEO-Hat-Bicorn-Crown')?.visible).toBe(false);
     const trousers = rig.root.getObjectByName('GEO-Merged-Rider-Trousers') as THREE.Mesh;

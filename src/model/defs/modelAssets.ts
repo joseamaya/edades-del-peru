@@ -206,8 +206,10 @@ export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigCli
 export const WALK_CLIP_REFERENCE_SPEED = 1.4;
 export const WALK_CLIP_RATE_MIN = 0.6;
 export const WALK_CLIP_RATE_MAX = 1.6;
-/** Speed above which a rig with a `run` clip switches from its walk/trot to its gallop. */
-export const RUN_CLIP_SPEED_THRESHOLD = 1.9;
+/** A gallop cycles faster than a walk; keep its own ceiling instead of the foot-walk 1.6. */
+export const RUN_CLIP_RATE_MAX = 2.2;
+/** Default speed above which a rig with a `run` clip gallops; an attack order also charges. */
+export const RUN_CLIP_SPEED_THRESHOLD = 3.8;
 
 export interface RigStateInput {
   moving: boolean;

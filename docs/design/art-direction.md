@@ -100,8 +100,10 @@ No asset is accepted because it looks good at close range. It must read at 54 fi
 - **Animation:** shared clips; `idle`, `walk`, `attack` and `death` are mandatory for a fielded role. Work and
   interaction use the licensed clip set. No per-hero clip and no gameplay timing baked into a GLB.
 - **Mounts:** a horse is a riding animal at human scale, not a pony: withers ~1.55–1.65 against the 1.86-unit
-  person, mounted height ~2.6, with a walk/trot and a gallop whose cadence follows the unit speed. Tack, coat
-  colour and markings are presentation abstractions unless a dossier documents them.
+  person, mounted height ~2.6–2.7. Normal movement uses the trot; the gallop is reserved for charges
+  (`attack`/`attack_move`) and for units whose speed exceeds the rig's threshold. Both cadences follow the
+  unit velocity. Tack, coat colour and markings are presentation abstractions unless a dossier documents
+  them.
 - **Budgets:** hero ≤ 40 draw calls / 40k triangles; common unit ≤ 25 draw calls / 25k triangles. These are
   ceilings, not targets to fill.
 

@@ -4,17 +4,19 @@ Run with:
   blender --background --factory-startup --python scripts/blender/build_mounted_rig.py
 
 The source stays in art-src/blender/scenes/mounted_rig.blend; the exported GLB
-is copied to src/assets/models/mounted_rig.glb for the game registry.
+is copied uncompressed to src/assets/models/mounted_rig.glb for the game
+registry. Run `yarn art:models --only=mounted_rig` afterwards to meshopt-compress
+the committed game copy (the same step as asset-pipeline.md Path B step 4).
 
 Construction notes
 ------------------
 The horse is authored from the same low-poly organic primitives as the Caral
-fauna kit (`kblob`/`ktube` in `build_caral_slice.py`): a three-mass barrel,
-tapered neck and legs, a wedge head and small joint spheres. Parts stay rigidly
-weighted to their bone and overlap at the joints, the budget-friendly approach
-the rest of the mounted rig uses; the silhouette, not vertex deformation, is
-what has to read at the RTS camera. The rider is rebuilt at human scale so the
-mounted pair is ~2.6 units tall against the 1.86-unit infantry.
+fauna kit (`kblob`/`ktube` in `build_caral_slice.py`): a lofted barrel, tapered
+neck and legs, a wedge head and small joint spheres. Parts stay rigidly weighted
+to their bone and overlap at the joints, the budget-friendly approach the rest
+of the mounted rig uses; the silhouette, not vertex deformation, is what has to
+read at the RTS camera. The rider is rebuilt at human scale so the mounted pair
+is ~2.7 units tall against the 1.86-unit infantry.
 """
 from __future__ import annotations
 
@@ -87,8 +89,6 @@ def strip_attributes(mesh) -> None:
     for attr in ('leafvar', 'blob'):
         if attr in mesh.attributes:
             mesh.attributes.remove(mesh.attributes[attr])
-    if 'UVMap' in mesh.uv_layers:
-        mesh.uv_layers.remove(mesh.uv_layers['UVMap'])
 
 
 def kit_part(name: str, bone: str, mat, build, smooth: bool = True):
@@ -125,6 +125,21 @@ def tube_with_blobs(name, bone, mat, points, r0, r1, sides, pieces, cap=False, s
     return kit_part(name, bone, mat, build, smooth)
 
 
+def bridge_rings(bm, rings) -> None:
+    """Bridge consecutive equal-length vertex rings with quads."""
+    count = len(rings[0])
+    for k in range(len(rings) - 1):
+        for i in range(count):
+            bm.faces.new(
+                (
+                    rings[k][i],
+                    rings[k][(i + 1) % count],
+                    rings[k + 1][(i + 1) % count],
+                    rings[k + 1][i],
+                )
+            )
+
+
 def loft(name, bone, mat, sections, segments=12, smooth=True):
     """Loft elliptical cross-sections along +Y: (y, centre_z, radius_x, radius_z)."""
 
@@ -137,16 +152,7 @@ def loft(name, bone, mat, sections, segments=12, smooth=True):
                 angle = 2 * math.pi * i / segments
                 ring.append(bm.verts.new((rx * math.cos(angle), y, cz + rz * math.sin(angle))))
             rings.append(ring)
-        for k in range(len(rings) - 1):
-            for i in range(segments):
-                bm.faces.new(
-                    (
-                        rings[k][i],
-                        rings[k][(i + 1) % segments],
-                        rings[k + 1][(i + 1) % segments],
-                        rings[k + 1][i],
-                    )
-                )
+        bridge_rings(bm, rings)
         for ring, (y, cz, _, _) in ((rings[0], sections[0]), (rings[-1], sections[-1])):
             center = bm.verts.new((0, y, cz))
             for i in range(segments):
@@ -172,9 +178,7 @@ def fin(name, bone, mat, sections, thickness=0.035, smooth=False):
                     bm.verts.new((-half, y, base_z + height)),
                 ]
             )
-        for k in range(len(rings) - 1):
-            for i in range(4):
-                bm.faces.new((rings[k][i], rings[k][(i + 1) % 4], rings[k + 1][(i + 1) % 4], rings[k + 1][i]))
+        bridge_rings(bm, rings)
         bm.faces.new(tuple(reversed(rings[0])))
         bm.faces.new(tuple(rings[-1]))
         bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
@@ -304,12 +308,12 @@ for side, x in (('L', 0.24), ('R', -0.24)):
         bone(f'leg_{side}{end}_lower', knee, fetlock, f'leg_{side}{end}_upper')
         bone(f'hoof_{side}{end}', fetlock, hoof, f'leg_{side}{end}_lower')
 bone('rider_hip', (0, -0.12, 1.60), (0, -0.12, 1.82), 'body')
-bone('rider_spine', (0, -0.12, 1.82), (0, -0.14, 2.10), 'rider_hip')
-bone('rider_head', (0, -0.14, 2.10), (0, -0.12, 2.36), 'rider_spine')
-bone('rider_arm_L', (0.24, -0.12, 2.04), (0.34, 0.02, 1.86), 'rider_spine')
-bone('rider_arm_R', (-0.24, -0.12, 2.04), (-0.34, 0.02, 1.86), 'rider_spine')
-bone('rider_hand_L', (0.34, 0.02, 1.86), (0.30, 0.24, 1.68), 'rider_arm_L')
-bone('rider_hand_R', (-0.34, 0.02, 1.86), (-0.30, 0.24, 1.68), 'rider_arm_R')
+bone('rider_spine', (0, -0.12, 1.82), (0, -0.14, 2.20), 'rider_hip')
+bone('rider_head', (0, -0.14, 2.20), (0, -0.12, 2.48), 'rider_spine')
+bone('rider_arm_L', (0.24, -0.12, 2.14), (0.34, 0.02, 1.96), 'rider_spine')
+bone('rider_arm_R', (-0.24, -0.12, 2.14), (-0.34, 0.02, 1.96), 'rider_spine')
+bone('rider_hand_L', (0.34, 0.02, 1.96), (0.30, 0.24, 1.78), 'rider_arm_L')
+bone('rider_hand_R', (-0.34, 0.02, 1.96), (-0.30, 0.24, 1.78), 'rider_arm_R')
 bone('rider_thigh_L', (0.10, -0.10, 1.60), (0.34, 0.14, 1.30), 'rider_hip')
 bone('rider_thigh_R', (-0.10, -0.10, 1.60), (-0.34, 0.14, 1.30), 'rider_hip')
 bone('rider_calf_L', (0.34, 0.14, 1.30), (0.34, 0.04, 0.90), 'rider_thigh_L')
@@ -462,7 +466,7 @@ for side, sx in (('L', 1), ('R', -1)):
         f'GEO-Rein-{side}',
         'head',
         leather,
-        [(sx * 0.09, 1.25, 1.61), (sx * 0.20, 0.98, 1.58), (sx * 0.29, 0.30, 1.66)],
+        [(sx * 0.09, 1.25, 1.61), (sx * 0.20, 0.98, 1.60), (sx * 0.29, 0.30, 1.76)],
         0.012,
         0.010,
         5,
@@ -473,40 +477,40 @@ for side, sx in (('L', 1), ('R', -1)):
 # ---------------------------------------------------------------------------
 blob('GEO-Rider-Hip', 'rider_hip', trousers, (0, -0.12, 1.64), (0.18, 0.17, 0.13), 10, 6)
 cone('GEO-Rider-CoatSkirt', 'rider_hip', coat, (0, -0.12, 1.68), 0.22, 0.18, 0.20, vertices=12, smooth=True)
-tube('GEO-Rider-Torso', 'rider_spine', coat, [(0, -0.10, 1.64), (0, -0.12, 1.86), (0, -0.14, 2.08)], 0.22, 0.19, 10)
-blob('GEO-Rider-Shoulders', 'rider_spine', coat, (0, -0.14, 2.04), (0.26, 0.15, 0.11), 10, 6)
-cylinder('GEO-Rider-Collar', 'rider_spine', trim, (0, -0.14, 2.11), 0.115, 0.03, vertices=12, smooth=True)
-cylinder('GEO-Rider-Belt', 'rider_spine', leather, (0, -0.12, 1.82), 0.205, 0.05, vertices=12, smooth=True)
+tube('GEO-Rider-Torso', 'rider_spine', coat, [(0, -0.10, 1.64), (0, -0.12, 1.94), (0, -0.14, 2.18)], 0.22, 0.19, 10)
+blob('GEO-Rider-Shoulders', 'rider_spine', coat, (0, -0.14, 2.14), (0.26, 0.15, 0.11), 10, 6)
+cylinder('GEO-Rider-Collar', 'rider_spine', trim, (0, -0.14, 2.21), 0.115, 0.03, vertices=12, smooth=True)
+cylinder('GEO-Rider-Belt', 'rider_spine', leather, (0, -0.12, 1.86), 0.205, 0.05, vertices=12, smooth=True)
 blob('GEO-Rider-CoatTail', 'rider_hip', coat, (0, -0.34, 1.48), (0.21, 0.13, 0.23), 10, 6)
 for side, sx in (('L', 1), ('R', -1)):
     blob(f'GEO-Rider-CoatTail-{side}', 'rider_hip', coat, (sx * 0.16, -0.29, 1.44), (0.09, 0.11, 0.19), 8, 5)
-cylinder('GEO-Rider-Neck', 'rider_head', skin, (0, -0.13, 2.16), 0.065, 0.09, vertices=10, smooth=True)
-sphere('GEO-Rider-Head', 'rider_head', skin, (0, -0.12, 2.30), (0.135, 0.125, 0.145), 10)
-blob('GEO-Rider-Nose', 'rider_head', skin, (0, -0.005, 2.28), (0.035, 0.05, 0.04), 8, 5)
+cylinder('GEO-Rider-Neck', 'rider_head', skin, (0, -0.13, 2.26), 0.065, 0.10, vertices=10, smooth=True)
+sphere('GEO-Rider-Head', 'rider_head', skin, (0, -0.12, 2.40), (0.135, 0.125, 0.145), 10)
+blob('GEO-Rider-Nose', 'rider_head', skin, (0, -0.005, 2.38), (0.035, 0.05, 0.04), 8, 5)
 for side, sx in (('L', 1), ('R', -1)):
-    sphere(f'GEO-Rider-Eye-{side}', 'rider_head', eye, (sx * 0.05, 0.008, 2.33), (0.017, 0.017, 0.017), 6)
-blob('GEO-Rider-Hair', 'rider_head', hair, (0, -0.20, 2.34), (0.15, 0.10, 0.12), 10, 6)
+    sphere(f'GEO-Rider-Eye-{side}', 'rider_head', eye, (sx * 0.05, 0.008, 2.43), (0.017, 0.017, 0.017), 6)
+blob('GEO-Rider-Hair', 'rider_head', hair, (0, -0.20, 2.44), (0.15, 0.10, 0.12), 10, 6)
 for side, sx in (('L', 1), ('R', -1)):
     tube_with_blobs(
         f'GEO-Rider-Arm-{side}',
         f'rider_arm_{side}',
         coat,
-        [(sx * 0.24, -0.12, 2.04), (sx * 0.30, -0.04, 1.95), (sx * 0.34, 0.02, 1.86)],
+        [(sx * 0.24, -0.12, 2.14), (sx * 0.30, -0.04, 2.05), (sx * 0.34, 0.02, 1.96)],
         0.085,
         0.07,
         8,
-        [((sx * 0.24, -0.12, 2.04), (0.095, 0.10, 0.10), 8, 5)],
+        [((sx * 0.24, -0.12, 2.14), (0.095, 0.10, 0.10), 8, 5)],
     )
     tube(
         f'GEO-Rider-Forearm-{side}',
         f'rider_hand_{side}',
         coat,
-        [(sx * 0.34, 0.02, 1.86), (sx * 0.32, 0.13, 1.77), (sx * 0.30, 0.24, 1.68)],
+        [(sx * 0.34, 0.02, 1.96), (sx * 0.32, 0.13, 1.87), (sx * 0.30, 0.24, 1.78)],
         0.07,
         0.055,
         8,
     )
-    sphere(f'GEO-Rider-Hand-{side}', f'rider_hand_{side}', skin, (sx * 0.30, 0.245, 1.675), (0.055, 0.075, 0.055), 8)
+    sphere(f'GEO-Rider-Hand-{side}', f'rider_hand_{side}', skin, (sx * 0.30, 0.245, 1.775), (0.055, 0.075, 0.055), 8)
     tube_with_blobs(
         f'GEO-Rider-Thigh-{side}',
         f'rider_thigh_{side}',
@@ -535,26 +539,34 @@ tube(
     'GEO-Rider-Sword-Blade',
     'rider_hand_R',
     sword,
-    [(-0.32, 0.28, 1.70), (-0.38, 0.45, 1.56), (-0.44, 0.62, 1.42)],
+    [(-0.32, 0.28, 1.80), (-0.38, 0.45, 1.66), (-0.44, 0.62, 1.52)],
     0.022,
     0.006,
     4,
     cap=True,
     smooth=False,
 )
-box('GEO-Rider-Sword-Guard', 'rider_hand_R', trim, (-0.31, 0.26, 1.69), (0.13, 0.03, 0.025), rot=(math.radians(35), 0, 0), smooth=True)
+box('GEO-Rider-Sword-Guard', 'rider_hand_R', trim, (-0.31, 0.26, 1.79), (0.13, 0.03, 0.025), rot=(math.radians(35), 0, 0), smooth=True)
 
 # Hats: exactly one is shown by the variant dressing. Names are part of the contract.
-cylinder('GEO-Hat-Bicorn-Brim', 'rider_head', hat_fabric, (0, -0.12, 2.44), 0.22, 0.03, vertices=16, smooth=True)
-box('GEO-Hat-Bicorn-Crown', 'rider_head', hat_fabric, (0, -0.12, 2.50), (0.35, 0.17, 0.105), bevel=0.025, smooth=True)
-box('GEO-Hat-Bicorn-Trim', 'rider_head', trim, (0, -0.035, 2.455), (0.35, 0.02, 0.035), smooth=True)
-cylinder('GEO-Hat-Morion-Brim', 'rider_head', hat_metal, (0, -0.12, 2.44), 0.21, 0.03, vertices=14, smooth=True)
-cone('GEO-Hat-Morion-Crown', 'rider_head', hat_metal, (0, -0.12, 2.51), 0.17, 0.065, 0.17, vertices=10)
-box('GEO-Hat-Morion-Comb', 'rider_head', trim, (0, -0.12, 2.575), (0.035, 0.26, 0.085), bevel=0.01, smooth=True)
-cylinder('GEO-Hat-Kepi-Band', 'rider_head', hat_fabric, (0, -0.12, 2.44), 0.15, 0.032, vertices=12, smooth=True)
-cylinder('GEO-Hat-Kepi-Crown', 'rider_head', hat_fabric, (0, -0.12, 2.50), 0.14, 0.12, vertices=12, smooth=True)
-cylinder('GEO-Hat-Kepi-Top', 'rider_head', hat_fabric, (0, -0.12, 2.565), 0.17, 0.026, vertices=12, smooth=True)
-box('GEO-Hat-Kepi-Trim', 'rider_head', trim, (0, 0.015, 2.455), (0.30, 0.02, 0.03), smooth=True)
+cylinder('GEO-Hat-Bicorn-Brim', 'rider_head', hat_fabric, (0, -0.12, 2.54), 0.22, 0.03, vertices=16, smooth=True)
+box('GEO-Hat-Bicorn-Crown', 'rider_head', hat_fabric, (0, -0.12, 2.60), (0.35, 0.17, 0.105), bevel=0.025, smooth=True)
+box('GEO-Hat-Bicorn-Trim', 'rider_head', trim, (0, -0.035, 2.555), (0.35, 0.02, 0.035), smooth=True)
+cylinder('GEO-Hat-Morion-Brim', 'rider_head', hat_metal, (0, -0.12, 2.54), 0.21, 0.03, vertices=14, smooth=True)
+cone('GEO-Hat-Morion-Crown', 'rider_head', hat_metal, (0, -0.12, 2.61), 0.17, 0.065, 0.17, vertices=10)
+box('GEO-Hat-Morion-Comb', 'rider_head', trim, (0, -0.12, 2.66), (0.035, 0.26, 0.08), bevel=0.01, smooth=True)
+cylinder('GEO-Hat-Kepi-Band', 'rider_head', hat_fabric, (0, -0.12, 2.54), 0.15, 0.032, vertices=12, smooth=True)
+kepi_crown = cylinder('GEO-Hat-Kepi-Crown', 'rider_head', hat_fabric, (0, -0.12, 2.60), 0.14, 0.12, vertices=12, smooth=True)
+kepi_top = cylinder('GEO-Hat-Kepi-Top', 'rider_head', hat_fabric, (0, -0.12, 2.665), 0.17, 0.026, vertices=12, smooth=True)
+# Merge the kepi's flat top into the crown: one visible mesh per hat keeps the
+# mounted rig at 16 visible meshes regardless of the selected headwear.
+bpy.ops.object.select_all(action='DESELECT')
+kepi_top.select_set(True)
+kepi_crown.select_set(True)
+bpy.context.view_layer.objects.active = kepi_crown
+bpy.ops.object.join()
+kepi_crown.name = 'GEO-Hat-Kepi-Crown'
+box('GEO-Hat-Kepi-Trim', 'rider_head', trim, (0, 0.015, 2.555), (0.30, 0.02, 0.03), smooth=True)
 
 # ---------------------------------------------------------------------------
 # Merge flat-coloured parts by material. Hats stay separate because the variant

@@ -3,6 +3,7 @@ import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import {
   RIG_CLIP_STATES,
   RIG_VARIANT_CLIPS,
+  RUN_CLIP_SPEED_THRESHOLD,
   WALK_CLIP_REFERENCE_SPEED,
   type RigClipState,
   type RigVariant,
@@ -97,12 +98,18 @@ export class RigInstance {
     return this.actions.has(state);
   }
 
+  /** Speed at which this rig should leave its walk/trot for the gallop. */
+  runSpeedThreshold(): number {
+    return this.asset.definition.runSpeedThreshold ?? RUN_CLIP_SPEED_THRESHOLD;
+  }
+
   /** World units/s the locomotion clip was authored for, or null outside locomotion. */
   referenceSpeed(state: RigClipState): number | null {
-    if (state === 'walk' || state === 'walk_carry') {
+    const actual = this.resolveState(state);
+    if (actual === 'walk' || actual === 'walk_carry') {
       return this.asset.definition.walkReferenceSpeed ?? WALK_CLIP_REFERENCE_SPEED;
     }
-    if (state === 'run') {
+    if (actual === 'run') {
       return (
         this.asset.definition.runReferenceSpeed ?? this.asset.definition.walkReferenceSpeed ?? WALK_CLIP_REFERENCE_SPEED
       );
@@ -110,11 +117,17 @@ export class RigInstance {
     return null;
   }
 
-  /** Crossfade to a gameplay state; missing states fall back to `idle`. */
+  /** Resolve a requested state to the action this rig actually has. */
+  private resolveState(state: RigClipState): RigClipState {
+    if (this.actions.has(state)) return state;
+    // A rig without a gallop should keep its walk/trot, not freeze in idle.
+    return state === 'run' && this.actions.has('walk') ? 'walk' : 'idle';
+  }
+
+  /** Crossfade to a gameplay state; missing states fall back to `idle` (or `run` to `walk`). */
   play(state: RigClipState, fade = 0.2): void {
     if (this.disposed) return;
-    // A rig without a gallop should keep its walk/trot, not freeze in idle.
-    const actual = this.actions.has(state) ? state : state === 'run' && this.actions.has('walk') ? 'walk' : 'idle';
+    const actual = this.resolveState(state);
     if (state === 'attack' && actual === 'idle' && !this.warnedMissingAttack) {
       this.warnedMissingAttack = true;
       console.warn(`[rig] ${this.root.name} (${this.variantId ?? 'no variant'}) has no attack clip`);

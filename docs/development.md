@@ -856,10 +856,12 @@ view; the shared rig geometry is untouched. The order-driven poses are captured 
 The mounted rig (`mounted_rig.glb`) is a project-authored low-poly horse and rider built by
 `scripts/blender/build_mounted_rig.py`. It is a 34-bone rig with five clips (`Idle_Loop`, `Walk_Loop` trot,
 `Gallop_Loop`, `Attack`, `Death`), and it maps `HUSSAR`/`CAVALRY` in the Viceroyalty and Republic eras: the
-late-colonial rebel and the four post-colonial civilizations. The horse uses a 1.62 m withers and ~2.6 m
+late-colonial rebel and the four post-colonial civilizations. The horse uses a 1.62 m withers and ~2.7 m
 mounted height against the 1.86 m infantry; its walk clip is a working trot and `run` switches to the gallop
-above `RUN_CLIP_SPEED_THRESHOLD`, with per-asset `walkReferenceSpeed`/`runReferenceSpeed` keeping the cadence
-matched to the unit velocity. The rider coat, trim, trousers and headwear are tinted/selected by
+above the rig's `runSpeedThreshold` (or immediately for an `attack`/`attack_move` charge). Per-asset
+`walkReferenceSpeed`/`runReferenceSpeed` and the `RUN_CLIP_RATE_MAX` ceiling keep the cadence matched to the
+unit velocity instead of clamping the gallop at the infantry walk ceiling. The rider coat, trim, trousers and
+headwear are tinted/selected by
 `src/rendering/mountedAttire.ts` from `src/model/defs/mountedCharacters.ts`; the coat/points palette varies by
 variant as a presentation abstraction and is not a breed reconstruction. `Attack` is the mounted charge/sword
 swing; `Death` plays once during the topple when the rig provides it. There is no mounted mapping before 1532,

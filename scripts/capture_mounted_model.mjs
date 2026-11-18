@@ -49,8 +49,10 @@ async function main() {
     const spawn = await page.evaluate(() => {
       const g = window.game;
       const c = g.playerCenter(0);
-      const x = c.x + 14;
-      const z = c.z + 12;
+      // Open ground away from the player base so the enemy pair does not join a
+      // fight and the close-up is not blocked by trees.
+      const x = c.x + 42;
+      const z = c.z + 4;
       const first = g.spawnScriptedUnit('realista_dragon', 1, x - 2.2, z);
       const second = g.spawnScriptedUnit('realista_dragon', 1, x + 2.2, z);
       g.camera.follow(null);
@@ -86,33 +88,54 @@ async function main() {
       files.push(file);
     }
 
-    // Motion proof: order the first dragon to move and read the rig's live state.
+    // Motion proof: a normal move must trot (campaign speed is below the gallop
+    // threshold) while an attack order must charge and play the gallop.
     const motion = await page.evaluate(() => {
       const g = window.game;
       const c = g.playerCenter(0);
-      const unit = g.spawnScriptedUnit('cavalry', 0, c.x + 12, c.z + 6);
-      unit.issueOrder({ kind: 'move', target: { x: unit.pos.x + 24, z: unit.pos.z + 6 } });
-      g.camera.follow(unit);
-      g.camera.setHeight(38);
-      return { id: unit.id, speed: unit.stats.speed };
+      const trot = g.spawnScriptedUnit('cavalry', 0, c.x - 30, c.z + 16);
+      trot.issueOrder({ kind: 'move', target: { x: trot.pos.x + 24, z: trot.pos.z } });
+      const gallop = g.spawnScriptedUnit('cavalry', 0, c.x - 30, c.z + 10);
+      gallop.issueOrder({ kind: 'attack_move', target: { x: gallop.pos.x + 24, z: gallop.pos.z } });
+      return { trot: trot.id, gallop: gallop.id, speeds: [trot.stats.speed, gallop.stats.speed] };
     });
-    await page.waitForTimeout(1400);
-    const state = await page.evaluate(({ id }) => {
-      const unit = window.game.units.get(id);
-      const view = unit?.unitView;
-      return {
-        state: view?.rig?.currentState ?? null,
-        clip: view?.rig?.currentClipName ?? null,
-        speed: Math.hypot(unit?.vel.x ?? 0, unit?.vel.z ?? 0),
-      };
-    }, motion);
-    const gallop = path.join(out, `mounted-model-${tag}-gallop.png`);
-    await page.screenshot({ path: gallop });
-    files.push(gallop);
+    await page.waitForTimeout(1200);
+    const readState = async (id) =>
+      page.evaluate(
+        ({ id }) => {
+          const unit = window.game.units.get(id);
+          const view = unit?.unitView;
+          return {
+            state: view?.rig?.currentState ?? null,
+            clip: view?.rig?.currentClipName ?? null,
+            speed: Math.hypot(unit?.vel.x ?? 0, unit?.vel.z ?? 0),
+          };
+        },
+        { id },
+      );
+    const states = { trot: await readState(motion.trot), gallop: await readState(motion.gallop) };
+    for (const name of ['trot', 'gallop']) {
+      await page.evaluate(
+        ({ id }) => {
+          const g = window.game;
+          const unit = g.units.get(id);
+          if (!unit) return;
+          g.camera.follow(null);
+          g.camera.moveTo(unit.pos.x, unit.pos.z, true);
+          g.camera.setHeight(24);
+        },
+        { id: motion[name] },
+      );
+      await page.waitForTimeout(250);
+      const file = path.join(out, `mounted-model-${tag}-${name}.png`);
+      await page.screenshot({ path: file });
+      files.push(file);
+    }
 
     const summary = path.join(out, `mounted-model-${tag}.json`);
-    fs.writeFileSync(summary, JSON.stringify({ tag, url: page.url(), spawn, motion, state, files, errors }, null, 2));
-    console.log(JSON.stringify({ spawn, motion, state, files, errors }, null, 2));
+    fs.writeFileSync(summary, JSON.stringify({ tag, url: page.url(), spawn, motion, states, files, errors }, null, 2));
+    console.log(JSON.stringify({ spawn, motion, states, files, errors }, null, 2));
+    if (errors.length || !states.trot.state || !states.gallop.state) process.exitCode = 1;
   } finally {
     await browser.close();
     await close();

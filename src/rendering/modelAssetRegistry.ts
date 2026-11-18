@@ -24,6 +24,8 @@ export interface ModelAssetDefinition {
   readonly walkReferenceSpeed?: number;
   /** World units/s the run/gallop clip was authored for; defaults to the walk reference. */
   readonly runReferenceSpeed?: number;
+  /** Speed at which a rig with a `run` clip gallops; defaults to the shared threshold. */
+  readonly runSpeedThreshold?: number;
   /** Optional one-shot clip used by `RigInstance.playDeath`. */
   readonly deathClip?: string;
   /** Ground the bind-pose feet at y=0 (units and terrestrial fauna). */
@@ -132,8 +134,11 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     clips: { ...PLATFORM_RIG.clips, run: 'Gallop_Loop' },
     // The horse's Walk_Loop is a working trot and Gallop_Loop a full gallop;
     // their cadence follows the unit speed instead of the shared infantry 1.4.
-    walkReferenceSpeed: 1.6,
+    // Heavy cavalry (3.6) trots; hussars and default-scale matches gallop, and
+    // an attack/attack_move order charges regardless of speed.
+    walkReferenceSpeed: 2.4,
     runReferenceSpeed: 2.2,
+    runSpeedThreshold: 3.8,
   },
   /**
    * Project-authored siege crew and vehicles. The source is
