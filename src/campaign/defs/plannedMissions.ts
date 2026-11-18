@@ -18,7 +18,7 @@ export interface PlannedMission {
   label?: 'Leyenda' | 'Tradición';
 }
 
-/** The seven planned missions that complete the four-entry launch catalogue. */
+/** The five planned missions that complete the four-entry launch catalogue. */
 export const PLANNED_MISSIONS: Record<string, PlannedMission> = {
   // El Virreinato
   p_vir_cusco: {
@@ -35,18 +35,6 @@ export const PLANNED_MISSIONS: Record<string, PlannedMission> = {
     summary: 'La expedición del virrey Toledo entra en Vilcabamba. Túpac Amaru I resiste y busca escapar a la selva.',
   },
   // La Independencia
-  p_ind_lima: {
-    id: 'p_ind_lima',
-    title: 'El cerco de Lima',
-    subtitle: 'Lima y Callao · 1821',
-    summary: 'Las montoneras cercan Lima, San Martín proclama la independencia y el Callao resiste el primer sitio.',
-  },
-  p_ind_real_felipe: {
-    id: 'p_ind_real_felipe',
-    title: 'El último bastión',
-    subtitle: 'Callao · 1824–1826',
-    summary: 'Tras Ayacucho, Rodil se encierra en la fortaleza del Real Felipe. El último sitio de la independencia.',
-  },
   // La República
   p_rep_tarapaca: {
     id: 'p_rep_tarapaca',

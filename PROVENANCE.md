@@ -406,6 +406,37 @@ slot is absent (offline / without assets).
 - **Review**: no human art-review gate applies to in-engine captures; the reused colonial plaza GLB keeps
   its own review status in `src/art/manifest.json`.
 
+
+### Lima 1821 intro and epilogue images (in-engine recreations)
+
+- **Location**: `public/media/lima-1821/intro-{camino,plaza,callao,epilogo}.webp` (960×540, WebP q58).
+- **Source**: captured from the game itself by `scripts/capture_independencia_arc.mjs` on the 1821 Lima
+  coast transect: the Lurín road and patriot camp, the Plaza Mayor, the Callao beach and a low epilogue.
+  Rendered without the HUD at 1600×900 and resized with `sharp`. Regenerate with
+  `node scripts/capture_independencia_arc.mjs --only=ID` after art changes.
+- **Runtime**: the briefing uses `intro-plaza`; the intro beats use `intro-camino`, `intro-callao` and
+  `intro-plaza`; the Act II/III cards use `intro-plaza` and `intro-callao`; the epilogue uses `intro-epilogo`.
+- **Content**: project-owned game renders (the reused `lima_site` colonial kit at the `ciudad` phase and the
+  procedural camp/wildlife). They are recreations of the game's own scenes: never historical photographs,
+  and not Blender renders (so not in `src/art/manifest.json`).
+- **Review**: no human art-review gate applies to in-engine captures; the reused colonial plaza GLB keeps
+  its own review status in `src/art/manifest.json`.
+
+### Real Felipe intro and epilogue images (in-engine recreations)
+
+- **Location**: `public/media/real-felipe/intro-{bastion,baterias,sitio,epilogo}.webp` (960×540, WebP q58).
+- **Source**: captured from the game itself by `scripts/capture_independencia_arc.mjs` on the Callao
+  terrace: the bastion from the sea side, the battery line, the siege camp and a low epilogue. Rendered
+  without the HUD at 1600×900 and resized with `sharp`. Regenerate with
+  `node scripts/capture_independencia_arc.mjs --only=ID` after art changes.
+- **Runtime**: the briefing and first beat use `intro-bastion`; the second beat and Act II use `intro-sitio`
+  and `intro-baterias`; the third beat, Act III and the epilogue use `intro-epilogo`.
+- **Content**: project-owned game renders (the reused `arica_site` coastal-fort composition and the
+  procedural camp). The Real Felipe is a labelled abstraction, not a survey of the star fort; the images
+  are recreations of the game's own scenes, never historical photographs.
+- **Review**: no human art-review gate applies to in-engine captures; the reused `arica_site` GLB keeps its
+  own review status (#343). A dedicated star-fort kit is future work.
+
 ### Los hijos de Tambotoco intro, chapter and epilogue images (in-engine recreations)
 
 - **Location**: `public/media/tambotoco/intro-{cueva,huanacaure,valle,traza,epilogo}.webp` (960x540, WebP q58,

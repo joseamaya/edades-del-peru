@@ -116,6 +116,36 @@ export const TUTORIALS: Record<string, TutorialDef> = {
       },
     ],
   },
+  m_lima_1821: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a las montoneras: son rápidas y baratas, pero frágiles en campo abierto.',
+        check: { type: 'selectUnit', unitKind: UnitKind.PATRIOTA_MONTONERA },
+      },
+      {
+        id: 'cortar',
+        text: 'Lleva tres montoneras al camino de Lurín y sostén el corte treinta segundos. Sin abastos, Lima no resiste.',
+        highlight: '#ed-objectives',
+        check: { type: 'objectiveCompleted', objectiveId: 'a1_cortar' },
+      },
+      {
+        id: 'plaza',
+        text: 'Entra en Lima y proclama la independencia en la Plaza Mayor. No hace falta asaltar la ciudad.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a2_plaza' },
+      },
+      {
+        id: 'san_martin',
+        text: 'San Martín debe seguir con vida: la independencia necesita un gobierno, no solo un ejército.',
+        check: { type: 'elapsed', seconds: 12 },
+      },
+      {
+        id: 'callao',
+        text: 'Sostén el primer sitio del Callao con al menos seis unidades hasta la capitulación de La Mar.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a3_sitio' },
+      },
+    ],
+  },
   m8_independencia: {
     steps: [
       {
@@ -143,6 +173,36 @@ export const TUTORIALS: Record<string, TutorialDef> = {
         id: 'ayacucho',
         text: 'Sostén el campo de Ayacucho 90 segundos para sellar la independencia.',
         check: { type: 'objectiveCompleted', objectiveId: 'obj_ayacucho' },
+      },
+    ],
+  },
+  m_real_felipe: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona la artillería: el sitio del Callao se gana con baterías y paciencia, no con un asalto.',
+        check: { type: 'selectUnit', unitKind: UnitKind.ARTILLERY },
+      },
+      {
+        id: 'baterias',
+        text: 'Levanta dos baterías cerca del Real Felipe. Cada fuerte acerca el cerco y cubre a la infantería.',
+        highlight: '#ed-objectives',
+        check: { type: 'objectiveCompleted', objectiveId: 'a1_baterias' },
+      },
+      {
+        id: 'bloqueo',
+        text: 'Mantén la artillería en la costa para cerrar el bloqueo: si entran víveres, el sitio se prolonga.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a2_bloqueo' },
+      },
+      {
+        id: 'salidas',
+        text: 'Rodil intentará salir para romper el cerco. Defiende el campamento durante un minuto.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a3_salidas' },
+      },
+      {
+        id: 'capitulacion',
+        text: 'Estrecha el cerco y fuerza la capitulación. La comida del ejército también sostiene el sitio.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a4_capitulacion' },
       },
     ],
   },

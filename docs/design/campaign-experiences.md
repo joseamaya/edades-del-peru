@@ -82,10 +82,12 @@ enemy. The feria uses the game's `Mercado` building as an abstraction and says s
 | m6 Chimú–Inca          | Water as power                           | Advance, close the gate, force surrender          | Assault vs siege                   | Chan Chan capitulates                  |
 | m6b Guerra Civil Inca  | Dynastic war and division                | Hold Quipaipan, capture Huáscar                   | Advance vs consolidate             | Atahualpa wins; the empire is weakened |
 | m7 Túpac Amaru         | Rebellion, the failed siege and memory   | Muster supplies, win at Sangarará, withdraw       | Hold vs. withdraw                  | Defeat, execution and legacy           |
+| m_lima_1821           | Pressure and legitimacy in 1821          | Cut the roads, proclaim independence, hold Callao | Siege vs. assault                  | Independence proclaimed; war continues |
 | m8 Independencia       | Campaign logistics and coordination      | Move, take the royalist centre, hold              | Timing and concentration           | Patriotic victory                      |
+| m_real_felipe         | The last royalist bastion                | Build batteries, blockade, resist sorties, wait   | Siege vs. assault                  | Capitulation after a costly siege      |
 | m9 Guerra del Pacífico | The documented defence and fall of Arica  | Refuse the summons, mine the approaches, hold the battery | Prepare vs. hold the last line    | The plaza falls; the defence becomes a symbol |
 
-m2–m9 are implemented and released across the five chapters. m7 and m9 now play their documented outcomes;
+The released missions are implemented across the five chapters. m7 and m9 now play their documented outcomes;
 no released mission wins with an undeclared counterfactual. Each mission remains reviewed against its dossier
 before it is rewritten.
 

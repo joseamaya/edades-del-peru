@@ -348,7 +348,7 @@ export class Mission {
         if (!o.entityTag) return 'ok';
         if (!this.spawned(o.entityTag)) return 'ok';
         if (this.countAlive(o.entityTag) === 0) return 'fail';
-        return this.timer >= (o.time ?? 0) ? 'win' : 'ok';
+        return this.timer - (this.activatedAt.get(o.id) ?? 0) >= (o.time ?? 0) ? 'win' : 'ok';
       }
       case 'protect': {
         if (!o.entityTag) return 'ok';
@@ -809,7 +809,11 @@ export class Mission {
         };
       case 'survive':
       case 'defend':
-        return { current: Math.min(this.timer, o.time ?? 0), target: o.time ?? 0, format: 'time' };
+        return {
+          current: Math.min(this.timer - (this.activatedAt.get(o.id) ?? 0), o.time ?? 0),
+          target: o.time ?? 0,
+          format: 'time',
+        };
       case 'hold':
         return { current: this.holdTimers.get(o.id) ?? 0, target: o.time ?? 0, format: 'time' };
       case 'inspect': {

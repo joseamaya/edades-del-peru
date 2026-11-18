@@ -70,9 +70,12 @@ name.
 | `m_junta_cusco` | Mateo García Pumacahua | `pumacahua` | Documented | Briefing portrait; field nameplate | [`junta_cusco.md`](../historia/campanas/junta_cusco.md) |
 | `m_junta_cusco` | Mariano Melgar | `melgar` | Documented | Briefing portrait; field nameplate | [`junta_cusco.md`](../historia/campanas/junta_cusco.md) |
 | `m_junta_cusco` | Juan Ramírez Orozco | `ramirez_orozco` | Documented | Briefing portrait only | [`junta_cusco.md`](../historia/campanas/junta_cusco.md) |
+| `m_lima_1821` | José de San Martín | `san_martin` | Documented | Briefing portrait; protected field nameplate | [`lima_1821.md`](../historia/campanas/lima_1821.md) |
 | `m8_independencia` | José de San Martín | `san_martin` | Documented | Briefing portrait only | [`independencia.md`](../historia/campanas/independencia.md) |
 | `m8_independencia` | Simón Bolívar | `bolivar` | Documented | Briefing portrait only | [`independencia.md`](../historia/campanas/independencia.md) |
 | `m8_independencia` | Antonio José de Sucre | `sucre` | Documented | Briefing portrait; protected field nameplate; narrator | [`independencia.md`](../historia/campanas/independencia.md) |
+| `m_real_felipe` | Bartolomé Salom | `salom` | Documented | Briefing portrait; protected field nameplate | [`real_felipe.md`](../historia/campanas/real_felipe.md) |
+| `m_real_felipe` | José Ramón Rodil | `rodil` | Documented | Briefing portrait only | [`real_felipe.md`](../historia/campanas/real_felipe.md) |
 | `m9_guerra_pacifico` | Francisco Bolognesi | `bolognesi` | Documented | Briefing portrait; protected field nameplate | [`guerra_del_pacifico.md`](../historia/campanas/guerra_del_pacifico.md) |
 | `m9_guerra_pacifico` | Miguel Grau | `grau` | Documented | Narration/education only; not fielded | [`guerra_del_pacifico.md`](../historia/campanas/guerra_del_pacifico.md) |
 

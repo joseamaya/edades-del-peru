@@ -134,6 +134,7 @@ export type AuthoredSiteId =
   | 'colonial_site'
   | 'independence_site'
   | 'arica_site'
+  | 'real_felipe_site'
   | 'cusco_inca_site'
   | 'cusco_junta_site'
   | 'tambotoco_site'
@@ -863,6 +864,39 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
         h: aricaLength(3),
       },
     ],
+    blockers: [{ ...ARICA_SITE_POINT, w: aricaLength(13), d: aricaLength(9) }],
+    blockerPadding: aricaLength(0.5),
+    buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.08, rz: 0.07 }],
+    wallCollision: {
+      meshPatterns: [/arica/i],
+      maxStartYAboveBase: 1.2,
+    },
+    walkableCorridor: { width: aricaLength(8) },
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      flatNormals: true,
+      suppressSnow: true,
+    },
+  },
+  // Callao (1824–1826) reuses the Arica coastal-fort composition as a labelled abstraction: the
+  // Real Felipe is a larger bastion, but the terrace, battery and sea approach read in the same way.
+  real_felipe_site: {
+    id: 'real_felipe_site',
+    label: 'Fortaleza del Real Felipe y el Callao',
+    modelName: 'arica_site',
+    scale: aricaLength(0.8),
+    origin: ARICA_SITE_POINT,
+    anchor: ARICA_SITE_POINT,
+    cameraHeight: 64,
+    framing: 'site-biased',
+    heightField: {
+      size: ARICA_HEIGHTMAP_SIZE,
+      worldSize: ARICA_HEIGHTMAP_WORLD_SIZE,
+      heights: ARICA_HEIGHTMAP,
+      ground: { size: ARICA_GROUND_SIZE, weights: ARICA_GROUND },
+    },
+    pathCellSize: 1,
+    heritageProxies: [],
     blockers: [{ ...ARICA_SITE_POINT, w: aricaLength(13), d: aricaLength(9) }],
     blockerPadding: aricaLength(0.5),
     buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.08, rz: 0.07 }],
