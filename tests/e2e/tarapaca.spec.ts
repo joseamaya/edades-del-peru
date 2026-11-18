@@ -24,7 +24,7 @@ test('m_tarapaca holds the village with real move orders', async ({ page }) => {
     }
     const dt = 1 / 60;
     let t = 0;
-    for (let i = 0; i < Math.ceil(50 / dt) && !g.mission.ended; i++) {
+    for (let i = 0; i < Math.ceil(85 / dt) && !g.mission.ended; i++) {
       g.update(dt, t);
       t += dt;
     }

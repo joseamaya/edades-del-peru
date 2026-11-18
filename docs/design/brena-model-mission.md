@@ -12,7 +12,7 @@ Huamachuco and the Treaty of Ancón. Sources and certainty: [`docs/historia/camp
 ## Acts
 
 1. **Build the community network.** Three `HOUSE` nodes in the Mantaro valley represent the communities
-   that provide guides, food and guerrillas.
+   that provide guides, food and guerrillas; completing the network brings four community defenders.
 2. **Ambush at the pass.** Hold the pass for 45 s against a Chilean column.
 3. **Huamachuco and withdrawal.** Hold the field for 60 s while Cáceres survives, then reach the Ayacucho
    road. Victory is the escape, not the destruction of the Chilean army.
@@ -43,6 +43,6 @@ The executions and violence of Concepción/Huamachuco are told in the epilogue a
 
 - Data: `tests/campaign.test.ts`, `tests/campaigns.test.ts`, scale/layout/profile guards.
 - Completable: `tests/e2e/campaign-completable.spec.ts`.
-- Real commands: `tests/e2e/brena.spec.ts` builds one community with ordinary place/build orders.
+- Real commands: `tests/e2e/brena.spec.ts` builds the three communities with ordinary place/build orders.
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts`.
 - Open: human no-cheat playtest and a performance row.

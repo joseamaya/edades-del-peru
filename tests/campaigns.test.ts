@@ -98,8 +98,8 @@ describe('campaign series', () => {
     expect(missionPosition('m7_tupac_amaru')).toEqual({ n: 4, total: 4 });
     expect(missionPosition('m_lima_1821')).toEqual({ n: 2, total: 4 });
     expect(missionPosition('m_real_felipe')).toEqual({ n: 4, total: 4 });
-    expect(missionPosition('m9_guerra_pacifico')).toEqual({ n: 1, total: 4 });
-    expect(missionPosition('m_tarapaca')).toEqual({ n: 2, total: 4 });
+    expect(missionPosition('m_tarapaca')).toEqual({ n: 1, total: 4 });
+    expect(missionPosition('m9_guerra_pacifico')).toEqual({ n: 2, total: 4 });
     expect(missionPosition('m_miraflores')).toEqual({ n: 3, total: 4 });
     expect(missionPosition('m_brena')).toEqual({ n: 4, total: 4 });
     expect(missionPosition('p_inca_collao')).toBeNull();
@@ -129,8 +129,8 @@ describe('campaign series', () => {
       'm_lima_1821',
       'm8_independencia',
       'm_real_felipe',
-      'm9_guerra_pacifico',
       'm_tarapaca',
+      'm9_guerra_pacifico',
       'm_miraflores',
       'm_brena',
     ]);
@@ -149,8 +149,8 @@ describe('campaign series', () => {
     expect(nextReleasedMission('m_lima_1821')?.id).toBe('m8_independencia');
     expect(nextReleasedMission('m8_independencia')?.id).toBe('m_real_felipe');
     expect(nextReleasedMission('m_real_felipe')).toBeUndefined();
-    expect(nextReleasedMission('m9_guerra_pacifico')?.id).toBe('m_tarapaca');
-    expect(nextReleasedMission('m_tarapaca')?.id).toBe('m_miraflores');
+    expect(nextReleasedMission('m_tarapaca')?.id).toBe('m9_guerra_pacifico');
+    expect(nextReleasedMission('m9_guerra_pacifico')?.id).toBe('m_miraflores');
     expect(nextReleasedMission('m_miraflores')?.id).toBe('m_brena');
     expect(nextReleasedMission('m_brena')).toBeUndefined();
   });
@@ -197,7 +197,7 @@ describe('campaign series', () => {
     expect(INDEPENDENCIA_PROLOGUE).toHaveLength(4);
     expect(INDEPENDENCIA_PROLOGUE.at(-1)?.kicker).toContain('1824–1826');
     expect(REPUBLICA_PROLOGUE).toHaveLength(4);
-    expect(REPUBLICA_PROLOGUE[0].kicker).toContain('ARICA');
+    expect(REPUBLICA_PROLOGUE[0].kicker).toContain('TARAPACÁ');
     expect(REPUBLICA_PROLOGUE.some((beat) => beat.text.includes('1866'))).toBe(false);
   });
 });
@@ -244,7 +244,8 @@ describe('campaign unlocks', () => {
     expect(isMissionUnlocked(fresh, 'm_lima')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm_junta_cusco')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm8_independencia')).toBe(false);
-    expect(isMissionUnlocked(fresh, 'm9_guerra_pacifico')).toBe(true);
+    expect(isMissionUnlocked(fresh, 'm_tarapaca')).toBe(true);
+    expect(isMissionUnlocked(fresh, 'm9_guerra_pacifico')).toBe(false);
     for (const campaign of CAMPAIGNS) {
       expect(isCampaignUnlocked(fresh, campaign.id), campaign.id).toBe(true);
     }

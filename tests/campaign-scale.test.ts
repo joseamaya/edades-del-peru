@@ -50,9 +50,9 @@ describe('model-mission scale', () => {
       'm8_independencia',
       'm_real_felipe',
       'm_tarapaca',
+      'm9_guerra_pacifico',
       'm_miraflores',
       'm_brena',
-      'm9_guerra_pacifico',
     ]);
   });
 });

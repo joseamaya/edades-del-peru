@@ -15,6 +15,7 @@ export const PORTRAIT_IDS = [
   'salom',
   'rodil',
   'caceres',
+  'buendia',
   'grau',
   'bolognesi',
   'atahualpa',
@@ -196,6 +197,15 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.REPUBLIC,
     status: 'documented',
     source: 'docs/historia/campanas/brena.md',
+  },
+  buendia: {
+    gender: 'male',
+    id: 'buendia',
+    name: 'Juan Buendía',
+    role: 'Perú · Tarapacá',
+    civ: CivId.REPUBLIC,
+    status: 'documented',
+    source: 'docs/historia/campanas/tarapaca.md',
   },
   grau: {
     gender: 'male',

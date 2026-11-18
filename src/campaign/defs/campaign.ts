@@ -35,9 +35,9 @@ export const MISSIONS: MissionDef[] = [
   m8Independencia,
   mRealFelipe,
   mTarapaca,
+  m9GuerraPacifico,
   mMiraflores,
   mBrena,
-  m9GuerraPacifico,
 ];
 
 export function getMission(id: string): MissionDef | undefined {

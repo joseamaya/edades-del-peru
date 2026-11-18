@@ -193,18 +193,18 @@ export const INDEPENDENCIA_PROLOGUE: CinematicBeat[] = [
 
 export const REPUBLICA_PROLOGUE: CinematicBeat[] = [
   {
-    kicker: 'ARICA · 7 DE JUNIO DE 1880',
-    title: 'La defensa del puerto',
-    text: 'En la Guerra del Pacífico, la guarnición peruana de Arica resiste el asalto chileno. Francisco Bolognesi muere en la defensa; la plaza cae, pero su resistencia queda como símbolo.',
-    seconds: 8,
-    source: 'docs/historia/campanas/guerra_del_pacifico.md',
-  },
-  {
     kicker: 'TARAPACÁ · 27 DE NOVIEMBRE DE 1879',
     title: 'La quebrada',
-    text: 'Unos meses antes, en la quebrada de Tarapacá, el ejército peruano había obtenido una victoria que no cambió el curso de la guerra. La campaña continuaba en el sur.',
+    text: 'En la quebrada de Tarapacá, el ejército peruano resiste sin caballería ni artillería. La victoria táctica no cambia el curso de la guerra: la provincia se pierde y la campaña continúa en el sur.',
     seconds: 8,
-    source: 'docs/historia/propuestas/independencia-republica.md',
+    source: 'docs/historia/campanas/tarapaca.md',
+  },
+  {
+    kicker: 'ARICA · 7 DE JUNIO DE 1880',
+    title: 'La defensa del puerto',
+    text: 'La guarnición peruana de Arica resiste el asalto chileno. Francisco Bolognesi muere en la defensa; la plaza cae, pero su resistencia queda como símbolo.',
+    seconds: 8,
+    source: 'docs/historia/campanas/guerra_del_pacifico.md',
   },
   {
     kicker: 'LIMA · ENERO DE 1881',

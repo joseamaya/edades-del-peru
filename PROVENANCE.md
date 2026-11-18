@@ -726,11 +726,11 @@ downscaled 1920 shot would look smaller than the 1280 one.
 
 ### Tarapacá, Miraflores and La Breña intro/epilogue images (in-engine recreations)
 
-- **Location**: `public/media/{tarapaca,miraflores,brena}/intro-*.webp` (700×394, WebP q32).
+- **Location**: `public/media/{tarapaca,miraflores,brena}/intro-*.webp` (640×360, WebP q28).
 - **Source**: captured from the game itself by `scripts/capture_republica_arc.mjs` on the Republic
   missions: the Tarapacá quebrada, the Miraflores redoubt line, the Mantaro valley and the Huamachuco
   heights. Rendered without the HUD at 1600×900 and resized with `sharp`. Regenerate with
-  `node scripts/capture_republica_arc.mjs --only=ID` after art changes.
+  `node scripts/capture_republica_arc.mjs --mission=ID --only=ID` after art changes.
 - **Runtime**: `m_tarapaca` uses `intro-{quebrada,alturas,retirada,epilogo}`; `m_miraflores` uses
   `intro-{lima,reductos,retirada,epilogo}`; `m_brena` uses `intro-{mantaro,galgas,huamachuco,epilogo}`.
 - **Content**: project-owned game renders (the reused Arica desert terrace, the Lima colonial kit at the

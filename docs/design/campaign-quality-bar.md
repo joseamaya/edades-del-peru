@@ -59,16 +59,16 @@ added on 2026-11-18; the rest is the 2026-11-14 audit.
 | m_lima_1821        | M    | M     | P    | M     | M   | M    | M   | P   | M    | P     | M    | M      | M    | M   | P    | M     |
 | m8_independencia   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_real_felipe      | M    | M     | P    | M     | M   | M    | M   | P   | M    | P     | M    | M      | M    | P   | P    | M     |
-| m_tarapaca         | M    | M     | P    | M     | M   | M    | M   | P   | M    | P     | M    | M      | M    | P   | P    | M     |
-| m_miraflores       | M    | M     | P    | M     | M   | M    | M   | P   | M    | P     | M    | M      | M    | P   | P    | M     |
-| m_brena            | M    | M     | P    | M     | M   | M    | M   | P   | M    | P     | M    | M      | M    | P   | P    | M     |
+| m_tarapaca         | M    | M     | P    | M     | M   | M    | M   | P   | P    | P     | M    | M      | M    | P   | P    | M     |
+| m_miraflores       | M    | M     | P    | M     | M   | M    | M   | P   | P    | P     | M    | M      | M    | P   | P    | M     |
+| m_brena            | M    | M     | P    | M     | M   | M    | M   | P   | P    | P     | M    | M      | M    | P   | P    | M     |
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín's intro render
 is approved; its kit and captures keep their own review status. Every released mission now
-follows the model pattern (256 m, painted ground, acts, in-engine intro and bench), including m8 in this
-pass. **m3–m9 meet the scale, opening and performance gates**; the m3, m4, m5, Tambotoco, Lima, La Junta and
+follows the model pattern (256 m, painted ground, acts and in-engine intro); bench rows are pending for the
+newest arc. m8 was included in this pass. **m3–m9 meet the scale, opening and performance gates**; the m3, m4, m5, Tambotoco, Lima, La Junta and
 Arica intro renders are approved. Every render record in `src/art/manifest.json` is now approved: the five
 Caral education/tour records were reconciled and the three draft Workbench mission intros were removed. The
 open art review is the reused site GLBs (#343).
@@ -390,7 +390,7 @@ The 2026-11-18 pass completed the 1879–1883 land arc:
 - **`m_tarapaca`** reuses the Arica desert terrace as a labelled quebrada. It holds the village without
   cavalry or artillery, recovers the heights with infantry, receives captured guns and withdraws to Arica.
   Real-command test: `tests/e2e/tarapaca.spec.ts`. Open: human no-cheat playtest and a performance row.
-- **`m_miraflores`** reuses `lima_site` at the `ciudad` phase. It builds three redoubts, holds the line with
+- **`m_miraflores`** adds `miraflores_site` (the Lima colonial kit at the `ciudad` phase). It builds three redoubts, holds the line with
   reservists and withdraws Cáceres to the sierra. Real-command test: `tests/e2e/miraflores.spec.ts`.
   Open: human no-cheat playtest and a performance row.
 - **`m_brena`** reuses the Ayacucho camp as a labelled sierra-central abstraction. It builds the community

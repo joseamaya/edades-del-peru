@@ -4,12 +4,12 @@ import { LIMA_SITE_ORIGIN } from '../../../model/defs/sites';
 
 // Miraflores: Lima, the redoubt line south of the city and the withdrawal road to the sierra.
 const MIRAFLORES_LIMA = LIMA_SITE_ORIGIN;
-const MIRAFLORES_CAMP = { x: 96, z: 224 } as const;
-const MIRAFLORES_ENEMY = { x: 160, z: 44 } as const;
+const MIRAFLORES_CAMP = { x: 112, z: 160 } as const;
+const MIRAFLORES_ENEMY = { x: 196, z: 236 } as const;
 const MIRAFLORES_REDOUBT_1 = { x: 72, z: 190 } as const;
 const MIRAFLORES_REDOUBT_2 = { x: 112, z: 190 } as const;
 const MIRAFLORES_REDOUBT_3 = { x: 152, z: 190 } as const;
-const MIRAFLORES_RETREAT = { x: 60, z: 236 } as const;
+const MIRAFLORES_RETREAT = { x: 230, z: 150 } as const;
 
 export const mMiraflores: MissionDef = {
   id: 'm_miraflores',
@@ -18,7 +18,7 @@ export const mMiraflores: MissionDef = {
   subtitle: 'San Juan y Miraflores · 1881',
   history:
     'En enero de 1881 el ejército chileno avanza sobre Lima. Tras San Juan y Chorrillos, la defensa se organiza en una línea de reductos en Miraflores, con reservistas limeños y tropas de Cáceres.\n' +
-    'La línea resiste dos jornadas, pero la ciudad cae. La misión no pide ganar la guerra: pide sostener los reductos el tiempo necesario para retirar a Cáceres y continuar la resistencia en la sierra.',
+    'La defensa de Lima dura dos jornadas; la línea de Miraflores resiste una de ellas. La misión no pide ganar la guerra: pide sostener los reductos el tiempo necesario para retirar a Cáceres y continuar la resistencia en la sierra.',
   victory:
     'Los reductos resisten lo suficiente para retirar a Cáceres y parte de la fuerza. Lima cae y la guerra continúa en la sierra: la resistencia de la Breña empieza en esta retirada.',
   defeat:
@@ -41,7 +41,7 @@ export const mMiraflores: MissionDef = {
       { text: 'Camino a la sierra', x: MIRAFLORES_RETREAT.x / 256, z: MIRAFLORES_RETREAT.z / 256, kind: 'region' },
     ],
     base: { x: MIRAFLORES_CAMP.x / 256, z: MIRAFLORES_CAMP.z / 256 },
-    opening: { x: 120 / 256, z: 196 / 256 },
+    opening: { x: 112 / 256, z: 176 / 256 },
     enemyBase: { x: MIRAFLORES_ENEMY.x / 256, z: MIRAFLORES_ENEMY.z / 256 },
     discoveries: [],
     terrain: {
@@ -52,7 +52,7 @@ export const mMiraflores: MissionDef = {
       ],
     },
     site: {
-      id: 'lima_site',
+      id: 'miraflores_site',
       y: 5.6,
       phase: 'ciudad',
       focus: { x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256 },
@@ -62,7 +62,7 @@ export const mMiraflores: MissionDef = {
     roads: [
       { from: { dx: MIRAFLORES_LIMA.x, dz: MIRAFLORES_LIMA.z }, to: { dx: 112, dz: 190 }, width: 3 },
       { from: { dx: 112, dz: 190 }, to: { dx: MIRAFLORES_RETREAT.x, dz: MIRAFLORES_RETREAT.z }, width: 3 },
-      { from: { dx: 112, dz: 190 }, to: { dx: 196, dz: 236 }, width: 3 },
+      { from: { dx: 112, dz: 190 }, to: { dx: MIRAFLORES_ENEMY.x, dz: MIRAFLORES_ENEMY.z }, width: 3 },
     ],
   },
   timeOfDay: 'morning',
@@ -103,7 +103,7 @@ export const mMiraflores: MissionDef = {
     {
       kicker: 'LIMA · 17 DE ENERO DE 1881',
       title: 'La retirada',
-      text: 'Lima cae y la guerra continúa en la sierra. La resistencia de Cáceres en la Breña empieza con esta retirada: no se pierde la capital, se gana tiempo para seguir luchando.',
+      text: 'Lima cae y la guerra continúa en la sierra. La resistencia de Cáceres en la Breña empieza con esta retirada: la capital se pierde, pero se gana tiempo para seguir luchando.',
       seconds: 10,
       source: 'docs/historia/campanas/miraflores.md',
       image: 'media/miraflores/intro-retirada.webp',
@@ -148,6 +148,15 @@ export const mMiraflores: MissionDef = {
       ],
       radius: 14,
       title: 'Levanta los reductos 1, 2 y 3',
+    },
+    {
+      id: 'a1_cuarto',
+      kind: 'build',
+      buildingKind: BuildingKind.FORTRESS,
+      pos: { dx: 192, dz: 190 },
+      radius: 14,
+      optional: true,
+      title: 'Levanta un cuarto reducto si te queda piedra',
     },
     {
       id: 'a2_linea',

@@ -425,7 +425,7 @@ describe('campaign educational content', () => {
       const mis = MISSIONS.find((m) => m.id === id)!;
       expect(mis.period, `${id} period`).toBe(period);
       expect(mis.modelMission, `${id} model mission`).toBe(true);
-      expect(mis.objectives.length, `${id} objectives`).toBeGreaterThanOrEqual(4);
+      expect(mis.objectives.length, `${id} objectives`).toBeGreaterThanOrEqual(5);
       expect(
         mis.objectives.some((o) => o.hidden),
         `${id} hidden objectives`,

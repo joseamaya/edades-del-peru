@@ -13,10 +13,10 @@ Arica. Sources and certainty: [`docs/historia/campanas/tarapaca.md`](../historia
 ## Acts
 
 1. **Hold the village.** Six units hold Tarapacá for 45 s, with no cavalry or artillery in the roster.
-2. **Take the heights.** Recover the quebrada heights; the optional Pachica link represents the
-   reinforcements from the neighbouring column.
-3. **Hold the heights and withdraw.** A 60 s hold receives two captured artillery pieces; the epilogue
-   states that the province is lost and the army retreats to Arica.
+2. **Take the heights.** Recover the quebrada heights; the optional Pachica link brings four republican
+   defenders as reinforcements.
+3. **Hold the heights and withdraw.** A 60 s hold receives two captured artillery pieces, then the player
+   marches to the Arica road. The epilogue states that the province is lost and the army retreats to Arica.
 
 ## Map and site
 

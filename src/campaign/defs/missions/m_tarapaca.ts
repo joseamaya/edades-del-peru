@@ -3,12 +3,15 @@ import type { MissionDef } from '../../types';
 
 // Tarapacá: the village in the quebrada, the heights held by the Chilean columns and the Pachica road.
 const TARAPACA_VILLAGE = { x: 96, z: 168 } as const;
-const TARAPACA_HEIGHTS = { x: 176, z: 96 } as const;
+const TARAPACA_HEIGHTS = { x: 160, z: 120 } as const;
+const TARAPACA_SITE = { x: 176, z: 96 } as const;
 const TARAPACA_PACHICA = { x: 62, z: 196 } as const;
+const TARAPACA_BASE = { x: 72, z: 200 } as const;
+const TARAPACA_ENEMY = { x: 200, z: 72 } as const;
 
 export const mTarapaca: MissionDef = {
   id: 'm_tarapaca',
-  commanders: ['caceres'],
+  commanders: ['buendia', 'caceres'],
   title: 'La quebrada',
   subtitle: 'Tarapacá · 27 de noviembre de 1879',
   history:
@@ -35,9 +38,9 @@ export const mTarapaca: MissionDef = {
       { text: 'Pachica', x: TARAPACA_PACHICA.x / 256, z: TARAPACA_PACHICA.z / 256, kind: 'region' },
       { text: 'Camino a Arica', x: 196 / 256, z: 196 / 256, kind: 'region' },
     ],
-    base: { x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256 },
-    opening: { x: 110 / 256, z: 150 / 256 },
-    enemyBase: { x: TARAPACA_HEIGHTS.x / 256, z: TARAPACA_HEIGHTS.z / 256 },
+    base: { x: TARAPACA_BASE.x / 256, z: TARAPACA_BASE.z / 256 },
+    opening: { x: 100 / 256, z: 190 / 256 },
+    enemyBase: { x: TARAPACA_ENEMY.x / 256, z: TARAPACA_ENEMY.z / 256 },
     discoveries: [],
     terrain: {
       flats: [
@@ -49,9 +52,9 @@ export const mTarapaca: MissionDef = {
     site: {
       id: 'tarapaca_site',
       y: 4,
-      focus: { x: TARAPACA_HEIGHTS.x / 256, z: TARAPACA_HEIGHTS.z / 256 },
-      keepout: [{ x: TARAPACA_HEIGHTS.x / 256, z: TARAPACA_HEIGHTS.z / 256, rx: 0.08, rz: 0.07 }],
-      buildKeepout: [{ x: TARAPACA_HEIGHTS.x / 256, z: TARAPACA_HEIGHTS.z / 256, rx: 0.07, rz: 0.06 }],
+      focus: { x: TARAPACA_SITE.x / 256, z: TARAPACA_SITE.z / 256 },
+      keepout: [{ x: TARAPACA_SITE.x / 256, z: TARAPACA_SITE.z / 256, rx: 0.08, rz: 0.07 }],
+      buildKeepout: [{ x: TARAPACA_SITE.x / 256, z: TARAPACA_SITE.z / 256, rx: 0.07, rz: 0.06 }],
     },
     roads: [
       {
@@ -172,6 +175,15 @@ export const mTarapaca: MissionDef = {
       title: 'Sostén las alturas hasta la retirada chilena',
     },
     {
+      id: 'a3_retirada',
+      kind: 'reach',
+      pos: { dx: 220, dz: 220 },
+      radius: 16,
+      hidden: true,
+      requires: 'a3_resistir',
+      title: 'Retira el ejército hacia Arica',
+    },
+    {
       id: 'a3_caceres',
       kind: 'protect',
       entityTag: 'caceres',
@@ -187,7 +199,26 @@ export const mTarapaca: MissionDef = {
           type: 'dialogue',
           speaker: 'Cáceres',
           duration: 9,
-          text: '—No tenemos caballería ni cañones. Aguante el pueblo y suba a las alturas: el que domina la quebrada domina el campo.',
+          text: '—Mi sector no tiene caballería ni cañones. Aguante el pueblo y suba a las alturas: el que domina la quebrada domina el campo.',
+        },
+      ],
+    },
+    {
+      id: 't_pachica',
+      condition: { type: 'objective', objectiveId: 'a2_pachica', state: 'completed' },
+      effects: [
+        {
+          type: 'dialogue',
+          speaker: 'Cáceres',
+          duration: 8,
+          text: '—La columna de Pachica ha llegado. Refuerza la línea y aprovecha para recuperar las alturas.',
+        },
+        {
+          type: 'reinforce',
+          owner: 0,
+          units: [{ kind: UnitKind.REPUBLICA_DEFENSOR, count: 4 }],
+          pos: { dx: TARAPACA_VILLAGE.x, dz: TARAPACA_VILLAGE.z },
+          radius: 10,
         },
       ],
     },
@@ -245,7 +276,7 @@ export const mTarapaca: MissionDef = {
           ],
           pos: { dx: TARAPACA_HEIGHTS.x, dz: TARAPACA_HEIGHTS.z },
           radius: 14,
-          target: { dx: TARAPACA_VILLAGE.x, dz: TARAPACA_VILLAGE.z },
+          target: { dx: TARAPACA_HEIGHTS.x, dz: TARAPACA_HEIGHTS.z },
         },
       ],
     },
@@ -258,6 +289,19 @@ export const mTarapaca: MissionDef = {
           speaker: 'Cáceres',
           duration: 9,
           text: '—La quebrada es nuestra, pero la provincia no. Recojan los cañones y emprendamos la retirada: Arica nos espera.',
+        },
+        { type: 'objective', objectiveId: 'a3_retirada', state: 'activate', announce: true },
+      ],
+    },
+    {
+      id: 't_retirada',
+      condition: { type: 'objective', objectiveId: 'a3_retirada', state: 'completed' },
+      effects: [
+        {
+          type: 'dialogue',
+          speaker: 'Cáceres',
+          duration: 9,
+          text: '—Arica nos espera. La victoria de hoy no salva Tarapacá, pero el ejército sigue en pie.',
         },
       ],
     },

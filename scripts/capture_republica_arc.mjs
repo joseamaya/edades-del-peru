@@ -11,6 +11,7 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
  * Usage: node scripts/capture_republica_arc.mjs [--only=ID]
  */
 const only = cliArg('only', '');
+const onlyMission = cliArg('mission', '');
 
 const SHOTS = [
   {
@@ -25,7 +26,7 @@ const SHOTS = [
     mission: 'm_tarapaca',
     dir: 'tarapaca',
     id: 'alturas',
-    at: [176, 96],
+    at: [160, 120],
     height: 42,
     time: 0.5,
   },
@@ -105,7 +106,7 @@ const { base, close } = await withViteServer();
 const browser = await launchChromium();
 try {
   for (const shot of SHOTS) {
-    if (only && shot.id !== only) continue;
+    if ((only && shot.id !== only) || (onlyMission && shot.mission !== onlyMission)) continue;
     const out = path.join(process.cwd(), 'public', 'media', shot.dir);
     fs.mkdirSync(out, { recursive: true });
     const page = await (await browser.newContext({ viewport: { width: 1600, height: 900 } })).newPage();
@@ -178,7 +179,7 @@ try {
     await page.waitForTimeout(500);
     const png = await page.screenshot({ type: 'png' });
     const file = path.join(out, `intro-${shot.id}.webp`);
-    await sharp(png).resize(960, 540).webp({ quality: 58 }).toFile(file);
+    await sharp(png).resize(640, 360).webp({ quality: 28 }).toFile(file);
     console.log(`captured ${path.relative(process.cwd(), file)} (${fs.statSync(file).size} bytes)`);
     await page.close();
   }

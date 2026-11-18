@@ -197,7 +197,7 @@ to the milestones that complete each arc. The other thirteen missions keep their
 | El Tahuantinsuyo | Tambotoco, Yahuar Pampa, Chimú–Inca, Guerra Civil | 4 | 0 |
 | El Virreinato | Lima, Cusco en llamas, El último Inca, Túpac Amaru II | 2 | 2 |
 | La Independencia | Junta del Cusco, El cerco de Lima, Independencia, El último bastión | 4 | 0 |
-| La República | Arica, La quebrada, San Juan y Miraflores, El brujo de los Andes | 4 | 0 |
+| La República | La quebrada, Arica, San Juan y Miraflores, El brujo de los Andes | 4 | 0 |
 
 The two planned catalogue entries are `p_vir_cusco` and `p_vir_vilcabamba`.
 

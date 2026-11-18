@@ -56,7 +56,7 @@ describe('campaign authored geography', () => {
     expect(byId('m_lima_1821').layout?.site?.id).toBe('lima_site');
     expect(byId('m_real_felipe').layout?.site?.id).toBe('real_felipe_site');
     expect(byId('m_tarapaca').layout?.site?.id).toBe('tarapaca_site');
-    expect(byId('m_miraflores').layout?.site?.id).toBe('lima_site');
+    expect(byId('m_miraflores').layout?.site?.id).toBe('miraflores_site');
     expect(byId('m_brena').layout?.site?.id).toBe('brena_site');
     expect(byId('m8_independencia').layout?.terrain?.flats?.length).toBeGreaterThan(0);
   });
