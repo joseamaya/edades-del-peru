@@ -267,10 +267,15 @@ async function playMission(page, plan) {
     return { before, after: g.isCanalOpen() };
   });
   if (gateProbe.before || gateProbe.after) throw new Error('the acequia opened before the hold');
-  await move(page, army, { x: plan.heritage.x, z: plan.heritage.z + 12 });
+  // The hold needs bodies, not only soldiers: the wave outnumbers the starting army, so the workers
+  // join the ring and absorb part of the attack. The E2E playtest wins with the same move.
+  const holdPoint = { x: plan.heritage.x, z: plan.heritage.z + 12 };
+  const defenders = [...army, ...(await units(page, 'worker')).map((u) => u.id)];
+  await move(page, defenders, holdPoint);
   await waitObjective(page, 'a3_oleada', 'completed', 120_000, deadline, async () => {
-    await look(page, null, 30, 'army');
-    await move(page, army, { x: plan.heritage.x, z: plan.heritage.z + 12 });
+    await look(page, null, 30, 'all');
+    const live = (await units(page)).map((u) => u.id);
+    await move(page, live, holdPoint);
   });
   if (await hasEnded(page)) return;
 
