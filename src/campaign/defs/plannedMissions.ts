@@ -18,7 +18,7 @@ export interface PlannedMission {
   label?: 'Leyenda' | 'Tradición';
 }
 
-/** The five planned missions that complete the four-entry launch catalogue. */
+/** The two planned missions that complete the four-entry launch catalogue. */
 export const PLANNED_MISSIONS: Record<string, PlannedMission> = {
   // El Virreinato
   p_vir_cusco: {
@@ -33,27 +33,6 @@ export const PLANNED_MISSIONS: Record<string, PlannedMission> = {
     title: 'El último Inca',
     subtitle: 'Vilcabamba · 1572',
     summary: 'La expedición del virrey Toledo entra en Vilcabamba. Túpac Amaru I resiste y busca escapar a la selva.',
-  },
-  // La Independencia
-  // La República
-  p_rep_tarapaca: {
-    id: 'p_rep_tarapaca',
-    title: 'La quebrada',
-    subtitle: 'Tarapacá · 27 de noviembre de 1879',
-    summary: 'Tras la guerra en el mar, el ejército peruano resiste en la quebrada de Tarapacá.',
-  },
-  p_rep_lima: {
-    id: 'p_rep_lima',
-    title: 'San Juan y Miraflores',
-    subtitle: 'Lima · enero de 1881',
-    summary: 'Lima se defiende en dos líneas de reductos frente al avance chileno.',
-  },
-  p_rep_brena: {
-    id: 'p_rep_brena',
-    title: 'El brujo de los Andes',
-    subtitle: 'Sierra central · 1882–1883',
-    summary:
-      'Andrés A. Cáceres y las montoneras sostienen la Campaña de la Breña, de Pucará y Marcavalle a Huamachuco.',
   },
 };
 

@@ -133,10 +133,10 @@ announce it.
 |---|---|---|---|---|---|
 | 1 | **Socabaya**: the Peru-Bolivian Confederation (optional) | 1836 | Santa Cruz vs Salaverry | open battle | new (optional) |
 | 2 | **Las baterías del Callao**: Dos de Mayo | 2 May 1866 | Callao batteries vs Spanish squadron | coastal defence | new — ships as scripted structures |
-| 3 | **La quebrada**: Tarapacá, after a narrated naval interlude (Iquique, Punta Gruesa, Angamos) | 27 Nov 1879 | Peru vs Chile | ambush in the ravine | new |
+| 3 | **La quebrada**: Tarapacá, after a narrated naval interlude (Iquique, Punta Gruesa, Angamos) | 27 Nov 1879 | Peru vs Chile | ambush in the ravine | **m_tarapaca** |
 | 4 | **La defensa de Arica** | 7 Jun 1880 | Bolognesi vs Chile | defence | **m9**, refocused on land |
-| 5 | **San Juan y Miraflores** | 13–15 Jan 1881 | Peru vs Chile | defence lines and redoubts | new |
-| 6 | **El brujo de los Andes**: the Breña, Pucará and Marcavalle to Huamachuco | 1882–1883 | Cáceres and montoneras vs Chile | guerrilla campaign | new |
+| 5 | **San Juan y Miraflores** | 13–15 Jan 1881 | Peru vs Chile | defence lines and redoubts | **m_miraflores** |
+| 6 | **El brujo de los Andes**: the Breña, Pucará and Marcavalle to Huamachuco | 1882–1883 | Cáceres and montoneras vs Chile | guerrilla campaign | **m_brena** |
 
 Andrés A. Cáceres (Tarapacá, Miraflores, the Breña) is the thread of the chapter. The naval war is an
 interlude because the game has no ships; m9's current naval framing (Huáscar, Grau) moves into it.
@@ -181,7 +181,7 @@ order, one mission at a time through the model-mission pattern:
 1. **Close the released missions**: art review, performance and pacing (D2–D3).
 2. **Virreinato**: Cusco 1536 (seasonal calendar) and Vilcabamba 1572.
 3. **Independencia**: El cerco de Lima 1821 and the Real Felipe 1826 — **Built (2026-11-18); art review pending**.
-4. **República**: Tarapacá 1879, San Juan y Miraflores 1881 and the Breña 1882–1883.
+4. **República**: Tarapacá 1879, San Juan y Miraflores 1881 and the Breña 1882–1883 — **Built (2026-11-18); art review pending**.
 5. **Engine work in parallel**: the seasonal calendar for Cusco; navigable water and ships, then the selva
    biome for the expansion missions that need them (Callao 1624, Dos de Mayo 1866, Juan Santos).
 
@@ -197,10 +197,9 @@ to the milestones that complete each arc. The other thirteen missions keep their
 | El Tahuantinsuyo | Tambotoco, Yahuar Pampa, Chimú–Inca, Guerra Civil | 4 | 0 |
 | El Virreinato | Lima, Cusco en llamas, El último Inca, Túpac Amaru II | 2 | 2 |
 | La Independencia | Junta del Cusco, El cerco de Lima, Independencia, El último bastión | 4 | 0 |
-| La República | Arica, La quebrada, San Juan y Miraflores, El brujo de los Andes | 1 | 3 |
+| La República | Arica, La quebrada, San Juan y Miraflores, El brujo de los Andes | 4 | 0 |
 
-The five planned catalogue entries are `p_vir_cusco`, `p_vir_vilcabamba`, `p_rep_tarapaca`, `p_rep_lima`
-and `p_rep_brena`.
+The two planned catalogue entries are `p_vir_cusco` and `p_vir_vilcabamba`.
 
 The thirteen expansion missions are:
 

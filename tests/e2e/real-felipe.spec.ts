@@ -1,15 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-
-async function startMission(page: Page): Promise<void> {
-  const start = page.getByRole('button', { name: /COMENZAR MISIÓN/ });
-  await start.waitFor({ state: 'visible', timeout: 30_000 });
-  await start.click();
-  await page
-    .locator('.ed-overlay')
-    .filter({ hasText: 'COMENZAR MISIÓN' })
-    .waitFor({ state: 'detached', timeout: 15_000 })
-    .catch(() => {});
-}
+import { test, expect } from '@playwright/test';
+import { startMission } from './mission-start';
 
 /** Real Felipe 1824–1826: the battery network is built with ordinary place/build orders. */
 test('m_real_felipe builds two batteries with real commands', async ({ page }) => {

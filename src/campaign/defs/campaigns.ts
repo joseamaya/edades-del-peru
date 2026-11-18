@@ -105,12 +105,12 @@ export const CAMPAIGNS: CampaignDef[] = [
     description: 'La defensa de la joven república en la Guerra del Pacífico: de Tarapacá a la Breña.',
     summary:
       'En la Guerra del Pacífico, el Perú defiende Arica y resiste en la quebrada de Tarapacá; luego defiende las líneas de San Juan y Miraflores y sostiene la Campaña de la Breña en la sierra central con Andrés A. Cáceres.',
-    releasedMissionIds: ['m9_guerra_pacifico'],
+    releasedMissionIds: ['m9_guerra_pacifico', 'm_tarapaca', 'm_miraflores', 'm_brena'],
     status: 'available',
     era: '1879 — 1883',
     accent: '#7a6a52',
     prologue: REPUBLICA_PROLOGUE,
-    path: ['m9_guerra_pacifico', 'p_rep_tarapaca', 'p_rep_lima', 'p_rep_brena'],
+    path: ['m9_guerra_pacifico', 'm_tarapaca', 'm_miraflores', 'm_brena'],
   },
 ];
 

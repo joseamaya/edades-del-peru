@@ -18,6 +18,9 @@ const MISSIONS = [
   ['m8_independencia', 'La Independencia'],
   ['m_real_felipe', 'El último bastión'],
   ['m9_guerra_pacifico', 'La Defensa de Arica'],
+  ['m_tarapaca', 'La quebrada'],
+  ['m_miraflores', 'Los reductos'],
+  ['m_brena', 'El brujo de los Andes'],
 ];
 
 const VIEWPORTS = [

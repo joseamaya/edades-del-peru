@@ -31,4 +31,7 @@ export const MISSION_ART: Partial<Record<string, string>> = {
   m_lima: publicAsset('media/generated/campaigns/virreinato/m_lima/intro.webp'),
   m7_tupac_amaru: publicAsset('media/cusco/intro-valle.webp'),
   m9_guerra_pacifico: publicAsset('media/generated/campaigns/republica/m9_guerra_pacifico/intro.webp'),
+  m_tarapaca: publicAsset('media/tarapaca/intro-quebrada.webp'),
+  m_miraflores: publicAsset('media/miraflores/intro-reductos.webp'),
+  m_brena: publicAsset('media/brena/intro-mantaro.webp'),
 };

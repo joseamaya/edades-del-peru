@@ -14,6 +14,7 @@ export const PORTRAIT_IDS = [
   'sucre',
   'salom',
   'rodil',
+  'caceres',
   'grau',
   'bolognesi',
   'atahualpa',
@@ -186,6 +187,15 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.REALISTAS,
     status: 'documented',
     source: 'docs/historia/campanas/real_felipe.md',
+  },
+  caceres: {
+    gender: 'male',
+    id: 'caceres',
+    name: 'Andrés A. Cáceres',
+    role: 'Perú · La Breña',
+    civ: CivId.REPUBLIC,
+    status: 'documented',
+    source: 'docs/historia/campanas/brena.md',
   },
   grau: {
     gender: 'male',

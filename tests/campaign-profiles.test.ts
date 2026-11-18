@@ -28,6 +28,9 @@ const EXPECTED_REGION: Record<string, GeographicRegion> = {
   m8_independencia: 'andean_valley',
   m_real_felipe: 'central_coast',
   m9_guerra_pacifico: 'south_coast',
+  m_tarapaca: 'south_coast',
+  m_miraflores: 'central_coast',
+  m_brena: 'high_andes',
 };
 
 function resolve(mis: Mission) {
@@ -80,6 +83,8 @@ describe('campaign map profiles', () => {
       'm6b_guerra_civil',
       'm_junta_cusco',
       'm8_independencia',
+      'm_tarapaca',
+      'm_miraflores',
       'm9_guerra_pacifico',
     ]);
   });

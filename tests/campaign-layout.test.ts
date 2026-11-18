@@ -55,6 +55,9 @@ describe('campaign authored geography', () => {
     expect(byId('m6b_guerra_civil').layout?.site?.id).toBe('cusco_inca_site');
     expect(byId('m_lima_1821').layout?.site?.id).toBe('lima_site');
     expect(byId('m_real_felipe').layout?.site?.id).toBe('real_felipe_site');
+    expect(byId('m_tarapaca').layout?.site?.id).toBe('tarapaca_site');
+    expect(byId('m_miraflores').layout?.site?.id).toBe('lima_site');
+    expect(byId('m_brena').layout?.site?.id).toBe('brena_site');
     expect(byId('m8_independencia').layout?.terrain?.flats?.length).toBeGreaterThan(0);
   });
 
@@ -67,6 +70,9 @@ describe('campaign authored geography', () => {
       'm8_independencia',
       'm_lima_1821',
       'm_real_felipe',
+      'm_tarapaca',
+      'm_miraflores',
+      'm_brena',
     ]) {
       const layout = MISSIONS.find((m) => m.id === id)!.layout!;
       expect(layout.enemyBase, `${id} enemyBase`).toBeDefined();

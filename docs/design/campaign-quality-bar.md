@@ -10,8 +10,8 @@ harness. The HUD geometry gate (`tests/e2e/hud-layout.spec.ts`) runs every missi
 1600×900 and 1920×1080, including a late-mission objective list with the archive folded and expanded and the
 shortcuts panel open.
 
-The launch catalogue (2026-11-18) shows four entries per campaign: fifteen released missions and five
-announced ones. The audit below covers the released fifteen; an announced entry is not playable and does
+The launch catalogue (2026-11-18) shows four entries per campaign: eighteen released missions and two
+announced ones. The audit below covers the released eighteen; an announced entry is not playable and does
 not count toward a campaign's completion.
 
 ## Gates
@@ -40,7 +40,8 @@ not count toward a campaign's completion.
 Re-verified against the code, tests and an in-engine clip of each mission (not copied from the tables
 below, which record each mission's own review and are kept for history). **M** met, **P** partial,
 **X** missing, **–** not applicable (in-engine captures only, no new models). The `m_lima_1821` and
-`m_real_felipe` rows were added on 2026-11-18; the rest is the 2026-11-14 audit.
+`m_real_felipe` rows were added on 2026-11-18; the `m_tarapaca`, `m_miraflores` and `m_brena` rows were
+added on 2026-11-18; the rest is the 2026-11-14 audit.
 
 | Mission            | Hist | Ident | Play | Contr | Onb | Clos | UX  | Vis | Pers | Tests | Docs | Struct | Open | Art | Perf | Scale |
 | ------------------ | ---- | ----- | ---- | ----- | --- | ---- | --- | --- | ---- | ----- | ---- | ------ | ---- | --- | ---- | ----- |
@@ -58,6 +59,9 @@ below, which record each mission's own review and are kept for history). **M** m
 | m_lima_1821        | M    | M     | P    | M     | M   | M    | M   | P   | M    | P     | M    | M      | M    | M   | P    | M     |
 | m8_independencia   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_real_felipe      | M    | M     | P    | M     | M   | M    | M   | P   | M    | P     | M    | M      | M    | P   | P    | M     |
+| m_tarapaca         | M    | M     | P    | M     | M   | M    | M   | P   | M    | P     | M    | M      | M    | P   | P    | M     |
+| m_miraflores       | M    | M     | P    | M     | M   | M    | M   | P   | M    | P     | M    | M      | M    | P   | P    | M     |
+| m_brena            | M    | M     | P    | M     | M   | M    | M   | P   | M    | P     | M    | M      | M    | P   | P    | M     |
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
@@ -378,6 +382,24 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 | Scale       | Met                 | 256 m map, 128² painted ground over 256 m, `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                         |
 | Pacing      | Pending (exception) | The real-command bot reaches the ending in ~7 min of simulated time; a human 20–30 min path is still unmeasured. The 30–40 target is documented as an exception in `arica-model-mission.md`.       |
 | Site        | Met (exception)     | No construction phases: the port and fort are in use, not a monument the player builds; recorded here and in `arica-site.md`.                                                                      |
+
+## La República arc (m_tarapaca, m_miraflores and m_brena)
+
+The 2026-11-18 pass completed the 1879–1883 land arc:
+
+- **`m_tarapaca`** reuses the Arica desert terrace as a labelled quebrada. It holds the village without
+  cavalry or artillery, recovers the heights with infantry, receives captured guns and withdraws to Arica.
+  Real-command test: `tests/e2e/tarapaca.spec.ts`. Open: human no-cheat playtest and a performance row.
+- **`m_miraflores`** reuses `lima_site` at the `ciudad` phase. It builds three redoubts, holds the line with
+  reservists and withdraws Cáceres to the sierra. Real-command test: `tests/e2e/miraflores.spec.ts`.
+  Open: human no-cheat playtest and a performance row.
+- **`m_brena`** reuses the Ayacucho camp as a labelled sierra-central abstraction. It builds the community
+  network, ambushes a column and withdraws from Huamachuco with Cáceres alive. Real-command test:
+  `tests/e2e/brena.spec.ts`. Open: human no-cheat playtest and a performance row.
+
+All three have dossier, design document, tutorial, educational entry, own in-engine captures, epilogue and
+the generic completable path; they pass the scale and HUD layout guards. Human no-cheat playtests and art
+reviews remain pending, and the reused kits are marked Partial.
 
 ## La Junta del Cusco playable status (m_junta_cusco)
 

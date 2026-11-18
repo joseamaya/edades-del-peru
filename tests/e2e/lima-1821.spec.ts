@@ -1,15 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-
-async function startMission(page: Page): Promise<void> {
-  const start = page.getByRole('button', { name: /COMENZAR MISIÓN/ });
-  await start.waitFor({ state: 'visible', timeout: 30_000 });
-  await start.click();
-  await page
-    .locator('.ed-overlay')
-    .filter({ hasText: 'COMENZAR MISIÓN' })
-    .waitFor({ state: 'detached', timeout: 15_000 })
-    .catch(() => {});
-}
+import { test, expect } from '@playwright/test';
+import { startMission } from './mission-start';
 
 /** Lima 1821: the first act is completed by moving the montoneras, not by calling objectives. */
 test('m_lima_1821 cuts the Lurín road with real move orders', async ({ page }) => {

@@ -346,6 +346,75 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       { text: 'Paz Soldán, Historia del Perú independiente' },
     ],
   },
+  m_tarapaca: {
+    briefing:
+      'Tarapacá, 27 de noviembre de 1879. Tras la campaña naval, el ejército peruano resiste en la quebrada ' +
+      'de San Lorenzo. Sin caballería ni artillería, la defensa depende de la infantería y de los refuerzos de Pachica.',
+    context:
+      'La batalla de Tarapacá fue una victoria táctica peruana en la Guerra del Pacífico. El general Juan Buendía ' +
+      'mandaba unas fuerzas sin caballería ni artillería; las columnas chilenas atacaron de forma escalonada. ' +
+      'La resistencia recibió refuerzos desde Pachica y capturó piezas chilenas, pero la provincia se perdió y ' +
+      'el ejército se retiró a Arica. En el Perú se conmemora como Día de la Infantería.',
+    didYouKnow:
+      'Tarapacá se recuerda como una victoria táctica: se capturaron cañones, pero la campaña terrestre siguió ' +
+      'su curso hacia Arica.',
+    epilogue:
+      'La quebrada queda en manos peruanas y se capturan cañones chilenos. La victoria no cambia el curso de la ' +
+      'guerra: la provincia se pierde y el ejército inicia una retirada de 200 km por el desierto hacia Arica.',
+    sources: [
+      { text: 'Batalla de Tarapacá (Wikipedia)', url: 'https://es.wikipedia.org/wiki/Batalla_de_Tarapac%C3%A1' },
+      { text: 'Basadre, Historia de la República del Perú' },
+      { text: 'Sater, Andean Tragedy' },
+    ],
+  },
+  m_miraflores: {
+    briefing:
+      'Lima, enero de 1881. Tras San Juan y Chorrillos, la defensa se organiza en una línea de reductos en ' +
+      'Miraflores. Muchos defensores son reservistas limeños; Cáceres manda el sector derecho.',
+    context:
+      'La defensa de Lima se libró en dos jornadas: San Juan y Chorrillos el 13 de enero de 1881, y Miraflores ' +
+      'el 15 de enero. La línea de Miraflores tenía unos diez reductos a lo largo de varios kilómetros. La ' +
+      'resistencia no evitó la ocupación de Lima, pero permitió retirar a parte de la fuerza y continuar la ' +
+      'guerra en la sierra. El saqueo de Chorrillos y la ocupación de la capital son episodios que se narran ' +
+      'con sobriedad, sin escenificarlos.',
+    didYouKnow:
+      'La resistencia de Miraflores no salvó Lima: su valor fue ganar tiempo para retirar a Cáceres y sostener ' +
+      'la campaña de la Breña.',
+    epilogue:
+      'Los reductos resisten lo suficiente para retirar a Cáceres y parte de la fuerza. Lima cae y la guerra ' +
+      'continúa en la sierra. La resistencia de la Breña empieza en esta retirada.',
+    sources: [
+      { text: 'Batalla de Miraflores (Wikipedia)', url: 'https://es.wikipedia.org/wiki/Batalla_de_Miraflores' },
+      {
+        text: 'Batalla de San Juan y Chorrillos (Wikipedia)',
+        url: 'https://es.wikipedia.org/wiki/Batalla_de_San_Juan_y_Chorrillos',
+      },
+      { text: 'Basadre, Historia de la República del Perú' },
+    ],
+  },
+  m_brena: {
+    briefing:
+      'Sierra central, 1882–1883. Tras la caída de Lima, Andrés A. Cáceres organiza la resistencia en el valle ' +
+      'del Mantaro con comunidades campesinas, emboscadas y galgas. La campaña termina en Huamachuco.',
+    context:
+      'La Campaña de la Breña fue una guerra de guerrillas en la sierra central y el norte del Perú. Cáceres ' +
+      'combinó columnas móviles, apoyo campesino e indígena y emboscadas con galgas. La resistencia desgastó a ' +
+      'las fuerzas chilenas, pero no pudo evitar la ocupación. En Huamachuco (10 de julio de 1883) la munición ' +
+      'se agotó y la batalla se perdió; Cáceres escapó a Ayacucho. El Tratado de Ancón (20 de octubre de 1883) ' +
+      'cerró la guerra. La violencia contra combatientes y civiles se narra sin convertirla en espectáculo.',
+    didYouKnow:
+      'La Breña no fue una campaña de grandes batallas: fue una red de comunidades, pasos y emboscadas que ' +
+      'mantuvo viva la resistencia después de la caída de Lima.',
+    epilogue:
+      'Cáceres y parte de la fuerza escapan de Huamachuco. La campaña no gana la guerra, pero sostiene la ' +
+      'resistencia hasta el Tratado de Ancón y deja una memoria de guerrilla campesina. La posguerra traerá ' +
+      'nuevas tensiones entre el Estado y las comunidades que habían luchado.',
+    sources: [
+      { text: 'Campaña de la Breña (Wikipedia)', url: 'https://es.wikipedia.org/wiki/Campa%C3%B1a_de_la_Bre%C3%B1a' },
+      { text: 'Batalla de Huamachuco (Wikipedia)', url: 'https://es.wikipedia.org/wiki/Batalla_de_Huamachuco' },
+      { text: 'Manrique, Campesinado y nación' },
+    ],
+  },
   m9_guerra_pacifico: {
     briefing:
       'Arica, 7 de junio de 1880. Tras Angamos, la Guerra del Pacífico continúa en tierra. La guarnición ' +
