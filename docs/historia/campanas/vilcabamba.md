@@ -19,9 +19,9 @@
   Vilcabamba permanece.
 - **Mapa**: `jungle`, con un transecto comprimido Vilcabamba → Huayna Pucará → bajo Urubamba → camino a
   Cusco.
-- **En el juego**: tres actos. El jugador defiende Huayna Pucará, quema Vilcabamba para no dejar
-  suministros y sostiene la huida de la corte. La captura y ejecución de Túpac Amaru I se cuentan en el
-  epílogo, fuera de pantalla; no se premia la violencia.
+- **En el juego**: tres actos. El jugador defiende Huayna Pucará, evacúa Vilcabamba antes de que la
+  expedición la ocupe e incendie, y sostiene la huida de la corte. La captura y ejecución de Túpac Amaru I
+  se cuentan en el epílogo, fuera de pantalla; no se premia la violencia.
 
 ## Tabla de certeza
 

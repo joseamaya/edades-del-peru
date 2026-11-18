@@ -3,14 +3,14 @@ import type { MissionDef } from '../../types';
 
 // Vilcabamba 1572: Huayna Pucará, the burning refuge and the escape route to the lower Urubamba.
 const VILCABAMBA_FORT = { x: 180, z: 97 } as const;
-const VILCABAMBA_TOWN = { x: 166, z: 120 } as const;
+const VILCABAMBA_TOWN = { x: 150, z: 132 } as const;
 const VILCABAMBA_CAMP = { x: 90, z: 166 } as const;
 const VILCABAMBA_ENEMY = { x: 198, z: 64 } as const;
 const VILCABAMBA_ESCAPE = { x: 54, z: 220 } as const;
 
 export const mVilcabamba: MissionDef = {
   id: 'm_vilcabamba',
-  commanders: ['tupac_amaru_i'],
+  commanders: ['tupac_amaru_i', 'curi_paucar'],
   title: 'El último Inca',
   subtitle: 'Vilcabamba · 1572',
   history:

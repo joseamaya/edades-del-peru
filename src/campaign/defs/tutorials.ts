@@ -305,7 +305,7 @@ export const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'sacsay',
-        text: 'Ocupa Sacsayhuamán y sostén la fortaleza con al menos seis unidades.',
+        text: 'Ocupa Sacsayhuamán, resiste el contraataque y sostén la fortaleza con al menos seis unidades.',
         highlight: '#ed-objectives',
         check: { type: 'objectiveCompleted', objectiveId: 'a1_sacsay' },
       },

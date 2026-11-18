@@ -84,7 +84,7 @@ enemy. The feria uses the game's `Mercado` building as an abstraction and says s
 | m7 Túpac Amaru         | Rebellion, the failed siege and memory   | Muster supplies, win at Sangarará, withdraw       | Hold vs. withdraw                  | Defeat, execution and legacy           |
 | m_lima_1821           | Pressure and legitimacy in 1821          | Cut the roads, proclaim independence, hold Callao | Siege vs. assault                  | Independence proclaimed; war continues |
 | m_cusco_1536          | The 1536 siege and the farming calendar  | Take Sacsayhuamán, hold the siege, withdraw | Assault vs. endure                 | City not taken; resistance continues   |
-| m_vilcabamba          | The last neo-Inca state                  | Defend Huayna Pucará, burn the refuge, escape | Resist vs. save the court          | Inca captured; memory remains          |
+| m_vilcabamba          | The last neo-Inca state                  | Defend Huayna Pucará, evacuate the refuge, escape | Resist vs. save the court          | Inca captured; memory remains          |
 | m8 Independencia       | Campaign logistics and coordination      | Move, take the royalist centre, hold              | Timing and concentration           | Patriotic victory                      |
 | m_real_felipe         | The last royalist bastion                | Build batteries, blockade, resist sorties, wait   | Siege vs. assault                  | Capitulation after a costly siege      |
 | m9 Guerra del Pacífico | The documented defence and fall of Arica  | Refuse the summons, mine the approaches, hold the battery | Prepare vs. hold the last line    | The plaza falls; the defence becomes a symbol |

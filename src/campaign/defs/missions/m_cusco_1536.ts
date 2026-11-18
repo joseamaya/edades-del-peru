@@ -154,13 +154,13 @@ export const mCusco1536: MissionDef = {
       title: 'Sostén el cerco durante la siembra',
     },
     {
-      id: 'a2_agua',
+      id: 'a2_suministros',
       kind: 'reach',
-      pos: { dx: 140, dz: 160 },
+      pos: { dx: 120, dz: 150 },
       radius: 12,
       optional: true,
       hidden: true,
-      title: 'Corta el agua de la ciudad',
+      title: 'Corta los suministros de la ciudad',
     },
     {
       id: 'a3_retirada',
@@ -192,6 +192,11 @@ export const mCusco1536: MissionDef = {
       ],
     },
     {
+      id: 't_counter',
+      condition: { type: 'objective', objectiveId: 'a1_sacsay', state: 'activate' },
+      effects: [],
+    },
+    {
       id: 't_sacsay',
       condition: { type: 'objective', objectiveId: 'a1_sacsay', state: 'completed' },
       effects: [
@@ -203,19 +208,7 @@ export const mCusco1536: MissionDef = {
           text: 'Sacsayhuamán está en manos incas. El cerco se cierra sobre la plaza; los españoles contraatacan para romperlo.',
         },
         { type: 'objective', objectiveId: 'a2_cerco', state: 'activate', announce: true },
-        { type: 'objective', objectiveId: 'a2_agua', state: 'activate' },
-        {
-          type: 'wave',
-          owner: 1,
-          units: [
-            { kind: UnitKind.SOLDIER, count: 5 },
-            { kind: UnitKind.CAVALRY, count: 2 },
-            { kind: UnitKind.MUSKETEER, count: 1 },
-          ],
-          pos: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
-          radius: 12,
-          target: { dx: CUSCO_1536_SACSAY.x, dz: CUSCO_1536_SACSAY.z },
-        },
+        { type: 'objective', objectiveId: 'a2_suministros', state: 'activate' },
       ],
     },
     {

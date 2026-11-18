@@ -20,7 +20,7 @@ plays the siege as a **timed economy of food and seasons**, not as a capture. So
 3. **Withdraw to Ollantaytambo.** Reach the road with Manco alive. The city is not captured; the epilogue
    states the withdrawal and the continuation of the war in Vilcabamba.
 
-Optional: cut the city's water. The mission never stages the later «Santiago» hagiography.
+Optional: cut the city's supplies. The mission never stages the later «Santiago» hagiography.
 
 ## Map and site
 
