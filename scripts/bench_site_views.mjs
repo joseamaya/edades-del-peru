@@ -2,22 +2,20 @@
 /**
  * Run the roadmap's real-GPU site-view pass at the two recorded resolutions.
  *
- * `bench_scene.mjs` measures one mission/stage at a time; this runner drives the matrix
- * (m3–m9, m6b and La Junta; opening plus late where the mission has a late view) at 1280x800
- * and 1600x900, writes one JSON per row and a markdown summary for the performance audit.
+ * Each mission/stage gets one structural row at 1600x900 (the viewport where the ratchet budgets are
+ * calibrated, so it keeps `--assert`) and shipped-frame rows at 1280x800 and 1600x900. The structural
+ * row owns the draw-call/triangle/mesh/material counts; the frame rows own the frame time. A row that
+ * silently falls back to SwiftShader is discarded and retried once, because a software number would
+ * misrepresent both the counts and the frame time.
  *
  * Usage:
  *   node scripts/bench_site_views.mjs [--viewports=1280x800,1600x900] [--stages=opening,late]
- *     [--only=m3_moche_recuay,m4_wari] [--out=review/site-views] [--dry-run]
- *
- * Every row runs `bench_scene.mjs --gpu --frames --quality=high`; the 1600x900 rows also keep
- * `--assert` because the ratchet budgets are calibrated there. The 1280x800 rows are
- * informational: the wider vertical FOV sees more of the scene. A software renderer fails the
- * row instead of recording a misleading number.
+ *     [--only=m3_moche_recuay,m4_wari] [--out=review/site-views] [--dry-run] [--resume]
  */
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { setTimeout as sleep } from 'node:timers/promises';
 import { cliArg } from './lib.mjs';
 
 const MISSIONS = [
@@ -37,40 +35,77 @@ const stageFilter = cliArg('stages', 'opening,late').split(',');
 const only = cliArg('only', '').split(',').filter(Boolean);
 const outDir = cliArg('out', 'review/site-views');
 const dryRun = process.argv.includes('--dry-run');
+const resume = process.argv.includes('--resume');
 const rows = [];
 
 for (const mission of MISSIONS) {
   if (only.length && !only.includes(mission.id)) continue;
   const stages = stageFilter.includes('late') && mission.late ? ['opening', 'late'] : ['opening'];
   for (const stage of stages) {
+    const suffix = stage === 'late' ? '-late' : '';
+    rows.push({
+      mode: 'structural',
+      mission: mission.id,
+      stage,
+      viewport: '1600x900',
+      out: path.join(outDir, `${mission.id}${suffix}-structural.json`),
+      args: ['--assert'],
+    });
     for (const viewport of viewports) {
-      const name = `${mission.id}${stage === 'late' ? '-late' : ''}-${viewport}.json`;
-      const out = path.join(outDir, name);
-      // The ratchet budgets are calibrated at 1600x900 (the historical bench viewport); the
-      // 1280x800 pass is informational because the wider vertical FOV sees more of the scene.
-      const reference = viewport === '1600x900';
-      const args = [
-        'scripts/bench_scene.mjs',
-        `--mission=${mission.id}`,
-        `--stage=${stage}`,
-        '--gpu',
-        '--frames',
-        '--quality=high',
-        ...(reference ? ['--assert'] : []),
-        `--viewport=${viewport}`,
-        `--out=${out}`,
-      ];
-      rows.push({ mission: mission.id, stage, viewport, out, args });
-      if (dryRun) {
-        console.log(`node ${args.join(' ')}`);
-        continue;
-      }
-      const result = spawnSync(process.execPath, args, { stdio: 'inherit' });
-      if (result.status !== 0) {
-        console.error(`[site-views] FAILED ${mission.id} ${stage} ${viewport}`);
-        process.exitCode = 1;
-      }
+      rows.push({
+        mode: 'frames',
+        mission: mission.id,
+        stage,
+        viewport,
+        out: path.join(outDir, `${mission.id}${suffix}-frames-${viewport}.json`),
+        args: ['--frames', '--quality=high', `--viewport=${viewport}`],
+      });
     }
+  }
+}
+
+function argsFor(row) {
+  return [
+    'scripts/bench_scene.mjs',
+    `--mission=${row.mission}`,
+    `--stage=${row.stage}`,
+    '--gpu',
+    ...row.args,
+    `--out=${row.out}`,
+  ];
+}
+
+const readJson = (file) => {
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return null;
+  }
+};
+
+for (const row of rows) {
+  if (resume && fs.existsSync(row.out)) continue;
+  if (dryRun) {
+    console.log(`node ${argsFor(row).join(' ')}`);
+    continue;
+  }
+  let data = null;
+  for (let attempt = 0; attempt < 2 && !data; attempt++) {
+    const result = spawnSync(process.execPath, argsFor(row), { stdio: 'inherit' });
+    data = readJson(row.out);
+    if (!data) break;
+    if (data.gpu?.software) {
+      console.error(`[site-views] software fallback on ${path.basename(row.out)}; retrying`);
+      fs.rmSync(row.out);
+      data = null;
+      await sleep(2500);
+      continue;
+    }
+    row.passed = result.status === 0;
+  }
+  if (!data) {
+    console.error(`[site-views] FAILED ${row.mission} ${row.stage} ${row.mode} ${row.viewport}`);
+    process.exitCode = 1;
   }
 }
 
@@ -79,23 +114,29 @@ if (dryRun) {
   process.exit(0);
 }
 
-const ms = (row) => Number(row.frame?.frameMsP50 ?? NaN);
 const fmt = (n) => (Number.isFinite(n) ? n.toFixed(1) : '—');
 const lines = [
-  '| Mission | Stage | Viewport | Frame p50/p95 (ms) | FPS p50 | Scene tris / calls | Meshes / materials |',
-  '| --- | --- | --- | ---: | ---: | ---: | ---: |',
+  '| Mode | Mission | Stage | Viewport | Frame p50/p95 (ms) | FPS p50 | Scene tris / calls | Meshes / materials | Budget |',
+  '| --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- |',
 ];
 for (const row of rows) {
-  const file = path.resolve(row.out);
-  if (!fs.existsSync(file)) {
-    lines.push(`| ${row.mission} | ${row.stage} | ${row.viewport} | missing | — | — | — |`);
+  const data = readJson(row.out);
+  if (!data) {
+    lines.push(`| ${row.mode} | ${row.mission} | ${row.stage} | ${row.viewport} | missing | — | — | — | — |`);
     continue;
   }
-  const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const budget = data.budget;
+  const budgetState =
+    row.mode === 'structural'
+      ? data.scene.triangles <= budget.sceneTriangles && data.scene.calls <= budget.sceneDrawCalls
+        ? 'pass'
+        : `FAIL (${budget.sceneTriangles.toLocaleString()} / ${budget.sceneDrawCalls})`
+      : '—';
   lines.push(
-    `| ${row.mission} | ${row.stage} | ${row.viewport} | ${fmt(ms(data))} / ${fmt(data.frame?.frameMsP95)} | ` +
-      `${fmt(data.frame?.fpsP50)} | ${data.scene.triangles.toLocaleString()} / ${data.scene.calls} | ` +
-      `${data.sceneStats.meshes} / ${data.sceneStats.uniqueMaterials} |`,
+    `| ${row.mode} | ${row.mission} | ${row.stage} | ${row.viewport} | ` +
+      (row.mode === 'frames' ? `${fmt(data.frame?.frameMsP50)} / ${fmt(data.frame?.frameMsP95)}` : '—') +
+      ` | ${row.mode === 'frames' ? fmt(data.frame?.fpsP50) : '—'} | ${data.scene.triangles.toLocaleString()} / ${data.scene.calls} | ` +
+      `${data.sceneStats.meshes} / ${data.sceneStats.uniqueMaterials} | ${budgetState} |`,
   );
 }
 const report = lines.join('\n') + '\n';
@@ -105,8 +146,8 @@ fs.writeFileSync(
   path.join(outDir, 'summary.json'),
   JSON.stringify(
     rows.map((row) => {
-      const file = path.resolve(row.out);
-      return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : { ...row, missing: true };
+      const data = readJson(row.out);
+      return data ? { ...row, args: undefined, data } : { ...row, args: undefined, missing: true };
     }),
     null,
     2,

@@ -128,6 +128,7 @@ All thirteen released missions have a model-mission document. For the live statu
 | --- | --- | --- |
 | [`development.md`](./development.md) | Architecture, code traps, rigged models, debugging, verification tiers, performance | Living |
 | [`development/performance-audit.md`](./development/performance-audit.md) | RTS performance, AI, economy and scalability audit | Snapshot |
+| [`development/site-view-performance.md`](./development/site-view-performance.md) | Real-GPU site-view frame times, the D3 pass and its decision | Living |
 | [`ai-difficulty.md`](./ai-difficulty.md) | Why AI difficulty is not tuned with the AI-vs-AI mirror | Snapshot |
 | [`design/authoring-tools.md`](./design/authoring-tools.md) | Blender/GIMP versions, MCP setup, source layout, security and CI | Living |
 | [`design/blender-art.md`](./design/blender-art.md) | Blender sources, export, ingestion, manifest and review | Living |
