@@ -69,7 +69,7 @@ released missions plus, where the arc needs them, planned milestones shown as in
 | _El Tahuantinsuyo_ | `m_tambotoco`, `m5_yahuar_pampa`, `m6_chimu_inca`, `m6b_guerra_civil` | From the Ayar myth to the civil war |
 | _El Virreinato_ | `m_lima`, `m7_tupac_amaru` | From the founding of Lima to Túpac Amaru II |
 | _La Independencia_ | `m_junta_cusco`, `m_lima_1821`, `m8_independencia`, `m_real_felipe` | From the Cusco junta to the Real Felipe |
-| _La República_ | `m9_guerra_pacifico`, `m_tarapaca`, `m_miraflores`, `m_brena` | Tarapacá, Arica, Miraflores and the Breña |
+| _La República_ | `m_tarapaca`, `m9_guerra_pacifico`, `m_miraflores`, `m_brena` | Tarapacá, Arica, Miraflores and the Breña |
 
 The 2026-11-18 launch catalogue has four entries per campaign: **18 playable + 2 in development**. The other
 thirteen missions of the approved redesign are reserved for an expansion and are not listed in any campaign

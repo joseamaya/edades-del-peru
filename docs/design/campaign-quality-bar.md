@@ -60,9 +60,9 @@ added on 2026-11-18; the rest is the 2026-11-14 audit.
 | m8_independencia   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_real_felipe      | M    | M     | P    | M     | M   | M    | M   | P   | M    | P     | M    | M      | M    | P   | P    | M     |
 | m_tarapaca         | M    | M     | P    | M     | M   | M    | M   | P   | P    | P     | M    | M      | M    | P   | P    | M     |
+| m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m_miraflores       | M    | M     | P    | M     | M   | M    | M   | P   | P    | P     | M    | M      | M    | P   | P    | M     |
 | m_brena            | M    | M     | P    | M     | M   | M    | M   | P   | P    | P     | M    | M      | M    | P   | P    | M     |
-| m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín's intro render
