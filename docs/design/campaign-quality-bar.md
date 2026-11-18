@@ -470,7 +470,7 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Tests       | Met                  | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                                          |
 | Docs        | Met                  | This document, dossier, `guerra-civil-model-mission.md`, experience table, site note, art docs and README aligned.                                         |
 | Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                              |
-| Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_cusco_inca_intro.mjs`; `MISSION_ART` uses the Quipaipan capture.               |
-| Art         | Pending human review | Authored ushnu-plaza intro render (`m6b_guerra_civil-intro`) is a draft; the reused Cusco GLB and the captures keep their own status.                      |
+| Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_cusco_inca_intro.mjs`; `MISSION_ART` uses the approved authored render.         |
+| Art         | Met                  | The authored ushnu-plaza intro render (`m6b_guerra_civil-intro`) was approved on 2026-11-17; the reused Cusco GLB and the captures keep their own status.   |
 | Performance | Met                  | `bench_scene.mjs`: opening ~703k tris / 436 calls, battle ~967k / 673; over the 600k art-direction target (as m7/m9), within the recorded first-pass caps. |
 | Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                         |
