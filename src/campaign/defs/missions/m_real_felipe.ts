@@ -14,8 +14,8 @@ export const mRealFelipe: MissionDef = {
   title: 'El último bastión',
   subtitle: 'Callao · 1824–1826',
   history:
-    'Tras Ayacucho, el brigadier José Ramón Rodil se encierra en el Real Felipe con los últimos realistas. El general Bartolomé Salom sitia la fortaleza por tierra y la escuadra patriota la bloquea por mar.\n' +
-    'Miles de civiles se refugian en el Callao y la escasez de víveres provoca una crisis humanitaria. Rodil resiste hasta enero de 1826, cuando capitula y sale con honores: es el último bastión español en el Perú.',
+    'En febrero de 1824 la guarnición del Callao se sublevó y entregó la plaza a los realistas. José Ramón Rodil asumió el mando del Real Felipe y, tras Ayacucho, se negó a acogerse a la capitulación. El general Bartolomé Salom sitió la fortaleza por tierra y la escuadra patriota la bloqueó por mar.\n' +
+    'Miles de civiles se refugiaron en el Callao y la escasez de víveres provocó una crisis humanitaria. Rodil resistió hasta enero de 1826, cuando capituló y salió con honores: fue el último bastión español en el Perú.',
   victory:
     'El Real Felipe capitula en enero de 1826. Rodil sale con honores y la guerra de independencia termina en el Perú; la resistencia realista ya no tiene base en el país.',
   defeat:
@@ -90,7 +90,7 @@ export const mRealFelipe: MissionDef = {
     {
       kicker: 'CALLAO · DESPUÉS DE AYACUCHO',
       title: 'El último bastión',
-      text: 'La capitulación de Ayacucho no termina la guerra. José Ramón Rodil se encierra en el Real Felipe con los últimos realistas y se niega a rendir la fortaleza.',
+      text: 'La capitulación de Ayacucho no termina la guerra. José Ramón Rodil, ya al mando del Real Felipe, se niega a acogerse a ella y mantiene la fortaleza con los últimos realistas.',
       seconds: 9,
       source: 'docs/historia/campanas/real_felipe.md',
       image: 'media/independencia/intro-ayacucho.webp',

@@ -9,8 +9,9 @@
   - Patriotas: **Bartolomé Salom** (sitio por tierra), **Manuel Blanco Encalada** y **John Illingworth**
     (bloqueo naval), **Simón Bolívar** (mando político-militar).
   - Realistas: el brigadier **José Ramón Rodil**, con el coronel **Isidro Alaix**.
-- **Contexto histórico**: tras Ayacucho, Rodil se negó a acogerse a la capitulación y se encerró en el Real
-  Felipe con los últimos realistas. Salom lo sitió por tierra y la escuadra patriota bloqueó el puerto.
+- **Contexto histórico**: en febrero de 1824 la guarnición del Callao se sublevó y entregó la plaza a los
+  realistas. Rodil asumió el mando del Real Felipe y, tras Ayacucho, se negó a acogerse a la capitulación.
+  Salom lo sitió por tierra y la escuadra patriota bloqueó el puerto.
   Miles de civiles se refugiaron en la fortaleza; el hambre y el escorbuto provocaron una crisis humanitaria.
   La plaza capituló en enero de 1826.
 - **Hitos**: sublevación del Callao (febrero de 1824); sitio formal (diciembre de 1824); bloqueo naval;

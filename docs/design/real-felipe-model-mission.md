@@ -5,8 +5,9 @@
 
 ## Historical problem
 
-After Ayacucho, Rodil refused the capitulation and held the Real Felipe with the last royalists. Salom
-besieged the fortress by land and the patriot squadron blockaded the port. Thousands of civilians took
+The Callao garrison revolted in February 1824 and handed the fortress to the royalists. After Ayacucho,
+Rodil refused the capitulation and held the Real Felipe with the last royalists. Salom besieged the fortress
+by land and the patriot squadron blockaded the port. Thousands of civilians took
 refuge inside; hunger and scurvy killed thousands. The fortress capitulated in January 1826. The mission is
 about **siege economy and endurance**, not about an assault. The civilian suffering is told in the epilogue
 and Codex, never rewarded as a mechanic.
