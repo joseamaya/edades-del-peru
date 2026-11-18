@@ -225,7 +225,7 @@ export async function boot(): Promise<void> {
       game.introEnabled = false;
       game.onDestroy(() => demo.dispose());
       const center = game.playerCenter(0);
-      game.camera.flyTo(center.x, center.z + 13, 14, 0.05);
+      game.camera.flyTo(center.x, center.z + 13, 14, 0.05, false);
       (window as any).__rigDemo = demo;
     }
   }

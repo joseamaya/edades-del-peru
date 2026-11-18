@@ -427,8 +427,10 @@ Definition of Done and the building audit see
   local authoring tool, not a CI dependency; the GLB is committed.
 - **Mission camera cues**: the `camera` trigger effect accepts optional `zoom`/`seconds`; a zoomed cue calls
   `Camera.flyTo(..., holdClock=false)`, so it frames a place without stalling the mission clock. Only the
-  opening flight (`playIntro`) keeps `holdClock` true. The RTS camera looks at sea level, so `Mission` aims a
-  zoomed cue `ground / tan(pitch)` short of its subject along the camera's current yaw on an elevated site.
+  opening flight (`playIntro`) keeps `holdClock` true. A manual pan (WASD/arrows, the edge band or the middle
+  drag) cancels a cue with `holdClock=false`; the opening flight does not. The RTS camera looks at sea level,
+  so `Mission` aims a zoomed cue `ground / tan(pitch)` short of its subject along the camera's current yaw on
+  an elevated site.
 - **Camera panning (`src/core/Camera.ts` + `src/core/cameraMath.ts`)**: the camera orbits a ground target; its
   ground basis is `forward = (−sin yaw, −cos yaw)`, `right = (cos yaw, −sin yaw)`, and **keyboard/edge pan vectors
   are rotated by that basis** (`rotateToWorld`, a rotation by `−yaw`). The default is **north-up** (`yaw = 0`), so

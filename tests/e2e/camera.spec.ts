@@ -421,6 +421,54 @@ test('losing focus clears held keys and the middle drag', async ({ page }) => {
   expect(out.edgePan).toBeGreaterThan(0.5);
 });
 
+test('a mid-mission camera beat yields to manual input', async ({ page }) => {
+  await bootMatch(page);
+  await stopLoop(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const centre = g.settings.mapSize / 2;
+    g.camera.moveTo(centre, centre, true);
+    g.camera.setHeight(40);
+    for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
+    g.camera.flyTo(centre + 60, centre, 40, 1.8, false);
+    g.update(1 / 60, 0);
+    const flying = g.camera.isFlying();
+    const opening = g.camera.isOpeningFlight();
+    const cinematic = g.isCinematicActive();
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'd' }));
+    for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'd' }));
+    return { flying, opening, cinematic, stillFlying: g.camera.isFlying(), target: g.camera.getTarget(), centre };
+  });
+  expect(out.flying).toBe(true);
+  expect(out.opening).toBe(false);
+  expect(out.cinematic).toBe(false);
+  expect(out.stillFlying).toBe(false);
+  expect(out.target.x).toBeGreaterThan(out.centre + 1);
+});
+
+test('the opening flight keeps the camera until it ends', async ({ page }) => {
+  await bootMatch(page);
+  await stopLoop(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const centre = g.settings.mapSize / 2;
+    g.camera.moveTo(centre, centre, true);
+    g.camera.setHeight(40);
+    for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
+    g.camera.flyTo(centre + 60, centre, 40, 1.8, true);
+    g.update(1 / 60, 0);
+    const cinematic = g.isCinematicActive();
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'd' }));
+    for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'd' }));
+    return { cinematic, flying: g.camera.isFlying(), opening: g.camera.isOpeningFlight() };
+  });
+  expect(out.cinematic).toBe(true);
+  expect(out.flying).toBe(true);
+  expect(out.opening).toBe(true);
+});
+
 test('moving from the bottom edge onto the command bar stops the camera', async ({ page }) => {
   await bootMatch(page);
   const bar = await page.evaluate(() => {

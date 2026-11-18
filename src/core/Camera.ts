@@ -223,8 +223,9 @@ export class RTSCamera {
     if (this.uiCaptured) return;
     // A middle click with a 1 px jiggle is not a pan: keep the follow until the hand actually moves.
     if (Math.hypot(e.clientX - this.dragStart.x, e.clientY - this.dragStart.y) < 2) return;
-    // Dragging the map is a manual pan: stop following the selected unit first.
+    // Dragging the map is a manual pan: stop following and cancel a presentation beat.
     this.followId = null;
+    this.cancelPresentationFlight();
     // The map follows the hand exactly: move the target by the ground offset between both cursor
     // positions (perspective included), not by a per-pixel approximation.
     const from = this.groundOffsetAt(fromX, fromY, this.zoom);
@@ -315,6 +316,11 @@ export class RTSCamera {
     return this.fly?.holdClock === true;
   }
 
+  /** A presentation beat yields to a manual pan; the opening flight keeps the camera until it ends. */
+  private cancelPresentationFlight(): void {
+    if (this.fly && !this.fly.holdClock) this.fly = null;
+  }
+
   /** Enable camera rotation (Z/X). Off by default (fixed camera, SC2 style). */
   setRotationEnabled(on: boolean): void {
     this.rotationEnabled = on;
@@ -338,8 +344,9 @@ export class RTSCamera {
     this.edgeHeldSeconds += dt;
     const factor = edgeSpeedFactor(this.edgeHeldSeconds, CAMERA_CONFIG.edgeDelay, CAMERA_CONFIG.edgeRampTime);
     if (factor <= 0) return;
-    // The band actually moved the camera: a real pan, so stop following the selected unit.
+    // The band actually moved the camera: a real pan, so stop following and cancel a presentation beat.
     this.followId = null;
+    this.cancelPresentationFlight();
     const w = rotateToWorld(ev.x, ev.y, this.yaw);
     const speed = this.zoom * CAMERA_CONFIG.edgeSpeed * this.speedScale * factor;
     this.desiredTarget.x += w.x * speed * dt;
@@ -361,8 +368,9 @@ export class RTSCamera {
     if (this.uiCaptured) return;
     const kv = keyPanVector(this.keys);
     if (kv.x === 0 && kv.y === 0) return;
-    // WASD/arrows are a manual pan: stop following the selected unit.
+    // WASD/arrows are a manual pan: stop following and cancel a presentation beat.
     this.followId = null;
+    this.cancelPresentationFlight();
     const w = rotateToWorld(kv.x, kv.y, this.yaw);
     const speed = this.zoom * CAMERA_CONFIG.keySpeed * this.speedScale;
     this.desiredTarget.x += w.x * speed * dt;
