@@ -10,8 +10,8 @@ harness. The HUD geometry gate (`tests/e2e/hud-layout.spec.ts`) runs every missi
 1600×900 and 1920×1080, including a late-mission objective list with the archive folded and expanded and the
 shortcuts panel open.
 
-The launch catalogue (2026-11-18) shows four entries per campaign: eighteen released missions and two
-announced ones. The audit below covers the released eighteen; an announced entry is not playable and does
+The launch catalogue (2026-11-18) shows four entries per campaign: twenty released missions and no
+announced ones. The audit below covers the released twenty; an announced entry is not playable and does
 not count toward a campaign's completion.
 
 ## Gates
@@ -40,8 +40,8 @@ not count toward a campaign's completion.
 Re-verified against the code, tests and an in-engine clip of each mission (not copied from the tables
 below, which record each mission's own review and are kept for history). **M** met, **P** partial,
 **X** missing, **–** not applicable (in-engine captures only, no new models). The `m_lima_1821` and
-`m_real_felipe` rows were added on 2026-11-18; the `m_tarapaca`, `m_miraflores` and `m_brena` rows were
-added on 2026-11-18; the rest is the 2026-11-14 audit.
+`m_real_felipe` rows were added on 2026-11-18; the `m_tarapaca`, `m_miraflores`, `m_brena`, `m_cusco_1536`
+and `m_vilcabamba` rows were added on 2026-11-18; the rest is the 2026-11-14 audit.
 
 | Mission            | Hist | Ident | Play | Contr | Onb | Clos | UX  | Vis | Pers | Tests | Docs | Struct | Open | Art | Perf | Scale |
 | ------------------ | ---- | ----- | ---- | ----- | --- | ---- | --- | --- | ---- | ----- | ---- | ------ | ---- | --- | ---- | ----- |
@@ -54,6 +54,8 @@ added on 2026-11-18; the rest is the 2026-11-14 audit.
 | m6_chimu_inca      | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6b_guerra_civil   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | P    | M     |
+| m_cusco_1536       | M    | M     | P    | M     | M   | M    | M   | P   | P    | P     | M    | M      | M    | P   | P    | M     |
+| m_vilcabamba       | M    | M     | P    | M     | M   | M    | M   | P   | P    | P     | M    | M      | M    | P   | P    | M     |
 | m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_junta_cusco      | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | P    | M     |
 | m_lima_1821        | M    | M     | P    | M     | M   | M    | M   | P   | M    | P     | M    | M      | M    | M   | P    | M     |
@@ -445,6 +447,22 @@ The 2026-11-18 pass closed the 1814–1826 arc with two model missions:
 Both have dossier, design document, tutorial, educational entry, briefing art, epilogue and the generic
 completable path; both pass `tests/campaign-scale.test.ts` and the HUD layout gate. The human no-cheat
 playtest and the human art review remain pending.
+
+## El Virreinato arc (m_cusco_1536 and m_vilcabamba)
+
+The 2026-11-18 pass completed the conquest-to-Vilcabamba arc:
+
+- **`m_cusco_1536`** reuses `cusco_inca_site`. It takes Sacsayhuamán, holds the Cusco siege through a
+  food-consuming «siembra» and withdraws to Ollantaytambo with Manco alive. Real-command test:
+  `tests/e2e/cusco-1536.spec.ts`. Open: human no-cheat playtest, art review and a performance row.
+- **`m_vilcabamba`** adds `vilcabamba_site`, reusing the Chanca stone-fort composition as a labelled
+  cloud-forest abstraction. It defends Huayna Pucará, burns Vilcabamba and saves the court at the lower
+  Urubamba; the capture and execution are told in the epilogue. Real-command test:
+  `tests/e2e/vilcabamba.spec.ts`. Open: human no-cheat playtest, art review and a performance row.
+
+Both have dossier, design document, tutorial, educational entry, own in-engine captures, epilogue and the
+generic completable path; they pass the scale and HUD layout guards. Play/Persistence/Tests remain Partial
+until the human no-cheat playtest and later save coverage are recorded.
 
 ## La Ciudad de los Reyes playable status (m_lima)
 

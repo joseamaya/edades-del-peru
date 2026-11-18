@@ -51,6 +51,8 @@ describe('campaign authored geography', () => {
     expect(byId('m2_chavin').layout?.terrain?.river).toBeDefined();
     expect(byId('m4_wari').layout?.terrain?.flats?.length).toBeGreaterThan(0);
     expect(byId('m6_chimu_inca').layout?.canal).toBeDefined();
+    expect(byId('m_cusco_1536').layout?.site?.id).toBe('cusco_inca_site');
+    expect(byId('m_vilcabamba').layout?.site?.id).toBe('vilcabamba_site');
     expect(byId('m9_guerra_pacifico').layout?.site?.id).toBe('arica_site');
     expect(byId('m6b_guerra_civil').layout?.site?.id).toBe('cusco_inca_site');
     expect(byId('m_lima_1821').layout?.site?.id).toBe('lima_site');
@@ -66,6 +68,8 @@ describe('campaign authored geography', () => {
       'm5_yahuar_pampa',
       'm6_chimu_inca',
       'm6b_guerra_civil',
+      'm_cusco_1536',
+      'm_vilcabamba',
       'm7_tupac_amaru',
       'm8_independencia',
       'm_lima_1821',

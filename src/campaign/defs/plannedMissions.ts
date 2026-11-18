@@ -18,23 +18,8 @@ export interface PlannedMission {
   label?: 'Leyenda' | 'Tradición';
 }
 
-/** The two planned missions that complete the four-entry launch catalogue. */
-export const PLANNED_MISSIONS: Record<string, PlannedMission> = {
-  // El Virreinato
-  p_vir_cusco: {
-    id: 'p_vir_cusco',
-    title: 'Cusco en llamas',
-    subtitle: 'Cusco · 1536',
-    summary:
-      'Manco Inca cerca el Cusco y combate en Sacsayhuamán. El calendario de siembra decide cuánto dura el cerco.',
-  },
-  p_vir_vilcabamba: {
-    id: 'p_vir_vilcabamba',
-    title: 'El último Inca',
-    subtitle: 'Vilcabamba · 1572',
-    summary: 'La expedición del virrey Toledo entra en Vilcabamba. Túpac Amaru I resiste y busca escapar a la selva.',
-  },
-};
+/** No planned missions remain: the launch catalogue is fully released. */
+export const PLANNED_MISSIONS: Record<string, PlannedMission> = {};
 
 /**
  * Approved redesign missions reserved for a later expansion. They keep their ids and copy but

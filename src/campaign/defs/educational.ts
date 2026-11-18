@@ -415,6 +415,53 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       { text: 'Manrique, Campesinado y nación' },
     ],
   },
+  m_cusco_1536: {
+    briefing:
+      'Cusco, 1536. Manco Inca se alza contra los Pizarro y cerca la ciudad. Los combates se extienden a ' +
+      'Sacsayhuamán; cuando el ejército debe volver a sembrar, el cerco se debilita y Manco se retira.',
+    context:
+      'La rebelión de Manco Inca estalló en 1536. El ejército inca cercó el Cusco y los españoles quedaron ' +
+      'encerrados en dos edificios de la plaza; la lucha por Sacsayhuamán fue decisiva y Juan Pizarro murió ' +
+      'en el asalto. Manco no logró tomar la ciudad: la logística agrícola y los contraataques lo obligaron a ' +
+      'retirarse a Ollantaytambo. La resistencia continuó en Vilcabamba. La «aparición» de Santiago es ' +
+      'hagiografía colonial, no un hecho militar.',
+    didYouKnow:
+      'El cerco del Cusco no se rompió solo por las armas: el ejército inca necesitaba volver a sembrar para ' +
+      'no perder su base económica.',
+    epilogue:
+      'Manco no toma el Cusco, pero conserva el ejército y la resistencia. La guerra continúa en ' +
+      'Ollantaytambo y Vilcabamba; la ciudad queda en manos de los Pizarro y la conquista sigue su curso.',
+    sources: [
+      {
+        text: 'Batalla de Sacsayhuamán (Wikipedia)',
+        url: 'https://es.wikipedia.org/wiki/Batalla_de_Sacsayhuam%C3%A1n',
+      },
+      { text: 'Manco Inca (Wikipedia)', url: 'https://es.wikipedia.org/wiki/Manco_Inca' },
+      { text: 'Hemming, La conquista de los incas' },
+    ],
+  },
+  m_vilcabamba: {
+    briefing:
+      'Vilcabamba, 1572. El virrey Toledo declara la guerra al Estado neoinca. La expedición de Arbieto entra ' +
+      'en la selva; Huayna Pucará resiste mientras la corte busca salir hacia el bajo Urubamba.',
+    context:
+      'La campaña de 1572 fue el último capítulo militar del Estado neoinca. Toledo envió a Martín Hurtado de ' +
+      'Arbieto contra Vilcabamba; la ciudad fue ocupada e incendiada el 24 de junio. Túpac Amaru I huyó hacia ' +
+      'el bajo Urubamba y fue capturado; se le ejecutó en el Cusco el 24 de septiembre de 1572. La ' +
+      'resistencia armada terminó, pero la memoria del Estado neoinca permaneció.',
+    didYouKnow:
+      'Vilcabamba no cayó en una gran batalla: la corte se replegó, la ciudad fue incendiada y el Inca fue ' +
+      'capturado en la huida.',
+    epilogue:
+      'La corte y parte de los nobles escapan hacia el bajo Urubamba. Vilcabamba queda en ruinas y Túpac ' +
+      'Amaru I es capturado y ejecutado en el Cusco. La resistencia armada termina; el recuerdo de Vilcabamba ' +
+      'permanece en la memoria andina.',
+    sources: [
+      { text: 'Túpac Amaru I (Wikipedia)', url: 'https://es.wikipedia.org/wiki/T%C3%BApac_Amaru_I' },
+      { text: 'Incas de Vilcabamba (Wikipedia)', url: 'https://es.wikipedia.org/wiki/Incas_de_Vilcabamba' },
+      { text: 'Hemming, La conquista de los incas' },
+    ],
+  },
   m9_guerra_pacifico: {
     briefing:
       'Arica, 7 de junio de 1880. Tras Angamos, la Guerra del Pacífico continúa en tierra. La guarnición ' +

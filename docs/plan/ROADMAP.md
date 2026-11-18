@@ -8,12 +8,12 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
 
 ## Where we are
 
-- **Release:** `0.1.0`, campaign-only, five campaigns and eighteen missions. Launch catalogue: four missions
-  per campaign (18 playable + 2 in development); the other thirteen approved missions are reserved for an
+- **Release:** `0.1.0`, campaign-only, five campaigns and twenty missions. Launch catalogue: four missions
+  per campaign (20 playable + 0 in development); the other thirteen approved missions are reserved for an
   expansion.
 - **Gold master:** Caral (`m1_caral`) meets every gate of the campaign quality bar.
 - **Model pattern:** every released mission follows it after the m5–m9, m6b and m8 rebuilds (closed
-  2026-11-14); all eighteen missions have a model-mission document.
+  2026-11-14); all twenty missions have a model-mission document.
 - **Performance:** m3–m9 and m6b meet the scale, opening and performance gates; the m3, m4, m5, Tambotoco,
   Lima, La Junta and Arica intro renders are approved, and the rest of the art review is pending.
 - **Art pending:** Chavín, Chimú, the civil war, Túpac Amaru and Independencia still lack mostly art.
@@ -53,9 +53,9 @@ evidence. No model-mission rebuild remains.
    of 2026-10-30. Approve or reject each new record with `yarn art:review`.
 3. Capture the model missions whose art review is pending (m3–m9, m6b, Tambotoco, Lima, La Junta) with the
    current build. **Done (2026-11-17):** the current site views are in
-   `docs/media/site-review-2026-11-17.webp` (human review still pending). Lima 1821, Real Felipe, Tarapacá, Miraflores and Breña have current captures in
-   `public/media/{lima-1821,real-felipe,tarapaca,miraflores,brena}/`; their human art review and bench rows
-   remain (B15/B16).
+   `docs/media/site-review-2026-11-17.webp` (human review still pending). Lima 1821, Real Felipe, Tarapacá, Miraflores, Breña, Cusco 1536 and Vilcabamba have current captures in
+   `public/media/{lima-1821,real-felipe,tarapaca,miraflores,brena,cusco-1536,vilcabamba}/`; their human art
+   review and bench rows remain (B15–B17).
 
 The release-candidate document is an **archived snapshot** from 2026-10-30. Use its checklist as a template,
 but record today's counts and hashes in a new status document or PR, not by editing the snapshot.
@@ -93,7 +93,7 @@ and schedule the m6b/m8 late-view optimization as **B13**. Re-run `yarn bench:si
 ## Non-goals for this cycle
 
 - Adding the missions proposed in `campaign-redesign.md`.
-- Ships, a selva biome or a seasonal calendar (they gate future missions, not the current 18).
+- Ships, a selva biome or a seasonal calendar (they gate future missions, not the current 20).
 - A public skirmish UI, multiplayer or a map editor.
 - New runtime dependencies or MCP servers.
 

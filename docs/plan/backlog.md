@@ -18,6 +18,7 @@ GitHub issue or PR, link it here instead of copying the discussion. The live mis
 | B14 | Launch catalogue of four missions per campaign | The menu promised 10/9/5/5 entries and most were never playable | `CAMPAIGNS[*].path` has four entries; the 13 expansion missions live in `EXPANSION_MISSIONS` and no path lists them; menu, briefing and tests use «Misión N de 4» and Roman campaign numerals | Done (2026-11-18) |
 | B15 | Close the Independencia arc art and performance | `m_lima_1821` and `m_real_felipe` have current in-engine captures but reuse the Lima and Arica kits and have no bench rows | A recorded human art review and `bench_scene.mjs` rows for both missions | Queued |
 | B16 | Close the República arc art and performance | `m_tarapaca`, `m_miraflores` and `m_brena` have current in-engine captures but reuse the Arica/Lima/Ayacucho kits and have no bench rows | A recorded human art review and `bench_scene.mjs` rows for the three missions | In review (this branch) |
+| B17 | Close the Virreinato arc art and performance | `m_cusco_1536` and `m_vilcabamba` reuse the Cusco/Chanca kits and have no bench rows | A recorded human art review and `bench_scene.mjs` rows for both missions | In review (this branch) |
 
 ## Closed this cycle
 
@@ -53,4 +54,4 @@ Ideas that are explicitly **not** scheduled:
 - Ships, a selva biome and a seasonal calendar (they gate future missions, not the current 13).
 - A public skirmish UI, multiplayer or a map editor.
 - New runtime dependencies or MCP servers.
-- The 13 expansion missions and the 2 announced catalogue missions are not scheduled.
+- The 13 expansion missions are not scheduled; the launch catalogue is fully released.

@@ -77,6 +77,8 @@ name.
 | `m_real_felipe` | Bartolomé Salom | `salom` | Documented | Briefing portrait; protected field nameplate | [`real_felipe.md`](../historia/campanas/real_felipe.md) |
 | `m_real_felipe` | José Ramón Rodil | `rodil` | Documented | Briefing portrait only | [`real_felipe.md`](../historia/campanas/real_felipe.md) |
 | `m_tarapaca` | Juan Buendía | `buendia` | Documented | Briefing portrait only | [`tarapaca.md`](../historia/campanas/tarapaca.md) |
+| `m_cusco_1536` | Manco Inca | `manco_capac` | Abstraction | Briefing portrait; protected field nameplate | [`cusco_1536.md`](../historia/campanas/cusco_1536.md) |
+| `m_vilcabamba` | Túpac Amaru I | `tupac_amaru_i` | Abstraction | Briefing portrait only | [`vilcabamba.md`](../historia/campanas/vilcabamba.md) |
 | `m_tarapaca` | Andrés A. Cáceres | `caceres` | Documented | Briefing portrait; protected field nameplate | [`tarapaca.md`](../historia/campanas/tarapaca.md) |
 | `m_miraflores` | Andrés A. Cáceres | `caceres` | Documented | Briefing portrait; protected field nameplate | [`miraflores.md`](../historia/campanas/miraflores.md) |
 | `m_brena` | Andrés A. Cáceres | `caceres` | Documented | Briefing portrait; protected field nameplate | [`brena.md`](../historia/campanas/brena.md) |

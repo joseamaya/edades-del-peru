@@ -77,12 +77,12 @@ export const CAMPAIGNS: CampaignDef[] = [
     description: 'La conquista, el cerco del Cusco, la resistencia de Vilcabamba y la gran rebelión de Túpac Amaru II.',
     summary:
       'Lima se funda junto al Rímac y resiste el cerco de Quizu Yupanqui. Manco Inca cerca el Cusco y combate en Sacsayhuamán; la resistencia inca sobrevive en Vilcabamba hasta 1572. Dos siglos y medio después, la rebelión de Túpac Amaru II desafía al Virreinato.',
-    releasedMissionIds: ['m_lima', 'm7_tupac_amaru'],
+    releasedMissionIds: ['m_lima', 'm_cusco_1536', 'm_vilcabamba', 'm7_tupac_amaru'],
     status: 'available',
     era: '1535 — 1781',
     accent: '#9d7a4c',
     prologue: VIRREINATO_PROLOGUE,
-    path: ['m_lima', 'p_vir_cusco', 'p_vir_vilcabamba', 'm7_tupac_amaru'],
+    path: ['m_lima', 'm_cusco_1536', 'm_vilcabamba', 'm7_tupac_amaru'],
   },
   {
     id: 'independencia',

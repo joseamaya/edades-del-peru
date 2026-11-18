@@ -409,7 +409,7 @@ slot is absent (offline / without assets).
 
 ### Lima 1821 intro and epilogue images (in-engine recreations)
 
-- **Location**: `public/media/lima-1821/intro-{camino,plaza,callao,epilogo}.webp` (960×540, WebP q58).
+- **Location**: `public/media/lima-1821/intro-{camino,plaza,callao,epilogo}.webp` (640×360, WebP q28).
 - **Source**: captured from the game itself by `scripts/capture_independencia_arc.mjs` on the 1821 Lima
   coast transect: the Lurín road and patriot camp, the Plaza Mayor, the Callao beach and a low epilogue.
   Rendered without the HUD at 1600×900 and resized with `sharp`. Regenerate with
@@ -424,7 +424,7 @@ slot is absent (offline / without assets).
 
 ### Real Felipe intro and epilogue images (in-engine recreations)
 
-- **Location**: `public/media/real-felipe/intro-{bastion,baterias,sitio,epilogo}.webp` (960×540, WebP q58).
+- **Location**: `public/media/real-felipe/intro-{bastion,baterias,sitio,epilogo}.webp` (640×360, WebP q28).
 - **Source**: captured from the game itself by `scripts/capture_independencia_arc.mjs` on the Callao
   terrace: the bastion from the sea side, the battery line, the siege camp and a low epilogue. Rendered
   without the HUD at 1600×900 and resized with `sharp`. Regenerate with
@@ -739,6 +739,22 @@ downscaled 1920 shot would look smaller than the 1280 one.
   the game's own scenes, never historical photographs.
 - **Review**: no human art-review gate applies to in-engine captures; the reused `arica_site`,
   `colonial_site` and `independence_site` GLBs keep their own review status (#343).
+
+
+### Cusco 1536 and Vilcabamba intro/epilogue images (in-engine recreations)
+
+- **Location**: `public/media/{cusco-1536,vilcabamba}/intro-*.webp` (640×360, WebP q28).
+- **Source**: captured from the game itself by `scripts/capture_virreinato_arc.mjs` on the 1536 Cusco
+  and 1572 Vilcabamba transects: the Inca plaza and Sacsayhuamán, the cloud-forest fort and the escape
+  road. Rendered without the HUD at 1600×900 and resized with `sharp`. Regenerate with
+  `node scripts/capture_virreinato_arc.mjs --mission=ID --only=ID` after art changes.
+- **Runtime**: `m_cusco_1536` uses `intro-{ciudad,sacsay,retirada,epilogo}`; `m_vilcabamba` uses
+  `intro-{corte,pucara,captura,epilogo}`.
+- **Content**: project-owned game renders (the reused `cusco_inca_site` and `chanca_site` compositions,
+  procedural units and camps). Vilcabamba is a labelled abstraction; the images are recreations of the
+  game's own scenes, never historical photographs.
+- **Review**: no human art-review gate applies to in-engine captures; the reused site GLBs keep their own
+  review status (#343).
 
 ### Caral Pyramid Mayor modular scenery
 

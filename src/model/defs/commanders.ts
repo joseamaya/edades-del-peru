@@ -16,6 +16,7 @@ export const PORTRAIT_IDS = [
   'rodil',
   'caceres',
   'buendia',
+  'tupac_amaru_i',
   'grau',
   'bolognesi',
   'atahualpa',
@@ -206,6 +207,15 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.REPUBLIC,
     status: 'documented',
     source: 'docs/historia/campanas/tarapaca.md',
+  },
+  tupac_amaru_i: {
+    gender: 'male',
+    id: 'tupac_amaru_i',
+    name: 'Túpac Amaru I',
+    role: 'Vilcabamba · último Inca',
+    civ: CivId.INCA,
+    status: 'abstraction',
+    source: 'docs/historia/campanas/vilcabamba.md',
   },
   grau: {
     gender: 'male',
