@@ -5,16 +5,16 @@
 
 ## Historical problem
 
-Toledo's 1572 expedition ended the neo-Inca state. Huayna Pucará resisted while Vilcabamba was occupied
-and burned; Túpac Amaru I fled to the lower Urubamba and was captured. The mission is a **fighting
-withdrawal**: defend the fortress, burn the refuge and save part of the court. The capture and execution
+Toledo's 1572 expedition ended the neo-Inca state. Huayna Pucará resisted while Vilcabamba was evacuated,
+occupied and burned; Túpac Amaru I fled to the lower Urubamba and was captured. The mission is a **fighting
+withdrawal**: defend the fortress, evacuate the refuge and save part of the court. The capture and execution
 are told in the epilogue, off-screen. Sources and certainty:
 [`docs/historia/campanas/vilcabamba.md`](../historia/campanas/vilcabamba.md).
 
 ## Acts
 
 1. **Defend Huayna Pucará.** Five units hold the fortress for 45 s.
-2. **Burn Vilcabamba.** Reach the site to deny supplies and open the escape route.
+2. **Evacuate Vilcabamba.** Reach the town to open the escape route; the expedition occupies and burns it afterwards.
 3. **Save the court.** Five units hold the lower-Urubamba exit for 20 s while Spanish columns converge.
 
 The Inca's capture and execution are narrated in the epilogue; no counterfactual victory is offered.

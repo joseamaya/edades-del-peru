@@ -456,7 +456,8 @@ The 2026-11-18 pass completed the conquest-to-Vilcabamba arc:
   food-consuming «siembra» and withdraws to Ollantaytambo with Manco alive. Real-command test:
   `tests/e2e/cusco-1536.spec.ts`. Open: human no-cheat playtest, art review and a performance row.
 - **`m_vilcabamba`** adds `vilcabamba_site`, reusing the Chanca stone-fort composition as a labelled
-  cloud-forest abstraction. It defends Huayna Pucará, burns Vilcabamba and saves the court at the lower
+  cloud-forest abstraction. It defends Huayna Pucará, evacuates Vilcabamba (the expedition burns it) and saves
+the court at the lower
   Urubamba; the capture and execution are told in the epilogue. Real-command test:
   `tests/e2e/vilcabamba.spec.ts`. Open: human no-cheat playtest, art review and a performance row.
 

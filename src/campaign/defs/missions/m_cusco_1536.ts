@@ -16,7 +16,7 @@ export const mCusco1536: MissionDef = {
     'En abril–mayo de 1536 Manco Inca se alza contra los conquistadores y reúne un gran ejército para cercar el Cusco. Los españoles quedan encerrados en dos edificios de la plaza; los combates se extienden a Sacsayhuamán.\n' +
     'El cerco se debilita cuando el ejército debe volver a sembrar y Manco se retira a Ollantaytambo. La ciudad no cae: la misión termina con la retirada, no con una victoria inventada.',
   victory:
-    'Sacsayhuamán se sostiene y el cerco obliga a los españoles a pelear por la ciudad. El calendario agrícola fuerza la retirada: Manco no toma el Cusco, pero conserva el ejército y la resistencia continúa en Vilcabamba.',
+    'El ejército inca disputa Sacsayhuamán y obliga a los españoles a pelear por la ciudad. El calendario agrícola fuerza la retirada: Manco no toma el Cusco, pero conserva el ejército y la resistencia continúa en Vilcabamba.',
   defeat:
     'Los contraataques rompen el cerco y Manco cae o es capturado antes de la retirada. La rebelión pierde a su jefe y el Cusco queda en manos de los Pizarro.',
   period: HistoricalPeriod.VICEROYALTY,
@@ -139,7 +139,7 @@ export const mCusco1536: MissionDef = {
       radius: 18,
       time: 45,
       minUnits: 6,
-      title: 'Ocupa Sacsayhuamán y sostén la fortaleza',
+      title: 'Ocupa Sacsayhuamán y resiste el contraataque',
     },
     {
       id: 'a2_cerco',
@@ -148,7 +148,7 @@ export const mCusco1536: MissionDef = {
       radius: 24,
       time: 60,
       minUnits: 6,
-      consume: { resource: 'food', perSecond: 1 },
+      consume: { resource: 'food', perSecond: 6 },
       hidden: true,
       requires: 'a1_sacsay',
       title: 'Sostén el cerco durante la siembra',

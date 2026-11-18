@@ -340,14 +340,14 @@ export const TUTORIALS: Record<string, TutorialDef> = {
         check: { type: 'objectiveCompleted', objectiveId: 'a1_huayna' },
       },
       {
-        id: 'quema',
-        text: 'Quema Vilcabamba para no dejar suministros y abre la huida hacia el bajo Urubamba.',
-        check: { type: 'objectiveCompleted', objectiveId: 'a2_quema' },
+        id: 'evacua',
+        text: 'Evacúa Vilcabamba y abre la huida hacia el bajo Urubamba.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a2_evacua' },
       },
       {
         id: 'senderos',
         text: 'Abre los senderos laterales: una ruta de huida vale tanto como una victoria.',
-        check: { type: 'objectiveCompleted', objectiveId: 'a2_senderos' },
+        check: { type: 'elapsed', seconds: 10 },
       },
       {
         id: 'curi',

@@ -33,7 +33,7 @@ test('m_vilcabamba holds Huayna Pucará with real move orders', async ({ page })
     return {
       units: units.length,
       huayna: g.mission.getObjectiveState('a1_huayna') as string,
-      quema: g.mission.getObjectiveState('a2_quema') as string,
+      evacua: g.mission.getObjectiveState('a2_evacua') as string,
       huida: g.mission.getObjectiveState('a3_huida') as string,
       ended: g.mission.ended as boolean,
     };
@@ -41,8 +41,8 @@ test('m_vilcabamba holds Huayna Pucará with real move orders', async ({ page })
 
   expect(out.units).toBeGreaterThanOrEqual(5);
   expect(out.huayna, 'Huayna Pucará was not held after real move orders').toBe('completed');
-  expect(out.quema, 'the burning act did not complete after the fortress').toBe('completed');
-  expect(out.huida, 'the escape did not open after the burning').toBe('activo');
+  expect(out.evacua, 'the evacuation did not open after the fortress').toBe('activo');
+  expect(out.huida, 'the escape opened before the evacuation').toBe('pendiente');
   expect(out.ended).toBe(false);
   expect(errors).toEqual([]);
 });

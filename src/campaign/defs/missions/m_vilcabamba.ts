@@ -3,6 +3,7 @@ import type { MissionDef } from '../../types';
 
 // Vilcabamba 1572: Huayna Pucará, the burning refuge and the escape route to the lower Urubamba.
 const VILCABAMBA_FORT = { x: 180, z: 97 } as const;
+const VILCABAMBA_TOWN = { x: 166, z: 120 } as const;
 const VILCABAMBA_CAMP = { x: 90, z: 166 } as const;
 const VILCABAMBA_ENEMY = { x: 198, z: 64 } as const;
 const VILCABAMBA_ESCAPE = { x: 54, z: 220 } as const;
@@ -14,7 +15,7 @@ export const mVilcabamba: MissionDef = {
   subtitle: 'Vilcabamba · 1572',
   history:
     'En abril de 1572 el virrey Francisco de Toledo declara la guerra a Vilcabamba. La expedición de Martín Hurtado de Arbieto entra en la selva y combate en Huayna Pucará.\n' +
-    'Vilcabamba es ocupada e incendiada el 24 de junio. Túpac Amaru I huye hacia el bajo Urubamba y es capturado; el epílogo cuenta su ejecución en el Cusco el 24 de septiembre. La misión no cambia el desenlace: se juega la resistencia y la huida de la corte.',
+    'Vilcabamba es ocupada e incendiada por la expedición el 24 de junio. Túpac Amaru I huye hacia el bajo Urubamba y es capturado; el epílogo cuenta su ejecución en el Cusco el 24 de septiembre. La misión no cambia el desenlace: se juega la resistencia, la evacuación y la huida de la corte.',
   victory:
     'La corte y parte de los nobles escapan hacia el bajo Urubamba. Vilcabamba queda en ruinas y Túpac Amaru I es capturado; el epílogo cuenta su ejecución y el fin del Estado neoinca.',
   defeat:
@@ -30,7 +31,7 @@ export const mVilcabamba: MissionDef = {
   map: { seed: 1572, type: 'jungle', size: 256 },
   layout: {
     labels: [
-      { text: 'Vilcabamba', x: VILCABAMBA_FORT.x / 256, z: VILCABAMBA_FORT.z / 256, kind: 'settlement' },
+      { text: 'Vilcabamba', x: VILCABAMBA_TOWN.x / 256, z: VILCABAMBA_TOWN.z / 256, kind: 'settlement' },
       { text: 'Huayna Pucará', x: VILCABAMBA_FORT.x / 256, z: VILCABAMBA_FORT.z / 256, kind: 'region' },
       { text: 'Río Urubamba', x: 0.2, z: 0.55, kind: 'water' },
       { text: 'Bajo Urubamba', x: VILCABAMBA_ESCAPE.x / 256, z: VILCABAMBA_ESCAPE.z / 256, kind: 'region' },
@@ -103,7 +104,7 @@ export const mVilcabamba: MissionDef = {
     {
       kicker: 'HUAYNA PUCARÁ · 1572',
       title: 'La defensa',
-      text: 'La resistencia se apoya en Huayna Pucará y en los senderos de la selva. La defensa debe ganar tiempo para que la corte salga hacia el bajo Urubamba.',
+      text: 'La resistencia se apoya en Huayna Pucará y en los senderos de la selva. La defensa debe ganar tiempo para que la corte abandone Vilcabamba y salga hacia el bajo Urubamba.',
       seconds: 9,
       source: 'docs/historia/campanas/vilcabamba.md',
       image: 'media/vilcabamba/intro-pucara.webp',
@@ -143,13 +144,13 @@ export const mVilcabamba: MissionDef = {
       title: 'Defiende Huayna Pucará',
     },
     {
-      id: 'a2_quema',
+      id: 'a2_evacua',
       kind: 'reach',
-      pos: { dx: VILCABAMBA_FORT.x, dz: VILCABAMBA_FORT.z },
+      pos: { dx: VILCABAMBA_TOWN.x, dz: VILCABAMBA_TOWN.z },
       radius: 16,
       hidden: true,
       requires: 'a1_huayna',
-      title: 'Quema Vilcabamba y abre la huida',
+      title: 'Evacúa Vilcabamba y abre la huida',
     },
     {
       id: 'a2_senderos',
@@ -175,7 +176,7 @@ export const mVilcabamba: MissionDef = {
       time: 20,
       minUnits: 5,
       hidden: true,
-      requires: 'a2_quema',
+      requires: 'a2_evacua',
       title: 'Salva a la corte en el bajo Urubamba',
     },
   ],
@@ -201,9 +202,9 @@ export const mVilcabamba: MissionDef = {
           kicker: 'Acto II · Vilcabamba',
           title: 'La ciudad en llamas',
           image: 'media/vilcabamba/intro-pucara.webp',
-          text: 'Huayna Pucará resiste el tiempo suficiente. Vilcabamba se quema para no dejar suministros al enemigo; la corte debe salir por el bajo Urubamba.',
+          text: 'Huayna Pucará resiste el tiempo suficiente. La corte abandona Vilcabamba antes de que la expedición la ocupe; el camino al bajo Urubamba queda abierto.',
         },
-        { type: 'objective', objectiveId: 'a2_quema', state: 'activate', announce: true },
+        { type: 'objective', objectiveId: 'a2_evacua', state: 'activate', announce: true },
         { type: 'objective', objectiveId: 'a2_senderos', state: 'activate' },
         { type: 'objective', objectiveId: 'a2_curi', state: 'activate' },
         {
@@ -221,8 +222,8 @@ export const mVilcabamba: MissionDef = {
       ],
     },
     {
-      id: 't_quema',
-      condition: { type: 'objective', objectiveId: 'a2_quema', state: 'completed' },
+      id: 't_evacua',
+      condition: { type: 'objective', objectiveId: 'a2_evacua', state: 'completed' },
       effects: [
         {
           type: 'act',

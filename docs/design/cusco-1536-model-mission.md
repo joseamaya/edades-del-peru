@@ -12,9 +12,11 @@ plays the siege as a **timed economy of food and seasons**, not as a capture. So
 
 ## Acts
 
-1. **Take Sacsayhuamán.** Six units hold the fortress for 45 s.
+1. **Take Sacsayhuamán.** Six units hold the fortress for 45 s while the Spanish counterattack
+   converges; the fortress changes hands in the history, so the victory is the withdrawal, not its permanent capture.
 2. **Hold the siege through the planting.** Six units hold the city approaches for 60 s while consuming
-   food each second; an empty store pauses the siege rather than resetting it.
+   6 food per second; an empty store pauses the siege rather than resetting it. This is the seasonal
+   abstraction, not a full calendar subsystem.
 3. **Withdraw to Ollantaytambo.** Reach the road with Manco alive. The city is not captured; the epilogue
    states the withdrawal and the continuation of the war in Vilcabamba.
 

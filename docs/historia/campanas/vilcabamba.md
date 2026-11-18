@@ -33,6 +33,8 @@
 | Captura de Túpac Amaru I | Documentado | García Óñez de Loyola; bibliografía. |
 | Ejecución en el Cusco (24 sep 1572) | Documentado | Bibliografía; el proceso es debatido. |
 | Discurso final del Inca | Tradición | Baltasar de Ocampo (1610), autor tardío; no se escenifica como cita textual. |
+| Curi Paucar | Documentado | Capitán neoinca citado en la bibliografía; su representación es una abstracción. |
+| Quema de Vilcabamba | Documentado (expedición) | La ciudad fue ocupada e incendiada por la expedición; la misión representa la evacuación previa, no una quema ordenada por el jugador. |
 | Cifras de tropas | Aproximado | Las fuentes varían; no se muestran como dato duro. |
 | Legalidad del proceso | Debatido | La historiografía discute la razón de Estado y el reproche de Felipe II. |
 | Vilcabamba y la selva | Abstracción | El `vilcabamba_site` reutiliza el fuerte chanca y su heightfield; no es Espíritu Pampa. |

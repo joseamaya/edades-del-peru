@@ -18,6 +18,7 @@ export const PORTRAIT_IDS = [
   'buendia',
   'tupac_amaru_i',
   'manco_inca',
+  'curi_paucar',
   'grau',
   'bolognesi',
   'atahualpa',
@@ -226,6 +227,15 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.INCA,
     status: 'abstraction',
     source: 'docs/historia/campanas/cusco_1536.md',
+  },
+  curi_paucar: {
+    gender: 'male',
+    id: 'curi_paucar',
+    name: 'Curi Paucar',
+    role: 'Vilcabamba · capitán',
+    civ: CivId.INCA,
+    status: 'abstraction',
+    source: 'docs/historia/campanas/vilcabamba.md',
   },
   grau: {
     gender: 'male',
