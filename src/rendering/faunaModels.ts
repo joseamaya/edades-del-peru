@@ -102,10 +102,34 @@ function quadruped(id: 'llama' | 'vicuna' | 'deer'): FaunaTemplate {
   const hipY = llama ? 0.62 : deer ? DEER_RIG.hipY : 0.58;
   const legLen = hipY;
   const colors = llama
-    ? { body: '#8a6a4a', belly: '#b9a186', neck: '#9a7a55', head: '#6f5236', leg: '#7a5c3e', hoof: '#33281d' }
+    ? {
+        body: '#8a6a4a',
+        belly: '#b9a186',
+        neck: '#9a7a55',
+        head: '#6f5236',
+        leg: '#7a5c3e',
+        hoof: '#33281d',
+        eye: '#1a120c',
+      }
     : deer
-      ? { body: '#8a6544', belly: '#d9cfbf', neck: '#8a6544', head: '#7a5838', leg: '#8a6544', hoof: '#2a2018' }
-      : { body: '#b2916a', belly: '#e3d6bf', neck: '#bb9c72', head: '#a07f57', leg: '#a0805a', hoof: '#33281d' };
+      ? {
+          body: '#8a6544',
+          belly: '#d9cfbf',
+          neck: '#8a6544',
+          head: '#7a5838',
+          leg: '#8a6544',
+          hoof: '#2a2018',
+          eye: '#1a120c',
+        }
+      : {
+          body: '#b2916a',
+          belly: '#e3d6bf',
+          neck: '#bb9c72',
+          head: '#a07f57',
+          leg: '#a0805a',
+          hoof: '#33281d',
+          eye: '#1a120c',
+        };
 
   const bodyTop = hipY + 2 * r * 0.9;
   const frontZ = bodyLen / 2 + r * 0.4;
@@ -129,12 +153,18 @@ function quadruped(id: 'llama' | 'vicuna' | 'deer'): FaunaTemplate {
 
   const headY = baseY + Math.cos(tilt) * neckLen;
   const headZ = baseZ + Math.sin(tilt) * neckLen;
-  const head = box(0.2, 0.22, 0.26, 0.06);
-  place(head, 0, headY, headZ);
+  // A capsule head plus tapered muzzle keeps the silhouette organic at both cameras.
+  const head = capsule(0.1, 0.16);
+  place(head, 0, headY, headZ, Math.PI / 2);
   parts.push({ geo: head, color: colors.head });
-  const muzzle = box(0.14, 0.13, 0.18, 0.05);
-  place(muzzle, 0, headY - 0.02, headZ + 0.16);
+  const muzzle = tapered(0.065, 0.085, 0.16, 7);
+  place(muzzle, 0, headY - 0.02, headZ + 0.22, Math.PI / 2);
   parts.push({ geo: muzzle, color: colors.head });
+  for (const side of [-1, 1]) {
+    const eye = sphere(0.02);
+    place(eye, side * 0.092, headY + 0.03, headZ + 0.055);
+    parts.push({ geo: eye, color: colors.eye });
+  }
 
   const earH = llama ? 0.2 : 0.16;
   for (const side of [-1, 1]) {

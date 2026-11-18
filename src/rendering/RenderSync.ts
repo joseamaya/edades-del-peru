@@ -7,6 +7,7 @@ import { UnitView } from './UnitView';
 import type { Unit } from '../entities/Unit';
 import { ResourceNodeView, type ResourceLook } from './ResourceNodeView';
 import type { ResourceNode } from '../entities/ResourceNode';
+import type { MapType } from '../core/types';
 
 function makeView(building: Building, ctx: BuildContext): EntityView {
   const model = buildModel(getBuildingModel(building.kind, building.era), ctx);
@@ -79,7 +80,12 @@ export function detachUnit(unit: Unit): void {
 }
 
 /** Create and attach a resource-node view at the node's simulated position. */
-export function attachResource(scene: THREE.Scene, node: ResourceNode, mapType: string, look: ResourceLook = {}): void {
+export function attachResource(
+  scene: THREE.Scene,
+  node: ResourceNode,
+  mapType: MapType,
+  look: ResourceLook = {},
+): void {
   const view = new ResourceNodeView(scene, node, mapType, look);
   node.nodeView = view;
   view.setPosition(node.pos.x, node.pos.y, node.pos.z);

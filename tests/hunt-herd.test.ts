@@ -4,7 +4,8 @@ import { HuntHerd } from '../src/rendering/HuntHerd';
 import { ResourceNode } from '../src/entities/ResourceNode';
 import { clearResourceCaches } from '../src/rendering/ResourceNodeView';
 import { attachResource } from '../src/rendering/RenderSync';
-import { clearFaunaTemplates } from '../src/rendering/faunaModels';
+import { clearFaunaTemplates, faunaTemplate } from '../src/rendering/faunaModels';
+import { huntSpeciesFor } from '../src/model/defs/wildlife';
 
 afterEach(() => {
   clearFaunaTemplates();
@@ -12,8 +13,31 @@ afterEach(() => {
 });
 
 describe('hunt herd presentation', () => {
+  it('uses the vicuña in the highlands and the deer on the coast/jungle', () => {
+    expect(huntSpeciesFor('andes')).toBe('vicuna');
+    expect(huntSpeciesFor('altiplano')).toBe('vicuna');
+    expect(huntSpeciesFor('coast')).toBe('deer');
+    expect(huntSpeciesFor('jungle')).toBe('deer');
+  });
+
+  it('forwards the map type species to the hunt herd', () => {
+    const scene = new THREE.Scene();
+    const coast = new ResourceNode('hunt', 10, 10, 150);
+    attachResource(scene, coast, 'coast');
+    const coastBodies = coast.nodeView!.view.getObjectByName('hunt_bodies') as THREE.InstancedMesh;
+    expect(coastBodies.geometry).toBe(faunaTemplate('deer').body);
+
+    const andes = new ResourceNode('hunt', 20, 20, 150);
+    attachResource(scene, andes, 'andes');
+    const andesBodies = andes.nodeView!.view.getObjectByName('hunt_bodies') as THREE.InstancedMesh;
+    expect(andesBodies.geometry).toBe(faunaTemplate('vicuna').body);
+
+    coast.remove();
+    andes.remove();
+  });
+
   it('starts as a walking herd and converts animals to carcasses as it is harvested', () => {
-    const herd = new HuntHerd(7);
+    const herd = new HuntHerd(7, 'vicuna');
     expect(herd.live).toBe(3);
     expect(herd.carcassCount).toBe(0);
 
@@ -36,7 +60,7 @@ describe('hunt herd presentation', () => {
   });
 
   it('moves the herd over time instead of leaving it in a static pose', () => {
-    const herd = new HuntHerd(3);
+    const herd = new HuntHerd(3, 'vicuna');
     const before = herd.group.getObjectByName('hunt_bodies') as THREE.InstancedMesh;
     const first = before.instanceMatrix.array.slice(12, 15);
     herd.update(1.5);

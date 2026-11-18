@@ -1,3 +1,4 @@
+import type { MapType } from '../../core/types';
 import { scatterAmbient, type AmbientPlacement, type AmbientSample } from './scatter';
 import type { AmbientQuery } from './ambientQuery';
 import type { GeographicRegion } from './profiles';
@@ -25,6 +26,20 @@ export type WildlifeSpawn = AmbientPlacement<SpeciesId>;
  */
 export function wildlifeModelChoice(id: SpeciesId): RigModelChoice | null {
   return id === 'llama' ? { asset: 'quaternius_alpaca' } : null;
+}
+
+export type HuntSpecies = Extract<SpeciesId, 'vicuna' | 'deer'>;
+
+/** Coast/jungle reuse the Caral deer as an inferred game abstraction; the highlands use the vicuña. */
+export function huntSpeciesFor(mapType: MapType): HuntSpecies {
+  switch (mapType) {
+    case 'andes':
+    case 'altiplano':
+      return 'vicuna';
+    case 'coast':
+    case 'jungle':
+      return 'deer';
+  }
 }
 
 /** Base presence of each species per geographic region. */

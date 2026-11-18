@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { cliArg, launchChromium, reviewDir, withViteServer } from './lib.mjs';
+import { bootMatch, cliArg, launchChromium, reviewDir, withViteServer } from './lib.mjs';
 
 /**
  * Capture the mounted cavalry model in its mission context (m7, 1780).
@@ -26,19 +26,7 @@ async function main() {
       if (m.type() === 'error') errors.push(`console: ${m.text()}`);
     });
 
-    await page.goto(base + '/?play=1&mission=m7_tupac_amaru&seed=1780&fog=0&low=0&intro=0', {
-      waitUntil: 'networkidle',
-    });
-    await page.waitForFunction(() => window.game?.mission !== undefined, null, { timeout: 30_000 });
-    await page
-      .locator('.ed-primary')
-      .first()
-      .click({ timeout: 3000 })
-      .catch(() => {});
-    await page
-      .getByRole('button', { name: /omitir tutorial/i })
-      .click({ timeout: 2000 })
-      .catch(() => {});
+    await bootMatch(page, base + '/?play=1&mission=m7_tupac_amaru&seed=1780&fog=0&low=0&intro=0');
     await page.waitForFunction(
       () => window.__modelAssets?.().find((a) => a.id === 'mounted_rig')?.state === 'ready',
       null,

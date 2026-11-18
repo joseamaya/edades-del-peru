@@ -53,10 +53,16 @@ export const SURFACES = [
     label: 'World / rendering',
     prefixes: ['src/rendering/'],
     files: ['tests/visual/baseline.json'],
-    captures: ['yarn visual:check --only=<scene>', 'yarn visual:update --only=<scene>', 'yarn shots:periods'],
+    captures: [
+      'yarn visual:check --only=<scene>',
+      'yarn visual:update --only=<scene>',
+      'yarn shots:periods',
+      'yarn capture:fauna',
+    ],
     note:
       'Scenes live in `scripts/scenes.mjs` (`caral`, `moche`, `inca`, `region_andes`, `landscape_caral`, …); ' +
-      '`visual:update` is for an intended change, and a baseline update is itself the evidence.',
+      '`visual:update` is for an intended change, and a baseline update is itself the evidence. ' +
+      '`capture:fauna` covers the hunt herds by biome and the caravan pack.',
   },
   {
     id: 'models',
@@ -65,11 +71,13 @@ export const SURFACES = [
     captures: [
       'yarn shots:civs',
       'node scripts/shots_evidence.mjs --scene=<scene> --out=review/evidence/<name>',
+      'yarn capture:fauna',
       'yarn bench --scenario=<scenario> --assert',
     ],
     note:
       'Scenes live in `scripts/shots_evidence.mjs` (`caral-worker`, `rigged-attack`, `chavin-scene`, ' +
-      '`fauna-perf`, …); `yarn bench:check` owns the structural budgets.',
+      '`fauna-perf`, …); `yarn bench:check` owns the structural budgets. `capture:fauna` covers the hunt ' +
+      'herds by biome and the caravan pack.',
   },
   {
     id: 'campaign',

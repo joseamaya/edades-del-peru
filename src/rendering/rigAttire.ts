@@ -31,6 +31,7 @@ export interface RigAttireTools {
   readonly ownedMaterials: THREE.Material[];
   track<T extends THREE.BufferGeometry>(geometry: T): T;
   material(color: number, roughness?: number, metalness?: number): THREE.MeshStandardMaterial;
+  vertexMaterial(roughness?: number): THREE.MeshStandardMaterial;
   show(name: string, visible: boolean): void;
   tint(name: string, color: number): void;
   bone(name: string): THREE.Object3D | null;
@@ -80,6 +81,11 @@ export function createRigAttireTools(root: THREE.Object3D): RigAttireTools {
     ownedMaterials.push(mat);
     return mat;
   };
+  const vertexMaterial = (roughness = 0.9): THREE.MeshStandardMaterial => {
+    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness, metalness: 0 });
+    ownedMaterials.push(mat);
+    return mat;
+  };
   const show = (name: string, visible: boolean): void => {
     const object = root.getObjectByName(name);
     if (object) object.visible = visible;
@@ -120,6 +126,7 @@ export function createRigAttireTools(root: THREE.Object3D): RigAttireTools {
     ownedMaterials,
     track,
     material,
+    vertexMaterial,
     show,
     tint,
     bone,
