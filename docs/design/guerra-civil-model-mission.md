@@ -58,10 +58,21 @@ builds; the exception is recorded here and in the quality bar.
 - Three narrated intro beats and the three act cards captured in engine by
   [`scripts/capture_cusco_inca_intro.mjs`](../../scripts/capture_cusco_inca_intro.mjs): the Quito camp,
   Quipaipan and the capture, plus a dusk epilogue.
-- `MISSION_ART` (`m6b_guerra_civil` → `media/cusco-inca/intro-quipaipan.webp`) and the briefing use the
-  Quipaipan capture.
+- `MISSION_ART` (`m6b_guerra_civil` → `media/generated/campaigns/la-senda-del-sol/m6b_guerra_civil/intro.webp`)
+  and the briefing use the approved authored render; the in-engine Quipaipan capture stays in the chapter cards.
 - Victory: the pampa is held and Huáscar is captured. The epilogue (`media/cusco-inca/intro-epilogo.webp`)
   narrates Cajamarca. Defeat: Atahualpa dies or the army is lost.
+
+## Intro render
+
+- `art-src/blender/site-intros/m6b_guerra_civil/m6b_guerra_civil.blend`, built by
+  `scripts/blender/build_site_intro.py --mission=m6b_guerra_civil`, stages the Cusco plaza with the ushnu,
+  a kallanka, banners and the two Inca factions.
+- The record `m6b_guerra_civil-intro` was approved on 2026-11-17 (Miguel Amaya); the briefing uses it and the
+  in-engine capture remains the chapter-card art.
+- Regenerate with `blender --background --python scripts/blender/build_site_intro.py -- --mission=m6b_guerra_civil`.
+- Briefing capture: [`../media/m6b-intro-briefing.webp`](../media/m6b-intro-briefing.webp), from
+  `node scripts/screenshot.mjs m6b-intro --url='/?mission=m6b_guerra_civil&seed=777&fog=0&low=1&intro=0' --wait=9000`.
 
 ## Tutorial
 

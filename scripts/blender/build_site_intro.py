@@ -105,17 +105,16 @@ CONFIG = {
     },
     'm6b_guerra_civil': {
         'hm': 'cusco',
-        'site': (166.4, 174.1),
-        'scale': 1.15,
-        'glb': 'cusco/cusco_inca_lod0.glb',
-        'camera': (200.0, 212.0, 13.0),
-        'target': (164.0, 172.0, 7.0),
-        'lens': 44,
+        'site': (150.0, 160.0),
+        'scale': 1.0,
+        'bespoke': 'cusco',
+        'camera': (150.0, 218.0, 18.0),
+        'target': (150.0, 160.0, 4.0),
+        'lens': 40,
         'sun': (-0.35, -0.5, -0.30),
         'sun_color': (1.0, 0.84, 0.62),
         'sky': (0.34, 0.45, 0.62),
         'water': False,
-        'figures': [(144, 196, 35), (151, 200, 40), (184, 194, 145)],
         'caption': 'El Cusco de la guerra civil, 1532',
     },
     'm7_tupac_amaru': {
@@ -865,6 +864,46 @@ def add_chimu_scene():
         add_warrior((x, z, ground_height(x, z)), math.radians(yaw), cloth=inca, leader=(x == sx - 18))
 
 
+def add_cusco_scene():
+    sx, sz = 150.0, 160.0
+    cy = ground_height(sx, sz)
+    stone = material('cusco_stone', (0.40, 0.38, 0.34), 0.95, 0.3)
+    reset_masonry(stone, (0.40, 0.38, 0.34))
+    floor = material('cusco_floor', (0.36, 0.33, 0.29), 0.98, 0.2)
+    thatch = material('cusco_thatch', (0.52, 0.38, 0.20), 0.98, 0.2)
+    dark = material('cusco_dark', (0.05, 0.04, 0.03), 1.0, 0.0)
+    add_box('cusco_plaza', (sx, sz, cy + 0.55), (34.0, 26.0, 0.3), floor)
+    for wx, wz, ww, wd in ((sx, sz + 13.2, 35.0, 0.8), (sx, sz - 13.2, 35.0, 0.8), (sx - 17.2, sz, 0.8, 27.0), (sx + 17.2, sz, 0.8, 27.0)):
+        add_box('cusco_wall', (wx, wz, cy + 1.0), (ww, wd, 2.0), stone)
+    # Ushnu: the stepped ceremonial platform.
+    add_box('ushnu_1', (sx, sz + 6, cy + 1.1), (14.0, 12.0, 2.2), stone)
+    add_box('ushnu_2', (sx, sz + 6, cy + 3.0), (10.0, 8.0, 1.8), stone)
+    add_box('ushnu_3', (sx, sz + 6, cy + 4.7), (6.0, 5.0, 1.6), stone)
+    for i in range(7):
+        add_box('ushnu_step', (sx, sz + 13 + i * 1.1, cy + 0.2 + i * 0.55), (5.0, 1.1, 0.4), stone)
+    # Kallankas: long halls with thatch roofs on both sides of the plaza.
+    for side in (-1, 1):
+        x = sx + side * 18
+        add_box('kallanka', (x, sz, cy + 2.2), (7.0, 18.0, 4.4), stone)
+        gable_roof('kallanka_roof', x, sz, cy + 4.4, 8.0, 20.0, 2.2, thatch)
+        for i in range(3):
+            add_box('kallanka_door', (x - side * 3.6, sz - 6 + i * 6.0, cy + 1.6), (0.2, 2.0, 3.2), dark)
+    # Banners of the two factions.
+    for x, z, color in ((sx - 10, sz + 20, (0.55, 0.12, 0.08)), (sx + 10, sz + 20, (0.62, 0.42, 0.12))):
+        y = ground_height(x, z)
+        add_cyl('cusco_banner', (x, z, y + 2.4), 0.06, 4.8, MAT['wood'], 6)
+        add_box('cusco_banner_cloth', (x + 0.55, z, y + 4.1), (1.0, 0.04, 1.4), material('banner', color, 0.92, 0.05))
+    # Atahualpa's army (south-east) and Huáscar's (north-west).
+    atahualpa = material('cusco_atahualpa', (0.46, 0.12, 0.07), 0.92, 0.05)
+    huascar = material('cusco_huascar', (0.55, 0.34, 0.10), 0.92, 0.05)
+    for i, (x, z) in enumerate(((sx + 6, sz + 18), (sx + 10, sz + 20), (sx + 14, sz + 17), (sx + 8, sz + 23))):
+        add_warrior((x, z, ground_height(x, z)), math.radians(0), cloth=atahualpa, leader=i == 0)
+    for i, (x, z) in enumerate(((sx - 6, sz + 18), (sx - 10, sz + 20), (sx - 14, sz + 17), (sx - 8, sz + 23))):
+        add_warrior((x, z, ground_height(x, z)), math.radians(0), cloth=huascar, leader=i == 0)
+    # A few figures on the ushnu.
+    add_warrior((sx, sz + 6, cy + 5.6), math.radians(180), cloth=atahualpa, leader=True)
+
+
 def add_water():
     # A simple sea plane and the river ribbon; the terrain supplies the banks.
     if CFG['hm'] in ('lima', 'arica'):
@@ -1143,6 +1182,8 @@ def main() -> None:
     build_terrain()
     if CFG.get('bespoke') == 'chimu':
         add_chimu_scene()
+    elif CFG.get('bespoke') == 'cusco':
+        add_cusco_scene()
     elif CFG.get('bespoke') == 'lima':
         add_lima_city()
     elif CFG.get('bespoke') == 'chavin':

@@ -22,7 +22,7 @@ export const MISSION_ART: Partial<Record<string, string>> = {
   m4_wari: publicAsset('media/wari/intro-ayacucho.webp'),
   m5_yahuar_pampa: publicAsset('media/generated/campaigns/la-senda-del-sol/m5_yahuar/intro.webp'),
   m6_chimu_inca: publicAsset('media/generated/campaigns/la-senda-del-sol/m6_chimu/intro.webp'),
-  m6b_guerra_civil: publicAsset('media/cusco-inca/intro-quipaipan.webp'),
+  m6b_guerra_civil: publicAsset('media/generated/campaigns/la-senda-del-sol/m6b_guerra_civil/intro.webp'),
   m8_independencia: publicAsset('media/independencia/intro-lima.webp'),
   m_junta_cusco: publicAsset('media/generated/campaigns/independencia/m_junta_cusco/intro.webp'),
   m_tambotoco: publicAsset('media/generated/campaigns/inca/m_tambotoco/intro.webp'),

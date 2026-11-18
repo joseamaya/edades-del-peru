@@ -790,6 +790,66 @@
       }
     },
     {
+      "id": "m6b_guerra_civil-intro",
+      "type": "campaign-intro",
+      "scope": "mission",
+      "campaignId": "la-senda-del-sol",
+      "missionId": "m6b_guerra_civil",
+      "civilization": "inca",
+      "period": 5,
+      "era": 2,
+      "region": "high_andes",
+      "topic": "campaign_intro",
+      "sceneType": "campaign_scene",
+      "asset": "media/generated/campaigns/la-senda-del-sol/m6b_guerra_civil/intro.webp",
+      "variants": [
+        {
+          "asset": "media/generated/campaigns/la-senda-del-sol/m6b_guerra_civil/intro-800.webp",
+          "width": 800,
+          "height": 450,
+          "bytes": 34334
+        }
+      ],
+      "sources": [
+        "docs/historia/campanas/guerra_civil_inca.md",
+        "docs/historia/arquitectura.md",
+        "docs/design/blender-art.md"
+      ],
+      "promptVersion": "v1-blender-336f07d7",
+      "prompt": "Blender render: El Cusco de la guerra civil, 1532",
+      "negativePrompt": "n/a (blender render)",
+      "provider": "blender",
+      "model": "eevee",
+      "generatedAt": "2026-11-16T13:26:31.307Z",
+      "nature": "abstraction",
+      "reviewed": true,
+      "reviewer": "Miguel Amaya",
+      "reviewedAt": "2026-11-18T00:57:11Z",
+      "disclaimer": "No es una fotografía histórica: es un render 3D del proyecto.",
+      "alt": "La plaza del Cusco con el ushnu, una kallanka y las dos facciones incas enfrentadas en 1532.",
+      "caption": "El Cusco de la guerra civil, 1532",
+      "width": 1280,
+      "height": 720,
+      "sourceWidth": 1600,
+      "sourceHeight": 900,
+      "crop": "cover-attention",
+      "bytes": 71998,
+      "format": "webp",
+      "sha256": "3890a22fc70d0fea6be080ee16f1165cf2fa0f12b500329ab61913c900978fa4",
+      "blender": {
+        "sceneFile": "site-intros/m6b_guerra_civil/m6b_guerra_civil.blend",
+        "sourceRender": "site-intros/m6b_guerra_civil/hero.png",
+        "sourceSha256": "09692b42547109b57bfdd1027a17242a6cb96a28a1953e2e2c76b2870b9f6700",
+        "sceneAssetId": null,
+        "confidence": "Reconstrucción estilizada de la plaza del Cusco en la guerra civil: el ushnu, la kallanka y las dos facciones son una abstracción plausible, no un levantamiento ni un orden de batalla documentado. Las figuras usan el modelo estilizado compartido del proyecto.",
+        "camera": "hero",
+        "renderer": "eevee",
+        "license": "project-owned",
+        "author": "Miguel Amaya",
+        "renderedAt": "2026-11-16T08:00:00-05:00"
+      }
+    },
+    {
       "id": "m9_guerra_pacifico-intro",
       "type": "campaign-intro",
       "scope": "mission",

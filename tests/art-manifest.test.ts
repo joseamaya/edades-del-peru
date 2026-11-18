@@ -160,11 +160,14 @@ describe('Blender art manifest', () => {
     ]) {
       expect(ART_MANIFEST.assets.find((a) => a.id === id)?.reviewed, `${id} was not approved`).toBe(true);
     }
-    const drafts = ['m6b_guerra_civil', 'm7_tupac_amaru', 'm8_independencia'];
-    for (const missionId of drafts) {
+    for (const missionId of ['m7_tupac_amaru', 'm8_independencia']) {
       const intro = ART_MANIFEST.assets.find((a) => a.missionId === missionId && a.type === 'campaign-intro');
       expect(intro, `${missionId} still ships a removed draft intro`).toBeUndefined();
     }
+    // m6b's grey Workbench blockout was retired; the authored EEVEE plaza draft is a separate record.
+    const m6b = ART_MANIFEST.assets.find((a) => a.id === 'm6b_guerra_civil-intro');
+    expect(m6b?.blender.renderer, 'm6b should not ship the retired Workbench blockout').toBe('eevee');
+    expect(m6b?.blender.sceneFile).toBe('site-intros/m6b_guerra_civil/m6b_guerra_civil.blend');
   });
 
   it('keeps the committed Caral manifest valid and consistent with its assets', async () => {

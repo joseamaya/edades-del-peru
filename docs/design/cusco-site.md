@@ -47,4 +47,5 @@ Quipaipan. It is **not** a survey and **not** a historical photograph.
 
 The site, heightfield, collision, heritage card, real-command victory path and
 save/load path are implemented. Current captures are local review artifacts;
-there is no CI pixel gate and no dedicated intro render yet.
+there is no CI pixel gate. The dedicated intro render is the approved
+`m6b_guerra_civil-intro` (see [`guerra-civil-model-mission.md`](./guerra-civil-model-mission.md)).
