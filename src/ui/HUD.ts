@@ -42,9 +42,10 @@ import { getEducational } from '../campaign/defs/educational';
 import {
   CAMPAIGNS,
   getCampaignForMission,
-  campaignNumber,
+  campaignRoman,
   nextReleasedMission,
   missionPosition,
+  romanNumeral,
   type CampaignId,
 } from '../campaign/defs/campaigns';
 import { SERIES_INTRO } from '../campaign/defs/cinematics';
@@ -2818,7 +2819,7 @@ export class HUD {
     const kicker =
       campaign && position
         ? t('hud.menu.briefing.kicker', {
-            n: campaignNumber(campaign.id),
+            n: campaignRoman(campaign.id),
             campaign: campaign.title,
             mission: position.n,
             total: position.total,
@@ -2891,7 +2892,10 @@ export class HUD {
       // Each campaign's own art only: Caral's capture is not a backdrop for the Viceroyalty.
       background: CAMPAIGN_ART[campaign.id],
       kicker: t('hud.menu.campaignIntro.kicker', {
-        number: t('hud.menu.campaignHub.campaignNumber', { n: campaignNumber(campaign.id), total: CAMPAIGNS.length }),
+        number: t('hud.menu.campaignHub.campaignNumber', {
+          n: campaignRoman(campaign.id),
+          total: romanNumeral(CAMPAIGNS.length),
+        }),
         campaign: campaign.title.toUpperCase(),
       }),
       finalLabel: t('hud.menu.campaignHub.introReplay'),

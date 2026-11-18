@@ -10,6 +10,10 @@ harness. The HUD geometry gate (`tests/e2e/hud-layout.spec.ts`) runs every missi
 1600×900 and 1920×1080, including a late-mission objective list with the archive folded and expanded and the
 shortcuts panel open.
 
+The launch catalogue (2026-11-18) shows four entries per campaign: thirteen released missions and seven
+announced ones. The audit below covers the released thirteen; an announced entry is not playable and does
+not count toward a campaign's completion.
+
 ## Gates
 
 | Gate        | Requirement                                                                                                                                                                                  |

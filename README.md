@@ -70,18 +70,22 @@ Debug URL parameters:
 ## Campaign series: La Senda del Sol
 
 The first release is **campaign-only**. _La Senda del Sol_ is the series; it contains **five campaigns divided by
-Peruvian historical epochs**. All five, from _Culturas Preincas_ to _La República_, are playable. A chapter
-whose first mission is already released opens from the start (Culturas Preincas, El Tahuantinsuyo, El Virreinato and La Independencia today);
-the rest open with the previous chapter until their first mission ships. Skirmish is hidden from the menu for
-this release (the `?play=1` debug harness remains for tests).
+Peruvian historical epochs**. Each campaign's launch catalogue has **four missions** and opens with its first
+released mission; all five chapters are open from the start today. Thirteen missions are playable and the
+seven catalogue entries that are still in development are marked as such. The other thirteen missions of the
+approved redesign are reserved for a later expansion.
 
-| Campaign                      | Focus                                         | Release                     |
+| Campaign                      | Focus                                         | Launch catalogue            |
 | ----------------------------- | --------------------------------------------- | --------------------------- |
-| **Culturas Preincas**         | Caral, Chavín, Moche/Recuay, Wari             | **Four missions playable**  |
-| **El Tahuantinsuyo**          | From the Ayar myth to the civil war           | **Four missions playable**  |
-| **El Virreinato**             | From the founding of Lima to Túpac Amaru II   | **Two missions playable**   |
-| **La Independencia**          | La Junta del Cusco and Ayacucho               | **Two missions playable**   |
-| **La República**              | Arica and the War of the Pacific              | **One mission playable**    |
+| **Culturas Preincas**         | Caral, Chavín, Moche/Recuay, Wari             | **4 playable**              |
+| **El Tahuantinsuyo**          | From the Ayar myth to the civil war           | **4 playable**              |
+| **El Virreinato**             | From the founding of Lima to Túpac Amaru II   | **2 playable · 2 planned**  |
+| **La Independencia**          | La Junta del Cusco and Ayacucho               | **2 playable · 2 planned**  |
+| **La República**              | From Tarapacá to the Breña                    | **1 playable · 3 planned**  |
+
+The launch catalogue is recorded in [`docs/design/campaign-redesign.md`](./docs/design/campaign-redesign.md);
+the thirteen expansion missions keep their ids and copy but are not shown in the menu. Skirmish is hidden
+from the menu for this release (the `?play=1` debug harness remains for tests).
 
 Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`, plus `m6b_guerra_civil`, `m_junta_cusco`, `m_tambotoco` and `m_lima`). All released missions appear in
 menus, the Codex and progress; `?mission=ID` remains available for QA.

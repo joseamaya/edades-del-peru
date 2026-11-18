@@ -1,6 +1,6 @@
 # Campaign redesign: Tahuantinsuyo, Virreinato, Independencia and República
 
-Status: **approved design** (decisions taken 2026-11-12). Three chapters already have their opening mission: `m_tambotoco` (Tahuantinsuyo), `m_lima` (Virreinato) and `m_junta_cusco` (Independencia). Culturas Preincas (m1–m4) is out of scope and stays as it is.
+Status: **approved design** (decisions taken 2026-11-12). Four chapters already have their opening mission: `m_tambotoco` (Tahuantinsuyo), `m_lima` (Virreinato), `m_junta_cusco` (Independencia) and `m9_guerra_pacifico` (República). Culturas Preincas (m1–m4) is out of scope and stays as it is.
 
 This document reorganises the three later chapters of *La Senda del Sol* around documented, playable
 milestones. The historical research behind every mission, with sources and certainty labels, lives in
@@ -54,7 +54,7 @@ These are not new; they are the project rules applied to a much larger cast.
 Five chapters instead of four: Independencia y República splits in two (decided, see *Decisions*). Mission ids
 for new missions are placeholders; existing ids keep their save keys.
 
-### II. El Tahuantinsuyo (c. XII–1532) — 10 missions + optional
+### II. El Tahuantinsuyo (c. XII–1532) — 10 candidate milestones (4 in the launch catalogue)
 
 | # | Mission | Date | Player vs rival | Type | Certainty | Status |
 |---|---|---|---|---|---|---|
@@ -69,7 +69,9 @@ for new missions are placeholders; existing ids keep their save keys.
 | 9 | **Yahuarcocha**: Huayna Cápac against caranquis and cayambes | c. 1500–1520 | Inca vs Caranqui-Cayambe | siege by manoeuvre | TRAD/DOC | new |
 | 10 | **Quipaipan** | 1529–1532 | Atahualpa vs Huáscar | advance | DOC | **m6b** |
 
-Prologue (decided): Manco Cápac y Mama Ocllo, Garcilaso's Titicaca version, narrated before mission 1.
+Prologue: the campaign opens with the Ayar exodus at Pacaritambo, the same event as mission 1 and labelled
+**Leyenda**. Garcilaso's Titicaca version of Manco Cápac and Mama Ocllo remains an optional Codex card, not
+yet narrated.
 
 Optional / unlockable: Tocay Cápac and the ayarmarcas, Huancas and Anco Ayllo's flight, Chachapoyas
 (Piajajalca), **the Pacific voyage to Avachumbi and Ninachumbi** (`[DEB]`, labelled tradition), the Antisuyo
@@ -83,10 +85,10 @@ Notes for existing missions:
   The m6 dossier should mention the earlier clash.
 - **m5:** label the pururaucas as tradition.
 
-### III. El Virreinato (1532–1781) — 9 missions + optional
+### III. El Virreinato (1532–1781) — 9 candidate milestones (4 in the launch catalogue)
 
-Prologue: **Cajamarca (1532)** as a narrated cinematic, the same text that closes Tahuantinsuyo seen from the
-other side. It is not playable: a few hours' ambush and massacre gives no honest RTS decision from either side.
+Prologue: **Cajamarca (1532)** as a narrated beat, the bridge from the Inca civil war to the conquest. It is
+not playable: a few hours' ambush and massacre gives no honest RTS decision from either side.
 
 | # | Mission | Date | Player vs rival | Type | Status |
 |---|---|---|---|---|---|
@@ -108,7 +110,7 @@ can bridge the two chapters as an optional mission.
 Perspective alternates: Hispanic in 1, 4, 5, 7; Indigenous in 2, 3, 6, 8, 9. If the chapter must be shorter,
 merge 2+3 and 4+5 into six missions.
 
-### IV. La Independencia (1814–1826) — 7 missions
+### IV. La Independencia (1814–1826) — 7 candidate milestones (4 in the launch catalogue)
 
 | # | Mission | Date | Player vs rival | Type | Status |
 |---|---|---|---|---|---|
@@ -125,7 +127,7 @@ opens this chapter rather than closing Virreinato: 1814 belongs to the cycle of 
 (O'Phelan); the irony that he fought *against* Túpac Amaru in 1780 is the hook, and m7's epilogue can
 announce it.
 
-### V. La República (1836–1883) — 6 missions
+### V. La República (1836–1883) — 6 candidate milestones (4 in the launch catalogue)
 
 | # | Mission | Date | Player vs rival | Type | Status |
 |---|---|---|---|---|---|
@@ -159,31 +161,55 @@ Patriotas, República, Chile. New ones, by the mission that first needs them:
 | Coastal fortification set (Real Felipe, batteries, redoubts) | Independencia 3, 7; República 2, 4, 5 | reusable buildings |
 | Afro-Peruvian units | Virreinato (Girón, 18th-century militias) | unit, not faction |
 
-Engine gaps that gate missions: **water and ships** (Virreinato 7, República 2, the Pacific voyage), **selva biome**
-(Virreinato 8, Antisuyo and Chachapoyas optionals), **seasonal calendar** (Virreinato 2, Tahuantinsuyo 7).
+Engine gaps: the **seasonal calendar** (Virreinato 2, in the launch catalogue; Tahuantinsuyo 7, in the
+expansion), **water and ships** (Virreinato 7, República 2 and the Pacific voyage, all in the expansion) and
+the **selva biome** (Virreinato 8, Antisuyo and Chachapoyas optionals, also expansion).
 
 ## Rollout
 
-The campaign menu already shows the full structure: each chapter's `path` in
+The campaign menu shows the launch catalogue: each chapter's `path` in
 `src/campaign/defs/campaigns.ts` interleaves released missions with the planned ones of
-`src/campaign/defs/plannedMissions.ts`, which appear in order as «En desarrollo», never playable. Briefings
-number a mission on that path («Misión 2 de 10»). Optional missions are not listed until they are scheduled;
-La República starts its menu era at 1866 because Socabaya (1836) is optional. When a scenario ships, its
-planned id in `path` is replaced by the released mission id.
+`src/campaign/defs/plannedMissions.ts`, which appear in order as «En desarrollo», never playable. The
+catalogue has four entries per campaign and briefings number a mission inside it («Misión 2 de 4»).
+`EXPANSION_MISSIONS` holds the other thirteen approved milestones; they are not in any path and a future
+expansion can add them back. When a scenario ships, its planned id in `path` is replaced by the released
+mission id.
 
 The chapters cannot all be rebuilt at once, and every mission has to reach Caral's quality bar. Proposed
 order, one mission at a time through the model-mission pattern:
 
-1. **Fix the existing missions' facts**: m6 (Cápac Yupanqui), m5 (pururaucas as tradition), m8 split into
-   Junín and Ayacucho, m9 refocused on land with the naval interlude, m7 on Sangarará and the failed Cusco
-   siege.
-2. **Tahuantinsuyo 1, «Los hijos de Tambotoco»**: it opens the longest chapter and fixes the Leyenda label
-   and framing for the whole game.
-3. **Tahuantinsuyo 4, «Cusco renacido»**: an economy mission that reuses Caral's construction phases.
-4. **Virreinato 1–3** (Lima, Cusco, Ollantaytambo): one arc, one new faction (hueste indiana).
-5. **Independencia 1–3**, then the rest by chapter.
-6. **Engine work in parallel**: navigable water and ships, then the selva biome. Virreinato 7, Virreinato 8,
-   República 2 and the Pacific voyage wait for them.
+1. **Close the released missions**: art review, performance and pacing (D2–D3).
+2. **Virreinato**: Cusco 1536 (seasonal calendar) and Vilcabamba 1572.
+3. **Independencia**: El cerco de Lima 1821 and the Real Felipe 1826.
+4. **República**: Tarapacá 1879, San Juan y Miraflores 1881 and the Breña 1882–1883.
+5. **Engine work in parallel**: the seasonal calendar for Cusco; navigable water and ships, then the selva
+   biome for the expansion missions that need them (Callao 1624, Dos de Mayo 1866, Juan Santos).
+
+## Launch catalogue (2026-11-18)
+
+The author cut the catalogue to four missions per campaign. Released missions stay; the planned slots go
+to the milestones that complete each arc. The other thirteen missions keep their ids and copy in
+`EXPANSION_MISSIONS` and are not shown in any campaign path.
+
+| Campaign | Launch catalogue (4) | Released | Planned |
+| --- | --- | ---: | ---: |
+| Culturas Preincas | Caral, Chavín, Moche–Recuay, Wari | 4 | 0 |
+| El Tahuantinsuyo | Tambotoco, Yahuar Pampa, Chimú–Inca, Guerra Civil | 4 | 0 |
+| El Virreinato | Lima, Cusco en llamas, El último Inca, Túpac Amaru II | 2 | 2 |
+| La Independencia | Junta del Cusco, El cerco de Lima, Independencia, El último bastión | 2 | 2 |
+| La República | Arica, La quebrada, San Juan y Miraflores, El brujo de los Andes | 1 | 3 |
+
+The seven planned catalogue entries are `p_vir_cusco`, `p_vir_vilcabamba`, `p_ind_lima`,
+`p_ind_real_felipe`, `p_rep_tarapaca`, `p_rep_lima` and `p_rep_brena`.
+
+The thirteen expansion missions are:
+
+- **El Tahuantinsuyo (6):** `p_inca_collao`, `p_inca_cusco`, `p_inca_tumipampa`, `p_inca_huarco`,
+  `p_inca_pucaras`, `p_inca_yahuarcocha`.
+- **El Virreinato (5):** `p_vir_ollantaytambo`, `p_vir_salinas`, `p_vir_gasca`, `p_vir_callao`,
+  `p_vir_juan_santos`.
+- **La Independencia (1):** `p_ind_pisco`.
+- **La República (1):** `p_rep_dos_de_mayo`.
 
 ## Decisions
 

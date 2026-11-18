@@ -15,6 +15,7 @@ GitHub issue or PR, link it here instead of copying the discussion. The live mis
 | B12 | Tambotoco art-direction pilot | Tambotoco replaces Caral as the visual reference; the 2026-11-16 kit pass is the baseline, not the target | E0–E6 of [`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md) close: art direction and pilot docs, light/terrain, architecture (E2a/E2b done), highland vegetation (E3a done), soft banks/ford and paths (E3b done), common variants and the Manco GLB (E4 done), cinematic beats (E5 done), 3 × 3 captures (E6 done, approved 2026-11-17), bench and human approval; E7 production (baked hero proportions, scoped terrain macro, Inticancha/shrine detail, 3X victory recording with the optional goals missed) | Done (2026-11-17; unique Ayar outfits, a hand-sculpted body, an andes GLB and new fauna are future work) |
 | B7 | Package the itch build | The Pages build exists; the itch upload was deferred | The package is built from the release commit, checked and uploaded with `butler` | Blocked (tooling) |
 | B13 | Optimize the m6b and m8 late views | They are the tightest high-quality views from D3 (29.2 and 28.2 FPS; 1.27M/663 and 1.14M/911) | Reduce the late unit-crowd cost (LOD/shadow silhouette, material consolidation) and re-run `yarn bench:site-views`; otherwise record an explicit reject | Queued |
+| B14 | Launch catalogue of four missions per campaign | The menu promised 10/9/5/5 entries and most were never playable | `CAMPAIGNS[*].path` has four entries; the 13 expansion missions live in `EXPANSION_MISSIONS` and no path lists them; menu, briefing and tests use «Misión N de 4» and Roman campaign numerals | In review (this PR) |
 
 ## Closed this cycle
 
@@ -50,4 +51,4 @@ Ideas that are explicitly **not** scheduled:
 - Ships, a selva biome and a seasonal calendar (they gate future missions, not the current 13).
 - A public skirmish UI, multiplayer or a map editor.
 - New runtime dependencies or MCP servers.
-- New missions from `campaign-redesign.md`.
+- The 13 expansion missions and the 7 announced catalogue missions are not scheduled.

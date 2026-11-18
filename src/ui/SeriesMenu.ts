@@ -1,5 +1,5 @@
-import { CAMPAIGNS, campaignNumber, campaignSteps, getReleasedMission } from '../campaign/defs/campaigns';
-import type { CampaignDef, CampaignId } from '../campaign/defs/campaigns';
+import { CAMPAIGNS, campaignRoman, campaignSteps, getReleasedMission, romanNumeral } from '../campaign/defs/campaigns';
+import type { CampaignId } from '../campaign/defs/campaigns';
 import {
   isCampaignUnlocked,
   isMissionCompleted,
@@ -45,14 +45,8 @@ export interface CampaignPathActions {
   onBack(): void;
 }
 
-const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'];
-
 function esc(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
-}
-
-function roman(campaign: CampaignDef): string {
-  return ROMAN[campaignNumber(campaign.id) - 1] ?? String(campaignNumber(campaign.id));
 }
 
 /** First paragraph of a mission's history, trimmed to two sentences for a menu line. */
@@ -153,14 +147,14 @@ export function renderMainMenu(overlay: HTMLElement, a: MainMenuActions): void {
   const nextId = next?.missionId;
   const chapters = CAMPAIGNS.map((c) => {
     const state = isCampaignUnlocked(a.progress, c.id) ? (c.id === campaign.id ? 'current' : 'open') : 'locked';
-    return `<span class="chapter ${state}" title="${esc(c.title)}">${roman(c)}</span>`;
+    return `<span class="chapter ${state}" title="${esc(c.title)}">${campaignRoman(c.id)}</span>`;
   }).join('<i></i>');
   card.innerHTML = `
     <div class="art" style='${artStyle(nextId ? MISSION_ART[nextId] : CAMPAIGN_ART[campaign.id], campaign.accent)}'>
-      <span class="numeral">${roman(campaign)}</span>
+      <span class="numeral">${campaignRoman(campaign.id)}</span>
     </div>
     <div class="body">
-      <div class="side-kicker">${t('hud.menu.senda.kicker', { n: roman(campaign), total: ROMAN[CAMPAIGNS.length - 1] })}</div>
+      <div class="side-kicker">${t('hud.menu.senda.kicker', { n: campaignRoman(campaign.id), total: romanNumeral(CAMPAIGNS.length) })}</div>
       <h3>${esc(campaign.title)}</h3>
       ${
         nextId
@@ -231,15 +225,17 @@ export function renderCampaignPath(overlay: HTMLElement, a: CampaignPathActions)
     const previous = CAMPAIGNS[i - 1];
     card.innerHTML = `
       <div class="art" style='${artStyle(CAMPAIGN_ART[campaign.id], campaign.accent)}'>
-        <span class="numeral">${roman(campaign)}</span>
+        <span class="numeral">${campaignRoman(campaign.id)}</span>
         <span class="badge">${state === 'locked' ? '🔒 ' : state === 'done' ? '✓ ' : ''}${t(`hud.menu.campaignHub.state.${state}`)}</span>
       </div>
-      <div class="era">${t('hud.menu.campaignHub.campaignNumber', { n: campaignNumber(campaign.id), total: CAMPAIGNS.length })} · ${esc(campaign.era)}</div>
+      <div class="era">${t('hud.menu.campaignHub.campaignNumber', { n: campaignRoman(campaign.id), total: romanNumeral(CAMPAIGNS.length) })} · ${esc(campaign.era)}</div>
       <h3>${esc(campaign.title)}</h3>
       <p>${esc(campaign.subtitle)}</p>
       <div class="card-meta">${
         open
-          ? t('hud.menu.campaignHub.completed', { done, total })
+          ? total === 1
+            ? t('hud.menu.campaignHub.completedOne', { done, total })
+            : t('hud.menu.campaignHub.completed', { done, total })
           : t('hud.menu.campaignHub.lockedHint', { campaign: previous?.title ?? '' })
       }${planned > 0 ? ` · ${t('hud.menu.campaignHub.plannedCount', { n: planned })}` : ''}</div>
     `;
@@ -278,7 +274,7 @@ export function renderCampaignPath(overlay: HTMLElement, a: CampaignPathActions)
         row.innerHTML = `
           <span class="node">${n + 1}</span>
           <div class="info">
-            <div class="label">${t('hud.menu.campaignHub.missionNumber', { n: n + 1 })} · ${esc(p.subtitle)}${p.label ? ` · <em>${esc(p.label)}</em>` : ''}</div>
+            <div class="label">${t('hud.menu.campaignHub.missionNumber', { n: n + 1, total: campaign.path.length })} · ${esc(p.subtitle)}${p.label ? ` · <em>${esc(p.label)}</em>` : ''}</div>
             <b>${esc(p.title)}</b>
             <p>${esc(p.summary)}</p>
           </div>
@@ -298,7 +294,7 @@ export function renderCampaignPath(overlay: HTMLElement, a: CampaignPathActions)
       row.innerHTML = `
         <span class="node">${completed ? '✓' : open ? n + 1 : '🔒'}</span>
         <div class="info">
-          <div class="label">${t('hud.menu.campaignHub.missionNumber', { n: n + 1 })} · ${esc(getReleasedMission(missionId)?.subtitle ?? '')}</div>
+          <div class="label">${t('hud.menu.campaignHub.missionNumber', { n: n + 1, total: campaign.path.length })} · ${esc(getReleasedMission(missionId)?.subtitle ?? '')}</div>
           <b>${esc(title)}</b>
           <p>${esc(open ? missionBlurb(missionId) : t('hud.menu.campaignHub.missionLocked', { title: before ? missionTitle(before.missionId) : '' }))}</p>
         </div>

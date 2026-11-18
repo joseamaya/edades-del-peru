@@ -60,9 +60,10 @@ remains for development and tests. Multiplayer is not part of this release.
 
 ## 4. Content structure
 
-Five campaigns, thirteen released missions:
+Five campaigns and thirteen released missions. The launch catalogue keeps four entries per campaign:
+released missions plus, where the arc needs them, planned milestones shown as in development.
 
-| Campaign | Missions | Historical focus |
+| Campaign | Released missions | Historical focus |
 | --- | --- | --- |
 | _Culturas Preincas_ | `m1_caral`, `m2_chavin`, `m3_moche_recuay`, `m4_wari` | Caral, Chavín, Moche/Recuay, Wari |
 | _El Tahuantinsuyo_ | `m_tambotoco`, `m5_yahuar_pampa`, `m6_chimu_inca`, `m6b_guerra_civil` | From the Ayar myth to the civil war |
@@ -70,11 +71,15 @@ Five campaigns, thirteen released missions:
 | _La Independencia_ | `m_junta_cusco`, `m8_independencia` | La Junta del Cusco and Ayacucho |
 | _La República_ | `m9_guerra_pacifico` | Arica and the War of the Pacific |
 
+The 2026-11-18 launch catalogue has four entries per campaign: **13 playable + 7 in development**. The other
+thirteen missions of the approved redesign are reserved for an expansion and are not listed in any campaign
+path.
+
 Mission ids are stable: they are save keys, URL parameters and progress keys. Do not rename them.
 
 The approved future structure of the later chapters (new missions, factions and engine gaps) is in
 [`design/campaign-redesign.md`](./design/campaign-redesign.md). A planned mission is not implemented until
-its historical dossier exists, it follows the model-mission pattern and it is listed in the campaign path.
+its historical dossier exists, it follows the model-mission pattern and it is listed in the launch catalogue.
 
 ## 5. History and canon
 

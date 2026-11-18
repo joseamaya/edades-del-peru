@@ -8,7 +8,9 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
 
 ## Where we are
 
-- **Release:** `0.1.0`, campaign-only, five campaigns and thirteen missions.
+- **Release:** `0.1.0`, campaign-only, five campaigns and thirteen missions. Launch catalogue: four missions
+  per campaign (13 playable + 7 in development); the other thirteen approved missions are reserved for an
+  expansion.
 - **Gold master:** Caral (`m1_caral`) meets every gate of the campaign quality bar.
 - **Model pattern:** every released mission follows it after the m5–m9, m6b and m8 rebuilds (closed
   2026-11-14); all thirteen missions have a model-mission document.
@@ -71,6 +73,7 @@ and schedule the m6b/m8 late-view optimization as **B13**. Re-run `yarn bench:si
 
 - Build the Pages artifact and the itch package from the same commit.
 - Re-run `yarn verify:fast`, the required E2E tier, `yarn art:validate` and `yarn dist:check`.
+- Check the campaign menu shows four entries per campaign and that no planned entry is playable.
 - Attach the current captures and the performance numbers.
 - Tag the release and update the version. Keep `localStorage` keys and mission ids stable.
 
@@ -78,6 +81,7 @@ and schedule the m6b/m8 late-view optimization as **B13**. Re-run `yarn bench:si
 
 | Risk                                     | Impact                                           | Mitigation                                                                                                           |
 | ---------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| Catalogue reads as playable content      | Players expect four playable missions per chapter | Label planned entries «En desarrollo»; the menu counts only released missions                                         |
 | Documentation drifts from code           | Agents follow stale rules                        | Living docs are updated in the same PR; snapshots are labelled; the map is the entry point                           |
 | Art review becomes the bottleneck        | Renders stay hidden or block a release           | Review in batches with a contact sheet; `yarn art:review` records the decision                                       |
 | The quality bar and the roadmap disagree | A stale line sends work backwards                | The quality bar is the authority; reconcile it in the same PR                                                        |

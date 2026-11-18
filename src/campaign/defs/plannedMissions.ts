@@ -1,8 +1,11 @@
 /**
- * Missions announced in the campaign menu before their scenario exists. They follow the approved
- * redesign in docs/design/campaign-redesign.md; the research behind each one is in
- * docs/historia/propuestas/. A planned mission is never playable: it only shows its place in the
- * chapter. When its scenario ships, its entry here is replaced by a released mission id.
+ * Missions announced in the launch catalogue before their scenario exists. The catalogue keeps
+ * four missions per campaign; the rest of the approved redesign lives in `EXPANSION_MISSIONS` and
+ * is not shown in any campaign path. Research for every entry is in docs/historia/propuestas/;
+ * the launch cut is recorded in docs/design/campaign-redesign.md.
+ *
+ * A planned mission is never playable: it only shows its place in the chapter. When its scenario
+ * ships, its entry here is replaced by a released mission id.
  */
 export interface PlannedMission {
   id: string;
@@ -15,7 +18,62 @@ export interface PlannedMission {
   label?: 'Leyenda' | 'Tradición';
 }
 
+/** The seven planned missions that complete the four-entry launch catalogue. */
 export const PLANNED_MISSIONS: Record<string, PlannedMission> = {
+  // El Virreinato
+  p_vir_cusco: {
+    id: 'p_vir_cusco',
+    title: 'Cusco en llamas',
+    subtitle: 'Cusco · 1536',
+    summary:
+      'Manco Inca cerca el Cusco y combate en Sacsayhuamán. El calendario de siembra decide cuánto dura el cerco.',
+  },
+  p_vir_vilcabamba: {
+    id: 'p_vir_vilcabamba',
+    title: 'El último Inca',
+    subtitle: 'Vilcabamba · 1572',
+    summary: 'La expedición del virrey Toledo entra en Vilcabamba. Túpac Amaru I resiste y busca escapar a la selva.',
+  },
+  // La Independencia
+  p_ind_lima: {
+    id: 'p_ind_lima',
+    title: 'El cerco de Lima',
+    subtitle: 'Lima y Callao · 1821',
+    summary: 'Las montoneras cercan Lima, San Martín proclama la independencia y el Callao resiste el primer sitio.',
+  },
+  p_ind_real_felipe: {
+    id: 'p_ind_real_felipe',
+    title: 'El último bastión',
+    subtitle: 'Callao · 1824–1826',
+    summary: 'Tras Ayacucho, Rodil se encierra en la fortaleza del Real Felipe. El último sitio de la independencia.',
+  },
+  // La República
+  p_rep_tarapaca: {
+    id: 'p_rep_tarapaca',
+    title: 'La quebrada',
+    subtitle: 'Tarapacá · 27 de noviembre de 1879',
+    summary: 'Tras la guerra en el mar, el ejército peruano resiste en la quebrada de Tarapacá.',
+  },
+  p_rep_lima: {
+    id: 'p_rep_lima',
+    title: 'San Juan y Miraflores',
+    subtitle: 'Lima · enero de 1881',
+    summary: 'Lima se defiende en dos líneas de reductos frente al avance chileno.',
+  },
+  p_rep_brena: {
+    id: 'p_rep_brena',
+    title: 'El brujo de los Andes',
+    subtitle: 'Sierra central · 1882–1883',
+    summary:
+      'Andrés A. Cáceres y las montoneras sostienen la Campaña de la Breña, de Pucará y Marcavalle a Huamachuco.',
+  },
+};
+
+/**
+ * Approved redesign missions reserved for a later expansion. They keep their ids and copy but
+ * are not part of any campaign path, so the menu, progress and mission numbering never show them.
+ */
+export const EXPANSION_MISSIONS: Record<string, PlannedMission> = {
   // El Tahuantinsuyo
   p_inca_collao: {
     id: 'p_inca_collao',
@@ -56,13 +114,6 @@ export const PLANNED_MISSIONS: Record<string, PlannedMission> = {
     summary: 'Huayna Cápac enfrenta a caranquis y cayambes en la frontera norte del Tahuantinsuyo.',
   },
   // El Virreinato
-  p_vir_cusco: {
-    id: 'p_vir_cusco',
-    title: 'Cusco en llamas',
-    subtitle: 'Cusco · 1536',
-    summary:
-      'Manco Inca cerca el Cusco y combate en Sacsayhuamán. El calendario de siembra decide cuánto dura el cerco.',
-  },
   p_vir_ollantaytambo: {
     id: 'p_vir_ollantaytambo',
     title: 'Las terrazas de Ollantaytambo',
@@ -82,12 +133,6 @@ export const PLANNED_MISSIONS: Record<string, PlannedMission> = {
     subtitle: 'Sierra · 1546–1548',
     summary:
       'Pedro de la Gasca enfrenta la rebelión de Gonzalo Pizarro con deserciones, pactos y la batalla de Jaquijahuana.',
-  },
-  p_vir_vilcabamba: {
-    id: 'p_vir_vilcabamba',
-    title: 'El último Inca',
-    subtitle: 'Vilcabamba · 1572',
-    summary: 'La expedición del virrey Toledo entra en Vilcabamba. Túpac Amaru I resiste y busca escapar a la selva.',
   },
   p_vir_callao: {
     id: 'p_vir_callao',
@@ -109,43 +154,12 @@ export const PLANNED_MISSIONS: Record<string, PlannedMission> = {
     subtitle: 'Costa y sierra central · 1820',
     summary: 'La Expedición Libertadora desembarca en Paracas y Arenales recorre la sierra hasta Cerro de Pasco.',
   },
-  p_ind_lima: {
-    id: 'p_ind_lima',
-    title: 'El cerco de Lima',
-    subtitle: 'Lima y Callao · 1821',
-    summary: 'Las montoneras cercan Lima, San Martín proclama la independencia y el Callao resiste el primer sitio.',
-  },
-  p_ind_real_felipe: {
-    id: 'p_ind_real_felipe',
-    title: 'El último bastión',
-    subtitle: 'Callao · 1824–1826',
-    summary: 'Tras Ayacucho, Rodil se encierra en la fortaleza del Real Felipe. El último sitio de la independencia.',
-  },
   // La República
   p_rep_dos_de_mayo: {
     id: 'p_rep_dos_de_mayo',
     title: 'Las baterías del Callao',
     subtitle: 'Callao · 2 de mayo de 1866',
     summary: 'La escuadra española bombardea el Callao y las baterías de la costa responden.',
-  },
-  p_rep_tarapaca: {
-    id: 'p_rep_tarapaca',
-    title: 'La quebrada',
-    subtitle: 'Tarapacá · 27 de noviembre de 1879',
-    summary: 'Tras la guerra en el mar, el ejército peruano resiste en la quebrada de Tarapacá.',
-  },
-  p_rep_lima: {
-    id: 'p_rep_lima',
-    title: 'San Juan y Miraflores',
-    subtitle: 'Lima · enero de 1881',
-    summary: 'Lima se defiende en dos líneas de reductos frente al avance chileno.',
-  },
-  p_rep_brena: {
-    id: 'p_rep_brena',
-    title: 'El brujo de los Andes',
-    subtitle: 'Sierra central · 1882–1883',
-    summary:
-      'Andrés A. Cáceres y las montoneras sostienen la Campaña de la Breña, de Pucará y Marcavalle a Huamachuco.',
   },
 };
 

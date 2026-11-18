@@ -1,15 +1,17 @@
 # Fichas de mapa de las campañas
 
-Ficha de las nueve misiones redactadas para **La Senda del Sol**: periodo, civilización, región y los
-
-La saga se organiza en cuatro campañas. La primera, **Culturas Preincas**, está disponible con
-Caral, Chavín, Moche/Recuay y Wari; las demás misiones quedan como borrador para los siguientes
-capítulos.
+Ficha de las trece misiones publicadas para **La Senda del Sol**: periodo, civilización, región y los
 parámetros visuales que resuelve el sistema de perfiles (`resolveMapProfile` en
 `src/model/defs/profiles.ts`). Los rasgos son **abstracciones jugables** de la geografía documentada; la
 columna _Arquitectura_ es la que resulta de `archProfileFor(civ, era)` (ver [`arquitectura.md`](./arquitectura.md))
 y _Landmark_ los hitos visuales (`src/model/defs/landmarks.ts`). Datos históricos en [`campanas/`](./campanas/)
 y [`mapas.md`](./mapas.md).
+
+La saga se organiza en cinco campañas. La primera, **Culturas Preincas**, está disponible con
+Caral, Chavín, Moche/Recuay y Wari; las demás campañas tienen su apertura publicada y un catálogo de
+cuatro misiones. La tabla recoge las nueve fichas originales; las cuatro misiones añadidas después
+(`m_tambotoco`, `m6b_guerra_civil`, `m_junta_cusco` y `m_lima`) tienen su ficha en su dossier y en su
+documento de misión modelo.
 
 | #   | Misión                    | Periodo             | Civilización       | Región          | Mapa  | Clima / suelo                           | Vegetación   | Recursos                                     | Arquitectura                           | Landmark                        | Fuente                                                                 |
 | --- | ------------------------- | ------------------- | ------------------ | --------------- | ----- | --------------------------------------- | ------------ | -------------------------------------------- | -------------------------------------- | ------------------------------- | ---------------------------------------------------------------------- |

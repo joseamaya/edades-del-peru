@@ -3,12 +3,14 @@ import {
   CAMPAIGNS,
   CAMPAIGN_SERIES_TITLE,
   RELEASED_MISSIONS,
+  campaignRoman,
   campaignSteps,
   missionPosition,
   getCampaign,
   getCampaignForMission,
   getReleasedMission,
   nextReleasedMission,
+  romanNumeral,
 } from '../src/campaign/defs/campaigns';
 import {
   INDEPENDENCIA_PROLOGUE,
@@ -18,7 +20,7 @@ import {
   REPUBLICA_PROLOGUE,
   VIRREINATO_PROLOGUE,
 } from '../src/campaign/defs/cinematics';
-import { PLANNED_MISSIONS } from '../src/campaign/defs/plannedMissions';
+import { EXPANSION_MISSIONS, PLANNED_MISSIONS } from '../src/campaign/defs/plannedMissions';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import { HistoricalPeriod } from '../src/core/types';
 import {
@@ -44,12 +46,13 @@ describe('campaign series', () => {
     ]);
   });
 
-  it('lays every chapter out in play order, released and planned missions interleaved', () => {
+  it('lays out the four-entry launch catalogue per chapter, released and planned interleaved', () => {
     for (const campaign of CAMPAIGNS) {
       const steps = campaignSteps(campaign);
       // every path entry resolves, and no id appears twice
       expect(steps.map((s) => s.id)).toEqual(campaign.path);
       expect(new Set(campaign.path).size).toBe(campaign.path.length);
+      expect(campaign.path).toHaveLength(4);
       // released missions keep their release order inside the path
       expect(steps.filter((s) => s.kind === 'released').map((s) => s.id)).toEqual(campaign.releasedMissionIds);
     }
@@ -58,10 +61,23 @@ describe('campaign series', () => {
         .filter((s) => s.kind === 'planned')
         .map((s) => s.id),
     );
-    // every planned mission is placed exactly once and none of them is playable
+    // every planned mission of the launch catalogue is placed exactly once and none is playable
     expect(planned.sort()).toEqual(Object.keys(PLANNED_MISSIONS).sort());
+    expect(planned).toHaveLength(7);
     for (const id of planned) expect(getReleasedMission(id)).toBeUndefined();
-    expect(CAMPAIGNS.map((c) => c.path.length)).toEqual([4, 10, 9, 5, 5]);
+    expect(CAMPAIGNS.map((c) => c.path.length)).toEqual([4, 4, 4, 4, 4]);
+  });
+
+  it('keeps the expansion missions out of the catalogue', () => {
+    const catalog = new Set(CAMPAIGNS.flatMap((c) => c.path));
+    const expansion = Object.keys(EXPANSION_MISSIONS);
+    expect(expansion).toHaveLength(13);
+    for (const id of expansion) {
+      expect(EXPANSION_MISSIONS[id], id).toBeDefined();
+      expect(PLANNED_MISSIONS[id], id).toBeUndefined();
+      expect(getReleasedMission(id), id).toBeUndefined();
+      expect(catalog.has(id), id).toBe(false);
+    }
   });
 
   it('labels the Inca foundation myth as legend', () => {
@@ -72,13 +88,28 @@ describe('campaign series', () => {
     expect(myth.period).toBe(HistoricalPeriod.LATE_INTERMEDIATE);
   });
 
-  it('numbers a mission on its chapter path', () => {
+  it('numbers a mission in its four-entry chapter', () => {
     expect(missionPosition('m1_caral')).toEqual({ n: 1, total: 4 });
-    expect(missionPosition('m5_yahuar_pampa')).toEqual({ n: 2, total: 10 });
-    expect(missionPosition('m6b_guerra_civil')).toEqual({ n: 10, total: 10 });
-    expect(missionPosition('m7_tupac_amaru')).toEqual({ n: 9, total: 9 });
-    expect(missionPosition('m9_guerra_pacifico')).toEqual({ n: 3, total: 5 });
+    expect(missionPosition('m5_yahuar_pampa')).toEqual({ n: 2, total: 4 });
+    expect(missionPosition('m6b_guerra_civil')).toEqual({ n: 4, total: 4 });
+    expect(missionPosition('m_lima')).toEqual({ n: 1, total: 4 });
+    expect(missionPosition('p_vir_cusco')).toEqual({ n: 2, total: 4 });
+    expect(missionPosition('p_vir_vilcabamba')).toEqual({ n: 3, total: 4 });
+    expect(missionPosition('m7_tupac_amaru')).toEqual({ n: 4, total: 4 });
+    expect(missionPosition('p_ind_lima')).toEqual({ n: 2, total: 4 });
+    expect(missionPosition('p_ind_real_felipe')).toEqual({ n: 4, total: 4 });
+    expect(missionPosition('m9_guerra_pacifico')).toEqual({ n: 1, total: 4 });
+    expect(missionPosition('p_rep_tarapaca')).toEqual({ n: 2, total: 4 });
+    expect(missionPosition('p_rep_brena')).toEqual({ n: 4, total: 4 });
     expect(missionPosition('p_inca_collao')).toBeNull();
+    expect(missionPosition('p_rep_dos_de_mayo')).toBeNull();
+  });
+
+  it('numbers the campaigns in Roman numerals', () => {
+    expect(campaignRoman('preinca')).toBe('I');
+    expect(campaignRoman('virreinato')).toBe('III');
+    expect(campaignRoman('republica')).toBe('V');
+    expect(romanNumeral(CAMPAIGNS.length)).toBe('V');
   });
 
   it('releases the preinca, Inca and colonial chapters in order', () => {
@@ -121,7 +152,8 @@ describe('campaign series', () => {
     expect(getCampaignForMission('m_junta_cusco')?.id).toBe('independencia');
     expect(getCampaignForMission('m8_independencia')?.id).toBe('independencia');
     expect(getCampaignForMission('m9_guerra_pacifico')?.id).toBe('republica');
-    expect(getCampaign('preinca')?.missionIds).toEqual(['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari']);
+    expect(getCampaign('preinca')?.releasedMissionIds).toEqual(['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari']);
+    expect(getCampaignForMission('p_vir_cusco')?.id).toBe('virreinato');
   });
 
   it('ships the title and chapter prologues with readable beats', () => {
@@ -141,8 +173,16 @@ describe('campaign series', () => {
     expect(PREINCA_PROLOGUE[0].text).toContain('una de las primeras civilizaciones del mundo');
     expect(PREINCA_PROLOGUE.slice(0, 3).every((beat) => beat.source === 'docs/historia/campanas/caral.md')).toBe(true);
     expect(PREINCA_PROLOGUE[3].source).toBe('docs/historia/periodizacion.md');
-    expect(VIRREINATO_PROLOGUE).toHaveLength(3);
-    expect(VIRREINATO_PROLOGUE.every((beat) => beat.source === 'docs/historia/campanas/tupac_amaru.md')).toBe(true);
+    expect(INCA_PROLOGUE).toHaveLength(5);
+    expect(INCA_PROLOGUE[0].kicker).toContain('LEYENDA');
+    expect(VIRREINATO_PROLOGUE).toHaveLength(7);
+    expect(VIRREINATO_PROLOGUE[0].source).toBe('docs/historia/campanas/guerra_civil_inca.md');
+    expect(VIRREINATO_PROLOGUE.at(-1)?.source).toBe('docs/historia/campanas/tupac_amaru.md');
+    expect(INDEPENDENCIA_PROLOGUE).toHaveLength(4);
+    expect(INDEPENDENCIA_PROLOGUE.at(-1)?.kicker).toContain('1824–1826');
+    expect(REPUBLICA_PROLOGUE).toHaveLength(4);
+    expect(REPUBLICA_PROLOGUE[0].kicker).toContain('ARICA');
+    expect(REPUBLICA_PROLOGUE.some((beat) => beat.text.includes('1866'))).toBe(false);
   });
 });
 
@@ -179,24 +219,18 @@ describe('campaign progress', () => {
 });
 
 describe('campaign unlocks', () => {
-  it('opens the released opening of a campaign, and waits when that opening is still planned', () => {
+  it('opens every campaign whose opening is released', () => {
     const fresh = parseCampaignProgress(null);
-    // Preinca and Independencia publish their opening, so their chapters are open.
+    // Every chapter now starts with a released mission, so all five open from a fresh profile.
     expect(isMissionUnlocked(fresh, 'm1_caral')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm2_chavin')).toBe(false);
-    expect(isMissionUnlocked(fresh, 'm_junta_cusco')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm_tambotoco')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm_lima')).toBe(true);
+    expect(isMissionUnlocked(fresh, 'm_junta_cusco')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm8_independencia')).toBe(false);
-    expect(isCampaignUnlocked(fresh, 'preinca')).toBe(true);
-    expect(isCampaignUnlocked(fresh, 'independencia')).toBe(true);
-    expect(isCampaignUnlocked(fresh, 'inca')).toBe(true);
-    // The chapters still opening with a planned mission wait for the predecessor.
-    for (const campaign of CAMPAIGNS.filter(
-      (c) => c.id !== 'preinca' && c.id !== 'independencia' && c.id !== 'inca' && c.id !== 'virreinato',
-    )) {
-      expect(isMissionUnlocked(fresh, campaign.releasedMissionIds[0]!), campaign.id).toBe(false);
-      expect(isCampaignUnlocked(fresh, campaign.id), campaign.id).toBe(false);
+    expect(isMissionUnlocked(fresh, 'm9_guerra_pacifico')).toBe(true);
+    for (const campaign of CAMPAIGNS) {
+      expect(isCampaignUnlocked(fresh, campaign.id), campaign.id).toBe(true);
     }
     expect(nextSeriesMission(fresh)?.missionId).toBe('m1_caral');
   });

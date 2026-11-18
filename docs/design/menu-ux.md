@@ -35,17 +35,18 @@ subtitle, the progress over the whole series, the five chapters (current, open, 
 
 ## Campaign path
 
-Rendered by `renderCampaignPath`. `Culturas Preincas`, `El Tahuantinsuyo`, `El Virreinato` and
-`Independencia y República` are four chapter cards in a row (art or campaign colour, roman numeral, era,
-state badge: Disponible, En curso, Completada, Bloqueada). Selecting an open card shows its summary
-(`CampaignDef.summary`), its prologue and its missions in order, each with its number, subtitle, a short
-blurb from the mission history and a play or replay button.
+Rendered by `renderCampaignPath`. `Culturas Preincas`, `El Tahuantinsuyo`, `El Virreinato`, `La Independencia`
+and `La República` are five chapter cards in a row (art or campaign colour, roman numeral, era, state badge:
+Disponible, En curso, Completada, Bloqueada). Selecting an open card shows its summary (`CampaignDef.summary`),
+its prologue and its four-entry launch catalogue in order, each with its number («Misión N de 4»), subtitle,
+a short blurb from the mission history and a play or replay button. Planned entries show «En desarrollo» and
+never gate a released mission.
 
-**A campaign opens with its first mission as soon as it is released** (`isMissionUnlocked` in
-`src/campaign/progress.ts`): a fresh profile can start any chapter whose opening exists, and inside that
-chapter each mission opens once the previous one is completed. A chapter whose first mission is still
-planned waits for the previous chapter, so a planned opening never lets the player skip ahead. Completed
-missions stay open to replay. Locked cards and missions are disabled and say what to complete.
+**A campaign opens with its first released mission** (`isMissionUnlocked` in
+`src/campaign/progress.ts`): every chapter has a released opening mission, so a fresh profile can start any of
+the five. Inside a chapter, each released mission opens once the previous released one is completed; planned
+entries are skipped because they are not playable. Completed missions stay open to replay. Locked cards and
+missions are disabled and say what to complete.
 `?menu=1&unlock=all` opens everything for testing.
 
 Progress lives in `peru-campaign` as a versioned JSON object. The old numeric value is migrated to the
