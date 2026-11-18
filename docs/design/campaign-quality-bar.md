@@ -55,9 +55,9 @@ below, which record each mission's own review and are kept for history). **M** m
 | m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | P    | M     |
 | m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_junta_cusco      | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | P    | M     |
-| m_lima_1821        | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | P    | M     |
+| m_lima_1821        | M    | M     | P    | M     | M   | M    | M   | P   | M    | P     | M    | M      | M    | M   | P    | M     |
 | m8_independencia   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m_real_felipe      | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | P    | M     |
+| m_real_felipe      | M    | M     | P    | M     | M   | M    | M   | P   | M    | P     | M    | M      | M    | P   | P    | M     |
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the

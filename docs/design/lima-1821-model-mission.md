@@ -54,5 +54,4 @@ Sources and certainty: [`docs/historia/campanas/lima_1821.md`](../historia/campa
 - Real commands: `tests/e2e/lima-1821.spec.ts` moves the montoneras to the Lurín road and checks that the
   first objective advances without direct objective calls.
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts` cover the briefing and act cards.
-- Open: human no-cheat playtest, current in-engine captures, performance row in `bench_scene.mjs` if the
-  late view warrants it.
+- Open: human no-cheat playtest and a performance row in `bench_scene.mjs` if the late view warrants it.

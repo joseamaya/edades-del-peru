@@ -226,7 +226,7 @@ export const mRealFelipe: MissionDef = {
           type: 'act',
           kicker: 'Acto II · El cerco',
           title: 'El hambre y las salidas',
-          image: 'media/real-felipe/intro-sitio.webp',
+          image: 'media/real-felipe/intro-baterias.webp',
           text: 'El bloqueo cierra el puerto. Dentro del Real Felipe se refugian miles de civiles; Rodil intenta salidas para romper el cerco y buscar víveres. La guerra se vuelve una prueba de resistencia.',
         },
         { type: 'objective', objectiveId: 'a3_salidas', state: 'activate', announce: true },
