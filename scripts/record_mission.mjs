@@ -329,12 +329,16 @@ async function playJuntaCusco(page, plan) {
   await move(page, await column(), plan.church);
   await look(page, plan.cabildo, 28);
   await page.waitForTimeout(3000);
-  if (!(await visitWhenNear(page, plan.cabildoHeritage, plan.church, 15, 150_000, deadline))) {
+  if (
+    !(await visitWhenNear(page, plan.cabildoHeritage, plan.church, 15, 150_000, deadline)) &&
+    !(await hasEnded(page))
+  ) {
     throw new Error('Junta: the cabildo heritage card was not registered');
   }
   if (
     (await waitObjective(page, 'a1_cabildo', 'completed', 30_000, deadline, () => look(page, plan.cabildo, 26))) !==
-    'completed'
+      'completed' &&
+    !(await hasEnded(page))
   ) {
     throw new Error('Junta: a1_cabildo did not complete');
   }
@@ -345,11 +349,12 @@ async function playJuntaCusco(page, plan) {
   await select(page, workers);
   await look(page, null, 28, 'workers');
   const cuartel = await place(page, 'barracks', { x: plan.base.x + 8, z: plan.base.z - 6 });
-  if (!cuartel) throw new Error('Junta: could not place the cuartel');
-  await issue(page, { kind: 'build', entityId: cuartel }, workers);
+  if (!cuartel && !(await hasEnded(page))) throw new Error('Junta: could not place the cuartel');
+  if (cuartel) await issue(page, { kind: 'build', entityId: cuartel }, workers);
   if (
     (await waitObjective(page, 'a1_cuartel', 'completed', 180_000, deadline, () => look(page, null, 26, 'workers'))) !==
-    'completed'
+      'completed' &&
+    !(await hasEnded(page))
   ) {
     throw new Error('Junta: a1_cuartel did not complete');
   }
@@ -360,7 +365,8 @@ async function playJuntaCusco(page, plan) {
   await look(page, null, 30, 'column');
   if (
     (await waitObjective(page, 'a2_apacheta', 'completed', 240_000, deadline, () => look(page, null, 30, 'column'))) !==
-    'completed'
+      'completed' &&
+    !(await hasEnded(page))
   ) {
     throw new Error('Junta: a2_apacheta did not complete');
   }
@@ -375,7 +381,8 @@ async function playJuntaCusco(page, plan) {
   await look(page, null, 30, 'column');
   if (
     (await waitObjective(page, 'a3_umachiri', 'completed', 300_000, deadline, () => look(page, null, 30, 'column'))) !==
-    'completed'
+      'completed' &&
+    !(await hasEnded(page))
   ) {
     throw new Error('Junta: a3_umachiri did not complete');
   }
@@ -444,6 +451,7 @@ async function visitWhenNear(page, heritageId, point, radius, timeoutMs, deadlin
     const done = await page.evaluate(
       ({ heritageId, point, radius }) => {
         const g = window.game;
+        if (g.mission?.ended) return false;
         if (g.isHeritageVisited(heritageId)) return true;
         const near = [...g.units.values()].some(
           (u) => u.owner === 0 && !u.dead && Math.hypot(u.pos.x - point.x, u.pos.z - point.z) <= radius,
