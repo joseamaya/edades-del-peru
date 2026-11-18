@@ -10,7 +10,9 @@ import { m6bGuerraCivil } from './missions/m6b_guerra_civil';
 import { mLima } from './missions/m_lima';
 import { m7TupacAmaru } from './missions/m7_tupac_amaru';
 import { mJuntaCusco } from './missions/m_junta_cusco';
+import { mLima1821 } from './missions/m_lima_1821';
 import { m8Independencia } from './missions/m8_independencia';
+import { mRealFelipe } from './missions/m_real_felipe';
 import { m9GuerraPacifico } from './missions/m9_guerra_pacifico';
 
 /** Every released mission in campaign order; each one lives in its own file under `missions/`. */
@@ -26,7 +28,9 @@ export const MISSIONS: MissionDef[] = [
   mLima,
   m7TupacAmaru,
   mJuntaCusco,
+  mLima1821,
   m8Independencia,
+  mRealFelipe,
   m9GuerraPacifico,
 ];
 

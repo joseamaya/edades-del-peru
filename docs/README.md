@@ -85,7 +85,7 @@ and new records change.
 | Document | What it answers | Status |
 | --- | --- | --- |
 | [`design/model-mission-pattern.md`](./design/model-mission-pattern.md) | How to rebuild a mission to the Caral standard (acts, map, site, cast, tests) | Living |
-| [`design/campaign-quality-bar.md`](./design/campaign-quality-bar.md) | The gates a finished mission must pass, plus the live audit of all 13 missions | Living |
+| [`design/campaign-quality-bar.md`](./design/campaign-quality-bar.md) | The gates a finished mission must pass, plus the live audit of all 15 missions | Living |
 | [`design/campaign-experiences.md`](./design/campaign-experiences.md) | What each campaign must teach and how the player learns it | Living |
 | [`design/characters.md`](./design/characters.md) | Cast, likeness certainty, hero treatment and animation minimums | Living |
 | [`design/asset-pipeline.md`](./design/asset-pipeline.md) | Start-here route for Blender/GIMP assets, ingest commands, provenance and review | Living |
@@ -100,7 +100,7 @@ and new records change.
 ### Missions, sites and art sources
 
 A mission normally has three documents: a historical dossier (the facts), a model-mission design (the
-gameplay) and a site document (the authored place). All thirteen released missions have a model-mission
+gameplay) and a site document (the authored place). All fifteen released missions have a model-mission
 document; a new mission is not complete without one. The quality bar is the live status.
 
 | Campaign | Mission | Historical dossier | Model-mission design | Site / art design |
@@ -116,10 +116,12 @@ document; a new mission is not complete without one. The quality bar is the live
 | El Virreinato | `m_lima` | [`lima.md`](./historia/campanas/lima.md) | [`lima-model-mission.md`](./design/lima-model-mission.md) | — |
 | El Virreinato | `m7_tupac_amaru` | [`tupac_amaru.md`](./historia/campanas/tupac_amaru.md) | [`colonial-model-mission.md`](./design/colonial-model-mission.md) | [`colonial-site.md`](./design/colonial-site.md) |
 | La Independencia | `m_junta_cusco` | [`junta_cusco.md`](./historia/campanas/junta_cusco.md) | [`junta-cusco-model-mission.md`](./design/junta-cusco-model-mission.md) | — |
+| La Independencia | `m_lima_1821` | [`lima_1821.md`](./historia/campanas/lima_1821.md) | [`lima-1821-model-mission.md`](./design/lima-1821-model-mission.md) | — |
+| La Independencia | `m_real_felipe` | [`real_felipe.md`](./historia/campanas/real_felipe.md) | [`real-felipe-model-mission.md`](./design/real-felipe-model-mission.md) | — |
 | La Independencia | `m8_independencia` | [`independencia.md`](./historia/campanas/independencia.md) | [`independencia-model-mission.md`](./design/independencia-model-mission.md) | [`independence-site.md`](./design/independence-site.md) |
 | La República | `m9_guerra_pacifico` | [`guerra_del_pacifico.md`](./historia/campanas/guerra_del_pacifico.md) | [`arica-model-mission.md`](./design/arica-model-mission.md) | [`arica-site.md`](./design/arica-site.md) |
 
-All thirteen released missions have a model-mission document. For the live status of any mission, use
+All fifteen released missions have a model-mission document. For the live status of any mission, use
 [`campaign-quality-bar.md`](./design/campaign-quality-bar.md).
 
 ### Systems, tools and status

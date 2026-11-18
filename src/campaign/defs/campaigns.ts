@@ -91,12 +91,12 @@ export const CAMPAIGNS: CampaignDef[] = [
     description: 'De la rebelión del Cusco de 1814 a las batallas que sellaron la independencia del Perú.',
     summary:
       'En 1814 el Cusco se alza con Pumacahua y los hermanos Angulo. Seis años después desembarca la Expedición Libertadora de San Martín, las montoneras cercan Lima y en 1821 se proclama la independencia. Junín y Ayacucho la sellan en 1824, y el Callao resiste hasta 1826 como último bastión realista.',
-    releasedMissionIds: ['m_junta_cusco', 'm8_independencia'],
+    releasedMissionIds: ['m_junta_cusco', 'm_lima_1821', 'm8_independencia', 'm_real_felipe'],
     status: 'available',
     era: '1814 — 1826',
     accent: '#8b6b43',
     prologue: INDEPENDENCIA_PROLOGUE,
-    path: ['m_junta_cusco', 'p_ind_lima', 'm8_independencia', 'p_ind_real_felipe'],
+    path: ['m_junta_cusco', 'm_lima_1821', 'm8_independencia', 'm_real_felipe'],
   },
   {
     id: 'republica',

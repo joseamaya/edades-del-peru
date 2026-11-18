@@ -972,7 +972,9 @@ test('saves and loads the later campaign missions', async ({ context }) => {
     'm7_tupac_amaru',
     'm_lima',
     'm_junta_cusco',
+    'm_lima_1821',
     'm8_independencia',
+    'm_real_felipe',
     'm9_guerra_pacifico',
   ]) {
     const page = await context.newPage();

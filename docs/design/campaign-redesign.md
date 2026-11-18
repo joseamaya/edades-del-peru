@@ -116,11 +116,11 @@ merge 2+3 and 4+5 into six missions.
 |---|---|---|---|---|---|
 | 1 | **La Junta del Cusco**: Pumacahua and the Angulo brothers, La Apacheta and Umachiri | 1814–1815 | Cusco rebels vs royalists | rebellion; history lost | **m_junta_cusco** |
 | 2 | **De Pisco a Pasco**: landing at Paracas, Arenales's sierra campaign | Sep–Dec 1820 | San Martín, Arenales vs royalists | landing + raid | new |
-| 3 | **El cerco de Lima**: montoneras, proclamation (28 Jul) and the first siege of Callao | Jul–Sep 1821 | patriots and montoneras vs royalists | siege + guerrilla | new |
+| 3 | **El cerco de Lima**: montoneras, proclamation (28 Jul) and the first siege of Callao | Jul–Sep 1821 | patriots and montoneras vs royalists | siege + guerrilla | **m_lima_1821** |
 | 4 | **Intermedios**: Torata and Moquegua (optional) | Jan 1823 | patriots vs Valdés, Canterac | fighting withdrawal | new (optional) |
 | 5 | **Junín** | 6 Aug 1824 | Bolívar vs Canterac | cavalry battle | from **m8** |
 | 6 | **Ayacucho** | 9 Dec 1824 | Sucre vs La Serna | decisive battle | from **m8** |
-| 7 | **El último bastión**: Rodil in the Real Felipe | 1824–23 Jan 1826 | patriots vs Rodil | long siege | new |
+| 7 | **El último bastión**: Rodil in the Real Felipe | 1824–23 Jan 1826 | patriots vs Rodil | long siege | **m_real_felipe** |
 
 The montoneras are a cross-mission mechanic (ambush, rolling stones), not a mission of their own. Pumacahua
 opens this chapter rather than closing Virreinato: 1814 belongs to the cycle of the juntas and Cádiz
@@ -180,7 +180,7 @@ order, one mission at a time through the model-mission pattern:
 
 1. **Close the released missions**: art review, performance and pacing (D2–D3).
 2. **Virreinato**: Cusco 1536 (seasonal calendar) and Vilcabamba 1572.
-3. **Independencia**: El cerco de Lima 1821 and the Real Felipe 1826.
+3. **Independencia**: El cerco de Lima 1821 and the Real Felipe 1826 — **Done (2026-11-18)**.
 4. **República**: Tarapacá 1879, San Juan y Miraflores 1881 and the Breña 1882–1883.
 5. **Engine work in parallel**: the seasonal calendar for Cusco; navigable water and ships, then the selva
    biome for the expansion missions that need them (Callao 1624, Dos de Mayo 1866, Juan Santos).
@@ -196,11 +196,11 @@ to the milestones that complete each arc. The other thirteen missions keep their
 | Culturas Preincas | Caral, Chavín, Moche–Recuay, Wari | 4 | 0 |
 | El Tahuantinsuyo | Tambotoco, Yahuar Pampa, Chimú–Inca, Guerra Civil | 4 | 0 |
 | El Virreinato | Lima, Cusco en llamas, El último Inca, Túpac Amaru II | 2 | 2 |
-| La Independencia | Junta del Cusco, El cerco de Lima, Independencia, El último bastión | 2 | 2 |
+| La Independencia | Junta del Cusco, El cerco de Lima, Independencia, El último bastión | 4 | 0 |
 | La República | Arica, La quebrada, San Juan y Miraflores, El brujo de los Andes | 1 | 3 |
 
-The seven planned catalogue entries are `p_vir_cusco`, `p_vir_vilcabamba`, `p_ind_lima`,
-`p_ind_real_felipe`, `p_rep_tarapaca`, `p_rep_lima` and `p_rep_brena`.
+The five planned catalogue entries are `p_vir_cusco`, `p_vir_vilcabamba`, `p_rep_tarapaca`, `p_rep_lima`
+and `p_rep_brena`.
 
 The thirteen expansion missions are:
 

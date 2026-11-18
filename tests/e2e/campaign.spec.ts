@@ -100,7 +100,9 @@ test('every campaign mission shows its educational epilogue on victory', async (
     'm_lima',
     'm7_tupac_amaru',
     'm_junta_cusco',
+    'm_lima_1821',
     'm8_independencia',
+    'm_real_felipe',
     'm9_guerra_pacifico',
   ]) {
     const page = await context.newPage();
@@ -332,7 +334,9 @@ test('later campaign briefing and tutorial fit 1600x900 (m7-m9)', async ({ conte
     'm_lima',
     'm7_tupac_amaru',
     'm_junta_cusco',
+    'm_lima_1821',
     'm8_independencia',
+    'm_real_felipe',
     'm9_guerra_pacifico',
   ]);
 });
@@ -347,7 +351,9 @@ test('later campaign briefings show their draft intro art with art=all', async (
     'm_lima',
     'm7_tupac_amaru',
     'm_junta_cusco',
+    'm_lima_1821',
     'm8_independencia',
+    'm_real_felipe',
     'm9_guerra_pacifico',
   ]) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&art=all&intro=0`);
@@ -371,6 +377,8 @@ test('the missions with corrected rosters boot with units and no errors', async 
     'm_lima',
     'm7_tupac_amaru',
     'm_junta_cusco',
+    'm_lima_1821',
+    'm_real_felipe',
     'm9_guerra_pacifico',
   ];
   for (const id of ids) {
@@ -1118,7 +1126,7 @@ test('chapter endings name the right campaign ordinal', async ({ page }) => {
   for (const [id, label] of [
     ['m6b_guerra_civil', 'Fin de la segunda campaña.'],
     ['m7_tupac_amaru', 'Fin de la tercera campaña.'],
-    ['m8_independencia', 'Fin de la cuarta campaña.'],
+    ['m_real_felipe', 'Fin de la cuarta campaña.'],
     ['m9_guerra_pacifico', 'Fin de la quinta campaña.'],
   ]) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&noloop=1`);

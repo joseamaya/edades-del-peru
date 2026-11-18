@@ -405,6 +405,8 @@ slot is absent (offline / without assets).
   procedural settlements). They are recreations of the game's own scenes: never historical photographs.
 - **Review**: no human art-review gate applies to in-engine captures; the reused colonial plaza GLB keeps
   its own review status in `src/art/manifest.json`.
+- **Reused by `m_lima_1821`**: the briefing uses `intro-cerco`; the intro and act cards use `intro-cerco`,
+  `intro-rimac` and the Independencia proclamation capture; the mission adds no new capture yet.
 
 ### Los hijos de Tambotoco intro, chapter and epilogue images (in-engine recreations)
 
@@ -582,6 +584,9 @@ downscaled 1920 shot would look smaller than the 1280 one.
   outside the playable range and is not depicted as a surveyed feature.
 - **Review**: no human art-review gate applies to in-engine captures; the `arica_site` GLB keeps its own
   review status (#343). The authored `m9_arica-intro` render is approved.
+- **Reused by `m_real_felipe`**: the briefing and chapter card use `intro-bateria`; the intro and epilogue
+  also reuse the Independencia epilogue capture. The mission adds no new capture yet and labels the
+  `arica_site` composition as the Real Felipe abstraction.
 
 ### Cusco (Túpac Amaru) intro and epilogue images (in-engine recreations)
 
@@ -691,6 +696,8 @@ downscaled 1920 shot would look smaller than the 1280 one.
   historical photographs, and not Blender renders (so not in `src/art/manifest.json`).
 - **Review**: no human art-review gate applies to in-engine captures; the reused chapel GLB keeps its own
   review status in `src/art/manifest.json` (#343).
+- **Reused by `m_lima_1821` and `m_real_felipe`**: the proclamation and epilogue beats use `intro-lima` and
+  `intro-epilogo`; neither mission adds a new capture yet.
 
 ### Caral Pyramid Mayor modular scenery
 

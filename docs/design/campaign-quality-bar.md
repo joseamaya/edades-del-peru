@@ -10,8 +10,8 @@ harness. The HUD geometry gate (`tests/e2e/hud-layout.spec.ts`) runs every missi
 1600×900 and 1920×1080, including a late-mission objective list with the archive folded and expanded and the
 shortcuts panel open.
 
-The launch catalogue (2026-11-18) shows four entries per campaign: thirteen released missions and seven
-announced ones. The audit below covers the released thirteen; an announced entry is not playable and does
+The launch catalogue (2026-11-18) shows four entries per campaign: fifteen released missions and five
+announced ones. The audit below covers the released fifteen; an announced entry is not playable and does
 not count toward a campaign's completion.
 
 ## Gates
@@ -39,7 +39,8 @@ not count toward a campaign's completion.
 
 Re-verified against the code, tests and an in-engine clip of each mission (not copied from the tables
 below, which record each mission's own review and are kept for history). **M** met, **P** partial,
-**X** missing, **–** not applicable (in-engine captures only, no new models).
+**X** missing, **–** not applicable (in-engine captures only, no new models). The `m_lima_1821` and
+`m_real_felipe` rows were added on 2026-11-18; the rest is the 2026-11-14 audit.
 
 | Mission            | Hist | Ident | Play | Contr | Onb | Clos | UX  | Vis | Pers | Tests | Docs | Struct | Open | Art | Perf | Scale |
 | ------------------ | ---- | ----- | ---- | ----- | --- | ---- | --- | --- | ---- | ----- | ---- | ------ | ---- | --- | ---- | ----- |
@@ -54,7 +55,9 @@ below, which record each mission's own review and are kept for history). **M** m
 | m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | P    | M     |
 | m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_junta_cusco      | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | P    | M     |
+| m_lima_1821        | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | P    | M     |
 | m8_independencia   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
+| m_real_felipe      | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | P    | M     |
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
@@ -401,6 +404,24 @@ procedural life overlay (houses, market, well and people).
 | Structure   | Met: three acts with hidden objectives, two chapter cards, optional Melgar/artillery goals and the documented ending.                                                                                      |
 | Opening     | Met: three narrated beats with in-engine captures, two act cards and the epilogue backdrop.                                                                                                                |
 | Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).                                                                                                       |
+
+## La Independencia arc (m_lima_1821 and m_real_felipe)
+
+The 2026-11-18 pass closed the 1814–1826 arc with two model missions:
+
+- **`m_lima_1821`** reuses `lima_site` at the `ciudad` phase and the colonial kit. The mechanic is pressure:
+  montoneras cut the Lurín road, San Martín proclaims independence at the Plaza Mayor, and the player holds
+  the first siege of Callao. Real-command test: `tests/e2e/lima-1821.spec.ts`. Open: current in-engine
+  captures, art review of the reused kit, and a performance row if the late view warrants it.
+- **`m_real_felipe`** adds the `real_felipe_site` entry, which reuses the Arica coastal-fort composition and
+  heightfield as a labelled abstraction. The mechanic is siege economy: two batteries, a coastal blockade,
+  sorties against the camp and a food-consuming final hold. Real-command test:
+  `tests/e2e/real-felipe.spec.ts`. Open: a dedicated star-fort GLB, art review, current captures and a
+  performance row.
+
+Both have dossier, design document, tutorial, educational entry, briefing art, epilogue and the generic
+completable path; both pass `tests/campaign-scale.test.ts` and the HUD layout gate. The human no-cheat
+playtest and the human art review remain pending.
 
 ## La Ciudad de los Reyes playable status (m_lima)
 

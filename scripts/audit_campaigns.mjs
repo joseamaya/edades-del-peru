@@ -14,7 +14,9 @@ const MISSIONS = [
   ['m_lima', 'La Ciudad de los Reyes'],
   ['m7_tupac_amaru', 'La Gran Rebelión'],
   ['m_junta_cusco', 'La Junta del Cusco'],
+  ['m_lima_1821', 'El cerco de Lima'],
   ['m8_independencia', 'La Independencia'],
+  ['m_real_felipe', 'El último bastión'],
   ['m9_guerra_pacifico', 'La Defensa de Arica'],
 ];
 

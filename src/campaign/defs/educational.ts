@@ -282,6 +282,29 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       { text: 'Basadre, J. Historia de la República del Perú.' },
     ],
   },
+  m_lima_1821: {
+    briefing:
+      'Lima, 1821. La Expedición Libertadora desembarca en la costa, las montoneras cortan los abastos y Cochrane ' +
+      'bloquea el Callao. La Serna evacua la capital y San Martín proclama la independencia el 28 de julio.',
+    context:
+      'La independencia del Perú no se decidió en una sola batalla. Entre 1820 y 1821, la Expedición Libertadora de ' +
+      'San Martín combinó desembarcos, montoneras, bloqueo naval y presión política. El virrey La Serna abandonó Lima ' +
+      'en julio de 1821 y San Martín proclamó la independencia el 28 de julio. El primer sitio del Callao se extendió ' +
+      'hasta septiembre, cuando la guarnición de José de La Mar capituló. La guerra continuó en la sierra hasta Junín ' +
+      'y Ayacucho, en 1824.',
+    didYouKnow:
+      'La independencia proclamada en Lima no puso fin a la guerra: el Callao y la sierra siguieron en manos realistas ' +
+      'durante años.',
+    epilogue:
+      'Lima proclama la independencia y el Callao capitula en septiembre de 1821. La capital cambia de bando, pero la ' +
+      'guerra continúa en la sierra. La historia recuerda el debate entre una independencia «concedida» y una ' +
+      '«conseguida»: la campaña de 1821 muestra que ambas cosas se mezclaron.',
+    sources: [
+      { text: 'Dossier: Lima y el Callao, 1821', url: 'docs/historia/campanas/lima_1821.md' },
+      { text: 'Basadre, Historia de la República del Perú' },
+      { text: "O'Phelan, La independencia del Perú" },
+    ],
+  },
   m8_independencia: {
     briefing:
       'Sierra del Perú, 1824. Tras la proclamación de Lima, la campaña final se decide en dos encuentros: ' +
@@ -298,6 +321,26 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
     sources: [
       { text: 'Wikipedia: Independencia del Perú', url: 'https://es.wikipedia.org/wiki/Independencia_del_Per%C3%BA' },
       { text: 'Basadre, J. Historia de la República del Perú.' },
+    ],
+  },
+  m_real_felipe: {
+    briefing:
+      'Callao, 1824–1826. Después de Ayacucho, José Ramón Rodil se encierra en el Real Felipe. El general Salom lo ' +
+      'sitía por tierra y la escuadra patriota bloquea el puerto. La fortaleza capitula en enero de 1826.',
+    context:
+      'El segundo sitio del Callao fue el último episodio de la guerra de independencia en el Perú. Rodil resistió ' +
+      'con una guarnición de entre dos mil y cuatro mil hombres y miles de civiles refugiados. El hambre y el ' +
+      'escorbuto causaron una crisis humanitaria: se estima que murieron unos seis mil civiles. Rodil expulsó a ' +
+      'parte de la población y la capitulación se firmó en enero de 1826; salió con honores y conservó dos banderas.',
+    didYouKnow: 'El último bastión español en el Perú no cayó en una batalla, sino por un sitio de más de un año.',
+    epilogue:
+      'El Real Felipe capitula en enero de 1826. La guerra de independencia termina en el Perú, pero el costo civil ' +
+      'del sitio es parte de la historia: miles de personas refugiadas murieron por hambre y enfermedad. La ' +
+      'resistencia de Rodil y el sufrimiento del Callao se recuerdan sin convertirlos en una gesta épica.',
+    sources: [
+      { text: 'Dossier: El último bastión', url: 'docs/historia/campanas/real_felipe.md' },
+      { text: 'García Camba, Memorias para la historia de las armas españolas en el Perú' },
+      { text: 'Paz Soldán, Historia del Perú independiente' },
     ],
   },
   m9_guerra_pacifico: {

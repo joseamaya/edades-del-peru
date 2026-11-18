@@ -399,7 +399,9 @@ describe('campaign educational content', () => {
 
   it('chapter IV has briefings and guided tutorials', () => {
     for (const [id, steps] of [
+      ['m_lima_1821', 5],
       ['m8_independencia', 5],
+      ['m_real_felipe', 5],
       ['m9_guerra_pacifico', 5],
     ] as const) {
       const mis = MISSIONS.find((m) => m.id === id)!;
