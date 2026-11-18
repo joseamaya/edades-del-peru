@@ -17,16 +17,14 @@ test('m_cusco_1536 takes Sacsayhuamán with real move orders', async ({ page }) 
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
-    const units = [...g.units.values()].filter(
-      (u: any) => u.owner === 0 && u.kind === 'inca_warrior' && !u.dead,
-    ) as any[];
+    const units = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead && u.tag !== 'manco_inca') as any[];
     const target = { x: 158, z: 141 };
     for (const unit of units) {
       g.executeCommand({ kind: 'order', unitIds: [unit.id], order: { kind: 'move', target }, clear: true }, false);
     }
     const dt = 1 / 60;
     let t = 0;
-    for (let i = 0; i < Math.ceil(150 / dt) && !g.mission.ended; i++) {
+    for (let i = 0; i < Math.ceil(180 / dt) && !g.mission.ended; i++) {
       g.update(dt, t);
       t += dt;
     }

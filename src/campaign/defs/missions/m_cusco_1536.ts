@@ -194,7 +194,19 @@ export const mCusco1536: MissionDef = {
     {
       id: 't_counter',
       condition: { type: 'objective', objectiveId: 'a1_sacsay', state: 'activate' },
-      effects: [],
+      effects: [
+        {
+          type: 'wave',
+          owner: 1,
+          units: [
+            { kind: UnitKind.SOLDIER, count: 3 },
+            { kind: UnitKind.CAVALRY, count: 1 },
+          ],
+          pos: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
+          radius: 12,
+          target: { dx: CUSCO_1536_SACSAY.x, dz: CUSCO_1536_SACSAY.z },
+        },
+      ],
     },
     {
       id: 't_sacsay',
