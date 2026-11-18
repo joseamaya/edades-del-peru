@@ -326,8 +326,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   },
   m_real_felipe: {
     briefing:
-      'Callao, 1824–1826. Después de Ayacucho, José Ramón Rodil se encierra en el Real Felipe. El general Salom lo ' +
-      'sitía por tierra y la escuadra patriota bloquea el puerto. La fortaleza capitula en enero de 1826.',
+      'Callao, 1824–1826. La guarnición del Callao se sublevó en febrero de 1824 y entregó la plaza a los ' +
+      'realistas. José Ramón Rodil asumió el mando del Real Felipe y, tras Ayacucho, se negó a capitular. El ' +
+      'general Salom lo sitió por tierra y la escuadra patriota bloqueó el puerto. La fortaleza capituló en enero de 1826.',
     context:
       'El segundo sitio del Callao fue el último episodio de la guerra de independencia en el Perú. Rodil resistió ' +
       'con una guarnición de entre dos mil y cuatro mil hombres y miles de civiles refugiados. El hambre y el ' +
