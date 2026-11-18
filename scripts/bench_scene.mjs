@@ -1,6 +1,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { readSceneStats } from './perf-probes.mjs';
 import {
   launchChromium,
   withViteServer,
@@ -19,7 +20,7 @@ import {
  * unlike FPS: headless Chromium renders in software unless `--gpu` (or `GPU=1`) asks for the host GPU.
  *
  * Usage: node scripts/bench_scene.mjs [--mission=m1_caral] [--stage=late] [--assert] [--out=review/bench-scene.json]
- *        [--gpu] [--gl=egl|angle-vulkan|...] [--frames] [--quality=high|low] [--direct] [--no-refraction]
+ *        [--gpu] [--gl=egl|angle-vulkan|...] [--frames] [--quality=high|low] [--viewport=1600x900] [--direct] [--no-refraction]
  *
  * `--frames` also measures the shipped frame (loop running, post-processing on, 2 s of rAF samples) at the pinned
  * framing: that is the frame the player actually sees in a mission, unlike the structural draws-only pass.
@@ -46,6 +47,12 @@ if ((direct || process.argv.includes('--no-refraction')) && !frames) {
 // Keeps post-processing but skips the extra full-scene refraction pass.
 const noRefraction = process.argv.includes('--no-refraction');
 const outFile = cliArg('out') ?? 'review/bench-scene.json';
+// The roadmap's site-view pass records 1280x800 and 1600x900; the default stays the historical 1600x900.
+const viewport = String(cliArg('viewport', '1600x900'));
+const [viewWidth, viewHeight] = viewport.split('x').map((n) => Number.parseInt(n, 10));
+if (!Number.isFinite(viewWidth) || !Number.isFinite(viewHeight) || viewWidth < 320 || viewHeight < 240) {
+  throw new Error(`invalid --viewport=${viewport}; expected WIDTHxHEIGHT`);
+}
 
 // Ratchet: §11 targets 600k triangles and 200 draw calls per frame. m1 measured 877k / 441 before the
 // tree-instance, water and flier-shadow cuts, ~685k / 413 after them, ~497k / 414 with the terrain
@@ -146,7 +153,7 @@ const { base, close } = await withViteServer();
 const browser = await launchChromium();
 let failed = false;
 try {
-  const page = await (await browser.newContext({ viewport: { width: 1600, height: 900 } })).newPage();
+  const page = await (await browser.newContext({ viewport: { width: viewWidth, height: viewHeight } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${base}/?mission=${mission}&intro=0&fog=0&seed=777`, { waitUntil: 'networkidle' });
@@ -416,6 +423,7 @@ try {
     },
     { kitPattern: KIT_NAMES.source, stage, mission, quality },
   );
+  const sceneStats = await readSceneStats(page);
   const frame = frames
     ? await page.evaluate(
         async ({ ms, direct, noRefraction }) => {
@@ -497,7 +505,9 @@ try {
     mission,
     stage,
     quality,
+    viewport: { width: viewWidth, height: viewHeight },
     ...result,
+    sceneStats,
     frame,
     budget,
     gpu: gpuInfo,
@@ -509,6 +519,10 @@ try {
   console.log(
     `${mission}: scene ${result.scene.triangles} tris / ${result.scene.calls} calls; ` +
       `vegetation+fauna kit ${result.kit.triangles} tris / ${result.kit.calls} calls (${result.kitObjects} objects)`,
+  );
+  console.log(
+    `scene objects: ${sceneStats.meshes} meshes (${sceneStats.instancedMeshes} instanced), ` +
+      `${sceneStats.uniqueGeometries} geometries, ${sceneStats.uniqueMaterials} materials`,
   );
   console.log(`renderer: ${gpuInfo.renderer} (${gpuInfo.software ? 'software' : 'hardware'})`);
   if (frame) {
