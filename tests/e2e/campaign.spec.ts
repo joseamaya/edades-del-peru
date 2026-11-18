@@ -38,9 +38,9 @@ test('shows the campaign hub and its replayable prologue', { tag: '@smoke' }, as
   await expect(hub.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toBeVisible();
   await expect(hub).toContainText('La Independencia');
   await expect(hub).toContainText('La República');
-  // A fresh profile opens Caral and the released opening of La Independencia; the rest stay locked.
+  // Every chapter whose opening is released is open from a fresh profile.
   await expect(hub.locator('.ed-campaign-card[data-campaign="independencia"]')).toBeEnabled();
-  await expect(hub.locator('.ed-campaign-card[data-campaign="republica"]')).toBeDisabled();
+  await expect(hub.locator('.ed-campaign-card[data-campaign="republica"]')).toBeEnabled();
   await expect(hub.getByRole('button', { name: /Jugar El Oráculo de Chavín/ })).toHaveCount(0);
   await expect(hub).toContainText('Completa «La Ciudad Sagrada» para desbloquear esta misión.');
 
@@ -990,6 +990,28 @@ test('the campaign hub shows preinca progress and its four missions', async ({ p
   await expect(inca).toContainText('0 / 4 misiones completadas');
 });
 
+test('the launch catalogue shows four entries per campaign', async ({ page }) => {
+  await page.goto('/?menu=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.getByRole('button', { name: /Campañas/ }).click();
+  const menu = page.locator('.ed-campaign-panel');
+  const virreinato = menu.locator('.ed-campaign-card[data-campaign="virreinato"]');
+  await expect(virreinato).toContainText('CAMPAÑA III DE V');
+  await expect(virreinato).toContainText('2 en desarrollo');
+  await virreinato.click();
+  const rows = menu.locator('.ed-senda-mission');
+  await expect(rows).toHaveCount(4);
+  await expect(rows.nth(0)).toContainText('Misión 1 de 4');
+  await expect(rows.nth(0)).toContainText('La Ciudad de los Reyes');
+  await expect(rows.nth(1)).toContainText('Misión 2 de 4');
+  await expect(rows.nth(1)).toContainText('Cusco en llamas');
+  await expect(rows.nth(1)).toHaveClass(/planned/);
+  await expect(rows.nth(3)).toContainText('Misión 4 de 4');
+  await expect(rows.nth(3)).toContainText('La Gran Rebelión');
+});
+
 test('the campaign path opens the next campaign once the previous one is complete', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('peru-campaign', '9');
@@ -1009,18 +1031,20 @@ test('the campaign path opens the next campaign once the previous one is complet
   await expect(menu.getByRole('button', { name: /Jugar La Guerra del Norte/ })).toHaveCount(0);
   await expect(menu.locator('.ed-campaign-card[data-campaign="virreinato"]')).toBeEnabled();
   await expect(menu.locator('.ed-campaign-card[data-campaign="independencia"]')).toBeEnabled();
-  await expect(menu.locator('.ed-campaign-card[data-campaign="republica"]')).toBeDisabled();
-  await expect(inca).toContainText('6 en desarrollo');
-  // The redesigned chapter shows its planned missions in play order, without a play button.
+  await expect(menu.locator('.ed-campaign-card[data-campaign="republica"]')).toBeEnabled();
+  await expect(inca).not.toContainText('en desarrollo');
+  // The chapter shows its four released missions in play order, with no planned entries.
   const rows = menu.locator('.ed-senda-mission');
-  await expect(rows).toHaveCount(10);
+  await expect(rows).toHaveCount(4);
   await expect(rows.nth(0)).not.toHaveClass(/planned/);
   await expect(rows.nth(0)).toContainText('Los hijos de Tambotoco');
   await expect(rows.nth(0)).toContainText('Leyenda');
+  await expect(rows.nth(0)).toContainText('Misión 1 de 4');
   await expect(rows.nth(0).getByRole('button', { name: /Jugar Los hijos de Tambotoco/ })).toBeVisible();
   await expect(rows.nth(1)).toContainText('Yahuar Pampa');
-  await expect(rows.nth(9)).toContainText('La Guerra Civil');
-  await expect(menu.locator('.ed-senda-mission.planned')).toHaveCount(6);
+  await expect(rows.nth(3)).toContainText('La Guerra Civil');
+  await expect(rows.nth(3)).toContainText('Misión 4 de 4');
+  await expect(menu.locator('.ed-senda-mission.planned')).toHaveCount(0);
 
   await menu.locator('.ed-campaign-card[data-campaign="preinca"]').click();
   await expect(menu).toContainText('4 / 4 misiones completadas');

@@ -70,6 +70,13 @@ export const PREINCA_PROLOGUE: CinematicBeat[] = [
 /** Prologue for the second released campaign, El Tahuantinsuyo. */
 export const INCA_PROLOGUE: CinematicBeat[] = [
   {
+    kicker: 'PACARITAMBO · LEYENDA',
+    title: 'Los hijos del Sol',
+    text: 'Según la tradición, los hermanos Ayar salieron de Pacaritambo y tomaron el valle del Cusco. Las crónicas nombran a los huallas, sauaseray y alcabizas; la arqueología del valle muestra una ocupación Killke anterior al imperio.',
+    seconds: 8,
+    source: 'docs/historia/campanas/tambotoco.md',
+  },
+  {
     kicker: 'CUSCO · 1438',
     title: 'El imperio que nace',
     text: 'La confederación chanca marcha sobre el Cusco. Cusi Yupanqui organiza la defensa y vence en Yahuar Pampa; asume el poder como Pachacútec.',
@@ -91,16 +98,44 @@ export const INCA_PROLOGUE: CinematicBeat[] = [
     source: 'docs/historia/campanas/guerra_civil_inca.md',
   },
   {
-    kicker: 'TRES CAPÍTULOS, UN IMPERIO',
-    title: 'La expansión inca',
-    text: 'Yahuar Pampa, la guerra del norte y la guerra civil muestran cómo el Tahuantinsuyo se defendió, se expandió y se dividió antes de la llegada europea.',
-    seconds: 6,
+    kicker: 'LEYENDA, DEFENSA, EXPANSIÓN Y GUERRA CIVIL',
+    title: 'Cuatro capítulos, un imperio',
+    text: 'La fundación legendaria, la defensa frente a los chancas, la guerra del norte y la guerra civil muestran cómo el Tahuantinsuyo se formó, se expandió y se dividió antes de la llegada europea.',
+    seconds: 7,
     source: 'docs/historia/periodizacion.md',
   },
 ];
 
 /** Prologue for the third released campaign, El Virreinato. */
 export const VIRREINATO_PROLOGUE: CinematicBeat[] = [
+  {
+    kicker: 'CAJAMARCA · 1532',
+    title: 'El Inca capturado',
+    text: 'Tras la victoria de Atahualpa en la guerra civil, Francisco Pizarro llega a Cajamarca. La captura del Inca abre la conquista del Tahuantinsuyo y el fin de la guerra entre Huáscar y Atahualpa.',
+    seconds: 8,
+    source: 'docs/historia/campanas/guerra_civil_inca.md',
+  },
+  {
+    kicker: 'LIMA · 1535–1536',
+    title: 'La Ciudad de los Reyes',
+    text: 'Francisco Pizarro funda Lima junto al Rímac. Al año siguiente, Quizu Yupanqui y los señores andinos cercan la ciudad; la defensa depende de los aliados andinos.',
+    seconds: 8,
+    source: 'docs/historia/campanas/lima.md',
+  },
+  {
+    kicker: 'CUSCO · 1536',
+    title: 'El cerco del Cusco',
+    text: 'Manco Inca se alza contra los conquistadores y cerca el Cusco. La guerra se decide en Sacsayhuamán y en los campos de cultivo que sostienen a la ciudad.',
+    seconds: 8,
+    source: 'docs/historia/propuestas/virreinato.md',
+  },
+  {
+    kicker: 'VILCABAMBA · 1572',
+    title: 'El último Inca',
+    text: 'La resistencia inca sobrevive en Vilcabamba. En 1572 la expedición del virrey Toledo entra en la selva y captura a Túpac Amaru I; la resistencia armada termina.',
+    seconds: 8,
+    source: 'docs/historia/propuestas/virreinato.md',
+  },
   {
     kicker: 'SUR ANDINO · 1780',
     title: 'La Gran Rebelión',
@@ -124,7 +159,7 @@ export const VIRREINATO_PROLOGUE: CinematicBeat[] = [
   },
 ];
 
-/** Prologue for the fourth released campaign, Independencia y República. */
+/** Prologue for the fourth released campaign, La Independencia. */
 export const INDEPENDENCIA_PROLOGUE: CinematicBeat[] = [
   {
     kicker: 'CUSCO · 1814',
@@ -147,21 +182,42 @@ export const INDEPENDENCIA_PROLOGUE: CinematicBeat[] = [
     seconds: 8,
     source: 'docs/historia/campanas/independencia.md',
   },
-];
-
-export const REPUBLICA_PROLOGUE: CinematicBeat[] = [
   {
-    kicker: 'CALLAO · 2 DE MAYO DE 1866',
-    title: 'Las baterías del Callao',
-    text: 'La escuadra española bombardea el Callao y las baterías de la costa responden. La escuadra se retira del puerto y ambos bandos se atribuyen la victoria.',
+    kicker: 'CALLAO · 1824–1826',
+    title: 'El último bastión',
+    text: 'La capitulación de Ayacucho no termina la guerra. En el Callao, los últimos realistas resisten en el Real Felipe hasta enero de 1826, cuando capitula el último bastión español en el Perú.',
     seconds: 8,
     source: 'docs/historia/propuestas/independencia-republica.md',
   },
+];
+
+export const REPUBLICA_PROLOGUE: CinematicBeat[] = [
   {
     kicker: 'ARICA · 7 DE JUNIO DE 1880',
     title: 'La defensa del puerto',
     text: 'En la Guerra del Pacífico, la guarnición peruana de Arica resiste el asalto chileno. Francisco Bolognesi muere en la defensa; la plaza cae, pero su resistencia queda como símbolo.',
     seconds: 8,
     source: 'docs/historia/campanas/guerra_del_pacifico.md',
+  },
+  {
+    kicker: 'TARAPACÁ · 27 DE NOVIEMBRE DE 1879',
+    title: 'La quebrada',
+    text: 'Unos meses antes, en la quebrada de Tarapacá, el ejército peruano había obtenido una victoria que no cambió el curso de la guerra. La campaña continuaba en el sur.',
+    seconds: 8,
+    source: 'docs/historia/propuestas/independencia-republica.md',
+  },
+  {
+    kicker: 'LIMA · ENERO DE 1881',
+    title: 'San Juan y Miraflores',
+    text: 'El ejército chileno avanza sobre Lima. Las líneas de San Juan y Miraflores resisten en dos jornadas; la ciudad cae y la guerra continúa en la sierra.',
+    seconds: 8,
+    source: 'docs/historia/propuestas/independencia-republica.md',
+  },
+  {
+    kicker: 'SIERRA CENTRAL · 1882–1883',
+    title: 'La Breña',
+    text: 'En la sierra central, la resistencia se organiza en montoneras y columnas móviles. Andrés A. Cáceres sostiene una campaña de desgaste hasta Huamachuco, en 1883.',
+    seconds: 8,
+    source: 'docs/historia/propuestas/independencia-republica.md',
   },
 ];

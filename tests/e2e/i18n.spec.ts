@@ -11,6 +11,7 @@ test('the main menu keeps the Spanish UI copy', async ({ page }) => {
   await openMenu(page);
   await expect(page.getByRole('heading', { name: /EDADES\s+DEL PERÚ/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Campañas/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Campañas/ })).toContainText('cinco capítulos de la historia');
   await expect(page.getByRole('button', { name: /Escaramuza/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /Cómo jugar/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Opciones/ })).toBeVisible();
@@ -30,8 +31,14 @@ test('options and campaign labels come from the i18n table', async ({ page }) =>
   await page.getByRole('button', { name: /Campañas/ }).click();
   await expect(page.getByRole('heading', { name: 'Campañas' })).toBeVisible();
   await expect(page.getByText('LA SENDA DEL SOL', { exact: true })).toBeVisible();
-  await expect(page.getByText(/CAMPAÑA 1 DE 5/)).toBeVisible();
+  await expect(page.getByText(/CAMPAÑA I DE V/)).toBeVisible();
   await expect(page.getByText(/Cinco capítulos de la historia del Perú/)).toBeVisible();
   await expect(page.locator('.ed-campaign-card')).toHaveCount(5);
-  await expect(page.getByText(/CAMPAÑA 5 DE 5/)).toBeVisible();
+  await expect(page.getByText(/CAMPAÑA V DE V/)).toBeVisible();
+});
+
+test('the briefing numbers the mission inside its four-entry chapter', async ({ page }) => {
+  await page.goto('/?mission=m_lima&seed=777&fog=0&low=1&intro=0');
+  await page.locator('.ed-briefing').waitFor({ state: 'visible', timeout: 30_000 });
+  await expect(page.locator('.ed-briefing .ed-menu-kicker')).toHaveText('Campaña III · El Virreinato · Misión 1 de 4');
 });
