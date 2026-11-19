@@ -27,6 +27,7 @@ export const mJuntaCusco: MissionDef = {
   enemyCiv: CivId.REALISTAS,
   playerName: 'Junta del Cusco',
   enemyName: 'Realistas del Alto Perú',
+  region: 'high_andes',
   map: { seed: 1814, type: 'andes', size: 256 },
   layout: {
     labels: [
@@ -69,6 +70,14 @@ export const mJuntaCusco: MissionDef = {
       },
     ],
   },
+  mapOverrides: {
+    vegetationKit: 'andes',
+    vegetation: {
+      density: 0.35,
+      variants: { molle: 0.55, pacay: 0.25, sauce: 0.2, broad: 0, needle: 0 },
+    },
+  },
+  atmosphere: { fogDensity: 0.001, sunWarmth: 1.0, skyTint: '#c9d3d5' },
   timeOfDay: 'morning',
   startingEra: Era.REPUBLIC,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.

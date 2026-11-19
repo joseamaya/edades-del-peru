@@ -71,7 +71,15 @@ export const mCusco1536: MissionDef = {
       },
     ],
   },
-  mapOverrides: { culturalLandscape: null },
+  mapOverrides: {
+    culturalLandscape: null,
+    vegetationKit: 'andes',
+    vegetation: {
+      density: 0.4,
+      variants: { molle: 0.55, pacay: 0.25, sauce: 0.2, broad: 0, needle: 0 },
+    },
+  },
+  atmosphere: { fogDensity: 0.001, sunWarmth: 0.98, skyTint: '#c6d0d2' },
   timeOfDay: 'morning',
   startingEra: Era.VICEROYALTY,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.

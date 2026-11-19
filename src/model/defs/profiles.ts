@@ -148,7 +148,10 @@ export interface WorldProfile {
  */
 export interface MapOverrides {
   terrain?: Partial<HistoricalMapProfile['terrain']>;
+  elevation?: Partial<HistoricalMapProfile['elevation']>;
   climate?: Partial<HistoricalMapProfile['climate']>;
+  water?: Partial<HistoricalMapProfile['water']>;
+  atmosphere?: Partial<HistoricalMapProfile['atmosphere']>;
   vegetation?: Partial<HistoricalMapProfile['vegetation']>;
   berryShrub?: BerryShrubId;
   quarryStyle?: QuarryStyle;
@@ -159,6 +162,8 @@ export interface MapOverrides {
   culturalLandscape?: CulturalLandscapeProfile | null;
   /** Ground albedo multiplier (e.g. the warm ochre terrace of Caral). */
   groundTint?: string;
+  /** Optional regional terrain texture slots; omitted keeps the profile slots. */
+  groundPbr?: Partial<Record<GroundPbrSlot, string>>;
 }
 
 /** Apply a mission's map overrides without mutating the regional profile. */
@@ -170,7 +175,10 @@ export function applyMapOverrides(
   return {
     ...profile,
     terrain: { ...profile.terrain, ...overrides.terrain },
+    elevation: { ...profile.elevation, ...overrides.elevation },
     climate: { ...profile.climate, ...overrides.climate },
+    water: { ...profile.water, ...overrides.water },
+    atmosphere: { ...profile.atmosphere, ...overrides.atmosphere },
     vegetation: {
       ...profile.vegetation,
       ...overrides.vegetation,
@@ -183,6 +191,7 @@ export function applyMapOverrides(
     culturalLandscape:
       overrides.culturalLandscape === null ? undefined : (overrides.culturalLandscape ?? profile.culturalLandscape),
     groundTint: overrides.groundTint ?? profile.groundTint,
+    groundPbr: overrides.groundPbr ? { ...profile.groundPbr, ...overrides.groundPbr } : profile.groundPbr,
   };
 }
 

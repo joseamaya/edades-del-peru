@@ -88,6 +88,14 @@ export const m7TupacAmaru: MissionDef = {
       buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.065, rz: 0.065 }],
     },
   },
+  mapOverrides: {
+    vegetationKit: 'andes',
+    vegetation: {
+      density: 0.4,
+      variants: { molle: 0.55, pacay: 0.25, sauce: 0.2, broad: 0, needle: 0 },
+    },
+  },
+  atmosphere: { fogDensity: 0.0012, sunWarmth: 0.95, skyTint: '#cbd0d0' },
   timeOfDay: 'dusk',
   startingEra: Era.VICEROYALTY,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.

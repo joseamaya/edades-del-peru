@@ -74,6 +74,14 @@ export const mBrena: MissionDef = {
       },
     ],
   },
+  mapOverrides: {
+    vegetationKit: 'andes',
+    vegetation: {
+      density: 0.4,
+      variants: { molle: 0.55, pacay: 0.25, sauce: 0.2, broad: 0, needle: 0 },
+    },
+  },
+  atmosphere: { fogDensity: 0.001, sunWarmth: 0.98, skyTint: '#c8d1d2' },
   timeOfDay: 'morning',
   startingEra: Era.REPUBLIC,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.

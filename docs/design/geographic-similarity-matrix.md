@@ -116,8 +116,8 @@ C9/C14/C19 and C16/C17/C18 repeat their own axes exactly because they share the 
 
 ## Colour and atmosphere dependence
 
-- Six of the seven `high_andes` missions (all except Tambotoco) share the same palette and the same
-  regional atmosphere. The visible differences are time of day, colour grade and labels.
+- The six `high_andes` missions share the same palette and the same regional atmosphere. The visible
+  differences are time of day, colour grade and labels.
 - `north_coast` and `central_coast` use identical terrain-material multipliers and almost identical bands.
 - Only `m1_caral` and `m2_chavin` define a mission-level `MissionAtmosphere`; the others inherit the
   regional one.

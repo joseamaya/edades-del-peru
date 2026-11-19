@@ -69,6 +69,7 @@ export const mTarapaca: MissionDef = {
       },
     ],
   },
+  atmosphere: { fogDensity: 0.0014, sunWarmth: 1.08, skyTint: '#e8ddc8' },
   timeOfDay: 'morning',
   startingEra: Era.REPUBLIC,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.

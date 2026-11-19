@@ -83,6 +83,7 @@ export const m3MocheRecuay: MissionDef = {
     culturalLandscape: null,
     groundTint: '#c9a66b',
   },
+  atmosphere: { fogDensity: 0.0018, sunWarmth: 1.05, skyTint: '#e2d8c6' },
   timeOfDay: 'dusk',
   startingEra: Era.REGIONAL_STATES,
   startingResources: { food: 700, wood: 600, silver: 300, stone: 200 },

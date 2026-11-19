@@ -78,10 +78,14 @@ export const m2Chavin: MissionDef = {
   mapOverrides: {
     terrain: { riverCount: 0, terraceChance: 0.1 },
     climate: { aridity: 0.05, moisture: 0.8, temperature: 0.3 },
-    vegetation: { density: 0.8 },
+    vegetation: {
+      density: 0.8,
+      variants: { molle: 0.55, pacay: 0.25, sauce: 0.2, broad: 0, needle: 0 },
+    },
     resources: { tree: 0.8, mine: 0.6, well: 0.5, hunt: 0.4, berry: 0.6 },
     culturalLandscape: null,
     groundTint: '#b9d29a',
+    vegetationKit: 'andes',
   },
   startingEra: Era.REGIONAL_STATES,
   // Same 256 m transect and crossing band as Caral (see caral-model-mission.md §Pacing and map scale).

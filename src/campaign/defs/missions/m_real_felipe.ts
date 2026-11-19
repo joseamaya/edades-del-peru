@@ -63,6 +63,7 @@ export const mRealFelipe: MissionDef = {
       },
     ],
   },
+  atmosphere: { fogDensity: 0.0018, sunWarmth: 0.92, skyTint: '#d2d4ce' },
   timeOfDay: 'dusk',
   startingEra: Era.REPUBLIC,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.

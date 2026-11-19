@@ -14,6 +14,7 @@ N = SIZE + 1
 GROUND_SIZE = 128
 SITE_Y = 5.0
 VALLEY = 3.2
+WATER = 2.2
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'src/model/defs/chancaHeightmap.ts'
 
@@ -36,6 +37,8 @@ def height(x: float, z: float) -> float:
     h = VALLEY + 0.22 * noise(x, z)
     valley = math.exp(-((z - 82.0) / 10.0) ** 2) * smoothstep(28.0, 52.0, x) * (1.0 - smoothstep(112.0, 136.0, x))
     h -= valley * 1.5
+    # Keep the dry valley above the water plane: this floor is a dry wash, not a lake.
+    h = max(WATER + 0.2, h)
 
     # Cusco base, the Chanca fortress terrace and the approach pampa stay flat.
     base = smoothstep(38.0, 46.0, x) * (1.0 - smoothstep(75.0, 83.0, x))
@@ -56,7 +59,7 @@ def height(x: float, z: float) -> float:
 
     # A dry quebrada north-east of the fortress.
     h -= 1.1 * math.exp(-((x - 136.0) / 5.0) ** 2) * smoothstep(30.0, 48.0, z) * (1.0 - smoothstep(72.0, 92.0, z))
-    return max(0.9, h)
+    return max(WATER + 0.2, h)
 
 
 def ground_weights(x: float, z: float) -> tuple[float, float, float, float]:

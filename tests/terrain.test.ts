@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateHeightField } from '../src/sim/heightField';
-import { MAP_PROFILES } from '../src/model/defs/profiles';
+import { MAP_PROFILES, WATER_LEVEL } from '../src/model/defs/profiles';
 import {
   CARAL_GROUND,
   CARAL_GROUND_SIZE,
@@ -9,6 +9,8 @@ import {
   CARAL_HEIGHTMAP_WORLD_SIZE,
 } from '../src/model/defs/caralHeightmap';
 import { sampleAuthoredGround, sampleAuthoredHeight } from '../src/model/defs/authoredTerrain';
+import { CHANCA_HEIGHTMAP } from '../src/model/defs/chancaHeightmap';
+import { COLONIAL_HEIGHTMAP } from '../src/model/defs/colonialHeightmap';
 
 const CARAL_GROUND_FIELD = { size: CARAL_GROUND_SIZE, weights: CARAL_GROUND };
 import { TerrainData } from '../src/sim/TerrainData';
@@ -278,5 +280,15 @@ describe('authored Caral heightfield', () => {
     expect(sampleAuthoredHeight(field, 249, 100)).toBeGreaterThan(20);
     expect(sampleAuthoredHeight(field, 164, 188)).toBeGreaterThan(12);
     expect(sampleAuthoredHeight(field, 60, 252)).toBeGreaterThan(8);
+  });
+});
+
+describe('authored dry valleys', () => {
+  it('keeps the Chanca and Colonial dry valleys above the water plane', () => {
+    for (const heights of [CHANCA_HEIGHTMAP, COLONIAL_HEIGHTMAP]) {
+      let min = Infinity;
+      for (const h of heights) if (h < min) min = h;
+      expect(min).toBeGreaterThan(WATER_LEVEL);
+    }
   });
 });

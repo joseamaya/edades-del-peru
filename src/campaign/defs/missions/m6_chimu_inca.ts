@@ -80,6 +80,7 @@ export const m6ChimuInca: MissionDef = {
     },
   },
   mapOverrides: { culturalLandscape: null },
+  atmosphere: { fogDensity: 0.0016, sunWarmth: 1.04, skyTint: '#e2d8c6' },
   timeOfDay: 'dusk',
   startingEra: Era.TAHUANTINSUYO,
   startingResources: { food: 1000, wood: 700, silver: 900, stone: 400 },

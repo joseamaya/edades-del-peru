@@ -67,6 +67,7 @@ export const m5YahuarPampa: MissionDef = {
     },
   },
   mapOverrides: { culturalLandscape: null },
+  atmosphere: { fogDensity: 0.0012, sunWarmth: 0.94, skyTint: '#c9cdd2' },
   timeOfDay: 'dusk',
   startingEra: Era.TAHUANTINSUYO,
   startingResources: { food: 700, wood: 600, silver: 400, stone: 200 },

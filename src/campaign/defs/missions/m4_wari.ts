@@ -77,11 +77,16 @@ export const m4Wari: MissionDef = {
   mapOverrides: {
     terrain: { terraceChance: 0.6, riverCount: 0 },
     climate: { aridity: 0.12, moisture: 0.55, temperature: 0.25 },
-    vegetation: { density: 0.5 },
+    vegetation: {
+      density: 0.5,
+      variants: { molle: 0.55, pacay: 0.25, sauce: 0.2, broad: 0, needle: 0 },
+    },
     resources: { tree: 0.55, mine: 0.7, well: 0.5, hunt: 0.35 },
     culturalLandscape: null,
     groundTint: '#a99b78',
+    vegetationKit: 'andes',
   },
+  atmosphere: { fogDensity: 0.001, sunWarmth: 1.0, skyTint: '#c9d2d4' },
   timeOfDay: 'noon',
   startingEra: Era.TAHUANTINSUYO,
   startingResources: { food: 350, wood: 300, silver: 100, stone: 40 },

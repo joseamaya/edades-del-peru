@@ -25,9 +25,9 @@ const EXPECTED_REGION: Record<string, GeographicRegion> = {
   m_cusco_1536: 'high_andes',
   m_vilcabamba: 'amazon',
   m7_tupac_amaru: 'high_andes',
-  m_junta_cusco: 'andean_valley',
+  m_junta_cusco: 'high_andes',
   m_lima_1821: 'central_coast',
-  m8_independencia: 'andean_valley',
+  m8_independencia: 'high_andes',
   m_real_felipe: 'central_coast',
   m9_guerra_pacifico: 'south_coast',
   m_tarapaca: 'south_coast',
@@ -113,6 +113,13 @@ describe('campaign map profiles', () => {
     // E3a trims the instance budget to fund the kit and shifts the mix to ichu.
     expect(map.vegetation.groundCover).toBe(0.08);
     expect(map.vegetation.groundCoverWeights?.ichu).toBeGreaterThan(map.vegetation.groundCoverWeights?.grass ?? 0);
+  });
+
+  it('gives the high-valley missions the andes vegetation pack', () => {
+    for (const id of ['m2_chavin', 'm4_wari', 'm_cusco_1536', 'm7_tupac_amaru', 'm_junta_cusco', 'm_brena']) {
+      const mis = MISSIONS.find((m) => m.id === id)!;
+      expect(applyMapOverrides(resolve(mis), mis.mapOverrides).vegetationKit, id).toBe('andes');
+    }
   });
 
   it('gives Caral only the kit-backed tree species and a documented fruit shrub', () => {
