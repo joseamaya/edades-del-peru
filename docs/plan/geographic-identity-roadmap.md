@@ -253,11 +253,11 @@ stay as they were, because the fix broke walkability or belongs to composition:
 | Tarapacá ↔ Quipaipan | 0.91 m | **1.75 m** | taller pampa hills and border ridges; a narrower, deeper dry quebrada with a taller stepped bank |
 | Vilcabamba ↔ Breña | 3.67 m | **4.71 m** | valley walls as broad, long-wavelength slopes: one walkable component, grass 9,451 cells, and the fort on a spur that visibly falls away |
 | Vilcabamba ↔ Quipaipan | 3.20 m | **4.30 m** | the same valley walls; this was the pair the blind test confused |
-| Lima 1821 ↔ Miraflores | 1.57 m | 1.57 m | unchanged by design (shared site anchor); the difference is the redoubt line and the headland, so it belongs to composition |
+| Lima 1821 ↔ Miraflores | 1.57 m | 1.57 m | by design (shared anchor); separated by **composition**: three earthwork redoubts (Arica battery kit) now stand between the camp and Lima, matching the objectives |
 
 The next slice follows the walkability rule the Vilcabamba fix established: a BFS on the 1 m path grid at
 `MAX_WALKABLE_SLOPE`, requiring one component covering ≥99 % of the open cells (`tests/geographic-heightfields.test.ts`). Evidence: [`geographic-identity-phase3.webp`](../media/geographic-identity-phase3.webp). The remaining families
-(recintos, setpieces and Lima 1821's redoubts) follow below.
+(recintos and setpieces) follow below.
 
 Phase 1 created the geometry foundation; Phase 3 completes the mission-level composition, vegetation,
 materials and site work for every mission not closed in Phase 2. Rows marked “Phase 1” are not a second
@@ -299,8 +299,8 @@ heightfield pass; they finish the mission around the new field.
 
 ## 7. Phase 4 — Validation and close
 
-**Status (2026-11-19):** first pass done. Blind test over eight fields: **6/8**, the miss being
-Vilcabamba↔Quipaipan, before the connected valley walls shipped. Historical/geographical audit of
+**Status (2026-11-19):** the acceptance round now scores **8/8** (the round before the connected Vilcabamba
+valley and the Miraflores redoubts scored 6/8). Historical/geographical audit of
 Tarapacá, Real Felipe and Miraflores: no invented facts, four imprecisions fixed (Tarapacá's uncited "200 km",
 Real Felipe's "civilians in Callao" where the source says the fortress, Miraflores' Chorrillos label on the
 inland side, and the stale `lima_site` reference in `docs/historia/campanas/miraflores.md`). The similarity

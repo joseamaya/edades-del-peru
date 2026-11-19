@@ -161,8 +161,8 @@ export interface MissionLayout {
    * scenario's first banks sit in the intended water and opening sightline (issue 378).
    */
   fishing?: MissionAnchor[];
-  /** Visual-only landmark/decor placed relative to a base. */
-  decor?: MissionDecor;
+  /** Visual-only landmark/decor placed relative to a base (one piece or a composition). */
+  decor?: MissionDecor | readonly MissionDecor[];
   /** Visual-only roads that read the provincial network. */
   roads?: MissionRoad[];
 }
