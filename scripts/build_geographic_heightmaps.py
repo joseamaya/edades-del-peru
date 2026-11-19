@@ -199,8 +199,8 @@ def paint_cloud_forest(h: Height, x: float, z: float) -> tuple[float, float, flo
 
 def quipaipan(x: float, z: float) -> float:
     h = 5.0 + 0.22 * noise(x, z)
-    h += 2.4 * (1.0 - smooth(0.0, 1.0, math.hypot((x - 78) / 40, (z - 178) / 34)))
-    h += 1.8 * (1.0 - smooth(0.0, 1.0, math.hypot((x - 184) / 46, (z - 74) / 38)))
+    h += 3.4 * (1.0 - smooth(0.0, 1.0, math.hypot((x - 78) / 40, (z - 178) / 34)))
+    h += 2.6 * (1.0 - smooth(0.0, 1.0, math.hypot((x - 184) / 46, (z - 74) / 38)))
     wash = math.exp(-((z - 128) / 9.0) ** 2) * smooth(36, 60, x) * (1 - smooth(190, 220, x))
     h -= wash * 1.1
     h += smooth(224, 256, z) * 7 + smooth(232, 256, x) * 6
@@ -280,12 +280,12 @@ def callao(x: float, z: float) -> float:
 
 
 def tarapaca(x: float, z: float) -> float:
-    h = 5.6 + 0.35 * noise(x, z, 1.3)
+    h = 6.6 + 0.35 * noise(x, z, 1.3)
     # Quebrada de Tarapacá: a deep, dry incision with a stepped north bank, not a river.
-    canyon = math.exp(-((z - 132) / 15.0) ** 2) * smooth(26, 52, x) * (1 - smooth(198, 228, x))
+    canyon = math.exp(-((z - 132) / 13.0) ** 2) * smooth(26, 52, x) * (1 - smooth(198, 228, x))
     h = h * (1 - canyon) + 3.0 * canyon
     step = math.exp(-((z - 112) / 8.0) ** 2) * smooth(40, 70, x) * (1 - smooth(180, 214, x))
-    h += 0.9 * step
+    h += 1.4 * step
     oasis = 1 - smooth(10, 26, math.hypot(x - 92, z - 140))
     h = h * (1 - oasis) + 4.4 * oasis
     h += smooth(226, 256, z) * 9 + smooth(226, 256, x) * 8
