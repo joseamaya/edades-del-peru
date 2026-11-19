@@ -406,7 +406,6 @@ slot is absent (offline / without assets).
 - **Review**: no human art-review gate applies to in-engine captures; the reused colonial plaza GLB keeps
   its own review status in `src/art/manifest.json`.
 
-
 ### Lima 1821 intro and epilogue images (in-engine recreations)
 
 - **Location**: `public/media/lima-1821/intro-{camino,plaza,callao,epilogo}.webp` (640×360, WebP q28).
@@ -472,11 +471,14 @@ slot is absent (offline / without assets).
 
 ### Geographic identity Phase 1 evidence (in-engine contact sheet)
 
-- **Location**: `docs/media/geographic-identity-phase1.webp` (1440x270 WebP q82, 47 KB).
-- **Source**: `node scripts/screenshot.mjs phase1-<id> --url='/?mission=<id>&intro=0&fog=0&seed=777' --click --wait=7000`
-  for m6b, m_tarapaca and m_vilcabamba; tiled 3x1 with ffmpeg.
-- **Content**: project-owned game renders; left Quipaipan, centre Tarapacá, right Vilcabamba. HUD visible,
-  SwiftShader. Documents the Phase 1 mission-scoped heightfields, not a finished site composition.
+- **Location**: `docs/media/geographic-identity-phase1.webp` (2000x562 WebP q80, 100 KB).
+- **Source**: `node scripts/screenshot.mjs phase1-<id> --url='/?mission=<id>&intro=0&fog=0&seed=777' --click
+--wait=7000 --site` for all seven Phase 1 missions (`m6b_guerra_civil`, `m_lima_1821`, `m_miraflores`,
+  `m_real_felipe`, `m_tarapaca`, `m_vilcabamba`, `m_brena`); tiled 4 + 3 (centred) with ffmpeg at 500x281 per
+  cell. `--site` flies the camera over the authored site anchor so the landmark and its relief share the frame.
+- **Content**: project-owned game renders; top row Quipaipan (Cusco 1536), Lima 1821, Miraflores, Real Felipe;
+  bottom row Tarapacá, Vilcabamba, Breña. HUD visible, SwiftShader. Documents the mission-scoped heightfields
+  and the grounded landmarks, not a finished site composition.
 - **Review**: no human art-review gate applies to in-engine evidence captures.
 
 ### Geographic identity Phase 0 evidence (in-engine contact sheet)
@@ -581,7 +583,7 @@ slot is absent (offline / without assets).
 - **Location**: `docs/media/tambotoco-hud-{1280,1600,1920}.webp` (native size, WebP q72).
 - **Source**: captured from the game by `scripts/capture_hud_dialogue.mjs` at 1280x720, 1600x900 and
   1920x1080, with a mission line in the dialogue dock and the starting party selected. Native size, because a
-downscaled 1920 shot would look smaller than the 1280 one.
+  downscaled 1920 shot would look smaller than the 1280 one.
 - **Content**: in-engine recreations of the game's own HUD; no external art.
 - **Review**: no human art-review gate applies to in-engine captures.
 
@@ -744,7 +746,6 @@ downscaled 1920 shot would look smaller than the 1280 one.
 - **Review**: no human art-review gate applies to in-engine captures; the reused chapel GLB keeps its own
   review status in `src/art/manifest.json` (#343).
 
-
 ### Tarapacá, Miraflores and La Breña intro/epilogue images (in-engine recreations)
 
 - **Location**: `public/media/{tarapaca,miraflores,brena}/intro-*.webp` (640×360, WebP q28).
@@ -760,7 +761,6 @@ downscaled 1920 shot would look smaller than the 1280 one.
   the game's own scenes, never historical photographs.
 - **Review**: no human art-review gate applies to in-engine captures; the reused `arica_site`,
   `colonial_site` and `independence_site` GLBs keep their own review status (#343).
-
 
 ### Cusco 1536 and Vilcabamba intro/epilogue images (in-engine recreations)
 

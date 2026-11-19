@@ -4,13 +4,17 @@ import { launchChromium, withViteServer, reviewDir, cliArg } from './lib.mjs';
 
 /**
  * Capture game screenshots for the subagent visual review.
- * Usage: node scripts/screenshot.mjs [name] [--url=...] [--wait=ms] [--seed=...] [--click]
+ * Usage: node scripts/screenshot.mjs [name] [--url=...] [--wait=ms] [--seed=...] [--click] [--site] [--height=N]
  * `--click` presses the first `.ed-primary` button (the mission briefing's start) before the wait.
+ * `--site` flies the camera over the mission's authored site anchor (useful for site-view evidence) and
+ * `--height=N` overrides the camera zoom of that framing (default 78, the map-wide isometric limit).
  */
 const name = process.argv[2] ?? 'default';
 const urlArg = cliArg('url');
 const wait = parseInt(cliArg('wait', '6000'), 10);
 const clickStart = process.argv.includes('--click');
+const siteView = process.argv.includes('--site');
+const siteHeight = Number.parseFloat(cliArg('height', '78'));
 const seed = parseInt(cliArg('seed', '12345'), 10);
 const numShots = parseInt(cliArg('shots', '1'), 10);
 
@@ -41,6 +45,20 @@ async function main() {
       .catch(() => {});
   }
   await page.waitForTimeout(wait);
+  if (siteView) {
+    await page
+      .evaluate(
+        ([height]) => {
+          const g = window.game;
+          const anchor = g?.siteDef?.anchor;
+          if (!anchor) return;
+          g.camera.flyTo(anchor.x, anchor.z, height, 0.6, true);
+        },
+        [siteHeight],
+      )
+      .catch((e) => errors.push('SITE-VIEW: ' + e.message));
+    await page.waitForTimeout(2500);
+  }
 
   const files = [];
   for (let i = 0; i < numShots; i++) {

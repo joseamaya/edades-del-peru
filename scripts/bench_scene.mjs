@@ -116,15 +116,31 @@ const BUDGETS = {
   m5_yahuar_pampa: { sceneTriangles: 725_000, sceneDrawCalls: 378, kitTriangles: 0, kitDrawCalls: 0 },
   // Chimú north-coast opening: the camp, Paramonga and the canal. Measured ~499k / 273; first-pass cap.
   m6_chimu_inca: { sceneTriangles: 530_000, sceneDrawCalls: 290, kitTriangles: 15_000, kitDrawCalls: 3 },
-  // Inca civil war opening: the Quito camp and Quipaipan. Measured ~703k / 436; over the 600k target.
+  // Inca civil war opening: the Quito camp and Quipaipan. Measured 689,709 / 418; over the 600k target.
   m6b_guerra_civil: { sceneTriangles: 745_000, sceneDrawCalls: 465, kitTriangles: 0, kitDrawCalls: 0 },
   // Independence opening: the Lima camp and Junín. Measured 567,865 / 603 after the PCF shadow pass and the
   // rig silhouette rule (674,476 / 823 with VSM); under both caps, over the 200-call target.
   m8_independencia: { sceneTriangles: 625_000, sceneDrawCalls: 660, kitTriangles: 0, kitDrawCalls: 0 },
   // Cusco 1536 opening: the city, the camp and the highland kit. Measured 739,902 / 582 with 87,900 / 12 kit.
   m_cusco_1536: { sceneTriangles: 780_000, sceneDrawCalls: 1_000, kitTriangles: 100_000, kitDrawCalls: 14 },
-  // Breña opening: the Mantaro camp, the communities and the highland kit. Measured 676,616 / 584 with 89,464 / 12 kit.
+  // Breña opening: the Mantaro valley, the communities and the highland kit. The mission heightfield
+  // reshapes the scatter into 14 species objects (one carries two materials): measured 676k-682k / 598
+  // with 44k-50k / 15 kit.
   m_brena: { sceneTriangles: 740_000, sceneDrawCalls: 900, kitTriangles: 100_000, kitDrawCalls: 16 },
+  // Phase 1 mission-scoped heightfields: each reused site now has its own relief, so its opening is measured
+  // on its own field instead of inheriting the base site's cap. The kit caps keep the same generous headroom
+  // as the other missions, because the visible instance count varies a few percent between runs.
+  // Lima 1821 opening on the Rímac coast field: measured 793,130-820,156 / 704-710 with 90,424-103,864 / 18 kit.
+  m_lima_1821: { sceneTriangles: 880_000, sceneDrawCalls: 780, kitTriangles: 130_000, kitDrawCalls: 20 },
+  // Miraflores 1881: the city and the defence line. Measured 675,239-718,799 / 548-555 with 70,576-82,384 / 18.
+  m_miraflores: { sceneTriangles: 760_000, sceneDrawCalls: 610, kitTriangles: 100_000, kitDrawCalls: 20 },
+  // Callao 1824 on the bay field: the Real Felipe and the royalist garrison. Measured 725,170-728,950 / 679-683
+  // with 37,680-39,972 / 18.
+  m_real_felipe: { sceneTriangles: 790_000, sceneDrawCalls: 750, kitTriangles: 60_000, kitDrawCalls: 20 },
+  // Tarapacá 1879 in the inland quebrada: measured 569,480-569,816 / 502-505 with 2,160 / 2 kit.
+  m_tarapaca: { sceneTriangles: 620_000, sceneDrawCalls: 550, kitTriangles: 10_000, kitDrawCalls: 4 },
+  // Vilcabamba 1572 in the cloud-forest valley (amazon region, no GLB tree kit): measured 577,869 / 487.
+  m_vilcabamba: { sceneTriangles: 630_000, sceneDrawCalls: 540, kitTriangles: 5_000, kitDrawCalls: 2 },
   // Túpac Amaru opening on the 256 m valley: the camp, the chapel, the starting column and the highland
   // kit. Measured 521,318 / 491 with 18,974 / 12 kit; the call count is over §11's 200 target.
   m7_tupac_amaru: { sceneTriangles: 575_000, sceneDrawCalls: 710, kitTriangles: 30_000, kitDrawCalls: 14 },
@@ -185,41 +201,58 @@ try {
         );
       }
       if (id === 'm4_wari') {
-        return (
-          !!g.landmark?.getObjectByName('wari_site') && (g.settlementDressing ?? []).every((d) => d.attached !== false)
-        );
+        if (
+          !g.landmark?.getObjectByName('wari_site') ||
+          !(g.settlementDressing ?? []).every((d) => d.attached !== false)
+        ) {
+          return false;
+        }
       }
       if (id === 'm5_yahuar_pampa') {
         // The pampa keeps primitive broad/needle trees, not a GLB kit: wait for the site and dressing.
-        return (
-          !!g.landmark?.getObjectByName('chanca_site') &&
-          (g.settlementDressing ?? []).every((d) => d.attached !== false)
-        );
+        if (
+          !g.landmark?.getObjectByName('chanca_site') ||
+          !(g.settlementDressing ?? []).every((d) => d.attached !== false)
+        ) {
+          return false;
+        }
       }
       if (id === 'm6_chimu_inca' && !g.landmark?.getObjectByName('chimu_site')) return false;
       if (id === 'm6b_guerra_civil') {
         // The pampa keeps primitive broad/needle trees, not a GLB kit: wait for the site and dressing.
-        return (
-          !!g.landmark?.getObjectByName('cusco_inca_site') &&
-          (g.settlementDressing ?? []).every((d) => d.attached !== false)
-        );
+        if (
+          !g.landmark?.getObjectByName('cusco_inca_site') ||
+          !(g.settlementDressing ?? []).every((d) => d.attached !== false)
+        ) {
+          return false;
+        }
       }
       if (id === 'm8_independencia') {
-        return (
-          !!g.landmark?.getObjectByName('independence_site') &&
-          (g.settlementDressing ?? []).every((d) => d.attached !== false)
-        );
+        if (
+          !g.landmark?.getObjectByName('independence_site') ||
+          !(g.settlementDressing ?? []).every((d) => d.attached !== false)
+        ) {
+          return false;
+        }
       }
       if (id === 'm_cusco_1536' || id === 'm_brena') {
-        return (
-          !!g.landmark?.getObjectByName(id === 'm_cusco_1536' ? 'cusco_inca_site' : 'independence_site') &&
-          (g.settlementDressing ?? []).every((d) => d.attached !== false)
-        );
+        if (
+          !g.landmark?.getObjectByName(id === 'm_cusco_1536' ? 'cusco_inca_site' : 'independence_site') ||
+          !(g.settlementDressing ?? []).every((d) => d.attached !== false)
+        ) {
+          return false;
+        }
       }
       if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site')?.userData.heroesReady;
       if (id === 'm9_guerra_pacifico' && !g.landmark?.getObjectByName('arica_site')) return false;
-      // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
-      if (!g.trees?.hasKit?.('algarrobo') || !g.trees.hasKit('sauce')) return false;
+      // Wait for every kit family the mission's vegetation pack draws: a half-loaded batch measured a
+      // different scene. Packs without kits (amazon, inland skirmish) only wait for the settlement dressing.
+      const pack = g.vegetationPack;
+      const required = pack === 'caral' ? ['algarrobo', 'sauce'] : pack === 'andes' ? ['molle', 'pacay', 'sauce'] : [];
+      for (const variant of required) if (!g.trees?.hasKit?.(variant)) return false;
+      for (const species of ['deer', 'riparian_bird']) {
+        if (g.wildlife?.species?.().has(species) && !g.wildlife.hasKit(species)) return false;
+      }
       if (g.mapProfile?.quarryStyle && !g.quarries?.model) return false;
       if (g.mapProfile?.berryShrub === 'pacae' && !g.pacae?.model) return false;
       return (g.settlementDressing ?? []).every((d) => d.attached !== false);
