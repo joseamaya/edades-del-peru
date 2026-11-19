@@ -4,6 +4,7 @@ import { AUTHORED_SITES, getAuthoredSite } from '../src/model/defs/sites';
 import { sampleAuthoredHeight } from '../src/model/defs/authoredTerrain';
 import { WATER_LEVEL, resolveMapProfile } from '../src/model/defs/profiles';
 import { MAX_WALKABLE_SLOPE } from '../src/game/Pathfinding';
+import { terrainSlope } from '../src/util/math';
 import { TerrainData } from '../src/sim/TerrainData';
 import type { MissionDef } from '../src/campaign/types';
 import type { AuthoredHeightField } from '../src/model/defs/authoredTerrain';
@@ -83,11 +84,10 @@ function resolve(id: string): Case {
 
 function walkableComponents(field: AuthoredHeightField): number[] {
   const size = field.worldSize;
-  const blocked = (x: number, z: number): boolean => {
-    const dx = (sampleAuthoredHeight(field, x + 1, z) - sampleAuthoredHeight(field, x - 1, z)) / 2;
-    const dz = (sampleAuthoredHeight(field, x, z + 1) - sampleAuthoredHeight(field, x, z - 1)) / 2;
-    return Math.hypot(dx, dz) > MAX_WALKABLE_SLOPE;
-  };
+  const heightAt = (x: number, z: number): number => sampleAuthoredHeight(field, x, z);
+  const blocked = (x: number, z: number): boolean =>
+    // Same rule and scale as the pathfinder: `terrainSlope` already halves the gradient.
+    terrainSlope(heightAt, x, z, 1) > MAX_WALKABLE_SLOPE;
   const open = new Uint8Array(size * size);
   for (let z = 0; z < size; z++) {
     for (let x = 0; x < size; x++) open[z * size + x] = blocked(x, z) ? 0 : 1;
@@ -121,6 +121,11 @@ function walkableComponents(field: AuthoredHeightField): number[] {
     sizes.push(count);
   }
   return sizes.sort((a, b) => b - a);
+}
+
+function walkable(field: AuthoredHeightField, wx: number, wz: number): boolean {
+  const heightAt = (x: number, z: number): number => sampleAuthoredHeight(field, x, z);
+  return terrainSlope(heightAt, wx, wz, 1) <= MAX_WALKABLE_SLOPE;
 }
 
 function missionProfile(mission: MissionDef) {
@@ -247,12 +252,23 @@ describe('mission-scoped heightfields', () => {
     // The steep fields must not fence areas off: the pathfinder blocks a 1 m cell above
     // MAX_WALKABLE_SLOPE, so a sharp ridge can leave whole pockets unreachable (it did once).
     for (const id of ['m_vilcabamba', 'm_brena', 'm_tarapaca', 'm6b_guerra_civil']) {
-      const { override } = resolve(id);
-      const cells = walkableComponents(override);
+      const { mission, override } = resolve(id);
+      const field = override;
+      const cells = walkableComponents(field);
       const main = Math.max(...cells);
       const total = cells.reduce((sum, n) => sum + n, 0);
-      expect(cells.length, `${id} walkable components`).toBeLessThanOrEqual(3);
-      expect(main / total, `${id} share in the main component`).toBeGreaterThan(0.95);
+      expect(cells.length, `${id} walkable components`).toBe(1);
+      expect(main / total, `${id} share in the main component`).toBeGreaterThan(0.99);
+      // The players' anchors must sit on the one reachable region.
+      const site = AUTHORED_SITES[mission.layout!.site!.id]!;
+      for (const [label, point] of [
+        ['base', mission.layout!.base],
+        ['enemyBase', mission.layout!.enemyBase],
+        ['anchor', { x: site.anchor.x / 256, z: site.anchor.z / 256 }],
+      ] as const) {
+        if (!point) continue;
+        expect(walkable(field, point.x * 256, point.z * 256), `${id} ${label} is on the path grid`).toBe(true);
+      }
     }
   });
 

@@ -168,14 +168,14 @@ terrain, water, vegetation and architecture and ignoring the in-world labels: **
 
 - Correct: Cusco 1536, Tarapacá, Lima 1821, Breña, Callao, Miraflores.
 - Confused: **Vilcabamba ↔ Quipaipan**. Both frame an open green plain with a central stone platform, because the
-  Vilcabamba relief that would show the valley was reverted in Phase 3 (it broke walkability). This is the
+  Vilcabamba relief that would show the valley had not shipped yet. This is the
   clearest remaining gap and the reason the next slice reshaped that valley.
 - Near misses: Lima 1821 ↔ Miraflores are separated only by the urban grid vs the tent/redoubt camp, and
   Tarapacá ↔ Callao by cultivation rows vs fortress geometry.
 
 The first round (a different reviewer, before the Phase 3 relief work) scored 8/8. Vilcabamba's field did not
 change between the rounds, which is exactly why the miss points at it: the *pampa/valley* pair still needs the
-landform work that has not shipped.
+landform work that has now shipped.
 
 ### Pilot A — `m_cusco_1536` (high Andes, urban siege)
 
@@ -251,11 +251,12 @@ stay as they were, because the fix broke walkability or belongs to composition:
 | Pair | Before (mean |Δh|) | Now | Outcome |
 | --- | ---: | ---: | --- |
 | Tarapacá ↔ Quipaipan | 0.91 m | **1.75 m** | taller pampa hills and border ridges; a narrower, deeper dry quebrada with a taller stepped bank |
-| Vilcabamba ↔ Breña | 3.67 m | 3.57 m | valley walls shipped as **broad, long-wavelength slopes**: one walkable component (100 % of open cells), grass 9,861 cells, and the fort now sits on a spur that visibly falls away |
+| Vilcabamba ↔ Breña | 3.67 m | **4.71 m** | valley walls as broad, long-wavelength slopes: one walkable component, grass 9,861 cells, and the fort on a spur that visibly falls away |
+| Vilcabamba ↔ Quipaipan | 3.20 m | **4.30 m** | the same valley walls; this was the pair the blind test confused |
 | Lima 1821 ↔ Miraflores | 1.57 m | 1.57 m | unchanged by design (shared site anchor); the difference is the redoubt line and the headland, so it belongs to composition |
 
 The next slice follows the walkability rule the Vilcabamba fix established: a BFS on the 1 m path grid at
-`MAX_WALKABLE_SLOPE`, requiring one component with ≥95 % of the open cells (`tests/geographic-heightfields.test.ts`). Evidence: [`geographic-identity-phase3.webp`](../media/geographic-identity-phase3.webp). The remaining families
+`MAX_WALKABLE_SLOPE`, requiring one component covering ≥99 % of the open cells (`tests/geographic-heightfields.test.ts`). Evidence: [`geographic-identity-phase3.webp`](../media/geographic-identity-phase3.webp). The remaining families
 (recintos, setpieces and Lima 1821's redoubts) follow below.
 
 Phase 1 created the geometry foundation; Phase 3 completes the mission-level composition, vegetation,
@@ -299,7 +300,7 @@ heightfield pass; they finish the mission around the new field.
 ## 7. Phase 4 — Validation and close
 
 **Status (2026-11-19):** first pass done. Blind test over eight fields: **6/8**, the miss being
-Vilcabamba↔Quipaipan because the valley relief was reverted in Phase 3. Historical/geographical audit of
+Vilcabamba↔Quipaipan, before the connected valley walls shipped. Historical/geographical audit of
 Tarapacá, Real Felipe and Miraflores: no invented facts, four imprecisions fixed (Tarapacá's uncited "200 km",
 Real Felipe's "civilians in Callao" where the source says the fortress, Miraflores' Chorrillos label on the
 inland side, and the stale `lima_site` reference in `docs/historia/campanas/miraflores.md`). The similarity

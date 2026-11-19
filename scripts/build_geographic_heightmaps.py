@@ -295,8 +295,8 @@ def tarapaca(x: float, z: float) -> float:
 def vilcabamba(x: float, z: float) -> float:
     """Cloud-forest valley: broad, long-wavelength walls so every cell stays reachable (slope < 0.5)."""
     h = 5.2 + 0.25 * noise(x, z, 2.1)
-    h += 6.0 * (0.5 + 0.5 * math.sin(x * 0.030 + 1.1)) * smooth(120, 200, x)
-    h += 3.0 * (0.5 + 0.5 * math.sin(z * 0.028 + 0.3))
+    h += 9.0 * (0.5 + 0.5 * math.sin(x * 0.030 + 1.1)) * smooth(120, 200, x)
+    h += 4.0 * (0.5 + 0.5 * math.sin(z * 0.028 + 0.3))
     river = math.exp(-((x - 132) / 11.0) ** 2)
     h = h * (1 - river) + 1.0 * river
     bank = math.exp(-((x - 132) / 26.0) ** 2)
