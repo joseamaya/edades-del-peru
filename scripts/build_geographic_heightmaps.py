@@ -377,7 +377,14 @@ def quantize_palette(cells: list[tuple[int, int, int, int]]) -> tuple[list[tuple
     for cell in cells:
         key = tuple(min(255, round(channel / 17) * 17) for channel in cell)
         histogram[key] = histogram.get(key, 0) + 1  # type: ignore[index]
-    palette = [key for key, _ in sorted(histogram.items(), key=lambda item: -item[1])[:PALETTE_SIZE]]
+    palette: list[tuple[int, int, int, int]] = []
+    for key, _ in sorted(histogram.items(), key=lambda item: -item[1]):
+        total = max(1, sum(key))
+        entry = tuple(round(channel * 255 / total) for channel in key)  # normalized weights
+        if entry not in palette:
+            palette.append(entry)  # type: ignore[arg-type]
+        if len(palette) == PALETTE_SIZE:
+            break
     indices: list[int] = []
     for cell in cells:
         best = 0
