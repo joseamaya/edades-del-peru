@@ -472,11 +472,14 @@ slot is absent (offline / without assets).
 
 ### Geographic identity Phase 1 evidence (in-engine contact sheet)
 
-- **Location**: `docs/media/geographic-identity-phase1.webp` (1440x270 WebP q82, 47 KB).
-- **Source**: `node scripts/screenshot.mjs phase1-<id> --url='/?mission=<id>&intro=0&fog=0&seed=777' --click --wait=7000`
-  for m6b, m_tarapaca and m_vilcabamba; tiled 3x1 with ffmpeg.
-- **Content**: project-owned game renders; left Quipaipan, centre Tarapacá, right Vilcabamba. HUD visible,
-  SwiftShader. Documents the Phase 1 mission-scoped heightfields, not a finished site composition.
+- **Location**: `docs/media/geographic-identity-phase1.webp` (2240x630 WebP q80, 121 KB).
+- **Source**: `node scripts/screenshot.mjs phase1-<id> --url='/?mission=<id>&intro=0&fog=0&seed=777' --click
+  --wait=7000 --site` for all seven Phase 1 missions (`m6b_guerra_civil`, `m_lima_1821`, `m_miraflores`,
+  `m_real_felipe`, `m_tarapaca`, `m_vilcabamba`, `m_brena`); tiled 4x2 with ffmpeg at 560x315 per cell.
+  `--site` flies the camera over the authored site anchor so the landmark and its relief share the frame.
+- **Content**: project-owned game renders; top row Quipaipan (Cusco 1536), Lima 1821, Miraflores, Real Felipe;
+  bottom row Tarapacá, Vilcabamba, Breña. HUD visible, SwiftShader. Documents the mission-scoped heightfields
+  and the grounded landmarks, not a finished site composition.
 - **Review**: no human art-review gate applies to in-engine evidence captures.
 
 ### Geographic identity Phase 0 evidence (in-engine contact sheet)

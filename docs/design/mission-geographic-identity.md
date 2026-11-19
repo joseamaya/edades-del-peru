@@ -115,7 +115,7 @@ geographic silhouette.
 | --- | --- | --- |
 | Map seed, size, `MapType` | `MissionDef.map` | All maps are 256 m; the seed alone does not create identity |
 | `region` | `MissionDef.region` | Only 10 missions set it explicitly; the rest fall back to the civilization |
-| Authored heightfield | `AuthoredSiteDef.heightField` | 13 fields for 18 sites; 12 missions share 5 fields |
+| Authored heightfield | `AuthoredSiteDef.heightField`, `MissionSite.heightField` | 13 base fields for 18 sites, plus 7 mission overrides (Phase 1) |
 | Authored site model | `AuthoredSiteDef.modelName` | 5 models cover 14 missions |
 | Site anchor and phases | `AuthoredSiteDef`, `MissionSite` | Repeated anchors in the reuse chains |
 | Base/enemy anchors | `MissionLayout` | The same diagonal in seven missions |
@@ -135,6 +135,13 @@ geographic silhouette.
 | `CUSCO_HEIGHTMAP` | `m6b_guerra_civil`, `m_cusco_1536` | `cusco_inca_site` | The same basin for a pampa battle and an urban siege |
 | `INDEPENDENCE_HEIGHTMAP` | `m8_independencia`, `m_brena` | `independence_site` | The same plain for Junín/Ayacucho and the Mantaro |
 | `CHANCA_HEIGHTMAP` | `m5_yahuar_pampa`, `m_vilcabamba` | `chanca_site` | The same high pampa, relabelled as jungle |
+
+**Phase 1 status (2026-11-19):** this table is the baseline audit. `m6b_guerra_civil`, `m_lima_1821`,
+`m_miraflores`, `m_real_felipe`, `m_tarapaca`, `m_vilcabamba` and `m_brena` now carry a mission-scoped
+`MissionSite.heightField` (Quipaipan, Rímac 1821, Miraflores, Callao Bay, Tarapacá quebrada, Vilcabamba valley,
+Mantaro), so their **terrain geometry no longer matches the chain above**. The site models, anchors, collision and
+painted ground are still shared; the per-mission site composition and paint are Phase 2/3 work
+([roadmap](../plan/geographic-identity-roadmap.md)).
 
 ### 3.4 Taxonomy coverage
 
