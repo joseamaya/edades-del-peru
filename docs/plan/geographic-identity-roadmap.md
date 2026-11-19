@@ -174,7 +174,7 @@ terrain, water, vegetation and architecture and ignoring the in-world labels: **
   Tarapacá ↔ Callao by cultivation rows vs fortress geometry.
 
 The first round (a different reviewer, before the Phase 3 relief work) scored 8/8. Vilcabamba's field did not
-change between the rounds, which is exactly why the miss points at it: the *pampa/valley* pair still needs the
+change between the rounds, which is exactly why the miss points at it: the _pampa/valley_ pair still needs the
 landform work that has now shipped.
 
 ### Pilot A — `m_cusco_1536` (high Andes, urban siege)
@@ -251,7 +251,7 @@ stay as they were, because the fix broke walkability or belongs to composition:
 | Pair | Before (mean |Δh|) | Now | Outcome |
 | --- | ---: | ---: | --- |
 | Tarapacá ↔ Quipaipan | 0.91 m | **1.75 m** | taller pampa hills and border ridges; a narrower, deeper dry quebrada with a taller stepped bank |
-| Vilcabamba ↔ Breña | 3.67 m | **4.71 m** | valley walls as broad, long-wavelength slopes: one walkable component, grass 9,861 cells, and the fort on a spur that visibly falls away |
+| Vilcabamba ↔ Breña | 3.67 m | **4.71 m** | valley walls as broad, long-wavelength slopes: one walkable component, grass 9,451 cells, and the fort on a spur that visibly falls away |
 | Vilcabamba ↔ Quipaipan | 3.20 m | **4.30 m** | the same valley walls; this was the pair the blind test confused |
 | Lima 1821 ↔ Miraflores | 1.57 m | 1.57 m | unchanged by design (shared site anchor); the difference is the redoubt line and the headland, so it belongs to composition |
 
