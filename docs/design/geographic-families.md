@@ -1,11 +1,16 @@
 # Geographic families
 
-**Status:** Proposal · **Audit date:** 2026-11-18
+**Status:** Approved · **Audit date:** 2026-11-18 · **Close-out:** 2026-11-19
 
 This document proposes how to keep geographic diversity without multiplying assets or rewriting the
 terrain engine. It is the reusable-system companion to
 [`mission-geographic-identity.md`](./mission-geographic-identity.md) and the implementation order in
 [`../plan/geographic-identity-roadmap.md`](../plan/geographic-identity-roadmap.md).
+
+The model is implemented for the six missions of the geographic-identity close-out: mission-scoped
+heightfields and paint, explicit regions, the `andes` kit on the high valleys, water/river/ford overrides,
+mission atmosphere and the visual-only `groves` bands. What remains open is the per-mission composition listed
+in roadmap §6.1–6.3, not the family architecture described here.
 
 The rule is simple: **reuse components, not maps.** Two missions may share a tree, a stone material, an
 andén recipe or a colonial module. They may not share the heightfield, the site anchor or the

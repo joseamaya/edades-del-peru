@@ -337,7 +337,8 @@ Close-out results:
   fortress frame, and Tarapacá's quebrada as a real dry valley (a ~32 m gravel floor, ~4.8 m banks) instead
   of a shallow dip. The full §8 protocol (three RTS views, top-down, terrain-only, hypsometric and water
   masks, the 24/30 rubric) remains a future round; this close-out ran the default site framing plus a wide
-  check.
+  check. That round needs a real GPU (the frame-time pass and `bench:site-views`) and a human reviewer; it is
+  owned by the next release review, together with the §6.1–6.3 composition work.
 - **Grayscale pass:** the six captures stay legible without colour (site footprint, objective ring and water
   remain dominant); Quipaipan's dry arroyo loses contrast, so its identity rests on the open pampa and platform.
 - **Fog of war:** `Water` now follows the fog mask (a pre-existing gap: unexplored rivers and bays stayed
@@ -358,14 +359,18 @@ a human blind test.
 
 **Complexity:** S · **Depends on:** all pilots and at least one mission per family
 
-1. Run the blind test (8/10 per mission).
-2. Run the grayscale test.
-3. Re-run `yarn bench:check` and `bench_scene --assert` for every mission.
-4. Re-run `yarn dist:check`.
-5. Record the historical/geographic review for the open questions.
+1. Run the blind test (8/10 per mission). **Close-out:** 6/6 twice on the six missions of the three pairs,
+   with the site framing plus a wide check; the full §8 protocol and the 8/10 rubric stay for the next review.
+2. Run the grayscale test. **Close-out:** done on the same six captures.
+3. Re-run `yarn bench:check` and `bench_scene --assert` for every mission. **Close-out:** `bench_scene --assert`
+   green for the changed missions; `bench:check` was run but is not a stable gate on a busy machine (§7).
+4. Re-run `yarn dist:check`. **Close-out:** done, 24.76 MB of 25.00.
+5. Record the historical/geographic review for the open questions. **Close-out:** done in the previous slice
+   (Tarapacá, Real Felipe, Miraflores).
 6. Update `art-direction.md`, `visual-language.md` and `docs/README.md` with the approved family/preset
-   references.
-7. Attach the before/after captures to the PR.
+   references. **Close-out:** `docs/README.md` and the three identity documents updated; the art-direction and
+   visual-language references are unchanged because they do not enumerate mission presets.
+7. Attach the before/after captures to the PR. **Close-out:** `docs/media/geographic-identity-closeout*.webp`.
 
 **Exit:** every mission meets the ten acceptance criteria; no mission depends on a palette-only difference;
 the performance caps are unchanged except for the justified `selva` pack.
