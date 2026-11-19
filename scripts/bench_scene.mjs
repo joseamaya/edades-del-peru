@@ -131,10 +131,12 @@ const BUDGETS = {
   // Phase 1 mission-scoped heightfields: each reused site now has its own relief, so its opening is measured
   // on its own field instead of inheriting the base site's cap. The kit caps keep the same generous headroom
   // as the other missions, because the visible instance count varies a few percent between runs.
-  // Lima 1821 opening on the Rímac coast field: measured 793,130-820,156 / 704-710 with 90,424-103,864 / 18 kit.
-  m_lima_1821: { sceneTriangles: 880_000, sceneDrawCalls: 780, kitTriangles: 130_000, kitDrawCalls: 20 },
-  // Miraflores 1881: the city and the defence line. Measured 675,239-718,799 / 548-555 with 70,576-82,384 / 18.
-  m_miraflores: { sceneTriangles: 760_000, sceneDrawCalls: 610, kitTriangles: 100_000, kitDrawCalls: 20 },
+  // Lima 1821 opening on the Rímac oasis field: the irrigated plain carries the same grove density as
+  // m_lima. Measured 784k-882k / 710 with 63k-160k / 18 kit (the kit count follows the grove LOD mix).
+  m_lima_1821: { sceneTriangles: 950_000, sceneDrawCalls: 780, kitTriangles: 190_000, kitDrawCalls: 20 },
+  // Miraflores 1881: the city and the defence line over the same oasis plain. Measured 727k-819k / 546
+  // with 88k-178k / 18 kit.
+  m_miraflores: { sceneTriangles: 890_000, sceneDrawCalls: 610, kitTriangles: 210_000, kitDrawCalls: 20 },
   // Callao 1824 on the bay field: the Real Felipe and the royalist garrison. Measured 725,170-728,950 / 679-683
   // with 37,680-39,972 / 18.
   m_real_felipe: { sceneTriangles: 790_000, sceneDrawCalls: 750, kitTriangles: 60_000, kitDrawCalls: 20 },

@@ -10,6 +10,7 @@ export type GroundPaletteEntry = readonly [number, number, number, number];
 export function decodePalettizedGround(b64: string, palette: readonly GroundPaletteEntry[], size: number): Uint8Array {
   const bin = atob(b64);
   const cells = size * size;
+  if (bin.length !== Math.ceil(cells / 2)) throw new Error('malformed ground payload');
   const out = new Uint8Array(cells * 4);
   for (let i = 0; i < cells; i++) {
     const byte = bin.charCodeAt(i >> 1);

@@ -27,6 +27,11 @@ describe('palettized ground codec', () => {
   });
 
   it('rejects an index the palette does not define', () => {
-    expect(() => decodePalettizedGround(pack([0, 7]), palette, 2)).toThrow(/palette index 7/);
+    expect(() => decodePalettizedGround(pack([7]), palette, 1)).toThrow(/palette index 7/);
+  });
+
+  it('rejects a truncated or oversized payload', () => {
+    expect(() => decodePalettizedGround(pack([0, 1, 2]), palette, 4)).toThrow(/malformed ground payload/);
+    expect(() => decodePalettizedGround(pack([0, 1, 2, 3, 0]), palette, 2)).toThrow(/malformed ground payload/);
   });
 });

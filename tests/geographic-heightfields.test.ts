@@ -12,16 +12,34 @@ interface Case {
   override: AuthoredHeightField;
 }
 
-const CASES: Array<{ id: string; size: number; hasRiver: boolean; keepsWater: boolean }> = [
-  { id: 'm6b_guerra_civil', size: 257, hasRiver: false, keepsWater: false },
-  { id: 'm_cusco_1536', size: 129, hasRiver: false, keepsWater: false },
-  { id: 'm_lima_1821', size: 129, hasRiver: true, keepsWater: true },
-  { id: 'm_miraflores', size: 129, hasRiver: true, keepsWater: true },
-  { id: 'm_real_felipe', size: 129, hasRiver: false, keepsWater: true },
-  { id: 'm_tarapaca', size: 257, hasRiver: false, keepsWater: false },
-  { id: 'm_vilcabamba', size: 257, hasRiver: false, keepsWater: false },
-  { id: 'm_brena', size: 257, hasRiver: false, keepsWater: false },
+interface CaseSpec {
+  id: string;
+  size: number;
+  hasRiver: boolean;
+  keepsWater: boolean;
+  /** Painted grass above 0.6: the game only plants groves on cells this green. */
+  groves: boolean;
+  /** Painted sand/rock: `treeless` keeps trees off these, so a beach or cliff needs some. */
+  bare: boolean;
+}
+
+const CASES: CaseSpec[] = [
+  { id: 'm6b_guerra_civil', size: 257, hasRiver: false, keepsWater: false, groves: true, bare: true },
+  { id: 'm_cusco_1536', size: 129, hasRiver: false, keepsWater: false, groves: true, bare: true },
+  { id: 'm_lima_1821', size: 129, hasRiver: true, keepsWater: true, groves: true, bare: true },
+  { id: 'm_miraflores', size: 129, hasRiver: true, keepsWater: true, groves: true, bare: true },
+  { id: 'm_real_felipe', size: 129, hasRiver: false, keepsWater: true, groves: false, bare: true },
+  { id: 'm_tarapaca', size: 257, hasRiver: false, keepsWater: false, groves: false, bare: true },
+  { id: 'm_vilcabamba', size: 257, hasRiver: false, keepsWater: false, groves: true, bare: true },
+  { id: 'm_brena', size: 257, hasRiver: false, keepsWater: false, groves: true, bare: true },
 ];
+
+function countWeight(field: AuthoredHeightField, channel: number, min: number): number {
+  const weights = field.ground!.weights;
+  let count = 0;
+  for (let i = 0; i < weights.length; i += 4) if (weights[i + channel]! > min * 255) count++;
+  return count;
+}
 
 const SAMPLE_STEPS = 65;
 
@@ -168,6 +186,17 @@ describe('mission-scoped heightfields', () => {
       expect(average, id).toBeGreaterThan(250);
       expect(average, id).toBeLessThan(260);
       if (hasRiver) expect(override.river, id).toBeDefined();
+    }
+  });
+
+  it('keeps the resource and treeless thresholds the game reads', () => {
+    for (const { id, groves, bare } of CASES) {
+      const { override } = resolve(id);
+      // `spawnResources` only places a grove where painted grass is above 0.6.
+      const green = countWeight(override, 0, 0.6);
+      if (groves) expect(green, `${id} grove-capable cells`).toBeGreaterThan(2000);
+      else expect(green, `${id} must stay as bare as its base field`).toBe(0);
+      if (bare) expect(countWeight(override, 3, 0.6), `${id} treeless rock`).toBeGreaterThan(200);
     }
   });
 

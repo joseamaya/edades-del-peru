@@ -471,7 +471,7 @@ slot is absent (offline / without assets).
 
 ### Geographic identity Phase 2 evidence (in-engine contact sheet)
 
-- **Location**: `docs/media/geographic-identity-phase2.webp` (2000x562 WebP q80, 89 KB).
+- **Location**: `docs/media/geographic-identity-phase2.webp` (2000x562 WebP q80, 105 KB).
 - **Source**: `node scripts/screenshot.mjs geo-<letter> --url='/?mission=<id>&intro=0&fog=0&seed=777' --click
 --wait=7000 --site --no-hud` for `m6b_guerra_civil`, `m_cusco_1536`, `m_lima_1821`, `m_miraflores`,
   `m_real_felipe`, `m_tarapaca`, `m_vilcabamba` and `m_brena`; tiled 4x2 with ffmpeg at 500x281 per cell.

@@ -113,36 +113,39 @@ def normalize(weights: tuple[float, float, float, float]) -> tuple[float, float,
 
 
 def paint_highland(h: Height, x: float, z: float) -> tuple[float, float, float, float]:
-    """Puna grass with rocky slopes and bare earth on the flats (Cusco, Quipaipan)."""
+    """Puna grass on the flats, bare rock on the slopes and summits (Quipaipan, Cusco).
+
+    The weights are zone-dominant on purpose: the game reads `grass > 0.6` to place groves and
+    `rock > 0.6` / `sand > 0.45` to keep trees off cliffs and beaches (`WorldViewDecor.treeless`).
+    """
     elevation = h(x, z)
     slope = slope_at(h, x, z)
-    m = mottle(x, z)
-    grass = 0.52 * m + 0.12 * smooth(4.5, 6.5, elevation)
-    dirt = 0.24
-    sand = 0.05
-    rock = 0.85 * smooth(0.22, 0.6, slope) + 0.55 * smooth(7.0, 9.5, elevation)
+    rock = max(smooth(0.26, 0.5, slope), smooth(7.4, 8.8, elevation))
+    mottle_v = mottle(x, z)
+    grass = (1.0 - rock) * 0.9 * mottle_v
+    dirt = (1.0 - rock) * 0.14
+    sand = (1.0 - rock) * 0.03
     return normalize((grass, dirt, sand, rock))
 
 
 def paint_cusco1536(h: Height, x: float, z: float) -> tuple[float, float, float, float]:
-    """The highland paint plus the city's trodden basin and the stone of Sacsayhuamán."""
+    """Highland paint plus the city's trodden basin and the stone of Sacsayhuamán."""
     grass, dirt, sand, rock = paint_highland(h, x, z)
     city = 1.0 - smooth(20.0, 48.0, math.hypot(x - 166.0, z - 174.0))
     stone = 1.0 - smooth(0.45, 1.0, math.hypot((x - 158.0) / 30.0, (z - 141.0) / 14.0))
-    return normalize((grass * (1.0 - 0.6 * city), dirt + 0.55 * city, sand, rock + 0.75 * stone))
+    return normalize((grass * (1.0 - city), dirt + 0.8 * city, sand, rock + 0.9 * stone))
 
 
 def paint_sierra(h: Height, x: float, z: float) -> tuple[float, float, float, float]:
     """Terraced valley floor, gravel wash and rocky sides (Mantaro/Breña)."""
     elevation = h(x, z)
     slope = slope_at(h, x, z)
-    m = mottle(x, z)
-    valley = 1.0 - smooth(3.2, 5.0, elevation)
-    wash = math.exp(-((x - 128) / 16.0) ** 2)
-    grass = (0.42 + 0.5 * valley) * m
-    dirt = 0.2 + 0.35 * wash
-    sand = 0.08 + 0.5 * wash
-    rock = 0.9 * smooth(0.3, 0.75, slope) + 0.4 * smooth(9.0, 14.0, elevation)
+    rock = max(smooth(0.28, 0.52, slope), smooth(8.5, 11.5, elevation))
+    wash = math.exp(-((x - 128.0) / 14.0) ** 2) * (1.0 - rock)
+    valley = 1.0 - smooth(3.3, 4.6, elevation)
+    grass = (1.0 - rock - wash) * (0.55 + 0.4 * valley) * mottle(x, z)
+    sand = 0.7 * wash
+    dirt = max(0.0, 1.0 - rock - grass - sand)
     return normalize((grass, dirt, sand, rock))
 
 
@@ -150,43 +153,47 @@ def paint_quebrada(h: Height, x: float, z: float) -> tuple[float, float, float, 
     """Atacama desert: sand and rock, with a green oasis and the planted wash floor."""
     elevation = h(x, z)
     slope = slope_at(h, x, z)
-    m = mottle(x, z)
-    oasis = 1.0 - smooth(10.0, 26.0, math.hypot(x - 92, z - 140))
-    wash = math.exp(-((z - 132) / 15.0) ** 2) * (1.0 - smooth(200.0, 228.0, x))
-    grass = (0.12 + 0.85 * oasis) * m + 0.12 * wash
-    dirt = 0.16 + 0.25 * wash
-    sand = 0.5 + 0.5 * (1.0 - smooth(0.25, 0.6, slope))
-    rock = 0.7 * smooth(0.3, 0.8, slope) + 0.35 * smooth(7.5, 12.0, elevation)
-    return normalize((grass * (1 - wash * 0.4), dirt, sand, rock))
+    rock = max(smooth(0.26, 0.5, slope), smooth(7.4, 9.0, elevation))
+    oasis = 1.0 - smooth(10.0, 26.0, math.hypot(x - 92.0, z - 140.0))
+    wash = math.exp(-((z - 132.0) / 15.0) ** 2) * (1.0 - smooth(200.0, 228.0, x))
+    grass = 0.55 * oasis * (1.0 - rock)
+    sand = (1.0 - rock - grass) * (0.45 + 0.45 * wash)
+    dirt = max(0.0, 1.0 - rock - grass - sand)
+    return normalize((grass, dirt, sand, rock))
 
 
 def paint_coastal_city(
-    h: Height, x: float, z: float, city: tuple[float, float], river: bool = True
+    h: Height, x: float, z: float, city: tuple[float, float], river: bool = True, oasis: float = 0.85
 ) -> tuple[float, float, float, float]:
-    """Dry coastal plain, urban dirt, green river banks and a gravel beach (Lima, Callao)."""
+    """Irrigated green plain, urban dirt, gravel beach and rocky hills (Lima, Callao).
+
+    `oasis` is how much of the non-beach plain reads green: the Lima valley is an oasis (groves grow
+    where `grass > 0.6`), while the Callao sand plain stays dry like the base Arica field.
+    """
     elevation = h(x, z)
     slope = slope_at(h, x, z)
-    m = mottle(x, z)
-    beach = 1.0 - smooth(WATER + 0.15, WATER + 1.8, elevation)
+    rock = max(smooth(0.28, 0.55, slope), smooth(8.0, 11.0, elevation))
+    beach = 1.0 - smooth(WATER + 0.15, WATER + 1.6, elevation)
     urban = 1.0 - smooth(16.0, 40.0, math.hypot(x - city[0], z - city[1]))
-    river = math.exp(-((z - rimac_z(x)) / 26.0) ** 2) if river else 0.0
-    grass = (0.18 + 0.85 * river + 0.1 * urban) * m
-    dirt = 0.18 + 0.35 * urban + 0.4 * beach
-    sand = 0.45 + 0.55 * beach - 0.25 * urban
-    rock = 0.75 * smooth(0.32, 0.8, slope) + 0.3 * smooth(8.5, 12.0, elevation)
+    river_band = math.exp(-((z - rimac_z(x)) / 22.0) ** 2) if river else 0.0
+    green = max(river_band, oasis * (1.0 - beach))
+    free = 1.0 - rock
+    grass = free * 0.9 * green
+    dirt = free * 0.7 * urban * (1.0 - green)
+    sand = free * max(0.8 * beach, 0.55 * (1.0 - green))
     return normalize((grass, dirt, sand, rock))
 
 
 def paint_cloud_forest(h: Height, x: float, z: float) -> tuple[float, float, float, float]:
-    """Wet cloud-forest floor: dark humus, ferns on the flats, rock on the ridges, gravel bars."""
+    """Wet cloud-forest floor: dense green on the flats, rock on the ridges, gravel on the banks."""
     elevation = h(x, z)
     slope = slope_at(h, x, z)
-    m = mottle(x, z)
-    bank = max(math.exp(-((x - 132) / 20.0) ** 2), 1.0 - smooth(2.4, 3.6, elevation))
-    grass = (0.62 - 0.25 * bank) * m
-    dirt = 0.2 + 0.25 * bank
-    sand = 0.05 + 0.6 * bank
-    rock = 0.85 * smooth(0.28, 0.7, slope) + 0.35 * smooth(10.0, 15.0, elevation)
+    rock = max(smooth(0.26, 0.5, slope), smooth(9.5, 13.5, elevation))
+    bank = max(math.exp(-((x - 132.0) / 14.0) ** 2), 1.0 - smooth(2.3, 3.2, elevation))
+    free = 1.0 - rock
+    grass = free * (1.0 - bank * 0.8) * 0.92
+    sand = free * 0.85 * bank
+    dirt = max(0.0, 1.0 - rock - grass - sand)
     return normalize((grass, dirt, sand, rock))
 
 
@@ -344,7 +351,14 @@ FIELDS = (
         ('LIMA_RIVER_HALF_WIDTH', 'LIMA_RIVER_PATH'),
         river='LIMA',
     ),
-    Field('callao', 129, callao, lambda h, x, z: paint_coastal_city(h, x, z, ARICA_SITE, False), 'heightmapCodec', ()),
+    Field(
+        'callao',
+        129,
+        callao,
+        lambda h, x, z: paint_coastal_city(h, x, z, ARICA_SITE, False, 0.12),
+        'heightmapCodec',
+        (),
+    ),
     Field('tarapaca', 257, tarapaca, paint_quebrada, 'heightmapCodec', ()),
     Field('vilcabamba', 257, vilcabamba, paint_cloud_forest, 'heightmapCodec', ()),
     Field('mantaro', 257, mantaro, paint_sierra, 'heightmapCodec', ()),
@@ -359,7 +373,8 @@ def quantize_palette(cells: list[tuple[int, int, int, int]]) -> tuple[list[tuple
     """
     histogram: dict[tuple[int, int, int, int], int] = {}
     for cell in cells:
-        key = tuple((channel >> 5) << 5 | 16 for channel in cell)  # 3 bits/channel bucket centre
+        # 3 bits per channel: the bucket centre sits on the 0..255 grid, so pure colours stay pure.
+        key = tuple((channel >> 5) * 255 // 7 for channel in cell)
         histogram[key] = histogram.get(key, 0) + 1  # type: ignore[index]
     palette = [key for key, _ in sorted(histogram.items(), key=lambda item: -item[1])[:PALETTE_SIZE]]
     # Keep every entry a normalized weight set (sum 255), as the authored grids are.
