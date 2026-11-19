@@ -469,6 +469,17 @@ slot is absent (offline / without assets).
   and the huaca are abstractions, never historical photographs.
 - **Review**: no human art-review gate applies to in-engine captures; the ayllu site is procedural.
 
+### Geographic identity Phase 3 evidence (in-engine contact sheet)
+
+- **Location**: `docs/media/geographic-identity-phase3.webp` (1400x788 WebP q80, 97 KB).
+- **Source**: `node scripts/screenshot.mjs p3-<name> --url='/?mission=<id>&intro=0&fog=0&seed=777' --click
+  --wait=7000 --site --no-hud` for `m6b_guerra_civil`, `m_tarapaca`, `m_vilcabamba` and `m_brena`; tiled 2x2
+  with ffmpeg at 700x394 per cell.
+- **Content**: project-owned game renders with the HUD hidden, SwiftShader. Top row Quipaipan and Tarapacá,
+  bottom row Vilcabamba and Breña: the three confusable pairs widened by landform (pampa hills vs deep dry
+  quebrada, narrow steep valley vs broad terraced one).
+- **Review**: no human art-review gate applies to in-engine evidence captures.
+
 ### Geographic identity Phase 2 evidence (in-engine contact sheet)
 
 - **Location**: `docs/media/geographic-identity-phase2.webp` (2000x562 WebP q80, 105 KB).
