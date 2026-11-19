@@ -38,7 +38,7 @@ export const mMiraflores: MissionDef = {
       { text: 'Lima', x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256, kind: 'settlement' },
       { text: 'Miraflores', x: 112 / 256, z: 190 / 256, kind: 'region' },
       { text: 'San Juan', x: 168 / 256, z: 214 / 256, kind: 'region' },
-      { text: 'Chorrillos', x: 196 / 256, z: 236 / 256, kind: 'region' },
+      { text: 'Chorrillos', x: 40 / 256, z: 236 / 256, kind: 'region' },
       { text: 'Camino a la sierra', x: MIRAFLORES_RETREAT.x / 256, z: MIRAFLORES_RETREAT.z / 256, kind: 'region' },
     ],
     base: { x: MIRAFLORES_CAMP.x / 256, z: MIRAFLORES_CAMP.z / 256 },

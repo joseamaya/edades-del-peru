@@ -35,7 +35,7 @@
 | Cifras de tropas y bajas | Aproximado | Perú 20 000–22 000; Chile unos 23 129; bajas dispares. No se muestran como dato duro. |
 | Saqueo de Chorrillos y ocupación de Lima | Documentado | Se narra con sobriedad; no se escenifica. |
 | Quién rompió el armisticio | Debatido | Cada bando culpa al otro; el juego no lo resuelve. |
-| Reductos y plaza de Lima | Abstracción | El `lima_site` colonial se reutiliza en fase `ciudad`; los reductos son fuertes del juego. |
+| Reductos y plaza de Lima | Abstracción | El `miraflores_site` colonial se reutiliza en fase `ciudad`; los reductos son fuertes del juego. |
 
 ## Fuentes
 

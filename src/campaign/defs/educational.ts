@@ -360,7 +360,7 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'su curso hacia Arica.',
     epilogue:
       'La quebrada queda en manos peruanas y se capturan cañones chilenos. La victoria no cambia el curso de la ' +
-      'guerra: la provincia se pierde y el ejército inicia una retirada de 200 km por el desierto hacia Arica.',
+      'guerra: la provincia se pierde y el ejército inicia una retirada por el desierto hacia Arica.',
     sources: [
       { text: 'Batalla de Tarapacá (Wikipedia)', url: 'https://es.wikipedia.org/wiki/Batalla_de_Tarapac%C3%A1' },
       { text: 'Basadre, Historia de la República del Perú' },

@@ -106,6 +106,28 @@ These pairs are effectively the same place to a player who does not read the mis
 | C6 ↔ C11 | 4 | Heightfield and `chanca_site`; only region/vegetation differ |
 | C12 ↔ C13 | 4 | `colonial_site`, Cusco colonial templates |
 
+## Current state (2026-11-19, after phases 1-3)
+
+The audit snapshot above is history. Eight missions now run their own field **and their own paint**, so the
+pairs that scored 5 are no longer the same place even though they still share the site model:
+
+| Pair | Audit | Now | What separates them |
+| --- | ---: | ---: | --- |
+| C9 ↔ C14 (Lima 1535 / 1821) | 5 | **4** | different heightfield and paint (oasis city vs 1821 river crossing); same site model and coast |
+| C9 ↔ C19 (Lima 1535 / Miraflores) | 5 | **4** | different heightfield (redoubt line and headland); same site model |
+| C14 ↔ C19 (1821 / Miraflores) | 5 | **4** | different relief and paint; same coast family |
+| C16 ↔ C17 (Callao / Tarapacá) | 5 | **3** | share `arica_site`, but Callao is `central_coast` and Tarapacá `south_coast`, with their own fields |
+| C16 ↔ C18 (Callao / Arica) | 5 | **3** | share `arica_site`, different region/palette and Callao has its own bay field |
+| C17 ↔ C18 (Tarapacá / Arica) | 5 | **4** | dry quebrada vs coastal terrace |
+| C8 ↔ C10 (Quipaipan / Cusco 1536) | 5 | **4** | pampa vs basin with Sacsayhuamán |
+| C15 ↔ C20 (Independence / Breña) | 5 | **4** | Mantaro valley and dry wash vs the Junín plain |
+| C6 ↔ C11 (Yahuar Pampa / Vilcabamba) | 4 | **3** | only the `chanca_site` model is shared: Vilcabamba has its own field and is `amazon` vs `high_andes` |
+
+Nothing scores 5 any more. The remaining 4s keep the same field family plus the same region/palette; the 3s share only the site model. By the scale above, 4 is
+"same site model plus the same region/palette, one major layer differs". By the scale above, 4 is
+"same site model plus the same region/palette, one major layer differs" — which is exactly the state after the
+heightfield and paint splits.
+
 ## Same-topography groups
 
 | Topography | Missions |
