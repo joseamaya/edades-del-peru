@@ -173,8 +173,9 @@ terrain, water, vegetation and architecture and ignoring the in-world labels: **
 - Near misses: Lima 1821 ↔ Miraflores are separated only by the urban grid vs the tent/redoubt camp, and
   Tarapacá ↔ Callao by cultivation rows vs fortress geometry.
 
-The first round, with a different reviewer and the pre-Phase-3 fields, scored 8/8; the drop is the honest signal
-that the *pampa/valley* pair needs landform, not palette or labels.
+The first round (a different reviewer, before the Phase 3 relief work) scored 8/8. Vilcabamba's field did not
+change between the rounds, which is exactly why the miss points at it: the *pampa/valley* pair still needs the
+landform work that has not shipped.
 
 ### Pilot A — `m_cusco_1536` (high Andes, urban siege)
 
