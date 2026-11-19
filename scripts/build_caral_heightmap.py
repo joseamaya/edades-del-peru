@@ -20,6 +20,8 @@ import base64
 import math
 from pathlib import Path
 
+from reencode_heightmaps import reencode_file
+
 SIZE = 256
 N = SIZE + 1
 CITY_OFFSET_X = 64.0
@@ -320,3 +322,5 @@ OUT.write_text(
     encoding='utf-8',
 )
 print(f'wrote {OUT} ({len(b64)} base64 chars, {len(values)} samples)')
+
+reencode_file(OUT)

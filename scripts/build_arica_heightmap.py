@@ -7,6 +7,8 @@ import base64
 import math
 from pathlib import Path
 
+from reencode_heightmaps import reencode_file
+
 SIZE = 256
 # The composition was authored for the former 192 m map. Sample it in that frame (4/3 larger in metres)
 # so the 256 m transect keeps the same sea → terrace → battery → ridge sequence.
@@ -137,3 +139,5 @@ OUT.write_text(
     encoding='utf-8',
 )
 print(f'wrote {OUT} ({len(b64)} base64 chars, {len(values)} samples, {len(ground_values)} ground bytes)')
+
+reencode_file(OUT)

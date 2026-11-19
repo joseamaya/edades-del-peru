@@ -12,6 +12,8 @@ import base64
 import math
 from pathlib import Path
 
+from reencode_heightmaps import reencode_file
+
 SIZE = 256
 N = SIZE // 2 + 1
 GROUND_SIZE = 128
@@ -188,3 +190,5 @@ OUT.write_text(
     encoding='utf-8',
 )
 print(f'wrote {OUT} ({len(b64)} height chars, {len(ground_b64)} ground chars, {len(values)} samples)')
+
+reencode_file(OUT)

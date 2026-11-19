@@ -7,6 +7,8 @@ import base64
 import math
 from pathlib import Path
 
+from reencode_heightmaps import reencode_file
+
 SIZE = 256
 # The composition was authored for the former 192 m map; sample it 4/3 larger on the 256 m transect.
 SOURCE_SIZE = 192
@@ -134,3 +136,5 @@ OUT.write_text(
     encoding='utf-8',
 )
 print(f'wrote {OUT} ({len(b64)} base64 chars, {len(values)} samples)')
+
+reencode_file(OUT)
