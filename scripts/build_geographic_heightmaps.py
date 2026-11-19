@@ -52,9 +52,10 @@ def carve_river(h: float, x: float, z: float, bridge_x: float) -> float:
     """Cut the Rímac into the finished landform (never raising it) with the bridge bar left wadeable.
 
     Applied last, as scripts/build_lima_heightmap.py does, so the wet channel follows the whole
-    inherited `LIMA_RIVER_PATH` instead of being filled back in by the hills that follow it.
+    inherited `LIMA_RIVER_PATH` instead of being filled back in by the hills that follow it. The
+    mask reaches the shore (x 28) so the mouth joins the sea instead of stopping a few metres inland.
     """
-    mask = (1.0 - smooth(2.5, 6.5, abs(z - rimac_z(x)))) * smooth(38.0, 48.0, x)
+    mask = (1.0 - smooth(2.5, 6.5, abs(z - rimac_z(x)))) * smooth(28.0, 40.0, x)
     bed = 1.0 + (1.0 - smooth(9.0, 16.0, abs(x - bridge_x))) * 2.3
     return h * (1.0 - mask) + min(h, bed) * mask
 
@@ -174,8 +175,8 @@ def callao(x: float, z: float) -> float:
     h = 3.5 + 0.28 * noise(x, z, 2.6)
     bay = 1.0 - smooth(26.0, 48.0, x + (z - 96) * 0.18)
     h = h * (1.0 - bay) + 0.4 * bay
-    # San Lorenzo: the low island that shelters the bay.
-    island = 1.0 - smooth(7.0, 13.0, math.hypot((x - 30) / 11, (z - 122) / 26))
+    # San Lorenzo: the low island that shelters the bay (un-normalised metres, so it stays an islet).
+    island = 1.0 - smooth(9.0, 14.0, math.hypot(x - 30, z - 122))
     h = h * (1.0 - island) + 2.9 * island
     # The Real Felipe terrace sits east of the bay, on the same pad elevation as the Arica fort.
     terrace = smooth(150.0, 170.0, x) * (1.0 - smooth(206.0, 222.0, x))

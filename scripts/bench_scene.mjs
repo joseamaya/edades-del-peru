@@ -124,8 +124,8 @@ const BUDGETS = {
   // Cusco 1536 opening: the city, the camp and the highland kit. Measured 739,902 / 582 with 87,900 / 12 kit.
   m_cusco_1536: { sceneTriangles: 780_000, sceneDrawCalls: 1_000, kitTriangles: 100_000, kitDrawCalls: 14 },
   // Breña opening: the Mantaro valley, the communities and the highland kit. The mission heightfield
-  // reshapes the scatter into 14 species objects (one carries two materials): measured 639,435-660,961 /
-  // 619 with 34,782-56,308 / 15 kit.
+  // reshapes the scatter into 14 species objects (one carries two materials): measured 676k-682k / 598
+  // with 44k-50k / 15 kit.
   m_brena: { sceneTriangles: 740_000, sceneDrawCalls: 900, kitTriangles: 100_000, kitDrawCalls: 16 },
   // Phase 1 mission-scoped heightfields: each reused site now has its own relief, so its opening is measured
   // on its own field instead of inheriting the base site's cap. The kit caps keep the same generous headroom

@@ -471,7 +471,7 @@ slot is absent (offline / without assets).
 
 ### Geographic identity Phase 1 evidence (in-engine contact sheet)
 
-- **Location**: `docs/media/geographic-identity-phase1.webp` (2000x562 WebP q80, 101 KB).
+- **Location**: `docs/media/geographic-identity-phase1.webp` (2000x562 WebP q80, 100 KB).
 - **Source**: `node scripts/screenshot.mjs phase1-<id> --url='/?mission=<id>&intro=0&fog=0&seed=777' --click
 --wait=7000 --site` for all seven Phase 1 missions (`m6b_guerra_civil`, `m_lima_1821`, `m_miraflores`,
   `m_real_felipe`, `m_tarapaca`, `m_vilcabamba`, `m_brena`); tiled 4 + 3 (centred) with ffmpeg at 500x281 per

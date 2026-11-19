@@ -13,27 +13,27 @@ interface Case {
   override: AuthoredHeightField;
 }
 
-const CASES: Array<{ id: string; size: number; hasRiver: boolean }> = [
-  { id: 'm6b_guerra_civil', size: 257, hasRiver: false },
-  { id: 'm_lima_1821', size: 129, hasRiver: true },
-  { id: 'm_miraflores', size: 129, hasRiver: true },
-  { id: 'm_real_felipe', size: 129, hasRiver: false },
-  { id: 'm_tarapaca', size: 257, hasRiver: false },
-  { id: 'm_vilcabamba', size: 257, hasRiver: false },
-  { id: 'm_brena', size: 257, hasRiver: false },
+const CASES: Array<{ id: string; size: number; hasRiver: boolean; keepsWater: boolean }> = [
+  { id: 'm6b_guerra_civil', size: 257, hasRiver: false, keepsWater: false },
+  { id: 'm_lima_1821', size: 129, hasRiver: true, keepsWater: true },
+  { id: 'm_miraflores', size: 129, hasRiver: true, keepsWater: true },
+  { id: 'm_real_felipe', size: 129, hasRiver: false, keepsWater: true },
+  { id: 'm_tarapaca', size: 257, hasRiver: false, keepsWater: false },
+  { id: 'm_vilcabamba', size: 257, hasRiver: false, keepsWater: false },
+  { id: 'm_brena', size: 257, hasRiver: false, keepsWater: false },
 ];
 
 const SAMPLE_STEPS = 65;
 
 const RING: Array<[number, number]> = [
-  [10, 0],
-  [-10, 0],
-  [0, 10],
-  [0, -10],
-  [7, 7],
-  [-7, 7],
-  [7, -7],
-  [-7, -7],
+  [12, 0],
+  [-12, 0],
+  [0, 12],
+  [0, -12],
+  [8.5, 8.5],
+  [-8.5, 8.5],
+  [8.5, -8.5],
+  [-8.5, -8.5],
 ];
 
 function countWater(field: AuthoredHeightField): number {
@@ -138,13 +138,18 @@ describe('geographic phase 1 heightfields', () => {
     }
   });
 
-  it('does not flood a mission the base field left dry', () => {
-    for (const { id } of CASES) {
+  it('keeps the coast missions wet and the inland missions dry', () => {
+    for (const { id, keepsWater } of CASES) {
       const { base, override } = resolve(id);
-      const dryBase = countWater(base) === 0;
-      if (!dryBase || override.river) continue;
-      // A carved channel below the waterline with no river/ford metadata splits the map in two.
-      expect(countWater(override), id).toBe(0);
+      const water = countWater(override);
+      if (keepsWater) {
+        // The bay or sea must survive the reshape: a lost coastline is as wrong as a new lake.
+        expect(countWater(base), `${id} base`).toBeGreaterThan(0);
+        expect(water, id).toBeGreaterThan(0);
+      } else if (countWater(base) === 0 && !override.river) {
+        // A carved channel below the waterline with no river/ford metadata splits the map in two.
+        expect(water, id).toBe(0);
+      }
     }
   });
 
