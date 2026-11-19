@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
+import { QUIPAIPAN_HEIGHTFIELD } from '../../../model/defs/quipaipanHeightmap';
 import type { MissionDef } from '../../types';
 import { CUSCO_INCA_MAP_SIZE, cuscoIncaLength } from '../../../model/defs/cuscoIncaSite';
 
@@ -60,6 +61,7 @@ export const m6bGuerraCivil: MissionDef = {
     site: {
       id: 'cusco_inca_site',
       y: 5,
+      heightField: QUIPAIPAN_HEIGHTFIELD,
       focus: { x: 0.65, z: 0.68 },
       keepout: [{ x: 0.65, z: 0.68, rx: 0.09, rz: 0.08 }],
       buildKeepout: [{ x: 0.65, z: 0.68, rx: 0.08, rz: 0.07 }],

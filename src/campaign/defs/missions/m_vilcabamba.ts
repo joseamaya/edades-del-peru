@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
+import { VILCABAMBA_HEIGHTFIELD } from '../../../model/defs/vilcabambaHeightmap';
 import type { MissionDef } from '../../types';
 
 // Vilcabamba 1572: Huayna Pucará, the burning refuge and the escape route to the lower Urubamba.
@@ -51,6 +52,7 @@ export const mVilcabamba: MissionDef = {
     site: {
       id: 'vilcabamba_site',
       y: 5,
+      heightField: VILCABAMBA_HEIGHTFIELD,
       focus: { x: VILCABAMBA_FORT.x / 256, z: VILCABAMBA_FORT.z / 256 },
       keepout: [{ x: VILCABAMBA_FORT.x / 256, z: VILCABAMBA_FORT.z / 256, rx: 0.075, rz: 0.07 }],
       buildKeepout: [{ x: VILCABAMBA_FORT.x / 256, z: VILCABAMBA_FORT.z / 256, rx: 0.065, rz: 0.06 }],

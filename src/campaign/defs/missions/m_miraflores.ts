@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
+import { MIRAFLORES_HEIGHTFIELD } from '../../../model/defs/mirafloresHeightmap';
 import type { MissionDef } from '../../types';
 import { LIMA_SITE_ORIGIN } from '../../../model/defs/sites';
 
@@ -54,6 +55,7 @@ export const mMiraflores: MissionDef = {
     site: {
       id: 'miraflores_site',
       y: 5.6,
+      heightField: MIRAFLORES_HEIGHTFIELD,
       phase: 'ciudad',
       focus: { x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256 },
       keepout: [{ x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256, rx: 0.06, rz: 0.05 }],

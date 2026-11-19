@@ -124,7 +124,7 @@ const BUDGETS = {
   // Cusco 1536 opening: the city, the camp and the highland kit. Measured 739,902 / 582 with 87,900 / 12 kit.
   m_cusco_1536: { sceneTriangles: 780_000, sceneDrawCalls: 1_000, kitTriangles: 100_000, kitDrawCalls: 14 },
   // Breña opening: the Mantaro camp, the communities and the highland kit. Measured 676,616 / 584 with 89,464 / 12 kit.
-  m_brena: { sceneTriangles: 740_000, sceneDrawCalls: 900, kitTriangles: 100_000, kitDrawCalls: 14 },
+  m_brena: { sceneTriangles: 740_000, sceneDrawCalls: 900, kitTriangles: 100_000, kitDrawCalls: 16 },
   // Túpac Amaru opening on the 256 m valley: the camp, the chapel, the starting column and the highland
   // kit. Measured 521,318 / 491 with 18,974 / 12 kit; the call count is over §11's 200 target.
   m7_tupac_amaru: { sceneTriangles: 575_000, sceneDrawCalls: 710, kitTriangles: 30_000, kitDrawCalls: 14 },

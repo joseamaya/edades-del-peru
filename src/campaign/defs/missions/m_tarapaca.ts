@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
+import { TARAPACA_HEIGHTFIELD } from '../../../model/defs/tarapacaHeightmap';
 import type { MissionDef } from '../../types';
 
 // Tarapacá: the village in the quebrada, the heights held by the Chilean columns and the Pachica road.
@@ -52,6 +53,7 @@ export const mTarapaca: MissionDef = {
     site: {
       id: 'tarapaca_site',
       y: 4,
+      heightField: TARAPACA_HEIGHTFIELD,
       focus: { x: TARAPACA_SITE.x / 256, z: TARAPACA_SITE.z / 256 },
       keepout: [{ x: TARAPACA_SITE.x / 256, z: TARAPACA_SITE.z / 256, rx: 0.08, rz: 0.07 }],
       buildKeepout: [{ x: TARAPACA_SITE.x / 256, z: TARAPACA_SITE.z / 256, rx: 0.07, rz: 0.06 }],

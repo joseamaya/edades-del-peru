@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
+import { CALLAO_HEIGHTFIELD } from '../../../model/defs/callaoHeightmap';
 import type { MissionDef } from '../../types';
 
 // The Callao fortress and the patriot siege camp. Normalized coordinates over the 256 m map.
@@ -51,6 +52,7 @@ export const mRealFelipe: MissionDef = {
     site: {
       id: 'real_felipe_site',
       y: 5,
+      heightField: CALLAO_HEIGHTFIELD,
       focus: REAL_FELIPE,
       keepout: [{ x: REAL_FELIPE.x, z: REAL_FELIPE.z, rx: 0.075, rz: 0.075 }],
       buildKeepout: [{ x: REAL_FELIPE.x, z: REAL_FELIPE.z, rx: 0.065, rz: 0.065 }],

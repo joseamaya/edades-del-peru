@@ -1,5 +1,6 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import { highValleyVegetation } from '../../../model/defs/profiles';
+import { MANTARO_HEIGHTFIELD } from '../../../model/defs/mantaroHeightmap';
 import type { MissionDef } from '../../types';
 
 // La Breña: the Mantaro communities, the ambush passes and the road to Huamachuco/Ayacucho.
@@ -56,6 +57,7 @@ export const mBrena: MissionDef = {
     site: {
       id: 'brena_site',
       y: 5,
+      heightField: MANTARO_HEIGHTFIELD,
       focus: BRENA_HUAMACHUCO,
       keepout: [{ x: BRENA_HUAMACHUCO.x, z: BRENA_HUAMACHUCO.z, rx: 0.075, rz: 0.075 }],
       buildKeepout: [{ x: BRENA_HUAMACHUCO.x, z: BRENA_HUAMACHUCO.z, rx: 0.065, rz: 0.065 }],

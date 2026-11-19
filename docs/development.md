@@ -137,6 +137,10 @@ Definition of Done and the building audit see
   16-bit quantized millimetres, bit for bit. Every `scripts/build_*_heightmap.py` calls
   `reencode_file` after writing, and `yarn art:heightmaps` re-runs the migration for a new file. The migration
   is idempotent and is pinned by `tests/heightmap-codec.test.ts`.
+- **Mission-scoped heightfields**: a mission can override its authored site's heightfield with
+  `MissionSite.heightField`; the site model, anchor and collision stay shared while the terrain geometry is
+  mission-specific. This is the Phase 1 split seam, applied to Quipaipan, Lima 1821, Miraflores, Callao,
+  Tarapacá, Vilcabamba and Mantaro.
 - **Post-processing & the cinematic look**: `src/rendering/PostFX.ts` chains Render → Bloom →
   chromatic aberration → vignette → `OutputPass` → **colour grading** → FXAA. `settings.cinematic` (default
   **on**, `src/core/Config.ts`) enables the whole set and `settings.quality` (`high|medium|low`) tunes

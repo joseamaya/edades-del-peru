@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
+import { LIMA1821_HEIGHTFIELD } from '../../../model/defs/lima1821Heightmap';
 import type { MissionDef } from '../../types';
 import { LIMA_SITE_ORIGIN } from '../../../model/defs/sites';
 
@@ -54,6 +55,7 @@ export const mLima1821: MissionDef = {
     site: {
       id: 'lima_site',
       y: 5.6,
+      heightField: LIMA1821_HEIGHTFIELD,
       phase: 'ciudad',
       focus: { x: LIMA_1821_CITY.x / 256, z: LIMA_1821_CITY.z / 256 },
       keepout: [{ x: LIMA_1821_CITY.x / 256, z: LIMA_1821_CITY.z / 256, rx: 0.06, rz: 0.05 }],
