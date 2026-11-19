@@ -151,8 +151,8 @@ that field's relief instead of inheriting another mission's painting. The paint 
 128 x 128 RGBA grids are stored as 4-bit palette indices (`src/model/defs/groundCodec.ts`), and the dead
 `cusco_inca_site` field was removed, so `dist` went from 24.83 to 24.74 MB. The paint keeps the thresholds the game reads: groves still grow where `grass > 0.6` and `treeless` still
 fires on `sand > 0.45` / `rock > 0.6`, pinned per mission in `tests/geographic-heightfields.test.ts` (Lima
-1821/Miraflores keep the irrigated oasis, Callao and Tarapacá stay as bare as their base fields). A blind
-identification test over the eight fields scored **8/8**, with the caveats recorded below.
+1821/Miraflores keep the irrigated oasis, Callao and Tarapacá stay as bare as their base fields). The first blind round scored 8/8 and the Phase 4 round scored 6/8; both are recorded below, and the
+difference is the honest measure of what is still missing.
 
 Still open in this phase: Lima 1535's city-grid composition, Vilcabamba's denser cloud-forest vegetation
 (procedural, no new assets), and the remaining composition work; the formal blind protocol with a larger
