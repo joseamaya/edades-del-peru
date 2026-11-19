@@ -161,22 +161,20 @@ sample belongs to Phase 4.
 The three pilots validate the approach before the rest of the catalogue is touched. They represent the
 three hardest environments and the three highest-leverage reuse chains.
 
-### Blind test (2026-11-19, eight fields)
+### Blind test (2026-11-19, eight fields, second round)
 
-An independent reviewer was shown the eight HUD-less site captures without their mission ids and asked to map
-each to one of eight missions from a short geography brief: **8/8 correct**.
+An independent reviewer mapped eight HUD-less site captures to eight missions from a geography brief, judging
+terrain, water, vegetation and architecture and ignoring the in-world labels: **6 of 8**.
 
-The reviewer's caveats, kept here because they scope the result:
+- Correct: Cusco 1536, Tarapacá, Lima 1821, Breña, Callao, Miraflores.
+- Confused: **Vilcabamba ↔ Quipaipan**. Both frame an open green plain with a central stone platform, because the
+  Vilcabamba relief that would show the valley was reverted in Phase 3 (it broke walkability). This is the
+  clearest remaining gap and the reason the next slice must reshape that valley.
+- Near misses: Lima 1821 ↔ Miraflores are separated only by the urban grid vs the tent/redoubt camp, and
+  Tarapacá ↔ Callao by cultivation rows vs fortress geometry.
 
-- Lima 1821 vs Miraflores were separated by the urban grid vs the redoubt line and headland; a crop without
-  houses would be indistinguishable.
-- Vilcabamba vs Breña both read as flat green and treed; the brighter grass and thinner trees vs the town plaza
-  decided it.
-- Tarapacá vs Quipaipan differ mostly by the ochre vs green-olive ground and the dry wash.
-- Cusco 1536 vs Quipaipan both centre on a stepped stone platform; the city terrace below the ridge decided it.
-
-So the fields are distinguishable, but three pairs still lean on colour and on the site model rather than on
-landform alone. Phase 3/4 should widen those differences (relief amplitude and composition), not just the palette.
+The first round, with a different reviewer and the pre-Phase-3 fields, scored 8/8; the drop is the honest signal
+that the *pampa/valley* pair needs landform, not palette or labels.
 
 ### Pilot A — `m_cusco_1536` (high Andes, urban siege)
 
@@ -298,6 +296,14 @@ heightfield pass; they finish the mission around the new field.
 ---
 
 ## 7. Phase 4 — Validation and close
+
+**Status (2026-11-19):** first pass done. Blind test over eight fields: **6/8**, the miss being
+Vilcabamba↔Quipaipan because the valley relief was reverted in Phase 3. Historical/geographical audit of
+Tarapacá, Real Felipe and Miraflores: no invented facts, four imprecisions fixed (Tarapacá's uncited "200 km",
+Real Felipe's "civilians in Callao" where the source says the fortress, Miraflores' Chorrillos label on the
+inland side, and the stale `lima_site` reference in `docs/historia/campanas/miraflores.md`). The similarity
+matrix gained a current-state section with no pair left at 5. Still open: the grayscale pass and the full
+`bench:check` sweep.
 
 **Complexity:** S · **Depends on:** all pilots and at least one mission per family
 

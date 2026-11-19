@@ -19,7 +19,7 @@ export const mTarapaca: MissionDef = {
     'Tras la campaña naval, el ejército peruano se repliega en Tarapacá. El 27 de noviembre de 1879, tres columnas chilenas atacan el pueblo y las alturas de la quebrada de San Lorenzo.\n' +
     'La resistencia peruana, sin caballería ni artillería al inicio, recibe refuerzos desde Pachica y captura piezas chilenas. La victoria táctica no cambia el curso de la guerra: la provincia se pierde y el ejército se retira a Arica.',
   victory:
-    'La quebrada queda en manos peruanas y se capturan cañones chilenos. La victoria es táctica: la provincia se pierde y la retirada de 200 km por el desierto lleva al ejército hacia Arica.',
+    'La quebrada queda en manos peruanas y se capturan cañones chilenos. La victoria es táctica: la provincia se pierde y la retirada por el desierto lleva al ejército hacia Arica.',
   defeat:
     'Las columnas chilenas toman el pueblo y las alturas. La resistencia se deshace en la quebrada y la retirada hacia Arica se vuelve una huida.',
   period: HistoricalPeriod.REPUBLIC,
@@ -110,7 +110,7 @@ export const mTarapaca: MissionDef = {
     {
       kicker: 'VICTORIA TÁCTICA · 1879',
       title: 'La retirada',
-      text: 'El Perú captura cañones y conserva el campo, pero la provincia se pierde. El ejército inicia una retirada de 200 km por el desierto hacia Arica.',
+      text: 'El Perú captura cañones y conserva el campo, pero la provincia se pierde. El ejército inicia la retirada por el desierto hacia Arica.',
       seconds: 10,
       source: 'docs/historia/campanas/tarapaca.md',
       image: 'media/tarapaca/intro-retirada.webp',

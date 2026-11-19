@@ -16,7 +16,7 @@ export const mRealFelipe: MissionDef = {
   subtitle: 'Callao · 1824–1826',
   history:
     'En febrero de 1824 la guarnición del Callao se sublevó y entregó la plaza a los realistas. José Ramón Rodil asumió el mando del Real Felipe y, tras Ayacucho, se negó a acogerse a la capitulación. El general Bartolomé Salom sitió la fortaleza por tierra y la escuadra patriota la bloqueó por mar.\n' +
-    'Miles de civiles se refugiaron en el Callao y la escasez de víveres provocó una crisis humanitaria. Rodil resistió hasta enero de 1826, cuando capituló y salió con honores: fue el último bastión español en el Perú.',
+    'Miles de civiles se refugiaron en la fortaleza y la escasez de víveres provocó una crisis humanitaria. Rodil resistió hasta enero de 1826, cuando capituló y salió con honores: fue el último bastión español en el Perú.',
   victory:
     'El Real Felipe capitula en enero de 1826. Rodil sale con honores y la guerra de independencia termina en el Perú; la resistencia realista ya no tiene base en el país.',
   defeat:
