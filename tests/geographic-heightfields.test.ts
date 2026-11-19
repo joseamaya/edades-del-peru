@@ -3,6 +3,7 @@ import { MISSIONS } from '../src/campaign/defs/campaign';
 import { AUTHORED_SITES, getAuthoredSite } from '../src/model/defs/sites';
 import { sampleAuthoredHeight } from '../src/model/defs/authoredTerrain';
 import { WATER_LEVEL, resolveMapProfile } from '../src/model/defs/profiles';
+import { MAX_WALKABLE_SLOPE } from '../src/game/Pathfinding';
 import { TerrainData } from '../src/sim/TerrainData';
 import type { MissionDef } from '../src/campaign/types';
 import type { AuthoredHeightField } from '../src/model/defs/authoredTerrain';
@@ -78,6 +79,48 @@ function resolve(id: string): Case {
   const override = mission.layout?.site?.heightField;
   if (!override) throw new Error(`missing heightfield for ${id}`);
   return { mission, override };
+}
+
+function walkableComponents(field: AuthoredHeightField): number[] {
+  const size = field.worldSize;
+  const blocked = (x: number, z: number): boolean => {
+    const dx = (sampleAuthoredHeight(field, x + 1, z) - sampleAuthoredHeight(field, x - 1, z)) / 2;
+    const dz = (sampleAuthoredHeight(field, x, z + 1) - sampleAuthoredHeight(field, x, z - 1)) / 2;
+    return Math.hypot(dx, dz) > MAX_WALKABLE_SLOPE;
+  };
+  const open = new Uint8Array(size * size);
+  for (let z = 0; z < size; z++) {
+    for (let x = 0; x < size; x++) open[z * size + x] = blocked(x, z) ? 0 : 1;
+  }
+  const seen = new Uint8Array(size * size);
+  const sizes: number[] = [];
+  const stack: number[] = [];
+  for (let i = 0; i < open.length; i++) {
+    if (!open[i] || seen[i]) continue;
+    stack.length = 0;
+    stack.push(i);
+    seen[i] = 1;
+    let count = 0;
+    while (stack.length) {
+      const cell = stack.pop()!;
+      count++;
+      const cx = cell % size;
+      const cz = (cell - cx) / size;
+      for (let dz = -1; dz <= 1; dz++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = cx + dx;
+          const nz = cz + dz;
+          if (nx < 0 || nz < 0 || nx >= size || nz >= size) continue;
+          const ni = nz * size + nx;
+          if (!open[ni] || seen[ni]) continue;
+          seen[ni] = 1;
+          stack.push(ni);
+        }
+      }
+    }
+    sizes.push(count);
+  }
+  return sizes.sort((a, b) => b - a);
 }
 
 function missionProfile(mission: MissionDef) {
@@ -197,6 +240,19 @@ describe('mission-scoped heightfields', () => {
       if (groves) expect(green, `${id} grove-capable cells`).toBeGreaterThan(2000);
       else expect(green, `${id} must stay as bare as its base field`).toBe(0);
       if (bare) expect(countWeight(override, 3, 0.6), `${id} treeless rock`).toBeGreaterThan(200);
+    }
+  });
+
+  it('keeps the steep missions reachable on the path grid', () => {
+    // The steep fields must not fence areas off: the pathfinder blocks a 1 m cell above
+    // MAX_WALKABLE_SLOPE, so a sharp ridge can leave whole pockets unreachable (it did once).
+    for (const id of ['m_vilcabamba', 'm_brena', 'm_tarapaca', 'm6b_guerra_civil']) {
+      const { override } = resolve(id);
+      const cells = walkableComponents(override);
+      const main = Math.max(...cells);
+      const total = cells.reduce((sum, n) => sum + n, 0);
+      expect(cells.length, `${id} walkable components`).toBeLessThanOrEqual(3);
+      expect(main / total, `${id} share in the main component`).toBeGreaterThan(0.95);
     }
   });
 

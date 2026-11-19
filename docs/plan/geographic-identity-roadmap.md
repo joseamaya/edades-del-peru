@@ -169,7 +169,7 @@ terrain, water, vegetation and architecture and ignoring the in-world labels: **
 - Correct: Cusco 1536, Tarapacá, Lima 1821, Breña, Callao, Miraflores.
 - Confused: **Vilcabamba ↔ Quipaipan**. Both frame an open green plain with a central stone platform, because the
   Vilcabamba relief that would show the valley was reverted in Phase 3 (it broke walkability). This is the
-  clearest remaining gap and the reason the next slice must reshape that valley.
+  clearest remaining gap and the reason the next slice reshaped that valley.
 - Near misses: Lima 1821 ↔ Miraflores are separated only by the urban grid vs the tent/redoubt camp, and
   Tarapacá ↔ Callao by cultivation rows vs fortress geometry.
 
@@ -251,11 +251,11 @@ stay as they were, because the fix broke walkability or belongs to composition:
 | Pair | Before (mean |Δh|) | Now | Outcome |
 | --- | ---: | ---: | --- |
 | Tarapacá ↔ Quipaipan | 0.91 m | **1.75 m** | taller pampa hills and border ridges; a narrower, deeper dry quebrada with a taller stepped bank |
-| Vilcabamba ↔ Breña | 3.67 m | 3.67 m | **reverted**: the steeper valley left ~26 % of the cells behind slope-blocked pockets (multiple walkable components); it needs a relief shape that stays connected |
+| Vilcabamba ↔ Breña | 3.67 m | 3.57 m | valley walls shipped as **broad, long-wavelength slopes**: one walkable component (100 % of open cells), grass 9,861 cells, and the fort now sits on a spur that visibly falls away |
 | Lima 1821 ↔ Miraflores | 1.57 m | 1.57 m | unchanged by design (shared site anchor); the difference is the redoubt line and the headland, so it belongs to composition |
 
-The next slice must shape Vilcabamba's relief around `MAX_WALKABLE_SLOPE` (broad slopes, no sharp pockets) and
-add a walkability assertion beside the water test. Evidence: [`geographic-identity-phase3.webp`](../media/geographic-identity-phase3.webp). The remaining families
+The next slice follows the walkability rule the Vilcabamba fix established: a BFS on the 1 m path grid at
+`MAX_WALKABLE_SLOPE`, requiring one component with ≥95 % of the open cells (`tests/geographic-heightfields.test.ts`). Evidence: [`geographic-identity-phase3.webp`](../media/geographic-identity-phase3.webp). The remaining families
 (recintos, setpieces and Lima 1821's redoubts) follow below.
 
 Phase 1 created the geometry foundation; Phase 3 completes the mission-level composition, vegetation,
