@@ -97,6 +97,10 @@ and schedule the m6b/m8 late-view optimization as **B13**. Re-run `yarn bench:si
 - A public skirmish UI, multiplayer or a map editor.
 - New runtime dependencies or MCP servers.
 
+The geographic-identity audit and its ordered remediation are in
+[`./geographic-identity-roadmap.md`](./geographic-identity-roadmap.md); it is a proposal and does not change
+the milestones above until it is approved.
+
 ## Updating this roadmap
 
 The project author updates this document when a milestone closes or the active phase changes. A model-mission

@@ -18,6 +18,7 @@ The map is deliberately a router, not a summary. Detailed rules live in the docu
 | Model something in Blender or retouch in GIMP | [`design/asset-pipeline.md`](./design/asset-pipeline.md), then [`design/authoring-tools.md`](./design/authoring-tools.md) and [`design/blender-art.md`](./design/blender-art.md) |
 | Design a named character or audit the cast | [`design/characters.md`](./design/characters.md) |
 | Set or audit the visual direction | [`design/art-direction.md`](./design/art-direction.md), then [`design/tambotoco-art-pilot.md`](./design/tambotoco-art-pilot.md) |
+| Audit or design the geography of the missions | [`design/mission-geographic-identity.md`](./design/mission-geographic-identity.md), then [`design/geographic-families.md`](./design/geographic-families.md) |
 | Understand the engine, subsystems or a code trap | [`development.md`](./development.md) |
 | Contribute code, docs or tests | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) and [`../AGENTS.md`](../AGENTS.md) |
 | Check an asset licence or provenance | [`../PROVENANCE.md`](../PROVENANCE.md) |
@@ -76,6 +77,7 @@ the historical dossiers. The ADR records themselves are **Accepted** and immutab
 | [`DECISIONS/README.md`](./DECISIONS/README.md) | Index of every ADR and its status | Living |
 | [`plan/ROADMAP.md`](./plan/ROADMAP.md) | Current milestones, work order, risks and non-goals | Living |
 | [`plan/backlog.md`](./plan/backlog.md) | Ordered work queue and its definition of done | Living |
+| [`plan/geographic-identity-roadmap.md`](./plan/geographic-identity-roadmap.md) | Geographic-identity pilots, phases, dependencies, budgets and definition of done | Proposal |
 
 The index lists each ADR record (0001–0007 today) and its status. The records are immutable; only the index
 and new records change.
@@ -91,6 +93,9 @@ and new records change.
 | [`design/asset-pipeline.md`](./design/asset-pipeline.md) | Start-here route for Blender/GIMP assets, ingest commands, provenance and review | Living |
 | [`design/campaign-redesign.md`](./design/campaign-redesign.md) | Approved structure for the Tahuantinsuyo, Virreinato, Independencia and República chapters, including the four-mission launch catalogue and the 13-mission expansion | Approved (partially implemented) |
 | [`design/art-direction.md`](./design/art-direction.md) | Stylized-realism rules: camera, palette, characters, architecture, landscape, light, budgets (Tambotoco reference) | Living |
+| [`design/mission-geographic-identity.md`](./design/mission-geographic-identity.md) | Audit of the 20 mission landscapes, the 20 geographic proposals, acceptance criteria and capture protocol | Proposal |
+| [`design/geographic-families.md`](./design/geographic-families.md) | Geographic families, shared components, reuse rules and the minimal architecture for mission landscapes | Proposal |
+| [`design/geographic-similarity-matrix.md`](./design/geographic-similarity-matrix.md) | Pairwise similarity of the 20 missions and the reuse clusters behind it | Snapshot |
 | [`design/tambotoco-art-pilot.md`](./design/tambotoco-art-pilot.md) | Pilot audit, reference scene, asset inventory, size ledger, backlog and staged plan | Living |
 | [`design/visual-language.md`](./design/visual-language.md) | Silhouettes, materials, emblems, rigged models and set-pieces | Living |
 | [`design/cultural-landscape.md`](./design/cultural-landscape.md) | Cultural-landscape layer: data model, rendering and integration | Living |
