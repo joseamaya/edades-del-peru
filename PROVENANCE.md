@@ -469,6 +469,22 @@ slot is absent (offline / without assets).
   and the huaca are abstractions, never historical photographs.
 - **Review**: no human art-review gate applies to in-engine captures; the ayllu site is procedural.
 
+### Geographic identity close-out evidence (in-engine contact sheets)
+
+- **Locations**: `docs/media/geographic-identity-closeout.webp` (2100x788 WebP q78, 102 KB) and
+  `docs/media/geographic-identity-closeout-before-after.webp` (2100x788 WebP q78, 91 KB).
+- **Source**: `yarn shot blind-<id> --url="/?mission=<id>&seed=777&fog=0&intro=0" --click --site --height=78
+  --no-hud --no-labels --wait=6000` for `m_vilcabamba`, `m6b_guerra_civil`, `m_lima_1821`, `m_miraflores`,
+  `m_tarapaca` and `m_real_felipe`; tiled 3x2 with Pillow at 700x394 per cell. The before row reuses the
+  `audit-*` captures taken with the same camera before the slice (they still carry the in-world place names,
+  because `--no-labels` did not exist yet).
+- **Content**: project-owned game renders with the HUD and the in-world place names hidden, SwiftShader. Top
+  row Vilcabamba, Quipaipan, Lima 1821; bottom row Miraflores, Tarapacá, Callao. The first sheet is the blind
+  test material (six images, six geography briefs, two independent reviewers); the second is the before/after
+  for the three pairs (Vilcabamba, Quipaipan, Callao).
+- **Review**: no human art-review gate applies to in-engine evidence captures; the blind reviewers are agents,
+  not players, and that limitation is recorded in the matrix.
+
 ### Geographic identity Phase 3 evidence (in-engine contact sheet)
 
 - **Location**: `docs/media/geographic-identity-phase3.webp` (1400x788 WebP q80, 86 KB).

@@ -32,7 +32,7 @@ const CASES: CaseSpec[] = [
   { id: 'm_miraflores', size: 129, hasRiver: true, keepsWater: true, groves: true, bare: true },
   { id: 'm_real_felipe', size: 129, hasRiver: false, keepsWater: true, groves: false, bare: true },
   { id: 'm_tarapaca', size: 257, hasRiver: false, keepsWater: false, groves: false, bare: true },
-  { id: 'm_vilcabamba', size: 257, hasRiver: false, keepsWater: false, groves: true, bare: true },
+  { id: 'm_vilcabamba', size: 257, hasRiver: true, keepsWater: true, groves: true, bare: true },
   { id: 'm_brena', size: 257, hasRiver: false, keepsWater: false, groves: true, bare: true },
 ];
 
@@ -270,6 +270,41 @@ describe('mission-scoped heightfields', () => {
         expect(walkable(field, point.x * 256, point.z * 256), `${id} ${label} is on the path grid`).toBe(true);
       }
     }
+  });
+
+  it('carves the Urubamba with one shallow ford under both mission roads', () => {
+    // The bed stays under the waterline (so it is water) and above `waterLevel - 0.75` (so `isFordAt`
+    // wades it). Without the ford the river splits the map and the hold objective becomes unreachable;
+    // the m_vilcabamba E2E proves the crossing with real move orders.
+    const { override } = resolve('m_vilcabamba');
+    expect(override.river, 'm_vilcabamba river metadata').toBeDefined();
+    expect(override.fords?.length, 'm_vilcabamba ford metadata').toBeGreaterThan(0);
+    for (const z of [134, 144]) {
+      const nearest = override.river!.path.reduce((best, p) =>
+        Math.abs(p[1]! - z) < Math.abs(best[1]! - z) ? p : best,
+      );
+      const h = sampleAuthoredHeight(override, nearest[0]!, z);
+      expect(h, `m_vilcabamba ford depth at z=${z}`).toBeGreaterThan(0.45);
+      expect(h, `m_vilcabamba ford is water at z=${z}`).toBeLessThan(2.55);
+    }
+  });
+
+  it('keeps the coastal and arid pairs apart by water and incision', () => {
+    // Callao's bay must reach the fortress frame (the blind test swapped it with Miraflores otherwise).
+    const callao = resolve('m_real_felipe').override;
+    const site = AUTHORED_SITES['real_felipe_site']!.anchor;
+    let waterCells = 0;
+    for (let dz = -45; dz <= 45; dz += 5) {
+      for (let dx = -45; dx <= 45; dx += 5) {
+        if (Math.hypot(dx, dz) > 45) continue;
+        if (sampleAuthoredHeight(callao, site.x + dx, site.z + dz) < WATER_LEVEL - 0.15) waterCells++;
+      }
+    }
+    expect(waterCells, 'Callao has no water in the fortress frame').toBeGreaterThan(10);
+    // Quipaipan's dry arroyo is a real incision, not a painted stripe.
+    const pampa = resolve('m6b_guerra_civil').override;
+    const drop = sampleAuthoredHeight(pampa, 120, 150) - sampleAuthoredHeight(pampa, 120, 128);
+    expect(drop, 'Quipaipan arroyo depth').toBeGreaterThan(1.5);
   });
 
   it('is consumed by TerrainData, not just stored in the campaign data', () => {

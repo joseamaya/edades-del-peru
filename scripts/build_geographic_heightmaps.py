@@ -150,14 +150,14 @@ def paint_sierra(h: Height, x: float, z: float) -> tuple[float, float, float, fl
 
 
 def paint_quebrada(h: Height, x: float, z: float) -> tuple[float, float, float, float]:
-    """Atacama desert: sand and rock, with a green oasis and the planted wash floor."""
+    """Atacama desert: sand and rock, with a green oasis and the gravel floor of the quebrada."""
     elevation = h(x, z)
     slope = slope_at(h, x, z)
     rock = max(smooth(0.26, 0.5, slope), smooth(7.4, 9.0, elevation))
     oasis = 1.0 - smooth(10.0, 26.0, math.hypot(x - 92.0, z - 140.0))
-    wash = math.exp(-((z - 132.0) / 15.0) ** 2) * (1.0 - smooth(200.0, 228.0, x))
+    wash = (1.0 - smooth(5.0, 13.0, abs(z - 134.0))) * (1.0 - smooth(198.0, 230.0, x))
     grass = 0.55 * oasis * (1.0 - rock)
-    sand = (1.0 - rock - grass) * (0.45 + 0.45 * wash)
+    sand = (1.0 - rock - grass) * (0.35 + 0.15 * wash)
     dirt = max(0.0, 1.0 - rock - grass - sand)
     return normalize((grass, dirt, sand, rock))
 
@@ -184,27 +184,53 @@ def paint_coastal_city(
     return normalize((grass, dirt, sand, rock))
 
 
+def urubamba_x(z: float) -> float:
+    """Urubamba centreline: a gentle meander around x=132, where both mission roads cross it."""
+    return 132.0 + 6.0 * math.sin(z * 0.032 + 0.4)
+
+
 def paint_cloud_forest(h: Height, x: float, z: float) -> tuple[float, float, float, float]:
-    """Wet cloud-forest floor: dense green on the flats, rock on the ridges, gravel on the banks."""
+    """Cloud-forest valley: green walls, a bare gravel floor and the wet Urubamba banks.
+
+    The valley floor and the river bar are kept open (`treeless` fires on sand > 0.45 and on marsh), so
+    the painted green — and therefore the groves, which grow where `grass > 0.6` — sits on the slopes
+    where a closed canopy can read as the valley wall.
+    """
     elevation = h(x, z)
     slope = slope_at(h, x, z)
-    rock = max(smooth(0.26, 0.5, slope), smooth(9.5, 13.5, elevation))
-    bank = max(math.exp(-((x - 132.0) / 14.0) ** 2), 1.0 - smooth(2.3, 3.2, elevation))
+    rock = max(smooth(0.30, 0.55, slope), smooth(13.0, 17.0, elevation))
+    floor = 1.0 - smooth(5.0, 6.4, elevation)
+    bank = max(math.exp(-((x - urubamba_x(z)) / 12.0) ** 2), 1.0 - smooth(2.3, 3.2, elevation))
     free = 1.0 - rock
-    grass = free * (1.0 - bank * 0.8) * 0.92
-    sand = free * 0.85 * bank
+    grass = free * (1.0 - floor) * 0.94
+    sand = free * max(0.8 * bank, 0.22 * floor * (1.0 - bank))
     dirt = max(0.0, 1.0 - rock - grass - sand)
     return normalize((grass, dirt, sand, rock))
+
+
+def quipaipan_wash(x: float, z: float) -> float:
+    """Dry arroyo mask (0..1): one incision, carved and painted from the same shape."""
+    return math.exp(-((z - 128.0) / 7.0) ** 2) * smooth(36, 60, x) * (1 - smooth(190, 220, x))
 
 
 def quipaipan(x: float, z: float) -> float:
     h = 5.0 + 0.22 * noise(x, z)
     h += 3.4 * (1.0 - smooth(0.0, 1.0, math.hypot((x - 78) / 40, (z - 178) / 34)))
     h += 2.6 * (1.0 - smooth(0.0, 1.0, math.hypot((x - 184) / 46, (z - 74) / 38)))
-    wash = math.exp(-((z - 128) / 9.0) ** 2) * smooth(36, 60, x) * (1 - smooth(190, 220, x))
-    h -= wash * 1.1
+    # A dry arroyo cuts the pampa: the only incision on an otherwise open puna floor.
+    h -= quipaipan_wash(x, z) * 2.4
     h += smooth(224, 256, z) * 7 + smooth(232, 256, x) * 6
     return site_pad(max(2.7, h), x, z, QUIPAIPAN_SITE, QUIPAIPAN_Y)
+
+
+def paint_pampa(h: Height, x: float, z: float) -> tuple[float, float, float, float]:
+    """Puna grass, plus the gravel bed of the dry arroyo (Quipaipan)."""
+    grass, dirt, sand, rock = paint_highland(h, x, z)
+    wash = quipaipan_wash(x, z)
+    free = 1.0 - rock
+    sand = min(free, sand + free * 0.6 * wash)
+    grass = max(0.0, free - dirt - sand - rock)
+    return normalize((grass, dirt, sand, rock))
 
 
 def cusco1536(x: float, z: float) -> float:
@@ -265,7 +291,11 @@ def miraflores(x: float, z: float) -> float:
 
 def callao(x: float, z: float) -> float:
     h = 3.5 + 0.28 * noise(x, z, 2.6)
+    # The open sea west of the map plus the bay of Callao, which reaches the fortress terrace so the
+    # maritime setting reads in the fortress frame. The siege camp and both battery sites stay dry.
     bay = 1.0 - smooth(26.0, 48.0, x + (z - 96) * 0.18)
+    bight = 1.0 - smooth(0.0, 1.0, math.hypot((x - 110.0) / 75.0, (z - 80.0) / 65.0))
+    bay = max(bay, bight)
     h = h * (1.0 - bay) + 0.4 * bay
     # San Lorenzo: the low island that shelters the bay (un-normalised metres, so it stays an islet).
     island = 1.0 - smooth(9.0, 14.0, math.hypot(x - 30, z - 122))
@@ -280,27 +310,37 @@ def callao(x: float, z: float) -> float:
 
 
 def tarapaca(x: float, z: float) -> float:
-    h = 6.6 + 0.35 * noise(x, z, 1.3)
-    # Quebrada de Tarapacá: a deep, dry incision with a stepped north bank, not a river.
-    canyon = math.exp(-((z - 132) / 13.0) ** 2) * smooth(26, 52, x) * (1 - smooth(198, 228, x))
-    h = h * (1 - canyon) + 3.0 * canyon
-    step = math.exp(-((z - 112) / 8.0) ** 2) * smooth(40, 70, x) * (1 - smooth(180, 214, x))
+    h = 6.8 + 0.35 * noise(x, z, 1.3)
+    # Quebrada de Tarapacá: a dry valley with a gravel floor and steep banks, not a river and not a pampa.
+    # The V spans ~32 m with ~4.5 m of relief; 0.45 max gradient stays under MAX_WALKABLE_SLOPE.
+    canyon = (1.0 - smooth(5.0, 11.0, abs(z - 134.0))) * smooth(22, 48, x) * (1 - smooth(198, 230, x))
+    h = h * (1 - canyon) + 2.0 * canyon
+    step = math.exp(-((z - 116.0) / 7.0) ** 2) * smooth(40, 70, x) * (1 - smooth(180, 214, x))
     h += 1.4 * step
     oasis = 1 - smooth(10, 26, math.hypot(x - 92, z - 140))
-    h = h * (1 - oasis) + 4.4 * oasis
+    h = h * (1 - oasis) + 4.6 * oasis
     h += smooth(226, 256, z) * 9 + smooth(226, 256, x) * 8
     return site_pad(max(2.9, h), x, z, ARICA_SITE, TARAPACA_Y)
 
 
 def vilcabamba(x: float, z: float) -> float:
-    """Cloud-forest valley: broad, long-wavelength walls so every cell stays reachable (slope < 0.5)."""
-    h = 5.2 + 0.25 * noise(x, z, 2.1)
-    h += 9.0 * (0.5 + 0.5 * math.sin(x * 0.030 + 1.1)) * smooth(120, 200, x)
-    h += 4.0 * (0.5 + 0.5 * math.sin(z * 0.028 + 0.3))
-    river = math.exp(-((x - 132) / 11.0) ** 2)
-    h = h * (1 - river) + 1.0 * river
-    bank = math.exp(-((x - 132) / 26.0) ** 2)
-    h = h * (1 - bank) + 2.7 * bank
+    """Cloud-forest valley: the wet Urubamba, a low floor and long, walkable walls on both sides."""
+    h = 5.0 + 0.3 * noise(x, z, 2.1)
+    # West wall (opening to the south-west escape corridor) and east wall behind the fort spur: long
+    # wavelengths keep every cell under MAX_WALKABLE_SLOPE while the valley still reads enclosed.
+    h += 10.5 * smooth(96, 34, x) * (1.0 - smooth(170, 226, z))
+    h += 9.5 * (0.5 + 0.5 * math.sin(x * 0.030 + 1.1)) * smooth(150, 214, x)
+    h += 3.2 * (0.5 + 0.5 * math.sin(z * 0.028 + 0.3))
+    # The Urubamba: a narrow wet channel with one shallow ford where both mission roads cross it
+    # (camp -> fort and fort -> escape). The ford's bed stays under the waterline and above
+    # `waterLevel - 0.75`, which is what `isFordAt` reads.
+    cx = urubamba_x(z)
+    shoulder = math.exp(-((x - cx) / 22.0) ** 2)
+    h = h * (1.0 - shoulder) + 3.9 * shoulder
+    channel = math.exp(-((x - cx) / 7.0) ** 2)
+    ford = smooth(16, 8, abs(z - 139.0))
+    bed = 0.7 + 1.2 * ford
+    h = h * (1.0 - channel) + bed * channel
     h += smooth(236, 256, z) * 6 + smooth(236, 256, x) * 5
     return site_pad(max(0.9, h), x, z, CHANCA_SITE, VILCABAMBA_Y)
 
@@ -329,10 +369,17 @@ class Field:
     base_module: str
     imports: tuple[str, ...]
     river: str | None = None
+    # Inline river channel: written into the generated module as `<NAME>_RIVER_PATH`. Used by the fields
+    # whose course is not a shared constant (the Urubamba).
+    inline_river: tuple[tuple[float, float], ...] | None = None
+    inline_half_width: float = 12.0
+    # Shallow fords over the inline river: (z centre, half-width) in metres. The bed stays under the
+    # waterline, so the pathfinder has to treat those cells as walkable water.
+    fords: tuple[tuple[float, float], ...] = ()
 
 
 FIELDS = (
-    Field('quipaipan', 257, quipaipan, paint_highland, 'heightmapCodec', ()),
+    Field('quipaipan', 257, quipaipan, paint_pampa, 'heightmapCodec', ()),
     Field('cusco1536', 129, cusco1536, paint_cusco1536, 'heightmapCodec', ()),
     Field(
         'lima1821',
@@ -361,7 +408,19 @@ FIELDS = (
         (),
     ),
     Field('tarapaca', 257, tarapaca, paint_quebrada, 'heightmapCodec', ()),
-    Field('vilcabamba', 257, vilcabamba, paint_cloud_forest, 'heightmapCodec', ()),
+    Field(
+        'vilcabamba',
+        257,
+        vilcabamba,
+        paint_cloud_forest,
+        'heightmapCodec',
+        (),
+        inline_river=tuple((round(urubamba_x(z), 1), float(z)) for z in range(0, 257, 4)),
+        inline_half_width=12.0,
+        # Both mission roads cross the Urubamba around z 134-144: one wadeable ford there, so the
+        # channel stays continuous and the valley is still one walkable component.
+        fords=((139.0, 14.0),),
+    ),
     Field('mantaro', 257, mantaro, paint_sierra, 'heightmapCodec', ()),
 )
 
@@ -436,14 +495,31 @@ def write(field: Field) -> None:
 
     imports = ''.join(f'  {name},\n' for name in field.imports)
     base_import = f"import {{\n{imports}}} from './{field.base_module}';\n" if field.imports else ''
-    river = (
-        f"  river: {{ path: {field.river}_RIVER_PATH, halfWidth: {field.river}_RIVER_HALF_WIDTH }},\n"
-        if field.river
+    if field.inline_river:
+        points = ''.join(f'  [{x:.1f}, {z:.1f}],\n' for x, z in field.inline_river)
+        inline_ts = (
+            "import type { Polyline } from '../../util/math';\n"
+            f'export const {key}_RIVER_PATH: Polyline = [\n{points}];\n'
+        )
+        river = f'  river: {{ path: {key}_RIVER_PATH, halfWidth: {field.inline_half_width:.1f} }},\n'
+    else:
+        inline_ts = ''
+        river = (
+            f"  river: {{ path: {field.river}_RIVER_PATH, halfWidth: {field.river}_RIVER_HALF_WIDTH }},\n"
+            if field.river
+            else ''
+        )
+    fords = (
+        '  fords: [\n'
+        + ''.join(f'    {{ z: {z:.1f}, halfWidth: {half:.1f} }},\n' for z, half in field.fords)
+        + '  ],\n'
+        if field.fords
         else ''
     )
     text = (
         '// Generated by scripts/build_geographic_heightmaps.py. Do not edit by hand.\n'
         f'{base_import}'
+        f'{inline_ts}'
         "import { decodePalettizedGround, type GroundPaletteEntry } from './groundCodec';\n"
         "import type { AuthoredHeightField } from './authoredTerrain';\n"
         '\n'
@@ -473,6 +549,7 @@ def write(field: Field) -> None:
         f'  heights: {key}_HEIGHTMAP,\n'
         f'  ground: {{ size: {key}_GROUND_SIZE, weights: {key}_GROUND }},\n'
         f'{river}'
+        f'{fords}'
         '};\n'
     )
     path = OUT / f'{field.name}Heightmap.ts'

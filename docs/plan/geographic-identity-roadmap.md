@@ -1,6 +1,7 @@
 # Geographic identity roadmap
 
-**Status:** Proposal · **Audit date:** 2026-11-18 · **Scope:** the 20 released missions
+**Status:** Approved · implemented through Phase 4 for the six missions of the close-out; §6.1–6.3 stay open
+· **Audit date:** 2026-11-18 · **Scope:** the 20 released missions
 
 This roadmap turns [`mission-geographic-identity.md`](../design/mission-geographic-identity.md) into an
 ordered implementation plan. It is a proposal: no mission, scene, model or asset is changed by this
@@ -91,8 +92,9 @@ definitions. Evidence: [`geographic-identity-phase0.webp`](../media/geographic-i
 6. Fix accidental water: raise the floors of the Chanca and Colonial valleys above the water level, or
    declare the lakes if they are intended.
 7. Defer shared base/site/enemy anchor changes to Phase 1; they require the new site definitions.
-8. Correct misleading labels: the Vilcabamba “Río Urubamba” becomes “Valle del Urubamba”. The Chimú canal
-   is geometry, not a label, and stays in Phase 1.
+8. Correct misleading labels: the Vilcabamba “Río Urubamba” became “Valle del Urubamba” while the field had no
+   water. The close-out carved the river and the label is a water toponym again (see §5). The Chimú canal is
+   geometry, not a label, and stays in Phase 1.
 9. Record the 20-mission `audit:campaigns` capture set and the targeted `bench_scene` baseline for every
    affected mission. The full 20-mission bench baseline follows the Phase 1 heightfield splits.
 
@@ -153,9 +155,28 @@ that field's relief instead of inheriting another mission's painting. The paint 
 fires on `sand > 0.45` / `rock > 0.6`, pinned per mission in `tests/geographic-heightfields.test.ts` (Lima
 1821/Miraflores keep the irrigated oasis, Callao and Tarapacá stay as bare as their base fields). Three blind rounds are recorded below: 8/8, then 6/8, then 8/8 after the connected Vilcabamba valley.
 
-Still open in this phase: Lima 1535's city-grid composition, Vilcabamba's denser cloud-forest vegetation
-(procedural, no new assets), and the remaining composition work; the formal blind protocol with a larger
-sample belongs to Phase 4.
+Still open in this phase: Lima 1535's city-grid composition and the remaining composition work; the formal
+blind protocol with a larger sample belongs to Phase 4.
+
+### Close-out slice (2026-11-19, geographic identity)
+
+The last slice closed the two gaps this phase left open for Vilcabamba and made the pair separations
+measurable:
+
+- **Vilcabamba** now has a wet, meandering Urubamba with one shallow ford where both mission roads cross it
+  (`AuthoredHeightField.river` + `fords`, the same mechanism as Lima's Rímac), a painted gravel valley floor
+  with the green only on the walls (so the groves still grow where `grass > 0.6` but on the slopes), a higher
+  east/west wall, denser ferns and 400 visual-only canopy trees in the wall bands (`MissionLayout.groves`,
+  registered in `decorGroves` so they follow the same LOD and fog rule as Caral's groves). The gatherable
+  trees stay at 244 and the camp→fort march is unchanged: the hold completes 45/45 in ~91 s.
+- **Quipaipan** keeps its dry, open puna and gains a deeper arroyo (2.4 m) painted as gravel, so the pair no
+  longer shares a waterless green field.
+- The **hold regression** that this relief exposed is fixed at the mission level: start units accept an
+  optional `stance` (`combatStance` per unit in `MissionDef.start.units`) and Vilcabamba's garrison opens in
+  `defensivo`, so a stray enemy worker cannot pull the line out of the objective radius.
+
+`bench_scene` for Vilcabamba is now 680,044 triangles / 499 calls. The cap moves from 630k to 700k as the
+documented `selva` exception (§10); draw calls stay inside the original 540.
 
 The three pilots validate the approach before the rest of the catalogue is touched. They represent the
 three hardest environments and the three highest-leverage reuse chains.
@@ -298,14 +319,42 @@ heightfield pass; they finish the mission around the new field.
 
 ## 7. Phase 4 — Validation and close
 
-**Status (2026-11-19):** the blind test now scores **8/8** after the connected Vilcabamba valley (the previous
-round scored 6/8). The Miraflores redoubts are a composition change made after that round; they are not claimed
-as part of its score. Historical/geographical audit of
+**Status (2026-11-19):** the blind test now scores **6/6 twice on the shipped build** for the six missions of the
+three pairs. The route there is recorded in the matrix: a pre-bay round swapped Miraflores ↔ Callao (the
+fortress frame had no water), and a later round swapped Tarapacá ↔ Quipaipan (both read as an arid plain);
+the Callao bay and Tarapacá's real quebrada are the fixes. Two earlier rounds scored 8/8 and 6/8 on a broader
+eight-mission set. The Miraflores redoubts are a composition
+change made after the 8/8 round; they are not claimed as part of that score. Historical/geographical audit of
 Tarapacá, Real Felipe and Miraflores: no invented facts, four imprecisions fixed (Tarapacá's uncited "200 km",
 Real Felipe's "civilians in Callao" where the source says the fortress, Miraflores' Chorrillos label on the
 inland side, and the stale `lima_site` reference in `docs/historia/campanas/miraflores.md`). The similarity
-matrix gained a current-state section with no pair left at 5. Still open: the grayscale pass and the full
-`bench:check` sweep.
+matrix gained a current-state section and a close-out section with no pair left at 5.
+
+Close-out results:
+
+- **Blind test:** two independent reviewers (not humans — the main limitation), six labels-off site captures
+  per round, 6/6 each on the shipped build. Three fixes came from the earlier rounds: the Callao bay in the
+  fortress frame, and Tarapacá's quebrada as a real dry valley (a ~32 m gravel floor, ~4.8 m banks) instead
+  of a shallow dip. The full §8 protocol (three RTS views, top-down, terrain-only, hypsometric and water
+  masks, the 24/30 rubric) remains a future round; this close-out ran the default site framing plus a wide
+  check.
+- **Grayscale pass:** the six captures stay legible without colour (site footprint, objective ring and water
+  remain dominant); Quipaipan's dry arroyo loses contrast, so its identity rests on the open pampa and platform.
+- **Fog of war:** `Water` now follows the fog mask (a pre-existing gap: unexplored rivers and bays stayed
+  visible). Static props and the objective ring still ignore it, unchanged.
+- **Bench:** `bench_scene --assert` passes for the two changed missions (Vilcabamba 680,044 / 499 against the
+  new 700k selva cap, Quipaipan 679,767 / 391). The cap exception is a structural budget for the canopy, not a
+  frame-time claim: the audit machine has no real GPU, so `bench:site-views` was not run and SwiftShader is not
+  presented as a GPU verdict. `bench:check` is not a stable gate on a busy machine: the `fortifications` sim
+  p99 swung between 12.6 and 15.7 ms against a 12 ms budget across three runs on the same build, while p50
+  stayed at 2.6 ms.
+- **Package:** `dist` 24.76 MB of 25.00 MB; entry chunk 2 KB gzip of 600 KB. No new asset.
+- **Suites:** `yarn verify:fast` (typecheck, lint, format, 987 unit tests, build) and the full
+  `yarn test:e2e:fast` (340 tests, 3 workers) are green, plus the six mission specs, Caral's grove specs, the
+  m6b playtest and `scripts/sim.mjs` (8 seeds, no errors; first attack 219-295 s).
+
+Still open (documented, not blocking): the remaining Phase 3 missions in §6.1-6.3, the static-prop fog gap, and
+a human blind test.
 
 **Complexity:** S · **Depends on:** all pilots and at least one mission per family
 

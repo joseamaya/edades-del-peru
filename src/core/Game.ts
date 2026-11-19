@@ -136,6 +136,13 @@ export function setAutoStart(value: boolean): void {
 /** Shared empty list so matches without place names do not allocate one per frame. */
 const NO_PLACE_NAMES: readonly MissionLabel[] = [];
 
+/** A visual-only tree slot: drawn by the tree instancer, with no resource or obstacle behind it. */
+export interface DecorGrove {
+  slot: number;
+  x: number;
+  z: number;
+}
+
 /** Campaign intro flyover framing, relative to the player base. */
 const INTRO_CAMERA = { offset: 34, fromHeight: 52, toZoom: 30, seconds: 2.6 } as const;
 /** How long m1's drought takes to dry the valley out. */
@@ -241,8 +248,8 @@ export class Game {
   /** Visual-only valley plan; reserved before resources/props scatter. */
   caralValleyPlan: CaralValleyPlan | null = null;
   caralValleyBase: { x: number; z: number } | null = null;
-  /** Decorative Caral groves: instanced tree slots with no resource or obstacle behind them. */
-  caralGroves: { slot: number; x: number; z: number }[] = [];
+  /** Decorative tree slots (Caral's valley groves, a mission's forest bands): no resource or obstacle. */
+  decorGroves: DecorGrove[] = [];
   private startSpots: [number, number][] = [];
   particles!: Particles;
   debris!: Debris;
@@ -660,6 +667,7 @@ export class Game {
     }
     this.fowTexture = new FowTexture(this.fow);
     this.terrain.setFow(this.fowTexture.texture, s.fogOfWar);
+    this.water.setFow(this.fowTexture.texture, s.fogOfWar);
     this.fowUniforms.fowMap.value = this.fowTexture.texture;
     this.fowUniforms.mapSize.value = s.mapSize;
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;

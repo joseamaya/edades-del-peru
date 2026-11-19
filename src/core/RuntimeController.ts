@@ -60,7 +60,8 @@ export class RuntimeController {
       for (let i = 0; i < (u.count ?? 1); i++) {
         const jx = this.game.rng.range(-1.5, 1.5);
         const jz = this.game.rng.range(-1.5, 1.5);
-        this.game.spawnScriptedUnit(u.kind, 0, c.x + u.dx + jx, c.z + u.dz + jz, u.tag);
+        const unit = this.game.spawnScriptedUnit(u.kind, 0, c.x + u.dx + jx, c.z + u.dz + jz, u.tag);
+        if (u.stance) unit.setCombatStance(u.stance);
       }
     }
     // The authored roster always fits: Tambotoco's party has no dwellings («20/7») and Lima, the Junta
@@ -774,7 +775,7 @@ export class RuntimeController {
     }
     // Decorative valley groves follow the same distance/fog rule as resource trees, but never fade
     // their resources or obstacles because they have none.
-    for (const grove of this.game.caralGroves) {
+    for (const grove of this.game.decorGroves) {
       const dx = grove.x - t.x;
       const dz = grove.z - t.z;
       const near = dx * dx + dz * dz <= lod2;
@@ -787,12 +788,13 @@ export class RuntimeController {
     this.game.settings.fogOfWar = on;
     this.game.fow.setEnabled(on);
     this.game.terrain.setFow(this.game.fowTexture.texture, on);
+    this.game.water.setFow(this.game.fowTexture.texture, on);
     this.game.fowUniforms.fowEnabled.value = on ? 1 : 0;
     if (!on) {
       for (const u of this.game.units.values()) if (u.view) u.view.setVisible(true);
       for (const b of this.game.buildings.values()) if (b.view) b.view.setVisible(true);
       for (const n of this.game.resourceNodes.values()) n.setVisibleEx(true);
-      for (const grove of this.game.caralGroves) this.game.trees.setVisible(grove.slot, true);
+      for (const grove of this.game.decorGroves) this.game.trees.setVisible(grove.slot, true);
     }
   }
 

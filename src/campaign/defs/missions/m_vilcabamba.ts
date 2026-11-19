@@ -1,5 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
-import { VILCABAMBA_HEIGHTFIELD } from '../../../model/defs/vilcabambaHeightmap';
+import { VILCABAMBA_HEIGHTFIELD, VILCABAMBA_RIVER_PATH } from '../../../model/defs/vilcabambaHeightmap';
 import type { MissionDef } from '../../types';
 
 // Vilcabamba 1572: Huayna Pucará, the burning refuge and the escape route to the lower Urubamba.
@@ -8,6 +8,10 @@ const VILCABAMBA_TOWN = { x: 150, z: 132 } as const;
 const VILCABAMBA_CAMP = { x: 90, z: 166 } as const;
 const VILCABAMBA_ENEMY = { x: 198, z: 64 } as const;
 const VILCABAMBA_ESCAPE = { x: 54, z: 220 } as const;
+// The label sits on the generated centreline (the river meanders), not on a copied constant.
+const VILCABAMBA_RIVER = VILCABAMBA_RIVER_PATH.reduce((best, p) =>
+  Math.abs(p[1]! - 141) < Math.abs(best[1]! - 141) ? p : best,
+);
 
 export const mVilcabamba: MissionDef = {
   id: 'm_vilcabamba',
@@ -34,7 +38,7 @@ export const mVilcabamba: MissionDef = {
     labels: [
       { text: 'Vilcabamba', x: VILCABAMBA_TOWN.x / 256, z: VILCABAMBA_TOWN.z / 256, kind: 'settlement' },
       { text: 'Huayna Pucará', x: VILCABAMBA_FORT.x / 256, z: VILCABAMBA_FORT.z / 256, kind: 'region' },
-      { text: 'Valle del Urubamba', x: 0.2, z: 0.55, kind: 'region' },
+      { text: 'Río Urubamba', x: VILCABAMBA_RIVER[0] / 256, z: VILCABAMBA_RIVER[1] / 256, kind: 'water' },
       { text: 'Bajo Urubamba', x: VILCABAMBA_ESCAPE.x / 256, z: VILCABAMBA_ESCAPE.z / 256, kind: 'region' },
       { text: 'Camino a Cusco', x: 0.78, z: 0.22, kind: 'region' },
     ],
@@ -74,14 +78,22 @@ export const mVilcabamba: MissionDef = {
         width: 3,
       },
     ],
+    // The cloud-forest walls: visual-only canopy above the walkable band, so the valley reads closed
+    // without adding gatherable trees or obstacles to the mission's economy and routes.
+    groves: [
+      { x: 0.19, z: 0.48, rx: 0.11, rz: 0.34, count: 170, minHeight: 7.5 },
+      { x: 0.85, z: 0.44, rx: 0.085, rz: 0.31, count: 150, minHeight: 8.5 },
+      { x: 0.5, z: 0.11, rx: 0.3, rz: 0.06, count: 80, minHeight: 7 },
+    ],
   },
   mapOverrides: {
     culturalLandscape: null,
     // Cloud-forest floor: the amazon density already saturates the cover budget, so the lever is the
     // mix — more ferns and tall grass among fewer stones (docs/design/geographic-families.md).
-    vegetation: { groundCoverWeights: { fern: 1.8, grass: 1.1, pebble: 0.25, gravel: 0.2 } },
+    vegetation: { groundCoverWeights: { fern: 2.4, grass: 1.2, pebble: 0.25, gravel: 0.2 } },
+    // No resource/economy override: the canopy is the visual-only `groves` above.
   },
-  atmosphere: { fogDensity: 0.0032, sunWarmth: 0.9, skyTint: '#b9c6bc' },
+  atmosphere: { fogDensity: 0.0036, sunWarmth: 0.9, skyTint: '#b9c6bc' },
   timeOfDay: 'dusk',
   startingEra: Era.VICEROYALTY,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
@@ -90,10 +102,12 @@ export const mVilcabamba: MissionDef = {
   start: {
     units: [
       { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 3 },
-      { kind: UnitKind.INCA_WARRIOR, dx: 8, dz: 0, count: 10 },
-      { kind: UnitKind.SOLDIER, dx: 12, dz: 2, count: 4 },
+      // The garrison holds Huayna Pucará: a defensive stance keeps the forty-five second hold from
+      // unravelling when an enemy worker crosses the aggro radius and the line chases it downhill.
+      { kind: UnitKind.INCA_WARRIOR, dx: 8, dz: 0, count: 10, stance: 'defensivo' },
+      { kind: UnitKind.SOLDIER, dx: 12, dz: 2, count: 4, stance: 'defensivo' },
       { kind: UnitKind.SCOUT, dx: 14, dz: 0, count: 1 },
-      { kind: UnitKind.INCA_WARRIOR, dx: 6, dz: 0, count: 1, tag: 'curi_paucar' },
+      { kind: UnitKind.INCA_WARRIOR, dx: 6, dz: 0, count: 1, tag: 'curi_paucar', stance: 'defensivo' },
     ],
   },
   enemy: { active: true, difficulty: 'hard', aggression: 1.0 },

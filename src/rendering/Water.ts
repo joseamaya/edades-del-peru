@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { FOW_DIM_GLSL } from './fowGlsl';
 
 /**
  * Water with Gerstner waves, fresnel, sun glints, shore foam
@@ -97,6 +98,8 @@ export class Water {
       refractionAmount: { value: 0.0 },
       sheen: { value: 0.7 },
       foamAmount: { value: 0.55 },
+      fowMap: { value: null as THREE.Texture | null },
+      fowEnabled: { value: 0 },
     };
 
     const mat = new THREE.ShaderMaterial({
@@ -155,11 +158,16 @@ export class Water {
         uniform sampler2D refractionMap;
         uniform float refractionStrength;
         uniform float refractionAmount;
+        uniform sampler2D fowMap;
+        uniform float fowEnabled;
+        uniform float mapSize;
         varying vec3 vWorldPos;
         varying vec2 vUv;
         varying float vWave;
         varying float vLevel;
         varying vec2 vScreen;
+
+        ${FOW_DIM_GLSL}
 
         float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
         float noise(vec2 p) {
@@ -218,6 +226,10 @@ export class Water {
           float wfog = 1.0 - exp(-fogDensity * fogDensity * wdist * wdist * 2.2);
           col = mix(col, fogColor, clamp(wfog, 0.0, 0.9));
 
+          // Fog of war, with the same zones as the terrain: unexplored water is black, not a bright band.
+          float fw = fowEnabled > 0.5 ? texture2D(fowMap, vWorldPos.xz / mapSize).r : 1.0;
+          col *= fowDim(fw);
+
           gl_FragColor = vec4(col, 0.96);
         }
       `,
@@ -252,6 +264,12 @@ export class Water {
     (this.uniforms.shallowColor.value as THREE.Color).set(palette.shallow);
     this.uniforms.sheen.value = palette.sheen;
     this.uniforms.foamAmount.value = palette.foam;
+  }
+
+  /** Fog of war, shared with the terrain so unexplored water is not a bright band in the dark. */
+  setFow(texture: THREE.Texture, enabled: boolean): void {
+    this.uniforms.fowMap!.value = texture;
+    this.uniforms.fowEnabled!.value = enabled ? 1 : 0;
   }
 
   /**
