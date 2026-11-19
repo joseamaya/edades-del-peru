@@ -75,7 +75,12 @@ export const mVilcabamba: MissionDef = {
       },
     ],
   },
-  mapOverrides: { culturalLandscape: null },
+  mapOverrides: {
+    culturalLandscape: null,
+    // Cloud-forest floor: the amazon density already saturates the cover budget, so the lever is the
+    // mix — more ferns and tall grass among fewer stones (docs/design/geographic-families.md).
+    vegetation: { groundCoverWeights: { fern: 1.8, grass: 1.1, pebble: 0.25, gravel: 0.2 } },
+  },
   atmosphere: { fogDensity: 0.0032, sunWarmth: 0.9, skyTint: '#b9c6bc' },
   timeOfDay: 'dusk',
   startingEra: Era.VICEROYALTY,
