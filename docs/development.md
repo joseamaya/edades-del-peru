@@ -138,12 +138,17 @@ Definition of Done and the building audit see
   `reencode_file` after writing, and `yarn art:heightmaps` re-runs the migration for a new file. The migration
   is idempotent and is pinned by `tests/heightmap-codec.test.ts`.
 - **Mission-scoped heightfields**: a mission can override its authored site's heightfield with
-  `MissionSite.heightField`; the site model, anchor, collision and painted ground stay shared while the terrain
-  geometry is mission-specific. Each override keeps the base field's `ground` (splat and `treeless` scatter) and,
-  for Lima and Miraflores, the Rímac `river`, and flattens a pad at the authored site anchor to the elevation the base field used
-  there, so the landmark does not float or sink. This is the Phase 1 split seam, applied to Quipaipan, Lima 1821,
-  Miraflores, Callao, Tarapacá, Vilcabamba and Mantaro
-  (`scripts/build_geographic_heightmaps.py`).
+  `MissionSite.heightField`; the site model, anchor and collision stay shared while the terrain geometry and its
+  paint are mission-specific. Every override flattens a 15 m pad at the authored site anchor to `MissionSite.y`,
+  so the shared model neither floats nor sinks, paints its own ground from that field's relief, and keeps the base
+  `river` metadata where it applies (the Rímac in Lima 1821 and Miraflores). Applied to Quipaipan, Cusco 1536,
+  Lima 1821, Miraflores, Callao, Tarapacá, Vilcabamba and Mantaro
+  (`scripts/build_geographic_heightmaps.py`). `cusco_inca_site` has no field of its own: both missions that use
+  it supply one, which pays for the new data inside the `dist` budget.
+- **Palettized ground**: the model-mission pattern wants painted ground at ~2 m per point, and a 128 x 128 RGBA
+  grid is 64 KB, so per-mission grids store a 4-bit index per cell into a 16-entry palette
+  (`src/model/defs/groundCodec.ts`) and decode to the RGBA weights `sampleAuthoredGround` expects. The palette
+  entries stay normalized (sum 255) and the generator picks them from the field's own paint.
 - **Post-processing & the cinematic look**: `src/rendering/PostFX.ts` chains Render → Bloom →
   chromatic aberration → vignette → `OutputPass` → **colour grading** → FXAA. `settings.cinematic` (default
   **on**, `src/core/Config.ts`) enables the whole set and `settings.quality` (`high|medium|low`) tunes

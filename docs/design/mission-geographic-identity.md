@@ -136,11 +136,12 @@ geographic silhouette.
 | `INDEPENDENCE_HEIGHTMAP` | `m8_independencia`, `m_brena` | `independence_site` | The same plain for Junín/Ayacucho and the Mantaro |
 | `CHANCA_HEIGHTMAP` | `m5_yahuar_pampa`, `m_vilcabamba` | `chanca_site` | The same high pampa, relabelled as jungle |
 
-**Phase 1 status (2026-11-19):** this table is the baseline audit. `m6b_guerra_civil`, `m_lima_1821`,
-`m_miraflores`, `m_real_felipe`, `m_tarapaca`, `m_vilcabamba` and `m_brena` now carry a mission-scoped
-`MissionSite.heightField` (Quipaipan, Rímac 1821, Miraflores, Callao Bay, Tarapacá quebrada, Vilcabamba valley,
-Mantaro), so their **terrain geometry no longer matches the chain above**. The site models, anchors, collision and
-painted ground are still shared; the per-mission site composition and paint are Phase 2/3 work
+**Phase 1-2 status (2026-11-19):** this table is the baseline audit. `m6b_guerra_civil`, `m_cusco_1536`,
+`m_lima_1821`, `m_miraflores`, `m_real_felipe`, `m_tarapaca`, `m_vilcabamba` and `m_brena` now carry a
+mission-scoped `MissionSite.heightField` (Quipaipan, Cusco basin and Sacsayhuamán, Rímac 1821, Miraflores,
+Callao Bay, Tarapacá quebrada, Vilcabamba valley, Mantaro), each with painted ground derived from its own relief,
+so their **terrain and paint no longer match the chain above**. The site models, anchors and collision are
+still shared; the per-mission site composition and vegetation are Phase 2/3 work
 ([roadmap](../plan/geographic-identity-roadmap.md)).
 
 ### 3.4 Taxonomy coverage

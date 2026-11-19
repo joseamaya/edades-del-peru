@@ -5,8 +5,9 @@
 > **Post-audit note (2026-11-19):** Phase 0 changed some of the state this snapshot records: `m8_independencia`
 > and `m_junta_cusco` now have an explicit `high_andes` region, the high-valley missions use the `andes`
 > vegetation kit, and every mission except Tambotoco has a mission-level atmosphere. Phase 1 then gave seven
-> missions their own `MissionSite.heightField` (C8, C11, C14, C16, C17, C19, C20), so the heightfield column of
-> every cluster below is now split while the site model, palette and anchors stay shared. The matrix stays the
+> missions their own `MissionSite.heightField` (C8, C11, C14, C16, C17, C19, C20), and Phase 2 added C10 (Cusco
+> 1536) plus painted ground derived from each field, so the heightfield column of every cluster below is split
+> while the site model, palette and anchors stay shared. The matrix stays the
 > **2026-11-18** audit snapshot; the current state and the remaining work are in the roadmap.
 
 This document records how much geography the twenty missions currently share, and why. It is an audit

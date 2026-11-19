@@ -9,12 +9,12 @@ import type { AuthoredHeightField } from '../src/model/defs/authoredTerrain';
 
 interface Case {
   mission: MissionDef;
-  base: AuthoredHeightField;
   override: AuthoredHeightField;
 }
 
 const CASES: Array<{ id: string; size: number; hasRiver: boolean; keepsWater: boolean }> = [
   { id: 'm6b_guerra_civil', size: 257, hasRiver: false, keepsWater: false },
+  { id: 'm_cusco_1536', size: 129, hasRiver: false, keepsWater: false },
   { id: 'm_lima_1821', size: 129, hasRiver: true, keepsWater: true },
   { id: 'm_miraflores', size: 129, hasRiver: true, keepsWater: true },
   { id: 'm_real_felipe', size: 129, hasRiver: false, keepsWater: true },
@@ -57,10 +57,9 @@ function sampleGrid(steps: number): Array<[number, number]> {
 function resolve(id: string): Case {
   const mission = MISSIONS.find((m) => m.id === id);
   if (!mission) throw new Error(`missing mission ${id}`);
-  const base = getAuthoredSite(mission.layout?.site?.id)?.heightField;
   const override = mission.layout?.site?.heightField;
-  if (!base || !override) throw new Error(`missing heightfield for ${id}`);
-  return { mission, base, override };
+  if (!override) throw new Error(`missing heightfield for ${id}`);
+  return { mission, override };
 }
 
 function missionProfile(mission: MissionDef) {
@@ -72,15 +71,13 @@ function missionProfile(mission: MissionDef) {
   });
 }
 
-describe('geographic phase 1 heightfields', () => {
-  it('gives every reused site mission its own field', () => {
+describe('mission-scoped heightfields', () => {
+  it('gives every reuse-chain mission its own field', () => {
     for (const { id, size } of CASES) {
-      const { base, override } = resolve(id);
+      const { override } = resolve(id);
       expect(override.worldSize, id).toBe(256);
       expect(override.size, id).toBe(size);
       expect(override.heights.length, id).toBe(size * size);
-      expect(override.heights, id).not.toBe(base.heights);
-      expect(Array.from(override.heights.slice(0, 64)), id).not.toEqual(Array.from(base.heights.slice(0, 64)));
     }
   });
 
@@ -122,15 +119,15 @@ describe('geographic phase 1 heightfields', () => {
     }
   });
 
-  it('keeps each landmark grounded on the elevation its base field used', () => {
+  it('grounds each landmark at its mission site elevation', () => {
     for (const { id } of CASES) {
-      const { mission, base, override } = resolve(id);
-      const anchor = AUTHORED_SITES[mission.layout!.site!.id]!.anchor;
-      const expected = sampleAuthoredHeight(base, anchor.x, anchor.z);
-      expect(sampleAuthoredHeight(override, anchor.x, anchor.z), id).toBeCloseTo(expected, 2);
+      const { mission, override } = resolve(id);
+      const site = AUTHORED_SITES[mission.layout!.site!.id]!;
+      const expected = mission.layout!.site!.y!;
+      expect(sampleAuthoredHeight(override, site.anchor.x, site.anchor.z), id).toBeCloseTo(expected, 2);
       // The flat pad must clear the largest site model footprint (half-diagonal ~11 m).
       for (const [dx, dz] of RING) {
-        expect(sampleAuthoredHeight(override, anchor.x + dx, anchor.z + dz), `${id} ${dx},${dz}`).toBeCloseTo(
+        expect(sampleAuthoredHeight(override, site.anchor.x + dx, site.anchor.z + dz), `${id} ${dx},${dz}`).toBeCloseTo(
           expected,
           1,
         );
@@ -140,34 +137,43 @@ describe('geographic phase 1 heightfields', () => {
 
   it('keeps the coast missions wet and the inland missions dry', () => {
     for (const { id, keepsWater } of CASES) {
-      const { base, override } = resolve(id);
+      const { override } = resolve(id);
       const water = countWater(override);
       if (keepsWater) {
         // The bay or sea must survive the reshape: a lost coastline is as wrong as a new lake.
-        expect(countWater(base), `${id} base`).toBeGreaterThan(0);
         expect(water, id).toBeGreaterThan(0);
-      } else if (countWater(base) === 0 && !override.river) {
+      } else {
         // A carved channel below the waterline with no river/ford metadata splits the map in two.
         expect(water, id).toBe(0);
       }
     }
   });
 
-  it('keeps the authored ground paint and river metadata', () => {
+  it('paints its own ground and keeps the Rímac metadata', () => {
     for (const { id, hasRiver } of CASES) {
-      const { base, override } = resolve(id);
+      const { override } = resolve(id);
       expect(override.ground, id).toBeDefined();
-      expect(override.ground!.size, id).toBe(base.ground!.size);
-      expect(override.ground!.weights, id).toBe(base.ground!.weights);
-      if (hasRiver) {
-        expect(override.river, id).toEqual(base.river);
+      expect(override.ground!.size, id).toBe(128);
+      expect(override.ground!.weights.length, id).toBe(128 * 128 * 4);
+      let total = 0;
+      for (let i = 0; i < override.ground!.weights.length; i += 4) {
+        total +=
+          override.ground!.weights[i]! +
+          override.ground!.weights[i + 1]! +
+          override.ground!.weights[i + 2]! +
+          override.ground!.weights[i + 3]!;
       }
+      // Palette entries are normalized weights (sum 255) rounded per channel.
+      const average = total / (128 * 128);
+      expect(average, id).toBeGreaterThan(250);
+      expect(average, id).toBeLessThan(260);
+      if (hasRiver) expect(override.river, id).toBeDefined();
     }
   });
 
   it('is consumed by TerrainData, not just stored in the campaign data', () => {
     for (const { id } of CASES) {
-      const { mission, base, override } = resolve(id);
+      const { mission, override } = resolve(id);
       const site = getAuthoredSite(mission.layout!.site!.id)!;
       const profile = missionProfile(mission);
       const data = new TerrainData(256, 96, mission.map.seed, profile, mission.layout, {
@@ -175,7 +181,8 @@ describe('geographic phase 1 heightfields', () => {
         heightField: override,
       });
       const anchor = site.anchor;
-      expect(data.getHeight(anchor.x, anchor.z), id).toBeCloseTo(sampleAuthoredHeight(base, anchor.x, anchor.z), 1);
+      expect(data.getHeight(anchor.x, anchor.z), id).toBeCloseTo(mission.layout!.site!.y!, 1);
+      expect(data.getAuthoredGround(anchor.x, anchor.z), id).not.toBeNull();
       if (override.river) {
         const [x, z] = override.river.path[Math.floor(override.river.path.length / 2)]!;
         expect(data.isRiver(x!, z!), id).toBe(true);

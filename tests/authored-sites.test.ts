@@ -65,7 +65,7 @@ describe('authored campaign sites', () => {
     const pampa = sampleAuthoredGround(site.heightField!, 40, 140)!;
     expect(pampa[0], 'the pampa is painted grass').toBeGreaterThan(0.2);
     const ridge = sampleAuthoredGround(site.heightField!, 12, 20)!;
-    expect(ridge[3], 'the Andean ridges are painted rock').toBeGreaterThan(0.3);
+    expect(ridge[3], 'the Andean ridges are painted rock').toBeGreaterThan(0.35);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['chanca_pucara']);
     expect(site.heritageProxies[0]?.w).toBeCloseTo(17.6, 3);
     expect(site.walkableCorridor?.width).toBeCloseTo(12.8, 3);
@@ -129,7 +129,7 @@ describe('authored campaign sites', () => {
     const pampa = sampleAuthoredGround(site.heightField!, 80, 60)!;
     expect(pampa[0], 'the high pampa is painted grass').toBeGreaterThan(0.2);
     const ridge = sampleAuthoredGround(site.heightField!, 12, 20)!;
-    expect(ridge[3], 'the Andean ridges are painted rock').toBeGreaterThan(0.3);
+    expect(ridge[3], 'the Andean ridges are painted rock').toBeGreaterThan(0.35);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['independence_chapel']);
     expect(site.heritageProxies[0]?.w).toBeCloseTo(12, 3);
     expect(site.walkableCorridor?.width).toBeCloseTo(10.667, 3);
@@ -188,26 +188,36 @@ describe('authored campaign sites', () => {
     expect(mission.layout?.site?.id).toBe('cusco_junta_site');
   });
 
-  it('keeps the Inca civil war on its authored Cusco site and heightfield', () => {
+  it('keeps the Inca civil war on its authored Cusco site and mission heightfield', () => {
     const site = getAuthoredSite('cusco_inca_site')!;
     expect(site.scale).toBeCloseTo(0.7 * CUSCO_INCA_COMPOSITION_SCALE, 3);
     expect(site.anchor.x).toBeCloseTo(124.8 * CUSCO_INCA_COMPOSITION_SCALE, 3);
     expect(site.anchor.z).toBeCloseTo(130.6 * CUSCO_INCA_COMPOSITION_SCALE, 3);
-    expect(site.heightField?.worldSize).toBe(256);
-    expect(site.heightField?.ground?.size).toBe(128);
-    expect(site.heightField?.ground?.weights.length).toBe(128 * 128 * 4);
-    const painted = sampleAuthoredGround(site.heightField!, site.anchor.x, site.anchor.z)!;
-    expect(painted.reduce((sum, w) => sum + w, 0)).toBeCloseTo(1, 2);
-    expect(painted[1], 'the Cusco plaza is painted dirt').toBeGreaterThan(0.2);
-    const pampa = sampleAuthoredGround(site.heightField!, 80, 150)!;
-    expect(pampa[0], 'the Quipaipan pampa is painted grass').toBeGreaterThan(0.2);
-    const ridge = sampleAuthoredGround(site.heightField!, 12, 20)!;
-    expect(ridge[3], 'the Andean ridges are painted rock').toBeGreaterThan(0.3);
+    // Both missions on this site supply their own field: the site itself no longer carries one.
+    expect(site.heightField).toBeUndefined();
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['cusco_ushnu']);
     expect(site.heritageProxies[0]?.w).toBeCloseTo(17.333, 3);
     expect(site.walkableCorridor?.width).toBeCloseTo(10.667, 3);
-    const mission = MISSIONS.find((m) => m.id === 'm6b_guerra_civil')!;
-    expect(mission.layout?.site?.id).toBe('cusco_inca_site');
+
+    const quipaipan = MISSIONS.find((m) => m.id === 'm6b_guerra_civil')!;
+    expect(quipaipan.layout?.site?.id).toBe('cusco_inca_site');
+    const pampaField = quipaipan.layout!.site!.heightField!;
+    expect(pampaField.worldSize).toBe(256);
+    expect(pampaField.ground?.size).toBe(128);
+    expect(pampaField.ground?.weights.length).toBe(128 * 128 * 4);
+    const pampa = sampleAuthoredGround(pampaField, 80, 150)!;
+    expect(pampa.reduce((sum, w) => sum + w, 0)).toBeCloseTo(1, 2);
+    expect(pampa[0], 'the Quipaipan pampa is painted grass').toBeGreaterThan(0.2);
+    const ridge = sampleAuthoredGround(pampaField, 232, 244)!;
+    expect(ridge[3], 'the Andean ridges are painted rock').toBeGreaterThan(0.35);
+
+    const cusco = MISSIONS.find((m) => m.id === 'm_cusco_1536')!;
+    const cityField = cusco.layout!.site!.heightField!;
+    expect(cityField.ground?.size).toBe(128);
+    const plaza = sampleAuthoredGround(cityField, site.anchor.x, site.anchor.z)!;
+    expect(plaza[1], 'the Cusco basin is painted dirt').toBeGreaterThan(0.5);
+    const sacsay = sampleAuthoredGround(cityField, 158, 141)!;
+    expect(sacsay[3], 'Sacsayhuamán is painted rock').toBeGreaterThan(0.35);
   });
 
   it('keeps the Arica mission on its authored port site and heightfield', () => {
