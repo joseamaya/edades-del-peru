@@ -134,7 +134,7 @@ proves the high-basin family and the dense-city composition.
 
 - Own Cusco heightfield: basin, Sacsayhuamán hill, campiña terraces.
 - City density; fortress on the height; retreat road.
-- `region: 'high_andes'`, `vegetationKit: 'andes'`, `cusco_basin` palette.
+- `region: 'high_andes'`, `vegetationKit: 'andes'`, existing `cusco_valley` palette.
 - Smoke from burning roofs **[DOC]**.
 
 **Acceptance:**
@@ -184,7 +184,7 @@ and the steep-terrain hydrology.
 - Blind test: Vilcabamba vs Yahuar Pampa ≥ 8/10 correct.
 - Forest cover and steepness are visible in the wide and top-down captures.
 - The river is continuous and connected to the valley, not a pond.
-- `bench_scene` has a new, justified cap; `dist:check` passes.
+- `bench_scene` has a new, measured cap for the `selva` pack; `dist:check` passes.
 - No invented species names; the pack is labelled as a plausible cloud-forest abstraction.
 
 **Complexity:** L.
@@ -192,6 +192,10 @@ and the steep-terrain hydrology.
 ---
 
 ## 6. Phase 3 — Remaining families
+
+Phase 1 created the geometry foundation; Phase 3 completes the mission-level composition, vegetation,
+materials and site work for every mission not closed in Phase 2. Rows marked “Phase 1” are not a second
+heightfield pass; they finish the mission around the new field.
 
 ### 6.1 High Andes and pampas
 
@@ -278,7 +282,8 @@ the performance caps are unchanged except for the justified `selva` pack.
 
 - Every mission keeps its current `bench_scene` cap; no cap increase except the `selva` pilot, which must
   justify its own cap with a measured frame-time improvement or a documented exception.
-- `andes` on six highland missions must fit inside the existing caps; if it does not, reduce density or
+- `andes` on the six highland missions that do not use it today must fit inside the existing caps; if it
+  does not, reduce density or
   merge materials before adding a cap.
 - New site variants merge by material and reuse modules; a new city GLB is not acceptable.
 - PBR additions are capped at two sets; `dist:check` remains 25 MB / 600 KB gzip.

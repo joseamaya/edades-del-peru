@@ -28,8 +28,9 @@ A family is a **shared environmental grammar**:
 
 A mission is a **specific composition** inside that grammar. The family may be shared; the place is not.
 
-Eight families cover the twenty missions. `altiplano` remains an unused family in the current catalogue;
-it should not be forced onto a mission just to complete the table.
+Eight active families cover the twenty missions; **F9 is reserved** for a future altiplano mission and is
+not counted. `altiplano` remains an unused family in the current catalogue; it should not be forced onto a
+mission just to complete the table.
 
 | Family | Missions | Shared grammar | What must differ per mission |
 | --- | --- | --- | --- |
@@ -37,8 +38,8 @@ it should not be forced onto a mission just to complete the table.
 | **F2 · Central coastal oasis** | Lima 1535, Lima 1821, Miraflores, Real Felipe | Rímac/coast, garúa, colonial/republican city | Grid vs outskirts/port vs redoubt line vs fortress/bay |
 | **F3 · Southern desert quebrada** | Tarapacá, Arica | Hyper-arid rock/gravel, oasis, Pacific only at Arica | Inland canyon/oasis vs port terrace + Morro |
 | **F4 · Humid inter-Andean valley** | Chavín | Deep valley, river, mist, stone | Unique: Mosna valley and ceremonial terrace |
-| **F5 · High basin and sacred valley** | Wari, Tambotoco, Cusco 1536, Túpac Amaru, Junta Cusco | High Andes, terraces, stone, puna | Ayacucho basin vs Pacaritambo vs Cusco siege vs Tinta/Sangarará vs Cusco–altiplano transect |
-| **F6 · High pampa** | Yahuar Pampa, Quipaipan, Independencia | Open grassland, seasonal water, low hills, cavalry | Pucará height vs Quipaipan battle vs Junín/Ayacucho twin pampas |
+| **F5 · High basin, sacred valley and Quipaipan pampa** | Wari, Tambotoco, Cusco 1536, Quipaipan, Túpac Amaru, Junta Cusco | High Andes, terraces, stone, puna, pampa | Ayacucho basin vs Pacaritambo vs Cusco siege vs Quipaipan battle vs Tinta/Sangarará vs Cusco–altiplano transect |
+| **F6 · High pampa** | Yahuar Pampa, Independencia | Open grassland, seasonal water, low hills, cavalry | Pucará height vs Junín/Ayacucho twin pampas |
 | **F7 · Central sierra valley** | Breña | Deep valley, river, terraces, passes | Unique: Mantaro valley and Huamachuco route |
 | **F8 · Cloud-forest slope** | Vilcabamba | Steep slopes, humid forest, river, mist | Unique: Urubamba/Vilcabamba/Huayna Pucará |
 | **F9 · Altiplano (reserved)** | — | High plateau, lake/wetland, bofedal, corrals | Not used by a released mission; do not force |
@@ -46,8 +47,9 @@ it should not be forced onto a mission just to complete the table.
 ### Why these families and not the current seven regions
 
 The seven `GeographicRegion` values are a useful **climate/material** layer, but they are too coarse for a
-mission. F5 alone contains five different places: an administrative basin (Wari), a mythic origin valley
-(Tambotoco), an urban siege (Cusco 1536), a rural rebellion (Túpac Amaru) and a transect to the altiplano
+mission. F5 alone contains six different places: an administrative basin (Wari), a mythic origin valley
+(Tambotoco), an urban siege (Cusco 1536), a battle pampa (Quipaipan), a rural rebellion (Túpac Amaru) and a
+transect to the altiplano
 (Junta Cusco). They should share the high-Andean grammar, not the same heightfield.
 
 The proposed families do not replace `GeographicRegion`. They sit above it as an authoring and QA concept:
@@ -62,8 +64,10 @@ The proposed families do not replace `GeographicRegion`. They sit above it as an
 
 ### 2.1 Terrain recipe
 
-The current authored heightfields are copied templates. Replace the copy-paste with a small Python
-authoring library, for example `scripts/lib/terrain_authoring.py`, exposing:
+The current authored heightfields are copied templates. **Do not build a library first.** Author each
+missing field from the nearest existing script; if the same recipe is repeated in three missions, extract a
+small helper (for example `scripts/lib/terrain_authoring.py`). The table below is a target vocabulary, not a
+Phase 1 deliverable:
 
 | Recipe | Inputs | Output |
 | --- | --- | --- |
@@ -77,7 +81,7 @@ authoring library, for example `scripts/lib/terrain_authoring.py`, exposing:
 Each mission still produces its own `AuthoredHeightField` (a `*.ts` data file). The recipes share code, not
 geometry. A mission never imports another mission’s heights.
 
-**Why this is the right layer:** the project already uses authored heightfields for 17 sites. Extending that
+**Why this is the right layer:** the project already uses authored heightfields for 18 sites. Extending that
 pattern to all 20 missions is cheaper and safer than adding runtime terrain operators (lakes, ridges, dry
 washes) to `generateHeightField`.
 
@@ -109,8 +113,11 @@ The existing kit is the right asset base. Use it more intelligently:
 
 The `andes` pack already exists. Using it on all `high_valley` missions is **configuration**, not new art.
 The `puna` profile can be built from the existing ichu ground cover plus sparse molle/pacay; it does not
-need a new tree. The `cloud_forest` profile is the only one that probably needs a new pack and one or two
-new GLBs.
+need a new tree. The `cloud_forest` authoring profile is the only one that probably needs a new runtime pack
+(`selva`) and one or two new GLBs.
+
+**Naming:** `coastal_desert` and `cloud_forest` are authoring profiles; `selva` is the runtime pack id;
+`cloud_forest_soil` is the material profile. The palette names are `desert_south` and `cloud_forest`.
 
 ### 2.4 Material profile
 
@@ -119,12 +126,12 @@ new GLBs.
 | `desert_sand` | Pale sand, gravel, low roughness variation | Existing sand/rock, `coastal_gravel` |
 | `river_loam` | Dark alluvial loam, wet silt | Existing dirt/grass |
 | `highland_earth` | Ochre earth, grey stone, puna grass | `puna_grass`, existing rock |
-| `cloud_forest` | Dark wet earth, mossy rock, clay | New `cloud_forest_floor` + existing rock |
+| `cloud_forest_soil` | Dark wet earth, mossy rock, clay | New `cloud_forest_floor` + existing rock |
 | `colonial_coast` | Adobe, brick, cobble, dust | Existing colonial materials |
 
-Add at most **three** palettes (`desert_south`, `puna_high`, `cloud_forest`) and **two** PBR sets
-(`salt/gravel`, `cloud_forest_floor`). Everything else reuses the current nine palettes and the existing
-PBR slots.
+Add at most **two new palettes** (`desert_south`, `cloud_forest`) and **two PBR sets**
+(`salt/gravel`, `cloud_forest_floor`). Reuse `cusco_valley` and `puna_grass`; everything else uses the
+existing nine palettes and PBR slots.
 
 ### 2.5 Settlement profile
 
@@ -174,10 +181,10 @@ The point is not “more fog”. The point is that altitude, humidity and coast 
 | `m_tambotoco` | F5 | `high_basin` + cave ridge + hill | `high_valley` | `highland_earth` | dispersed |
 | `m5_yahuar_pampa` | F6 | `pampa` + pucará hill | `puna` | `highland_earth` | dispersed |
 | `m6_chimu_inca` | F1 | `coastal_valley` + dunes + canal | `coastal_desert` | `desert_sand` + adobe | desert/canal |
-| `m6b_guerra_civil` | F6 | `pampa` + dry wash | `puna` | `highland_earth` | two camps |
+| `m6b_guerra_civil` | F5 | `pampa` + dry wash | `puna` | `highland_earth` | two camps |
 | `m_lima` | F2 | `coastal_terrace` + Rímac | `coastal_river` | `colonial_coast` | grid |
 | `m_cusco_1536` | F5 | `high_basin` + fortress hill + city | `high_valley` | `highland_earth` | urban |
-| `m_vilcabamba` | F8 | `cloud_forest` + river | `cloud_forest` | `cloud_forest` | dispersed |
+| `m_vilcabamba` | F8 | `cloud_forest` + river | `cloud_forest` | `cloud_forest_soil` | dispersed |
 | `m7_tupac_amaru` | F5 | `high_basin` + rural valley | `high_valley` | `highland_earth` | dispersed |
 | `m_junta_cusco` | F5 | `high_basin` + pass + altiplano | `puna`/`high_valley` | `highland_earth` | transect |
 | `m_lima_1821` | F2 | `coastal_terrace` + bay | `coastal_river` | `colonial_coast` | dispersed edge |
@@ -244,11 +251,11 @@ The proposal does **not** require a new terrain engine. It requires five small e
 1. **Complete `MapOverrides`** with `water`, `elevation` and `atmosphere`, and `groundPbr`.
    Today a mission cannot override the water level, inland/coastal flag, snow line, haze or PBR slots.
 2. **Add an explicit `region` to every mission.** Do not let `m8_independencia` and `m_junta_cusco` fall
-   into `andean_valley` by civilization default.
+   into `andean_valley` through the map-type fallback.
 3. **Use `vegetationKit: 'andes'` on every highland mission.** The pack already exists; only Tambotoco
    opts in today.
-4. **Add `puna`, `selva` and `desert` to the `VegetationPack` union.** The first two are data plus a
-   handful of assets; `desert` can be the empty/sparse profile. This is a data extension, not a new
+4. **Add `puna`, `selva` and `coastal_desert` to the `VegetationPack` union.** `puna` is data; `selva`
+   needs one or two GLBs; `coastal_desert` is the empty/sparse profile. This is a data extension, not a new
    vegetation system.
 5. **Author one heightfield per mission.** Add the seven missing fields (Quipaipan, Lima 1821, Miraflores,
    Callao, Tarapacá, Vilcabamba, Mantaro) and remove every reuse chain.
@@ -256,23 +263,9 @@ The proposal does **not** require a new terrain engine. It requires five small e
 ### 5.3 Optional preset layer
 
 If, after the first three missions, the same combination of region/palette/vegetation/atmosphere repeats,
-extract it into `src/model/defs/landscapePresets.ts`:
-
-```ts
-interface LandscapePreset {
-  id: string;
-  region: GeographicRegion;
-  palette: TerrainPaletteId;
-  vegetation: VegetationProfile;
-  materials: MaterialProfile;
-  hydrology: HydrologyProfile;
-  atmosphere: MissionAtmosphere;
-  settlementShape: SettlementShape;
-}
-```
-
-A mission would reference `landscape: 'puna_high'` and still override `layout` and `site`. Do **not** add
-this layer before it removes duplication; adding an abstraction for its own sake would violate the brief.
+a thin data preset (for example a `puna` preset) could remove the duplication. It is **not** part
+of the first implementation and the interface is deliberately not designed here. Do **not** add this layer
+before it removes duplication; adding an abstraction for its own sake would violate the brief.
 
 ### 5.4 What not to build
 
@@ -288,12 +281,13 @@ this layer before it removes duplication; adding an abstraction for its own sake
 
 - Terrain relief is the cheapest identity lever: it changes vertex heights, not draw calls.
 - Vegetation must stay instanced; no per-tree draw call.
-- `andes` on six highland missions is acceptable only if each `bench_scene --assert` stays inside its
-  current cap.
+- `andes` on the six highland missions that do not use it today is acceptable only if each
+  `bench_scene --assert` stays inside its current cap.
 - The `selva` pack gets its own cap and its own LOD/shadow policy; it cannot borrow Tambotoco’s headroom.
 - New site variants merge by material and reuse modules; a new GLB per city is not acceptable.
 - PBR additions are capped at two sets; `dist:check` remains the gate.
-- No pilot may raise a `bench_scene` cap to make room. If the cap is tight, reduce density or merge.
+- No mission may raise an existing `bench_scene` cap to make room. Only the new `selva` pack may add a new,
+  measured category approved in review. If a cap is tight, reduce density or merge.
 
 ---
 

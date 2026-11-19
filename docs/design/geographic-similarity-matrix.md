@@ -58,9 +58,9 @@ Diagonal cells (`·`) are not scored.
 | **C13** | 1 | 3 | 1 | 2 | 2 | 2 | 1 | 2 | 3 | 2 | 1 | 4 | · | 3 | 3 | 1 | 1 | 1 | 3 | 2 |
 | **C14** | 2 | 1 | 2 | 1 | 1 | 1 | 2 | 1 | 5 | 1 | 1 | 3 | 3 | · | 1 | 3 | 2 | 2 | 5 | 1 |
 | **C15** | 1 | 3 | 1 | 3 | 2 | 3 | 1 | 3 | 1 | 3 | 1 | 3 | 3 | 1 | · | 1 | 1 | 1 | 1 | 5 |
-| **C16** | 2 | 1 | 2 | 1 | 1 | 1 | 2 | 1 | 3 | 1 | 1 | 1 | 1 | 3 | 1 | · | 2 | 2 | 3 | 1 |
-| **C17** | 2 | 1 | 2 | 1 | 1 | 1 | 2 | 1 | 2 | 1 | 1 | 1 | 1 | 2 | 1 | 2 | · | 5 | 2 | 1 |
-| **C18** | 2 | 1 | 2 | 1 | 1 | 1 | 2 | 1 | 2 | 1 | 1 | 1 | 1 | 2 | 1 | 2 | 5 | · | 2 | 1 |
+| **C16** | 2 | 1 | 2 | 1 | 1 | 1 | 2 | 1 | 3 | 1 | 1 | 1 | 1 | 3 | 1 | · | 5 | 5 | 3 | 1 |
+| **C17** | 2 | 1 | 2 | 1 | 1 | 1 | 2 | 1 | 2 | 1 | 1 | 1 | 1 | 2 | 1 | 5 | · | 5 | 2 | 1 |
+| **C18** | 2 | 1 | 2 | 1 | 1 | 1 | 2 | 1 | 2 | 1 | 1 | 1 | 1 | 2 | 1 | 5 | 5 | · | 2 | 1 |
 | **C19** | 2 | 1 | 2 | 1 | 1 | 1 | 2 | 1 | 5 | 1 | 1 | 3 | 3 | 5 | 1 | 3 | 2 | 2 | · | 1 |
 | **C20** | 1 | 2 | 1 | 3 | 2 | 3 | 1 | 3 | 1 | 3 | 1 | 3 | 2 | 1 | 5 | 1 | 1 | 1 | 1 | · |
 
@@ -116,13 +116,15 @@ C9/C14/C19 and C16/C17/C18 repeat their own axes exactly because they share the 
 
 ## Colour and atmosphere dependence
 
-- Six `high_andes` missions share the same palette and the same regional atmosphere. The visible
-  differences are time of day, colour grade and labels.
+- Six of the seven `high_andes` missions (all except Tambotoco) share the same palette and the same
+  regional atmosphere. The visible differences are time of day, colour grade and labels.
 - `north_coast` and `central_coast` use identical terrain-material multipliers and almost identical bands.
 - Only `m1_caral` and `m2_chavin` define a mission-level `MissionAtmosphere`; the others inherit the
   regional one.
 - Only `m_tambotoco` opts into the `andes` vegetation kit. All other inland missions use procedural
   `broad`/`needle`/`frond` trees.
 
-**Rule:** a mission that scores 4–5 because its palette or lighting differs is not geographically
-differentiated. It is the same map in another grade.
+**Reading the scores:** a mission that scores 4–5 because its palette or lighting differs is not
+geographically differentiated. It is the same map in another grade. That failure mode is what the
+proposal in [`mission-geographic-identity.md`](./mission-geographic-identity.md) targets; it is an
+observation of this snapshot, not a rule for the current build.

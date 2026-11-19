@@ -20,14 +20,14 @@ for strategic terrain legibility.
 
 The project has a strong geographic **pipeline** and a weak geographic **catalogue**.
 
-- The pipeline is data-driven, deterministic and already produces authored places: 17 authored sites, 13
+- The pipeline is data-driven, deterministic and already produces authored places: 18 authored sites, 13
   authored heightfields, regional profiles, cultural landscapes, vegetation kits and performance gates.
 - Two missions already meet the identity bar: **Caral** and **Tambotoco**. They prove the approach works.
 - Most other missions are not geographically differentiated. They are differentiated by **name, labels,
   building set, time of day and colour grade**, which rule 5 of the brief explicitly rejects.
 - Twelve missions share five heightfields. Fourteen missions share five site models. Seven missions share
   the same base→site→enemy diagonal.
-- The seven-region taxonomy is too coarse for twenty missions: 14 missions fall into three regions and the
+- The seven-region taxonomy is too coarse for twenty missions: 15 missions fall into three regions and the
   `altiplano` region is unused. Two missions (`m8_independencia`, `m_junta_cusco`) resolve to
   `andean_valley` by civilization fallback even though they take place in the high Andes.
 - The fastest structural win is not a new engine. It is **one authored heightfield per mission**, mission
@@ -47,7 +47,7 @@ materials and composition around those mechanics.
 | --- | --- |
 | `src/model/defs/profiles.ts` | The seven `GeographicRegion` profiles, `MAP_PROFILES`, `applyMapOverrides`, `resolveMapProfile` |
 | `src/sim/heightField.ts` | The procedural heightfield, river carving, terraces, canals and the water level |
-| `src/model/defs/sites.ts` | The 17 authored sites, their heightfields, models, anchors and terrain palettes |
+| `src/model/defs/sites.ts` | The 18 authored sites, their heightfields, models, anchors and terrain palettes |
 | `src/model/defs/terrainLayout.ts` | The only authored terrain features available to a mission: one east–west river and flat terraces |
 | `src/model/defs/terrainPalettes.ts` | The nine terrain palettes and the shared material multipliers |
 | `src/model/defs/landscape.ts` | The cultural-landscape profiles and their settlement shapes |
@@ -109,7 +109,7 @@ geographic silhouette.
 | --- | --- | --- |
 | Map seed, size, `MapType` | `MissionDef.map` | All maps are 256 m; the seed alone does not create identity |
 | `region` | `MissionDef.region` | Only 10 missions set it explicitly; the rest fall back to the civilization |
-| Authored heightfield | `AuthoredSiteDef.heightField` | 13 fields for 17 sites; 12 missions share 5 fields |
+| Authored heightfield | `AuthoredSiteDef.heightField` | 13 fields for 18 sites; 12 missions share 5 fields |
 | Authored site model | `AuthoredSiteDef.modelName` | 5 models cover 14 missions |
 | Site anchor and phases | `AuthoredSiteDef`, `MissionSite` | Repeated anchors in the reuse chains |
 | Base/enemy anchors | `MissionLayout` | The same diagonal in seven missions |
@@ -134,7 +134,7 @@ geographic silhouette.
 
 | Region | Missions | Share |
 | --- | ---: | ---: |
-| `high_andes` | 6 | 30 % |
+| `high_andes` | 7 | 35 % |
 | `central_coast` | 5 | 25 % |
 | `andean_valley` | 3 | 15 % |
 | `north_coast` | 2 | 10 % |
@@ -142,9 +142,10 @@ geographic silhouette.
 | `amazon` | 1 | 5 % |
 | `altiplano` | 0 | 0 % |
 
-`m8_independencia` and `m_junta_cusco` are `andean_valley` because their player civilizations have no
-`CIV_REGION` entry and their geography falls back to the `andes` default. They are high-altitude missions
-rendered with the humid inter-Andean palette. That is a data bug, not an artistic choice.
+`m8_independencia` and `m_junta_cusco` resolve to `andean_valley` because their player civilization’s
+documented region is not an `andes` map, so `resolveRegion` falls back to the map type’s default
+(`regionForMapType('andes')` is `andean_valley`). That is designed behaviour, not a data bug; the audit
+question is whether that fallback is the right landscape for a high-altitude mission.
 
 ---
 
@@ -165,8 +166,8 @@ rendered with the humid inter-Andean palette. That is a data bug, not an artisti
 6. **Hydrology is absent or accidental.** Only five missions integrate water. The Chanca and Colonial
    heightfields subtract depth below the fixed water level, creating lakes where the design intended a dry
    valley. Canals are rectangular ribbons, not irrigation systems.
-7. **Atmosphere is underused.** Only two missions override it. Six highland missions share the same haze,
-   sky tint and sun warmth.
+7. **Atmosphere is underused.** Only two missions override it. Six of the seven `high_andes` missions (all
+   except Tambotoco) share the same haze, sky tint and sun warmth.
 8. **Relief is too low for the camera.** Amplitudes of 8–17 units over 256 m, with ridges at the border,
    read as a plain at camera height 54. Tambotoco works because its ~19 units of local relief sit in the
    middle of the composition.
@@ -194,30 +195,30 @@ rendered with the humid inter-Andean palette. That is a data bug, not an artisti
 The 13 audit fields are split into two tables for readability. The pairwise scores are in
 [`geographic-similarity-matrix.md`](./geographic-similarity-matrix.md).
 
-### 5.1 Historical context, region and current geography
+### 5.1 Historical context, natural region, current geography and target vegetation
 
-| # | Mission | Campaign | Context | Place | Region (resolved) | Relief now | Hydrography now | Vegetation now | Soil/materials now |
+| # | Mission | Campaign | Context | Place | Natural region (runtime profile) | Relief now | Hydrography now | Vegetation now → characteristic | Soil/materials now |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | `m1_caral` | Preincas | 3000–1800 BC, Supe | Caral / Áspero | `central_coast` (site palette `caral`) | Terrace, scarp, dry hills, lomas | Supe, wetlands, sea, fords | Huarango, willow, reeds, totora | Sand/gravel, loam, beach |
-| 2 | `m2_chavin` | Preincas | 1200–200 BC, Mosna | Chavín de Huántar | `andean_valley` | Valley + terrace, weakly visible | Mosna + ford | Generic broad/needle | Rocky loam, stone |
-| 3 | `m3_moche_recuay` | Preincas | 200 BC–800 AD, Moche | Huacas de Moche | `north_coast` | Flat valley + terrace | Canal only; no river | Generic, sparse | Sand, loam, adobe |
-| 4 | `m4_wari` | Preincas | 600–1000 AD, Ayacucho | Wari complex | `high_andes` | Flat basin, distant ridges | None; dry quebradas | Generic broad/needle | Rock, loam, stone |
-| 5 | `m_tambotoco` | Inca | Myth of Pacaritambo | Tambotoco / Huanacaure | `high_andes` (site palette `cusco_valley`) | Ridge, valley, hill | Stream/acequia | Molle, pacay, willow, ichu | Earth, rock, fields |
-| 6 | `m5_yahuar_pampa` | Inca | 1438, Cusco | Yahuar Pampa | `high_andes` | Flat pampa + accidental pond | None; accidental lake | Generic broad/needle | Puna soil, gravel |
-| 7 | `m6_chimu_inca` | Inca | c. 1470, north coast | Chan Chan / Paramonga | `north_coast` | Flat desert/valley | Canal; sea west | Generic, sparse | Sand, gravel, adobe |
-| 8 | `m6b_guerra_civil` | Inca | 1532, Quipaipan | Quipaipan | `high_andes` | Flat plain | None | Generic broad/needle | Puna soil |
-| 9 | `m_lima` | Virreinato | 1535, Lima | Rímac / Lima | `central_coast` | Flat coastal plain | Rímac + sea | Algarrobo/willow + generic | Sand, loam, adobe |
-| 10 | `m_cusco_1536` | Virreinato | 1536, Cusco | Cusco / Sacsayhuamán | `high_andes` | Flat basin | None | Generic broad/needle | Stone, earth |
-| 11 | `m_vilcabamba` | Virreinato | 1572, Vilcabamba | Vilcabamba / Urubamba | `amazon` | Flat grass + pond | Pond labelled as river | Scattered palms | Clay/grass |
-| 12 | `m7_tupac_amaru` | Virreinato | 1780–81, Tinta/Sangarará | Tungasuca / Sangarará / Cusco | `high_andes` | Flat valley + ponds | Accidental ponds | Generic broad/needle | Earth, stone |
-| 13 | `m_junta_cusco` | Independencia | 1814–15, Cusco/Umachiri | Cusco / Apacheta / Lalli | `andean_valley` (fallback) | Basin/pass/altiplano, weak | Lalli river | Generic broad/needle | Earth, gravel |
-| 14 | `m_lima_1821` | Independencia | 1820–21, Lima/Callao | Lima / Callao | `central_coast` | Flat plain | Rímac + sea | Algarrobo/willow + generic | Sand, loam |
-| 15 | `m8_independencia` | Independencia | 1824, Junín/Ayacucho | Two high pampas | `andean_valley` (fallback) | Flat pampas | None | Generic broad/needle | Grass, soil |
-| 16 | `m_real_felipe` | Independencia | 1824–26, Callao | Real Felipe | `central_coast` | Flat terrace | Sea west | Generic, sparse | Sand, gravel |
-| 17 | `m_tarapaca` | República | 1879, Tarapacá | Quebrada de San Lorenzo | `south_coast` | Flat plain + sea (wrong) | Sea west (wrong) | Generic, sparse | Sand, gravel |
-| 18 | `m9_guerra_pacifico` | República | 1880, Arica | Arica / Morro | `south_coast` | Flat terrace + low ridge | Sea west | Generic, sparse | Sand, gravel |
-| 19 | `m_miraflores` | República | 1881, Lima south | Miraflores / San Juan | `central_coast` | Flat green field | Sea off-camera | Algarrobo/willow + generic | Sand/loam |
-| 20 | `m_brena` | República | 1882–83, central sierra | Mantaro / Huamachuco | `high_andes` | Flat plain | None | Generic broad/needle | Earth, grass |
+| 1 | `m1_caral` | Preincas | 3000–1800 BC, Supe | Caral / Áspero | Costa desértica central / Supe (`central_coast`, site palette `caral`) | Terrace, scarp, dry hills, lomas | Supe, wetlands, sea, fords | Huarango, willow, reeds, totora → riparian monte, huarango terraces, totora, seasonal lomas | Sand/gravel, loam, beach |
+| 2 | `m2_chavin` | Preincas | 1200–200 BC, Mosna | Chavín de Huántar | Sierra alta / Callejón de Conchucos (`andean_valley`) | Valley + terrace, weakly visible | Mosna + ford | Generic broad/needle → ichu, molle, pacay, wet valley | Rocky loam, stone |
+| 3 | `m3_moche_recuay` | Preincas | 200 BC–800 AD, Moche | Huacas de Moche | Costa desértica norte / Moche–Chicama (`north_coast`) | Flat valley + terrace | Canal only; no river | Generic, sparse → algarrobal, riparian reeds, dry scrub | Sand, loam, adobe |
+| 4 | `m4_wari` | Preincas | 600–1000 AD, Ayacucho | Wari complex | Sierra alta / Ayacucho basin (`high_andes`) | Flat basin, distant ridges | None; dry quebradas | Generic broad/needle → puna/ichu, molle/pacay on sheltered slopes | Rock, loam, stone |
+| 5 | `m_tambotoco` | Inca | Myth of Pacaritambo | Tambotoco / Huanacaure | Sierra alta / Cusco valley, Pacaritambo (`high_andes`, site palette `cusco_valley`) | Ridge, valley, hill | Stream/acequia | Molle, pacay, willow, ichu → same + puna/rock | Earth, rock, fields |
+| 6 | `m5_yahuar_pampa` | Inca | 1438, Cusco | Yahuar Pampa | Puna / Yahuar Pampa near Cusco (`high_andes`) | Flat pampa + accidental pond | None; accidental lake | Generic broad/needle → puna grass/ichu, low scrub | Puna soil, gravel |
+| 7 | `m6_chimu_inca` | Inca | c. 1470, north coast | Chan Chan / Paramonga | Costa desértica norte / Chan Chan (`north_coast`) | Flat desert/valley | Canal; sea west | Generic, sparse → almost none; algarrobo in river strips, totora wetlands | Sand, gravel, adobe |
+| 8 | `m6b_guerra_civil` | Inca | 1532, Quipaipan | Quipaipan | Puna / Quipaipan near Cusco (`high_andes`) | Flat plain | None | Generic broad/needle → puna/ichu, low scrub | Puna soil |
+| 9 | `m_lima` | Virreinato | 1535, Lima | Rímac / Lima | Costa desértica central / Rímac (`central_coast`) | Flat coastal plain | Rímac + sea | Algarrobo/willow + generic → algarrobal, reeds, fields | Sand, loam, adobe |
+| 10 | `m_cusco_1536` | Virreinato | 1536, Cusco | Cusco / Sacsayhuamán | Sierra alta / Cusco basin (`high_andes`) | Flat basin | None | Generic broad/needle → puna/valley, molle, crops | Stone, earth |
+| 11 | `m_vilcabamba` | Virreinato | 1572, Vilcabamba | Vilcabamba / Urubamba | Ceja de selva / Urubamba (`amazon`) | Flat grass + pond | Pond labelled as river | Scattered palms → cloud forest, ferns, palms (no species claim) | Clay/grass |
+| 12 | `m7_tupac_amaru` | Virreinato | 1780–81, Tinta/Sangarará | Tungasuca / Sangarará / Cusco | Sierra alta / Tinta–Sangarará (`high_andes`) | Flat valley + ponds | Accidental ponds | Generic broad/needle → ichu, molle, crops | Earth, stone |
+| 13 | `m_junta_cusco` | Independencia | 1814–15, Cusco/Umachiri | Cusco / Apacheta / Lalli | Sierra alta / Cusco–altiplano transect (`andean_valley` fallback) | Basin/pass/altiplano, weak | Lalli river | Generic broad/needle → puna/ichu, molle in valley | Earth, gravel |
+| 14 | `m_lima_1821` | Independencia | 1820–21, Lima/Callao | Lima / Callao | Costa desértica central / Lima–Callao (`central_coast`) | Flat plain | Rímac + sea | Algarrobo/willow + generic → coastal scrub, algarrobo, fields | Sand, loam |
+| 15 | `m8_independencia` | Independencia | 1824, Junín/Ayacucho | Two high pampas | Puna / Junín–Ayacucho (`andean_valley` fallback) | Flat pampas | None | Generic broad/needle → puna/ichu, wetland grasses | Grass, soil |
+| 16 | `m_real_felipe` | Independencia | 1824–26, Callao | Real Felipe | Costa desértica central / Callao (`central_coast`) | Flat terrace | Sea west | Generic, sparse → almost none, dry scrub | Sand, gravel |
+| 17 | `m_tarapaca` | República | 1879, Tarapacá | Quebrada de San Lorenzo | Desierto interior / Tarapacá quebrada (`south_coast`) | Flat plain + sea (wrong) | Sea west (wrong) | Generic, sparse → oasis vegetation, desert scrub | Sand, gravel |
+| 18 | `m9_guerra_pacifico` | República | 1880, Arica | Arica / Morro | Costa desértica sur / Arica (`south_coast`) | Flat terrace + low ridge | Sea west | Generic, sparse → almost none, coastal scrub | Sand, gravel |
+| 19 | `m_miraflores` | República | 1881, Lima south | Miraflores / San Juan | Costa desértica central / Lima south (`central_coast`) | Flat green field | Sea off-camera | Algarrobo/willow + generic → coastal scrub, isolated algarrobo | Sand/loam |
+| 20 | `m_brena` | República | 1882–83, central sierra | Mantaro / Huamachuco | Sierra central / Mantaro (`high_andes`) | Flat plain | None | Generic broad/needle → crops, molle, ichu | Earth, grass |
 
 ### 5.2 Settlement, dominant visual, gameplay and reuse
 
@@ -248,6 +249,10 @@ The 13 audit fields are split into two tables for readability. The pairwise scor
 
 ## 6. The 20 proposals
 
+The proposal numbers below follow the family grouping, not the matrix row order; each heading names the
+mission id. Group 6.5 includes the Cusco basin and its pampa at Quipaipan because they share the high-basin
+grammar even though one is an urban siege and the other an open battle.
+
 Each proposal is labelled with the certainty vocabulary of the project:
 
 - **[DOC]** documented in a dossier under `docs/historia/`;
@@ -259,7 +264,7 @@ Each proposal is labelled with the certainty vocabulary of the project:
 The technical column uses the five categories requested by the brief: **configuration**, **scenario
 composition**, **new asset**, **modified asset** and **generation-system change**.
 
-### 6.1 Costa desértica con valle fluvial
+### 6.1 Desert coast with river valley
 
 #### 1. `m1_caral` — La Ciudad Sagrada
 
@@ -362,7 +367,7 @@ dunes as a barrier; the sea west. The player advances along the canal, not acros
 - **Modified asset:** adobe city materials.
 - **Generation system:** authored heightfield (current pattern).
 
-### 6.2 Oasis costero central
+### 6.2 Central coastal oasis
 
 #### 4. `m_lima` — La Ciudad de los Reyes (1535)
 
@@ -481,7 +486,7 @@ blockade edge. A star fortress needs a star plan, not a rectangular block.
 - **Modified asset:** coastal fort materials.
 - **Generation system:** authored heightfield (new).
 
-### 6.3 Quebrada y desierto meridional
+### 6.3 Southern desert quebrada
 
 #### 8. `m_tarapaca` — La quebrada
 
@@ -544,7 +549,7 @@ The Morro gives the place its silhouette.
 - **Modified asset:** fort materials.
 - **Generation system:** authored heightfield (modify existing Arica).
 
-### 6.4 Valle interandino húmedo
+### 6.4 Humid inter-Andean valley
 
 #### 10. `m2_chavin` — Chavín de Huántar
 
@@ -578,7 +583,7 @@ documented altitude.
 - **Modified asset:** temple material/scale.
 - **Generation system:** authored heightfield (modify existing Chavín).
 
-### 6.5 Cuenca alta y valle sagrado
+### 6.5 High basin, sacred valley and Quipaipan pampa
 
 #### 11. `m4_wari` — El Horizonte Medio
 
@@ -636,6 +641,12 @@ rock outcrops and puna density if the budget allows.
 - **Modified asset:** none.
 - **Generation system:** none.
 
+**Audit of Huanacaure and Inticancha.** Huanacaure is implemented as a three-tier shrine hill with a route
+and a discovery; Inticancha is implemented in `AylluSite` as a paved plaza, altar and four cancha plots,
+raised in phases. These are the strongest foundation beats in the catalogue and match the dossier’s
+four-cancha account. Keep them. The only gap is the surrounding highland (distant peaks, rock outcrops,
+puna density), not the foundation plan.
+
 #### 13. `m_cusco_1536` — Cusco en llamas
 
 **A. Identity.** The Cusco basin, a dense city, Sacsayhuamán on its height and a terraced campiña under
@@ -670,7 +681,8 @@ invented spectacle.
 #### 14. `m6b_guerra_civil` — Quipaipan
 
 **A. Identity.** An open high pampa near Cusco, a battlefield with low hills and a dry quebrada; no city.
-**[DOC]**
+**[DOC/DEB]** The battle is documented; the exact site is debated, so the pampa remains a documented
+abstraction rather than a survey.
 
 **B. Topography.** Broad pampa with low ridges and a dry wash. The current map is the Cusco basin.
 
@@ -751,7 +763,7 @@ river. **[DOC]**
 - **Modified asset:** colonial modules.
 - **Generation system:** authored heightfield (modify existing Junta).
 
-### 6.6 Pampas de altura
+### 6.6 High pampas
 
 #### 17. `m5_yahuar_pampa` — Yahuar Pampa
 
@@ -808,7 +820,7 @@ readable as two places.
 - **Modified asset:** church/camp modules.
 - **Generation system:** authored heightfield (modify existing Independence).
 
-### 6.7 Sierra central y ceja de selva
+### 6.7 Central sierra and cloud forest
 
 #### 19. `m_brena` — La Breña
 
