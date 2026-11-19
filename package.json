@@ -71,6 +71,7 @@
     "visual:update": "node scripts/visual.mjs --update",
     "visual:check": "node scripts/visual.mjs",
     "art:blender": "tsx scripts/art/cli.ts blender",
+    "art:heightmaps": "python3 scripts/reencode_heightmaps.py",
     "art:models": "tsx scripts/art/cli.ts models",
     "art:textures": "tsx scripts/art/cli.ts textures",
     "art:validate": "tsx scripts/art/cli.ts validate",

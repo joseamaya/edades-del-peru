@@ -132,6 +132,11 @@ Definition of Done and the building audit see
   `profiles.ts`. The region `atmosphere` is applied (Phase 9): `Game.applyAtmosphere` feeds `skyTint`/`fogDensity`
   to the sky, terrain and water as a distance-bounded aerial perspective and `sunWarmth` to the sun; `scene.fog`
   stays null (classic sharp look, buildings undimmed).
+- **Authored heightmap encoding**: the generated `src/model/defs/*Heightmap.ts` fields store signed
+  delta-varint base64 and decode through `src/model/defs/heightmapCodec.ts`; the values remain the previous
+  16-bit quantized millimetres, bit for bit. Every `scripts/build_*_heightmap.py` calls
+  `reencode_file` after writing, and `yarn art:heightmaps` re-runs the migration for a new file. The migration
+  is idempotent and is pinned by `tests/heightmap-codec.test.ts`.
 - **Post-processing & the cinematic look**: `src/rendering/PostFX.ts` chains Render → Bloom →
   chromatic aberration → vignette → `OutputPass` → **colour grading** → FXAA. `settings.cinematic` (default
   **on**, `src/core/Config.ts`) enables the whole set and `settings.quality` (`high|medium|low`) tunes

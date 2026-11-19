@@ -14,6 +14,7 @@ export function decodeHeightmap(b64: string, count: number, scale: number): Floa
     let result = 0;
     let byte: number;
     do {
+      if (i >= bin.length) throw new Error('truncated heightmap payload');
       byte = bin.charCodeAt(i++);
       result |= (byte & 0x7f) << shift;
       shift += 7;
@@ -22,5 +23,6 @@ export function decodeHeightmap(b64: string, count: number, scale: number): Floa
     value += delta;
     out[o++] = value * scale;
   }
+  if (i !== bin.length) throw new Error('trailing bytes in heightmap payload');
   return out;
 }

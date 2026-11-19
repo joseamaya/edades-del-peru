@@ -12,6 +12,8 @@ import base64
 import math
 from pathlib import Path
 
+from reencode_heightmaps import reencode_file
+
 SIZE = 256
 # The painted ground is sampled every 2 m; the heightfield matches that grid to keep the bundle small.
 N = SIZE // 2 + 1
@@ -213,3 +215,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+reencode_file(OUT)
