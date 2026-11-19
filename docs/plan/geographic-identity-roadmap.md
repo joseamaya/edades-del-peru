@@ -151,8 +151,7 @@ that field's relief instead of inheriting another mission's painting. The paint 
 128 x 128 RGBA grids are stored as 4-bit palette indices (`src/model/defs/groundCodec.ts`), and the dead
 `cusco_inca_site` field was removed, so `dist` went from 24.83 to 24.74 MB. The paint keeps the thresholds the game reads: groves still grow where `grass > 0.6` and `treeless` still
 fires on `sand > 0.45` / `rock > 0.6`, pinned per mission in `tests/geographic-heightfields.test.ts` (Lima
-1821/Miraflores keep the irrigated oasis, Callao and Tarapacá stay as bare as their base fields). The first blind round scored 8/8 and the Phase 4 round scored 6/8; both are recorded below, and the
-difference is the honest measure of what is still missing.
+1821/Miraflores keep the irrigated oasis, Callao and Tarapacá stay as bare as their base fields). Three blind rounds are recorded below: 8/8, then 6/8, then 8/8 after the connected Vilcabamba valley.
 
 Still open in this phase: Lima 1535's city-grid composition, Vilcabamba's denser cloud-forest vegetation
 (procedural, no new assets), and the remaining composition work; the formal blind protocol with a larger
@@ -299,8 +298,9 @@ heightfield pass; they finish the mission around the new field.
 
 ## 7. Phase 4 — Validation and close
 
-**Status (2026-11-19):** the acceptance round now scores **8/8** (the round before the connected Vilcabamba
-valley and the Miraflores redoubts scored 6/8). Historical/geographical audit of
+**Status (2026-11-19):** the blind test now scores **8/8** after the connected Vilcabamba valley (the previous
+round scored 6/8). The Miraflores redoubts are a composition change made after that round; they are not claimed
+as part of its score. Historical/geographical audit of
 Tarapacá, Real Felipe and Miraflores: no invented facts, four imprecisions fixed (Tarapacá's uncited "200 km",
 Real Felipe's "civilians in Callao" where the source says the fortress, Miraflores' Chorrillos label on the
 inland side, and the stale `lima_site` reference in `docs/historia/campanas/miraflores.md`). The similarity

@@ -780,31 +780,38 @@ export class WorldViewDecor {
     const raw = this.game.missionLayout?.decor;
     const pieces: readonly MissionDecor[] = Array.isArray(raw) ? raw : raw ? [raw] : [];
     if (!pieces.length) return;
+    if (pieces.length === 1) {
+      // Single-piece layouts keep the historical shape: `scenarioDecor` is the piece itself.
+      const group = this.placeDecor(null, pieces[0]!);
+      if (group) this.game.scenarioDecor = group;
+      return;
+    }
     const parent = new THREE.Group();
     parent.name = 'mission_decor';
     this.game.scene.add(parent);
     this.game.scenarioDecor = parent;
-    for (const decor of pieces) this.spawnDecorPiece(parent, decor);
+    for (const decor of pieces) this.placeDecor(parent, decor);
   }
 
   /** One decor piece of the mission composition, placed relative to a player/enemy base. */
-  private spawnDecorPiece(parent: THREE.Group, decor: MissionDecor): void {
+  private placeDecor(parent: THREE.Group | null, decor: MissionDecor): THREE.Group | null {
     const owner = decor.at === 'enemy' ? 1 : 0;
     const center = [...this.game.buildings.values()].find(
       (b) => b.owner === owner && b.kind === BuildingKind.CENTER && !b.dead,
     );
-    if (!center) return;
+    if (!center) return null;
     const x = center.pos.x + decor.dx;
     const z = center.pos.z + decor.dz;
     const site = this.game.findLandNear(x, z, 18);
     const group = new THREE.Group();
-    group.name = `mission_decor_${decor.model}`;
+    group.name = `mission_decor_${decor.glb ?? decor.model}`;
     group.position.set(site.x, this.game.terrain.getHeight(site.x, site.z), site.z);
     group.rotation.y = decor.yaw ?? 0;
     group.scale.setScalar(decor.scale ?? 1);
     if (decor.glb) group.userData.authoredGlb = decor.glb;
-    parent.add(group);
-    const current = (): boolean => this.game.scenarioDecor === parent && group.parent === parent;
+    if (parent) parent.add(group);
+    else this.game.scene.add(group);
+    const current = (): boolean => (parent ? group.parent === parent : this.game.scenarioDecor === group);
     if (decor.glb) {
       void loadDecorModel(decor.glb)
         .then((model) => {
@@ -817,17 +824,19 @@ export class WorldViewDecor {
         .catch((error: unknown) => {
           console.warn(`[decor] failed to load ${decor.glb}; using procedural fallback`, error);
           if (!current()) return;
+          if (!decor.model) return;
           const fallback = buildLandmarkModel(decor.model, this.game.makeBuildContext(owner));
           group.add(fallback);
           this.enableLandmarkShadows(fallback);
           applyFowToObject(fallback, this.game.fowUniforms);
         });
-    } else {
+    } else if (decor.model) {
       const model = buildLandmarkModel(decor.model, this.game.makeBuildContext(owner));
       group.add(model);
       this.enableLandmarkShadows(model);
       applyFowToObject(model, this.game.fowUniforms);
     }
+    return group;
   }
 
   spawnCanal(): void {
