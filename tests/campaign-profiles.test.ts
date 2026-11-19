@@ -45,6 +45,10 @@ function resolve(mis: Mission) {
 }
 
 describe('campaign map profiles', () => {
+  it('sets an explicit region on every mission', () => {
+    for (const mis of MISSIONS) expect(mis.region, mis.id).toBeDefined();
+  });
+
   it('documents an expected region for every mission', () => {
     for (const mis of MISSIONS) expect(EXPECTED_REGION[mis.id], mis.id).toBeDefined();
     expect(Object.keys(EXPECTED_REGION).sort()).toEqual(MISSIONS.map((m) => m.id).sort());

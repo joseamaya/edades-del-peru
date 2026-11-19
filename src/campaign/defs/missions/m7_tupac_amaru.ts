@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
+import { highValleyVegetation } from '../../../model/defs/profiles';
 import type { MissionDef } from '../../types';
 import { COLONIAL_MAP_SIZE, colonialLength } from '../../../model/defs/colonialSite';
 
@@ -45,6 +46,7 @@ export const m7TupacAmaru: MissionDef = {
   enemyCiv: CivId.REALISTAS,
   playerName: 'Rebeldes de Túpac Amaru',
   enemyName: 'Realistas del Cusco',
+  region: 'high_andes',
   map: { seed: 1780, type: 'andes', size: TUPAC_MAP_SIZE },
   layout: {
     labels: [
@@ -90,10 +92,7 @@ export const m7TupacAmaru: MissionDef = {
   },
   mapOverrides: {
     vegetationKit: 'andes',
-    vegetation: {
-      density: 0.4,
-      variants: { molle: 0.55, pacay: 0.25, sauce: 0.2, broad: 0, needle: 0 },
-    },
+    vegetation: highValleyVegetation(0.4),
   },
   atmosphere: { fogDensity: 0.0012, sunWarmth: 0.95, skyTint: '#cbd0d0' },
   timeOfDay: 'dusk',

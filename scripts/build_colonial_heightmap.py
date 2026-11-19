@@ -35,8 +35,6 @@ def height(x: float, z: float) -> float:
     h = VALLEY + 0.2 * noise(x, z)
     valley = math.exp(-((z - 96.0) / 11.0) ** 2) * smoothstep(34.0, 54.0, x) * (1.0 - smoothstep(124.0, 146.0, x))
     h -= valley * 1.2
-    # Keep the dry valley above the water plane: this floor is a dry wash, not a lake.
-    h = max(WATER + 0.2, h)
 
     base = smoothstep(47.0, 55.0, x) * (1.0 - smoothstep(84.0, 92.0, x))
     base *= smoothstep(105.0, 113.0, z) * (1.0 - smoothstep(135.0, 143.0, z))

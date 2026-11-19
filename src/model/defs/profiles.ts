@@ -17,6 +17,23 @@ export type SoilKind = 'sandy' | 'loam' | 'clay' | 'peaty' | 'rocky';
 /** Tree/foliage variant (shared with the instancing manager). */
 export type TreeVariant = 'broad' | 'needle' | 'frond' | 'algarrobo' | 'molle' | 'sauce' | 'pacay';
 
+/** Documented high-valley mix used by the `andes` kit: molle, pacay and the shared riverbank willow. */
+export const HIGH_VALLEY_TREE_MIX = {
+  molle: 0.55,
+  pacay: 0.25,
+  sauce: 0.2,
+  broad: 0,
+  needle: 0,
+} satisfies Partial<Record<TreeVariant, number>>;
+
+/** High-valley vegetation override; the density is the only per-mission variable. */
+export function highValleyVegetation(density: number): {
+  density: number;
+  variants: Partial<Record<TreeVariant, number>>;
+} {
+  return { density, variants: { ...HIGH_VALLEY_TREE_MIX } };
+}
+
 /** Low ground-cover species; the authoritative list is `GROUND_COVER_SPECIES` in `groundCover.ts`. */
 export type GroundCoverSpecies = 'grass' | 'ichu' | 'fern' | 'pebble' | 'gravel';
 
@@ -151,7 +168,6 @@ export interface MapOverrides {
   elevation?: Partial<HistoricalMapProfile['elevation']>;
   climate?: Partial<HistoricalMapProfile['climate']>;
   water?: Partial<HistoricalMapProfile['water']>;
-  atmosphere?: Partial<HistoricalMapProfile['atmosphere']>;
   vegetation?: Partial<HistoricalMapProfile['vegetation']>;
   berryShrub?: BerryShrubId;
   quarryStyle?: QuarryStyle;
@@ -178,7 +194,6 @@ export function applyMapOverrides(
     elevation: { ...profile.elevation, ...overrides.elevation },
     climate: { ...profile.climate, ...overrides.climate },
     water: { ...profile.water, ...overrides.water },
-    atmosphere: { ...profile.atmosphere, ...overrides.atmosphere },
     vegetation: {
       ...profile.vegetation,
       ...overrides.vegetation,

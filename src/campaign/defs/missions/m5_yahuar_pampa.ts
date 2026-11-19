@@ -46,6 +46,7 @@ export const m5YahuarPampa: MissionDef = {
   epilogueImage: 'media/chanca/intro-epilogo.webp',
   playerCiv: CivId.INCA,
   enemyCiv: CivId.CHANCA,
+  region: 'high_andes',
   map: { seed: 1438, type: 'andes', size: CHANCA_MAP_SIZE },
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
   unitSpeedScale: 0.75,

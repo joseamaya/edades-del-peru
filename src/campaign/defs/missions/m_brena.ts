@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
+import { highValleyVegetation } from '../../../model/defs/profiles';
 import type { MissionDef } from '../../types';
 
 // La Breña: the Mantaro communities, the ambush passes and the road to Huamachuco/Ayacucho.
@@ -76,10 +77,7 @@ export const mBrena: MissionDef = {
   },
   mapOverrides: {
     vegetationKit: 'andes',
-    vegetation: {
-      density: 0.4,
-      variants: { molle: 0.55, pacay: 0.25, sauce: 0.2, broad: 0, needle: 0 },
-    },
+    vegetation: highValleyVegetation(0.4),
   },
   atmosphere: { fogDensity: 0.001, sunWarmth: 0.98, skyTint: '#c8d1d2' },
   timeOfDay: 'morning',

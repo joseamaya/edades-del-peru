@@ -2,6 +2,12 @@
 
 **Status:** Proposal · **Audit date:** 2026-11-18 · **Scope:** the 20 released missions
 
+> **Post-audit note (2026-11-19):** Phase 0 has been implemented. It gives `m8_independencia` and
+> `m_junta_cusco` an explicit `high_andes` region, puts the high-valley missions on the `andes` vegetation
+> kit, adds mission-level atmosphere, removes the accidental Chanca/Colonial lakes and fixes the Vilcabamba
+> water label. The audit rows and counts below describe the **2026-11-18** state unless a sentence says
+> otherwise; the current implementation state is in the roadmap.
+
 This document audits the geographic identity of the twenty released missions and proposes a specific
 landscape for each one. It is a design reference, not an implementation authorisation: no scene, model,
 asset, mission definition or generator is changed here.

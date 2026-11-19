@@ -248,7 +248,8 @@ The code already has the right seams:
 
 The proposal does **not** require a new terrain engine. It requires five small extensions:
 
-1. **Complete `MapOverrides`** with `water`, `elevation` and `atmosphere`, and `groundPbr`.
+1. **Complete `MapOverrides`** with `water`, `elevation` and `groundPbr`; mission atmosphere already
+   lives on `MissionDef.atmosphere`.
    Today a mission cannot override the water level, inland/coastal flag, snow line, haze or PBR slots.
 2. **Add an explicit `region` to every mission.** Do not let `m8_independencia` and `m_junta_cusco` fall
    into `andean_valley` through the map-type fallback.

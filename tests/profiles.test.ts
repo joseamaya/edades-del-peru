@@ -104,24 +104,23 @@ describe('historical map profiles', () => {
     expect(alt.baseMapType).toBe('altiplano');
   });
 
-  it('merges mission overrides for water, elevation, atmosphere and PBR slots', () => {
+  it('merges mission overrides for water, elevation and PBR slots', () => {
     const base = MAP_PROFILES.high_andes;
     const out = applyMapOverrides(base, {
       water: { level: 3.4, inland: false },
       elevation: { snowLine: 9 },
-      atmosphere: { fogDensity: 0.003, skyTint: '#abcdef', sunWarmth: 1.12 },
-      groundPbr: { grass: 'puna_grass' },
+      groundPbr: { dirt: 'dirt' },
     });
     expect(out.water.level).toBe(3.4);
     expect(out.water.inland).toBe(false);
     expect(out.water.wetland).toBe(base.water.wetland);
     expect(out.elevation.snowLine).toBe(9);
-    expect(out.atmosphere).toEqual({ fogDensity: 0.003, skyTint: '#abcdef', sunWarmth: 1.12 });
-    expect(out.groundPbr?.grass).toBe('puna_grass');
+    expect(out.groundPbr?.dirt).toBe('dirt');
+    expect(out.groundPbr?.grass).toBe(base.groundPbr?.grass);
     // the regional profile is not mutated
     expect(base.water.level).not.toBe(3.4);
     expect(base.elevation.snowLine).not.toBe(9);
-    expect(base.atmosphere.fogDensity).not.toBe(0.003);
+    expect(base.groundPbr?.dirt).toBeUndefined();
   });
 
   it('falls back to the map type region when no civilization is given', () => {

@@ -26,6 +26,7 @@ export const mLima: MissionDef = {
   enemyCiv: CivId.INCA,
   playerName: 'Hueste indiana',
   enemyName: 'Inca de Quizu Yupanqui',
+  region: 'central_coast',
   map: { seed: 1535, type: 'coast', size: 256 },
   layout: {
     labels: [

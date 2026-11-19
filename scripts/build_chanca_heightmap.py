@@ -37,8 +37,6 @@ def height(x: float, z: float) -> float:
     h = VALLEY + 0.22 * noise(x, z)
     valley = math.exp(-((z - 82.0) / 10.0) ** 2) * smoothstep(28.0, 52.0, x) * (1.0 - smoothstep(112.0, 136.0, x))
     h -= valley * 1.5
-    # Keep the dry valley above the water plane: this floor is a dry wash, not a lake.
-    h = max(WATER + 0.2, h)
 
     # Cusco base, the Chanca fortress terrace and the approach pampa stay flat.
     base = smoothstep(38.0, 46.0, x) * (1.0 - smoothstep(75.0, 83.0, x))

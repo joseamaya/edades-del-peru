@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
+import { highValleyVegetation } from '../../../model/defs/profiles';
 import type { MissionDef } from '../../types';
 import { CUSCO_COLONIAL } from '../../../model/defs/colonialLayout';
 
@@ -72,10 +73,7 @@ export const mJuntaCusco: MissionDef = {
   },
   mapOverrides: {
     vegetationKit: 'andes',
-    vegetation: {
-      density: 0.35,
-      variants: { molle: 0.55, pacay: 0.25, sauce: 0.2, broad: 0, needle: 0 },
-    },
+    vegetation: highValleyVegetation(0.35),
   },
   atmosphere: { fogDensity: 0.001, sunWarmth: 1.0, skyTint: '#c9d3d5' },
   timeOfDay: 'morning',

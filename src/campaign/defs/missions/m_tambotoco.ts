@@ -64,6 +64,7 @@ export const mTambotoco: MissionDef = {
   enemyCiv: CivId.AYLLUS,
   playerName: 'Ayllus de Ayar',
   enemyName: 'Ayllus del valle',
+  region: 'andean_valley',
   map: { seed: 1200, type: 'andes', size: 256 },
   mapOverrides: {
     culturalLandscape: TAMBOTOCO_LANDSCAPE,

@@ -78,21 +78,23 @@ complete; `m8_independencia` and `m_junta_cusco` have an explicit `high_andes` r
 missions use the `andes` kit and its molle/pacay/willow mix; the Chanca and Colonial dry valleys no longer
 create accidental lakes; every mission except the Tambotoco reference has a mission-level atmosphere.
 Shared base/site/enemy anchors are deferred to Phase 1 because changing them requires the new site
-definitions.
+definitions. Evidence: [`geographic-identity-phase0.webp`](../media/geographic-identity-phase0.webp).
 
 1. Approve the family taxonomy and the acceptance criteria.
 2. Add the capture protocol and the blind-test sheet to the review process.
-3. Complete `MapOverrides` with `water`, `elevation`, `atmosphere` and `groundPbr`.
+3. Complete `MapOverrides` with `water`, `elevation` and `groundPbr`; use the existing
+   `MissionDef.atmosphere` for per-mission haze and light.
 4. Set an explicit `region` on every mission; correct `m8_independencia` and `m_junta_cusco` to
    `high_andes`.
 5. Set `vegetationKit: 'andes'` on every `high_valley` mission (Chavín, Wari, Cusco 1536, Túpac Amaru,
    Junta Cusco, Breña, and any other highland mission that lacks it).
 6. Fix accidental water: raise the floors of the Chanca and Colonial valleys above the water level, or
    declare the lakes if they are intended.
-7. Replace shared base/site/enemy anchors with mission-owned anchors where the layout allows it without
-   changing objectives.
-8. Correct misleading labels (a pond called “Río Urubamba”, a canal that reads as a pool).
-9. Record the before captures and the `bench_scene` baseline for all 20 missions.
+7. Defer shared base/site/enemy anchor changes to Phase 1; they require the new site definitions.
+8. Correct misleading labels: the Vilcabamba “Río Urubamba” becomes “Valle del Urubamba”. The Chimú canal
+   is geometry, not a label, and stays in Phase 1.
+9. Record the 20-mission `audit:campaigns` capture set and the targeted `bench_scene` baseline for every
+   affected mission. The full 20-mission bench baseline follows the Phase 1 heightfield splits.
 
 **Exit:** no geometry or asset has been redesigned, but the data bugs and the misleading labels are gone,
 and the baseline is captured.

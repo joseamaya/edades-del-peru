@@ -45,6 +45,7 @@ export const m3MocheRecuay: MissionDef = {
   epilogueImage: 'media/moche/intro-epilogo.webp',
   playerCiv: CivId.MOCHE,
   enemyCiv: CivId.RECUAY,
+  region: 'north_coast',
   map: { seed: 400, type: 'coast', size: MOCHE_MAP_SIZE },
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
   unitSpeedScale: 0.75,

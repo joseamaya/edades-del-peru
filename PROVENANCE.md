@@ -470,6 +470,18 @@ slot is absent (offline / without assets).
   and the huaca are abstractions, never historical photographs.
 - **Review**: no human art-review gate applies to in-engine captures; the ayllu site is procedural.
 
+### Geographic identity Phase 0 evidence (in-engine contact sheet)
+
+- **Location**: `docs/media/geographic-identity-phase0.webp` (1920x540 WebP q82, 103 KB).
+- **Source**: captured from the game by `scripts/screenshot.mjs` at 1600x900, seed 777, `intro=0`, fog off,
+  using `node scripts/screenshot.mjs phase0-<id> --url='/?mission=<id>&intro=0&fog=0&seed=777' --click --wait=8000`.
+  The eight captures were tiled 4x2 and compressed with:
+  `ffmpeg -f concat -safe 0 -i <list> -vf "scale=480:270,tile=4x2" -frames:v 1 -c:v libwebp -quality 82`.
+- **Content**: project-owned game renders. Top row: Chavín, Wari, Yahuar Pampa, Túpac Amaru. Bottom row:
+  La Junta, Independencia, Cusco 1536, Breña. The HUD is visible; the renderer was SwiftShader.
+- **Review**: no human art-review gate applies to in-engine evidence captures; it documents the PR #542
+  Phase 0 config/heightfield changes, not a claim of a finished geographic identity.
+
 ### Tambotoco E7 production pass (in-engine evidence)
 
 - **Location**: `docs/media/tambotoco-e7-{hualla,acequia,inticancha}-{after,final}.webp`, `tambotoco-e7-hero.webp`,
