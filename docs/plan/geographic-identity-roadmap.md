@@ -246,16 +246,17 @@ and the steep-terrain hydrology.
 
 ## 6. Phase 3 — Remaining families
 
-**Status (2026-11-19, first pair):** the three pairs the blind test could not separate on landform alone are
-being widened by relief, not palette:
+**Status (2026-11-19):** the first slice widened one of the three confusable pairs by **relief**; the other two
+stay as they were, because the fix broke walkability or belongs to composition:
 
-| Pair | Before (mean |Δh|) | Now | Change |
+| Pair | Before (mean |Δh|) | Now | Outcome |
 | --- | ---: | ---: | --- |
-| Tarapacá ↔ Quipaipan | 0.91 m | 1.75 m | taller pampa hills and border ridges; a narrower, deeper dry quebrada with a taller stepped bank |
-| Vilcabamba ↔ Breña | 3.70 m | 7.34 m | steep sides and a hard ridge close to the Urubamba; Breña opens into a broad terraced valley |
-| Lima 1821 ↔ Miraflores | 1.44 m | 1.57 m | still close by design (shared site anchor); their difference is the redoubt line and the headland, so this pair belongs to composition |
+| Tarapacá ↔ Quipaipan | 0.91 m | **1.75 m** | taller pampa hills and border ridges; a narrower, deeper dry quebrada with a taller stepped bank |
+| Vilcabamba ↔ Breña | 3.67 m | 3.67 m | **reverted**: the steeper valley left ~26 % of the cells behind slope-blocked pockets (multiple walkable components); it needs a relief shape that stays connected |
+| Lima 1821 ↔ Miraflores | 1.57 m | 1.57 m | unchanged by design (shared site anchor); the difference is the redoubt line and the headland, so it belongs to composition |
 
-Evidence: [`geographic-identity-phase3.webp`](../media/geographic-identity-phase3.webp). The remaining families
+The next slice must shape Vilcabamba's relief around `MAX_WALKABLE_SLOPE` (broad slopes, no sharp pockets) and
+add a walkability assertion beside the water test. Evidence: [`geographic-identity-phase3.webp`](../media/geographic-identity-phase3.webp). The remaining families
 (recintos, setpieces and Lima 1821's redoubts) follow below.
 
 Phase 1 created the geometry foundation; Phase 3 completes the mission-level composition, vegetation,

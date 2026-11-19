@@ -293,16 +293,14 @@ def tarapaca(x: float, z: float) -> float:
 
 
 def vilcabamba(x: float, z: float) -> float:
-    h = 5.2 + 0.55 * noise(x, z, 2.1)
-    # Cloud-forest valley: steep sides close to the river, a hard ridge line, little open floor.
-    h += 11.0 * (0.5 + 0.5 * math.sin(x * 0.045 + 1.1)) * smooth(26, 62, x) ** 1.4
-    h += 7.5 * (0.5 + 0.5 * math.sin(z * 0.05 + 0.3))
-    h += 6.0 * smooth(0.62, 0.94, math.sin(x * 0.07 + z * 0.045 + 0.8))
-    river = math.exp(-((x - 132) / 11.0) ** 2)
+    h = 5.2 + 0.5 * noise(x, z, 2.1)
+    h += 7.0 * (0.5 + 0.5 * math.sin(x * 0.045 + 1.1)) * smooth(30, 70, x)
+    h += 5.0 * (0.5 + 0.5 * math.sin(z * 0.05 + 0.3))
+    river = math.exp(-((x - 132) / 13.0) ** 2)
     h = h * (1 - river) + 1.0 * river
-    bank = math.exp(-((x - 132) / 20.0) ** 2)
-    h = h * (1 - bank) + 2.7 * bank
-    h += smooth(232, 256, z) * 12 + smooth(232, 256, x) * 11
+    bank = math.exp(-((x - 132) / 34.0) ** 2)
+    h = h * (1 - bank) + 2.8 * bank
+    h += smooth(232, 256, z) * 10 + smooth(232, 256, x) * 9
     return site_pad(max(0.9, h), x, z, CHANCA_SITE, VILCABAMBA_Y)
 
 
