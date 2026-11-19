@@ -142,7 +142,7 @@ const BUDGETS = {
   m_real_felipe: { sceneTriangles: 790_000, sceneDrawCalls: 750, kitTriangles: 60_000, kitDrawCalls: 20 },
   // Tarapacá 1879 in the inland quebrada: measured 569,480-569,816 / 502-505 with 2,160 / 2 kit.
   m_tarapaca: { sceneTriangles: 620_000, sceneDrawCalls: 550, kitTriangles: 10_000, kitDrawCalls: 4 },
-  // Vilcabamba 1572 in the cloud-forest valley (amazon region, no GLB tree kit): measured 577,869 / 487.
+  // Vilcabamba 1572 in the cloud-forest valley (amazon region, no GLB tree kit): measured 588,050 / 481.
   m_vilcabamba: { sceneTriangles: 630_000, sceneDrawCalls: 540, kitTriangles: 5_000, kitDrawCalls: 2 },
   // Túpac Amaru opening on the 256 m valley: the camp, the chapel, the starting column and the highland
   // kit. Measured 521,318 / 491 with 18,974 / 12 kit; the call count is over §11's 200 target.
