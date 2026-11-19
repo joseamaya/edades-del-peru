@@ -154,7 +154,6 @@ export const mTambotoco: MissionDef = {
       },
     ],
   },
-  atmosphere: { fogDensity: 0.002, sunWarmth: 0.95, skyTint: '#cdd8d2' },
   timeOfDay: 'morning',
   // 0.5 is noon in Sky; 0.34 is a low mid-morning sun (~31°) from the east. The cave ring, the eaves
   // and the walls cast; the late phases drop flat earth/rock to keep the draw-call cap.

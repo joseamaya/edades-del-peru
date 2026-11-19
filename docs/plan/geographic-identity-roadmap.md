@@ -76,8 +76,9 @@ with more objects.
 **Status (2026-11-19):** implemented in `feat/geographic-identity-phase-0`. The `MapOverrides` surface is
 complete; `m8_independencia` and `m_junta_cusco` have an explicit `high_andes` region; the high-valley
 missions use the `andes` kit and its molle/pacay/willow mix; the Chanca and Colonial dry valleys no longer
-create accidental lakes; every mission has a mission-level atmosphere. Shared base/site/enemy anchors are
-deferred to Phase 1 because changing them requires the new site definitions.
+create accidental lakes; every mission except the Tambotoco reference has a mission-level atmosphere.
+Shared base/site/enemy anchors are deferred to Phase 1 because changing them requires the new site
+definitions.
 
 1. Approve the family taxonomy and the acceptance criteria.
 2. Add the capture protocol and the blind-test sheet to the review process.
