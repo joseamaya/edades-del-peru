@@ -78,7 +78,8 @@ export interface MissionRoad {
 }
 
 export interface MissionDecor {
-  model: LandmarkId;
+  /** Procedural fallback; required only when the piece has no dedicated GLB. */
+  model?: LandmarkId;
   /** Dedicated GLB used instead of the procedural landmark. */
   glb?: DecorModelId;
   at: 'player' | 'enemy';
