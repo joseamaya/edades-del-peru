@@ -44,6 +44,13 @@ export const mMiraflores: MissionDef = {
     base: { x: MIRAFLORES_CAMP.x / 256, z: MIRAFLORES_CAMP.z / 256 },
     opening: { x: 112 / 256, z: 176 / 256 },
     enemyBase: { x: MIRAFLORES_ENEMY.x / 256, z: MIRAFLORES_ENEMY.z / 256 },
+    // The Miraflores line: the earthwork redoubts that separated it from the 1535/1821 city, built from
+    // the Arica battery kit already in the bundle (documented abstraction, no new assets).
+    decor: [
+      { model: 'chanca_fortress', glb: 'arica_battery', at: 'player', dx: 30, dz: 18, yaw: -0.45, scale: 0.8 },
+      { model: 'chanca_fortress', glb: 'arica_battery', at: 'player', dx: 48, dz: 30, yaw: -0.45, scale: 0.7 },
+      { model: 'chanca_fortress', glb: 'arica_battery', at: 'player', dx: 66, dz: 42, yaw: -0.45, scale: 0.6 },
+    ],
     discoveries: [],
     terrain: {
       flats: [

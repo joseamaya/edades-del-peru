@@ -1,4 +1,5 @@
 import type { Game } from './Game';
+import type { MissionDecor } from '../campaign/types';
 import * as THREE from 'three';
 import type { TerrainData } from '../sim/TerrainData';
 import { CulturalLandscape } from '../rendering/CulturalLandscape';
@@ -776,8 +777,18 @@ export class WorldViewDecor {
    * load and never saved (like the terrain and the landmark).
    */
   spawnMissionDecor(): void {
-    const decor = this.game.missionLayout?.decor;
-    if (!decor) return;
+    const raw = this.game.missionLayout?.decor;
+    const pieces: readonly MissionDecor[] = Array.isArray(raw) ? raw : raw ? [raw] : [];
+    if (!pieces.length) return;
+    const parent = new THREE.Group();
+    parent.name = 'mission_decor';
+    this.game.scene.add(parent);
+    this.game.scenarioDecor = parent;
+    for (const decor of pieces) this.spawnDecorPiece(parent, decor);
+  }
+
+  /** One decor piece of the mission composition, placed relative to a player/enemy base. */
+  private spawnDecorPiece(parent: THREE.Group, decor: MissionDecor): void {
     const owner = decor.at === 'enemy' ? 1 : 0;
     const center = [...this.game.buildings.values()].find(
       (b) => b.owner === owner && b.kind === BuildingKind.CENTER && !b.dead,
@@ -792,12 +803,12 @@ export class WorldViewDecor {
     group.rotation.y = decor.yaw ?? 0;
     group.scale.setScalar(decor.scale ?? 1);
     if (decor.glb) group.userData.authoredGlb = decor.glb;
-    this.game.scene.add(group);
-    this.game.scenarioDecor = group;
+    parent.add(group);
+    const current = (): boolean => this.game.scenarioDecor === parent && group.parent === parent;
     if (decor.glb) {
       void loadDecorModel(decor.glb)
         .then((model) => {
-          if (this.game.scenarioDecor !== group) return;
+          if (!current()) return;
           model.name = decor.glb!;
           group.add(model);
           this.enableLandmarkShadows(model);
@@ -805,7 +816,7 @@ export class WorldViewDecor {
         })
         .catch((error: unknown) => {
           console.warn(`[decor] failed to load ${decor.glb}; using procedural fallback`, error);
-          if (this.game.scenarioDecor !== group) return;
+          if (!current()) return;
           const fallback = buildLandmarkModel(decor.model, this.game.makeBuildContext(owner));
           group.add(fallback);
           this.enableLandmarkShadows(fallback);

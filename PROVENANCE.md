@@ -471,9 +471,9 @@ slot is absent (offline / without assets).
 
 ### Geographic identity Phase 3 evidence (in-engine contact sheet)
 
-- **Location**: `docs/media/geographic-identity-phase3.webp` (1400x788 WebP q80, 89 KB).
+- **Location**: `docs/media/geographic-identity-phase3.webp` (1400x788 WebP q80, 92 KB).
 - **Source**: `node scripts/screenshot.mjs p3-<name> --url='/?mission=<id>&intro=0&fog=0&seed=777' --click
-  --wait=7000 --site --no-hud` for `m6b_guerra_civil`, `m_tarapaca`, `m_vilcabamba` and `m_brena`; tiled 2x2
+--wait=7000 --site --no-hud` for `m6b_guerra_civil`, `m_tarapaca`, `m_vilcabamba` and `m_brena`; tiled 2x2
   with ffmpeg at 700x394 per cell.
 - **Content**: project-owned game renders with the HUD hidden, SwiftShader. Top row Quipaipan and Tarapacá,
   bottom row Vilcabamba and Breña: the three confusable pairs widened by landform (pampa hills vs deep dry
