@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
+import { highValleyVegetation } from '../../../model/defs/profiles';
 import type { MissionDef } from '../../types';
 import { COLONIAL_MAP_SIZE, colonialLength } from '../../../model/defs/colonialSite';
 
@@ -45,6 +46,7 @@ export const m7TupacAmaru: MissionDef = {
   enemyCiv: CivId.REALISTAS,
   playerName: 'Rebeldes de Túpac Amaru',
   enemyName: 'Realistas del Cusco',
+  region: 'high_andes',
   map: { seed: 1780, type: 'andes', size: TUPAC_MAP_SIZE },
   layout: {
     labels: [
@@ -88,6 +90,11 @@ export const m7TupacAmaru: MissionDef = {
       buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.065, rz: 0.065 }],
     },
   },
+  mapOverrides: {
+    vegetationKit: 'andes',
+    vegetation: highValleyVegetation(0.4),
+  },
+  atmosphere: { fogDensity: 0.0012, sunWarmth: 0.95, skyTint: '#cbd0d0' },
   timeOfDay: 'dusk',
   startingEra: Era.VICEROYALTY,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.

@@ -52,6 +52,7 @@ export const m9GuerraPacifico: MissionDef = {
     },
   },
   mapOverrides: { culturalLandscape: null, groundTint: '#e6cfa4' },
+  atmosphere: { fogDensity: 0.0012, sunWarmth: 1.08, skyTint: '#e6e2d6' },
   timeOfDay: 'morning',
   startingEra: Era.REPUBLIC,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.

@@ -62,6 +62,7 @@ export const m1Caral: MissionDef = {
   playerCiv: CivId.CARAL,
   enemyCiv: CivId.CARAL,
   // A compressed west-to-east transect of the Supe valley (scripts/build_caral_heightmap.py).
+  region: 'central_coast',
   map: { seed: 3000, type: 'coast', size: CARAL_MAP_SIZE },
   // Light coastal haze: denser fog washed the green valley out from the RTS camera.
   atmosphere: { fogDensity: 0.0015, sunWarmth: 0.9, skyTint: '#cdd3d2' },

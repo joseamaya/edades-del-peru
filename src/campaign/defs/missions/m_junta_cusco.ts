@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
+import { highValleyVegetation } from '../../../model/defs/profiles';
 import type { MissionDef } from '../../types';
 import { CUSCO_COLONIAL } from '../../../model/defs/colonialLayout';
 
@@ -27,6 +28,7 @@ export const mJuntaCusco: MissionDef = {
   enemyCiv: CivId.REALISTAS,
   playerName: 'Junta del Cusco',
   enemyName: 'Realistas del Alto Perú',
+  region: 'high_andes',
   map: { seed: 1814, type: 'andes', size: 256 },
   layout: {
     labels: [
@@ -69,6 +71,11 @@ export const mJuntaCusco: MissionDef = {
       },
     ],
   },
+  mapOverrides: {
+    vegetationKit: 'andes',
+    vegetation: highValleyVegetation(0.35),
+  },
+  atmosphere: { fogDensity: 0.001, sunWarmth: 1.0, skyTint: '#c9d3d5' },
   timeOfDay: 'morning',
   startingEra: Era.REPUBLIC,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.

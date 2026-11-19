@@ -2,6 +2,12 @@
 
 **Status:** Proposal · **Audit date:** 2026-11-18 · **Scope:** the 20 released missions
 
+> **Post-audit note (2026-11-19):** Phase 0 has been implemented. It gives `m8_independencia` and
+> `m_junta_cusco` an explicit `high_andes` region, puts the high-valley missions on the `andes` vegetation
+> kit, adds mission-level atmosphere, removes the accidental Chanca/Colonial lakes and fixes the Vilcabamba
+> water label. The audit rows and counts below describe the **2026-11-18** state unless a sentence says
+> otherwise; the current implementation state is in the roadmap.
+
 This document audits the geographic identity of the twenty released missions and proposes a specific
 landscape for each one. It is a design reference, not an implementation authorisation: no scene, model,
 asset, mission definition or generator is changed here.
@@ -134,9 +140,9 @@ geographic silhouette.
 
 | Region | Missions | Share |
 | --- | ---: | ---: |
-| `high_andes` | 7 | 35 % |
+| `high_andes` | 6 | 30 % |
 | `central_coast` | 5 | 25 % |
-| `andean_valley` | 3 | 15 % |
+| `andean_valley` | 4 | 20 % |
 | `north_coast` | 2 | 10 % |
 | `south_coast` | 2 | 10 % |
 | `amazon` | 1 | 5 % |
@@ -166,8 +172,8 @@ question is whether that fallback is the right landscape for a high-altitude mis
 6. **Hydrology is absent or accidental.** Only five missions integrate water. The Chanca and Colonial
    heightfields subtract depth below the fixed water level, creating lakes where the design intended a dry
    valley. Canals are rectangular ribbons, not irrigation systems.
-7. **Atmosphere is underused.** Only two missions override it. Six of the seven `high_andes` missions (all
-   except Tambotoco) share the same haze, sky tint and sun warmth.
+7. **Atmosphere is underused.** Only two missions override it. The six `high_andes` missions share the same
+   haze, sky tint and sun warmth.
 8. **Relief is too low for the camera.** Amplitudes of 8–17 units over 256 m, with ridges at the border,
    read as a plain at camera height 54. Tambotoco works because its ~19 units of local relief sit in the
    middle of the composition.
@@ -203,7 +209,7 @@ The 13 audit fields are split into two tables for readability. The pairwise scor
 | 2 | `m2_chavin` | Preincas | 1200–200 BC, Mosna | Chavín de Huántar | Sierra alta / Callejón de Conchucos (`andean_valley`) | Valley + terrace, weakly visible | Mosna + ford | Generic broad/needle → ichu, molle, pacay, wet valley | Rocky loam, stone |
 | 3 | `m3_moche_recuay` | Preincas | 200 BC–800 AD, Moche | Huacas de Moche | Costa desértica norte / Moche–Chicama (`north_coast`) | Flat valley + terrace | Canal only; no river | Generic, sparse → algarrobal, riparian reeds, dry scrub | Sand, loam, adobe |
 | 4 | `m4_wari` | Preincas | 600–1000 AD, Ayacucho | Wari complex | Sierra alta / Ayacucho basin (`high_andes`) | Flat basin, distant ridges | None; dry quebradas | Generic broad/needle → puna/ichu, molle/pacay on sheltered slopes | Rock, loam, stone |
-| 5 | `m_tambotoco` | Inca | Myth of Pacaritambo | Tambotoco / Huanacaure | Sierra alta / Cusco valley, Pacaritambo (`high_andes`, site palette `cusco_valley`) | Ridge, valley, hill | Stream/acequia | Molle, pacay, willow, ichu → same + puna/rock | Earth, rock, fields |
+| 5 | `m_tambotoco` | Inca | Myth of Pacaritambo | Tambotoco / Huanacaure | Sierra alta / Cusco valley, Pacaritambo (`andean_valley`, site palette `cusco_valley`) | Ridge, valley, hill | Stream/acequia | Molle, pacay, willow, ichu → same + puna/rock | Earth, rock, fields |
 | 6 | `m5_yahuar_pampa` | Inca | 1438, Cusco | Yahuar Pampa | Puna / Yahuar Pampa near Cusco (`high_andes`) | Flat pampa + accidental pond | None; accidental lake | Generic broad/needle → puna grass/ichu, low scrub | Puna soil, gravel |
 | 7 | `m6_chimu_inca` | Inca | c. 1470, north coast | Chan Chan / Paramonga | Costa desértica norte / Chan Chan (`north_coast`) | Flat desert/valley | Canal; sea west | Generic, sparse → almost none; algarrobo in river strips, totora wetlands | Sand, gravel, adobe |
 | 8 | `m6b_guerra_civil` | Inca | 1532, Quipaipan | Quipaipan | Puna / Quipaipan near Cusco (`high_andes`) | Flat plain | None | Generic broad/needle → puna/ichu, low scrub | Puna soil |

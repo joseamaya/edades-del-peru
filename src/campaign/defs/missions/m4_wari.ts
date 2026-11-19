@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, BuildingKind } from '../../../core/types';
+import { highValleyVegetation } from '../../../model/defs/profiles';
 import type { MissionDef } from '../../types';
 import { WARI_MAP_SIZE, wariLength } from '../../../model/defs/wariSite';
 
@@ -48,6 +49,7 @@ export const m4Wari: MissionDef = {
   epilogueImage: 'media/wari/intro-epilogo.webp',
   playerCiv: CivId.WARI,
   enemyCiv: CivId.TIAHUANACO,
+  region: 'high_andes',
   map: { seed: 800, type: 'andes', size: WARI_MAP_SIZE },
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
   unitSpeedScale: 0.75,
@@ -77,11 +79,13 @@ export const m4Wari: MissionDef = {
   mapOverrides: {
     terrain: { terraceChance: 0.6, riverCount: 0 },
     climate: { aridity: 0.12, moisture: 0.55, temperature: 0.25 },
-    vegetation: { density: 0.5 },
+    vegetation: highValleyVegetation(0.5),
     resources: { tree: 0.55, mine: 0.7, well: 0.5, hunt: 0.35 },
     culturalLandscape: null,
     groundTint: '#a99b78',
+    vegetationKit: 'andes',
   },
+  atmosphere: { fogDensity: 0.001, sunWarmth: 1.0, skyTint: '#c9d2d4' },
   timeOfDay: 'noon',
   startingEra: Era.TAHUANTINSUYO,
   startingResources: { food: 350, wood: 300, silver: 100, stone: 40 },

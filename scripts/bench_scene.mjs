@@ -103,13 +103,15 @@ const BUDGETS = {
   // Lima in use: the colonial city and the siege crowd. Software 927,198/928 (under the 1.1M/1,250 cap);
   // hardware high 1,134,038/931 (1,267,920/1,226 with VSM), over §11's target.
   m_lima_late: { sceneTriangles: 1_100_000, sceneDrawCalls: 1_250, kitTriangles: 140_000, kitDrawCalls: 25 },
-  // La Junta's opening army is large; a regression cap, still over §11's target.
-  m_junta_cusco: { sceneTriangles: 780_000, sceneDrawCalls: 1000, kitTriangles: 0, kitDrawCalls: 0 },
+  // La Junta's opening army is large; a regression cap, still over §11's target. Measured 673,132 / 669
+  // with 14,334 / 12 kit after the highland pack.
+  m_junta_cusco: { sceneTriangles: 780_000, sceneDrawCalls: 1000, kitTriangles: 20_000, kitDrawCalls: 14 },
   // Moche valley opening on the 256 m transect: the canal, the huacas and the starting column. Measured
   // ~550k / 332; first-pass cap with ~6 % headroom.
   m3_moche_recuay: { sceneTriangles: 590_000, sceneDrawCalls: 372, kitTriangles: 12_000, kitDrawCalls: 4 },
-  // Wari highland opening: the basin, the andenes and the complex. Measured ~421k / 199 (under §11's 200-call target).
-  m4_wari: { sceneTriangles: 445_000, sceneDrawCalls: 211, kitTriangles: 0, kitDrawCalls: 0 },
+  // Wari highland opening: the basin, the andenes, the complex and the highland kit. Measured
+  // 402,889 / 194 with 93,738 / 12 kit; the scene stays under §11's 200-call target.
+  m4_wari: { sceneTriangles: 445_000, sceneDrawCalls: 211, kitTriangles: 100_000, kitDrawCalls: 14 },
   // Yahuar Pampa opening: Cusco, the pampa and the Chanca heights. Measured ~682k / 362; over the 600k target.
   m5_yahuar_pampa: { sceneTriangles: 725_000, sceneDrawCalls: 378, kitTriangles: 0, kitDrawCalls: 0 },
   // Chimú north-coast opening: the camp, Paramonga and the canal. Measured ~499k / 273; first-pass cap.
@@ -119,13 +121,17 @@ const BUDGETS = {
   // Independence opening: the Lima camp and Junín. Measured 567,865 / 603 after the PCF shadow pass and the
   // rig silhouette rule (674,476 / 823 with VSM); under both caps, over the 200-call target.
   m8_independencia: { sceneTriangles: 625_000, sceneDrawCalls: 660, kitTriangles: 0, kitDrawCalls: 0 },
-  // Túpac Amaru opening on the 256 m valley: the camp, the chapel and the starting column. Measured
-  // ~537k / 661–665; first-pass cap with ~6 % headroom (the call count is over art-direction §11's target).
-  m7_tupac_amaru: { sceneTriangles: 575_000, sceneDrawCalls: 710, kitTriangles: 0, kitDrawCalls: 0 },
+  // Cusco 1536 opening: the city, the camp and the highland kit. Measured 739,902 / 582 with 87,900 / 12 kit.
+  m_cusco_1536: { sceneTriangles: 780_000, sceneDrawCalls: 1_000, kitTriangles: 100_000, kitDrawCalls: 14 },
+  // Breña opening: the Mantaro camp, the communities and the highland kit. Measured 676,616 / 584 with 89,464 / 12 kit.
+  m_brena: { sceneTriangles: 740_000, sceneDrawCalls: 900, kitTriangles: 100_000, kitDrawCalls: 14 },
+  // Túpac Amaru opening on the 256 m valley: the camp, the chapel, the starting column and the highland
+  // kit. Measured 521,318 / 491 with 18,974 / 12 kit; the call count is over §11's 200 target.
+  m7_tupac_amaru: { sceneTriangles: 575_000, sceneDrawCalls: 710, kitTriangles: 30_000, kitDrawCalls: 14 },
   // The huacas plaza under Recuay pressure: measured ~721k / 568; still over art-direction §11's 600k target.
   m3_moche_recuay_late: { sceneTriangles: 770_000, sceneDrawCalls: 600, kitTriangles: 12_000, kitDrawCalls: 4 },
-  // The Wari frontier with its line and Tiahuanaco influence: measured ~494k / 342; first-pass cap.
-  m4_wari_late: { sceneTriangles: 525_000, sceneDrawCalls: 365, kitTriangles: 0, kitDrawCalls: 0 },
+  // The Wari frontier with its line and Tiahuanaco influence: measured 510,340 / 337 with 93,798 / 6 kit.
+  m4_wari_late: { sceneTriangles: 525_000, sceneDrawCalls: 365, kitTriangles: 100_000, kitDrawCalls: 10 },
   // The Inca counterattack on the Chanca heights: measured ~761k / 521; over the 600k target.
   m5_yahuar_pampa_late: { sceneTriangles: 810_000, sceneDrawCalls: 548, kitTriangles: 0, kitDrawCalls: 0 },
   // The surrender of Chan Chan: measured ~765k / 516; over the 600k target.
@@ -134,8 +140,8 @@ const BUDGETS = {
   m6b_guerra_civil_late: { sceneTriangles: 1_025_000, sceneDrawCalls: 715, kitTriangles: 0, kitDrawCalls: 0 },
   // Ayacucho: measured ~867k / 1246; over the 600k/200 targets.
   m8_independencia_late: { sceneTriangles: 920_000, sceneDrawCalls: 1_325, kitTriangles: 0, kitDrawCalls: 0 },
-  // The siege/retreat crowd at Cusco: measured ~811k / 1083; still over art-direction §11's 600k target.
-  m7_tupac_amaru_late: { sceneTriangles: 860_000, sceneDrawCalls: 1_140, kitTriangles: 0, kitDrawCalls: 0 },
+  // The siege/retreat crowd at Cusco: measured 838,094 / 746 with 24,050 / 12 kit; over §11's 600k target.
+  m7_tupac_amaru_late: { sceneTriangles: 860_000, sceneDrawCalls: 1_140, kitTriangles: 30_000, kitDrawCalls: 14 },
   // Arica opening on the 256 m terrace: the fort, the cuartel and the garrison. Measured ~535k / 600;
   // first-pass cap with ~6 % headroom (the call count is over art-direction §11's 200 target, as Lima and the Junta).
   m9_guerra_pacifico: { sceneTriangles: 570_000, sceneDrawCalls: 640, kitTriangles: 20_000, kitDrawCalls: 5 },
@@ -148,6 +154,14 @@ const BUDGETS = {
   },
 };
 const KIT_NAMES = /^(trees_kit_|props_kit_|fauna_(deer|riparian_bird)_(body|leg|wingL|wingR)$)/;
+const HIGHLAND_KIT_MISSIONS = new Set([
+  'm2_chavin',
+  'm4_wari',
+  'm7_tupac_amaru',
+  'm_junta_cusco',
+  'm_cusco_1536',
+  'm_brena',
+]);
 
 const { base, close } = await withViteServer();
 const browser = await launchChromium();
@@ -171,13 +185,12 @@ try {
         );
       }
       if (id === 'm4_wari') {
-        // The highland map draws primitive broad/needle trees, not a GLB kit: wait for the site and dressing.
         return (
           !!g.landmark?.getObjectByName('wari_site') && (g.settlementDressing ?? []).every((d) => d.attached !== false)
         );
       }
       if (id === 'm5_yahuar_pampa') {
-        // The highland map draws primitive broad/needle trees, not a GLB kit: wait for the site and dressing.
+        // The pampa keeps primitive broad/needle trees, not a GLB kit: wait for the site and dressing.
         return (
           !!g.landmark?.getObjectByName('chanca_site') &&
           (g.settlementDressing ?? []).every((d) => d.attached !== false)
@@ -185,7 +198,7 @@ try {
       }
       if (id === 'm6_chimu_inca' && !g.landmark?.getObjectByName('chimu_site')) return false;
       if (id === 'm6b_guerra_civil') {
-        // The highland map draws primitive broad/needle trees, not a GLB kit: wait for the site and dressing.
+        // The pampa keeps primitive broad/needle trees, not a GLB kit: wait for the site and dressing.
         return (
           !!g.landmark?.getObjectByName('cusco_inca_site') &&
           (g.settlementDressing ?? []).every((d) => d.attached !== false)
@@ -194,6 +207,12 @@ try {
       if (id === 'm8_independencia') {
         return (
           !!g.landmark?.getObjectByName('independence_site') &&
+          (g.settlementDressing ?? []).every((d) => d.attached !== false)
+        );
+      }
+      if (id === 'm_cusco_1536' || id === 'm_brena') {
+        return (
+          !!g.landmark?.getObjectByName(id === 'm_cusco_1536' ? 'cusco_inca_site' : 'independence_site') &&
           (g.settlementDressing ?? []).every((d) => d.attached !== false)
         );
       }
@@ -208,7 +227,7 @@ try {
     mission,
     { timeout: 90_000 },
   );
-  if (mission === 'm_tambotoco') await waitForHighlandKits(page);
+  if (mission === 'm_tambotoco' || HIGHLAND_KIT_MISSIONS.has(mission)) await waitForHighlandKits(page);
   await page
     .locator('.ed-primary', { hasText: 'COMENZAR' })
     .first()

@@ -72,6 +72,7 @@ export const m6bGuerraCivil: MissionDef = {
     },
   },
   mapOverrides: { culturalLandscape: null },
+  atmosphere: { fogDensity: 0.001, sunWarmth: 1.0, skyTint: '#c9d2d4' },
   timeOfDay: 'morning',
   startingEra: Era.TAHUANTINSUYO,
   startingResources: { food: 900, wood: 600, silver: 500, stone: 300 },

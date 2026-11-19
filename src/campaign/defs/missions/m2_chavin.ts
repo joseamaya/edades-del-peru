@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
+import { highValleyVegetation } from '../../../model/defs/profiles';
 import type { MissionDef } from '../../types';
 import { chavinKeepout } from '../../../model/defs/chavinCity';
 
@@ -46,6 +47,7 @@ export const m2Chavin: MissionDef = {
   modelMission: true,
   playerCiv: CivId.CHAVIN,
   enemyCiv: CivId.PARACAS,
+  region: 'andean_valley',
   map: { seed: 900, type: 'andes', size: 256 },
   timeOfDay: 'noon',
   // Callejón de Conchucos: cool highland mist around the ceremonial center.
@@ -78,10 +80,11 @@ export const m2Chavin: MissionDef = {
   mapOverrides: {
     terrain: { riverCount: 0, terraceChance: 0.1 },
     climate: { aridity: 0.05, moisture: 0.8, temperature: 0.3 },
-    vegetation: { density: 0.8 },
+    vegetation: highValleyVegetation(0.8),
     resources: { tree: 0.8, mine: 0.6, well: 0.5, hunt: 0.4, berry: 0.6 },
     culturalLandscape: null,
     groundTint: '#b9d29a',
+    vegetationKit: 'andes',
   },
   startingEra: Era.REGIONAL_STATES,
   // Same 256 m transect and crossing band as Caral (see caral-model-mission.md §Pacing and map scale).

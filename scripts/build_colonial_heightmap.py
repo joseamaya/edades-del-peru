@@ -13,6 +13,7 @@ SOURCE_SIZE = 192
 N = SIZE + 1
 SITE_Y = 5.0
 VALLEY = 3.2
+WATER = 2.2
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'src/model/defs/colonialHeightmap.ts'
 
@@ -51,7 +52,7 @@ def height(x: float, z: float) -> float:
     h += north + east + south + west
 
     h -= 1.0 * math.exp(-((x - 150.0) / 5.0) ** 2) * smoothstep(52.0, 70.0, z) * (1.0 - smoothstep(96.0, 116.0, z))
-    return max(0.9, h)
+    return max(WATER + 0.2, h)
 
 
 GROUND_SIZE = 128

@@ -33,7 +33,7 @@ export const mVilcabamba: MissionDef = {
     labels: [
       { text: 'Vilcabamba', x: VILCABAMBA_TOWN.x / 256, z: VILCABAMBA_TOWN.z / 256, kind: 'settlement' },
       { text: 'Huayna Pucará', x: VILCABAMBA_FORT.x / 256, z: VILCABAMBA_FORT.z / 256, kind: 'region' },
-      { text: 'Río Urubamba', x: 0.2, z: 0.55, kind: 'water' },
+      { text: 'Valle del Urubamba', x: 0.2, z: 0.55, kind: 'region' },
       { text: 'Bajo Urubamba', x: VILCABAMBA_ESCAPE.x / 256, z: VILCABAMBA_ESCAPE.z / 256, kind: 'region' },
       { text: 'Camino a Cusco', x: 0.78, z: 0.22, kind: 'region' },
     ],
@@ -74,6 +74,7 @@ export const mVilcabamba: MissionDef = {
     ],
   },
   mapOverrides: { culturalLandscape: null },
+  atmosphere: { fogDensity: 0.0032, sunWarmth: 0.9, skyTint: '#b9c6bc' },
   timeOfDay: 'dusk',
   startingEra: Era.VICEROYALTY,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.

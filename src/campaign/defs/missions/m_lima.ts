@@ -26,6 +26,7 @@ export const mLima: MissionDef = {
   enemyCiv: CivId.INCA,
   playerName: 'Hueste indiana',
   enemyName: 'Inca de Quizu Yupanqui',
+  region: 'central_coast',
   map: { seed: 1535, type: 'coast', size: 256 },
   layout: {
     labels: [
@@ -59,6 +60,7 @@ export const mLima: MissionDef = {
       { from: { dx: LIMA_BRIDGE.x, dz: LIMA_BRIDGE.z }, to: { dx: LIMA_ENEMY.x, dz: LIMA_ENEMY.z }, width: 3 },
     ],
   },
+  atmosphere: { fogDensity: 0.0022, sunWarmth: 0.95, skyTint: '#d7dcd8' },
   timeOfDay: 'morning',
   startingEra: Era.VICEROYALTY,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.

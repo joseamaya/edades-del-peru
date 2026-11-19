@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
+import { highValleyVegetation } from '../../../model/defs/profiles';
 import type { MissionDef } from '../../types';
 
 // Cusco 1536: the Inca camp, Sacsayhuamán, the city and the withdrawal road.
@@ -71,7 +72,12 @@ export const mCusco1536: MissionDef = {
       },
     ],
   },
-  mapOverrides: { culturalLandscape: null },
+  mapOverrides: {
+    culturalLandscape: null,
+    vegetationKit: 'andes',
+    vegetation: highValleyVegetation(0.4),
+  },
+  atmosphere: { fogDensity: 0.001, sunWarmth: 0.98, skyTint: '#c6d0d2' },
   timeOfDay: 'morning',
   startingEra: Era.VICEROYALTY,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.

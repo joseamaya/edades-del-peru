@@ -45,6 +45,7 @@ export const m3MocheRecuay: MissionDef = {
   epilogueImage: 'media/moche/intro-epilogo.webp',
   playerCiv: CivId.MOCHE,
   enemyCiv: CivId.RECUAY,
+  region: 'north_coast',
   map: { seed: 400, type: 'coast', size: MOCHE_MAP_SIZE },
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
   unitSpeedScale: 0.75,
@@ -83,6 +84,7 @@ export const m3MocheRecuay: MissionDef = {
     culturalLandscape: null,
     groundTint: '#c9a66b',
   },
+  atmosphere: { fogDensity: 0.0018, sunWarmth: 1.05, skyTint: '#e2d8c6' },
   timeOfDay: 'dusk',
   startingEra: Era.REGIONAL_STATES,
   startingResources: { food: 700, wood: 600, silver: 300, stone: 200 },
