@@ -75,7 +75,11 @@ export const mVilcabamba: MissionDef = {
       },
     ],
   },
-  mapOverrides: { culturalLandscape: null },
+  mapOverrides: {
+    culturalLandscape: null,
+    // Cloud-forest floor: dense ferns and tall grass under a closed canopy (docs/design/geographic-families.md).
+    vegetation: { density: 0.85, groundCoverWeights: { fern: 1.8, grass: 1.1, pebble: 0.25, gravel: 0.2 } },
+  },
   atmosphere: { fogDensity: 0.0032, sunWarmth: 0.9, skyTint: '#b9c6bc' },
   timeOfDay: 'dusk',
   startingEra: Era.VICEROYALTY,
