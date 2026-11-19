@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-"""Generate the Phase 1 mission-scoped heightfields.
+"""Generate the mission-scoped heightfields and their painted ground (geographic identity, phase 1-2).
 
-These fields are applied through `MissionSite.heightField` on top of an existing authored site:
-the site model, anchors, collision and painted ground stay shared, the terrain geometry changes
-per mission. Every field flattens a pad at the authored site anchor to the elevation the base
-field used there, so the landmark keeps its grounding.
+These fields are applied through `MissionSite.heightField` on top of an authored site: the site
+model, anchors and collision stay shared, the terrain geometry and its paint change per mission
+(docs/design/mission-geographic-identity.md, docs/plan/geographic-identity-roadmap.md).
 
-Each field inherits the base field's painted ground (and Lima's Rímac river metadata), so splatting
-and the `treeless` mask of the authored site keep working. The relief is not yet painted per mission:
-the inherited splat was authored for the base shape, which is the Phase 2 paint work
-(docs/plan/geographic-identity-roadmap.md).
+Every field:
+- flattens a pad at the authored site anchor to `MissionSite.y`, so the landmark keeps its grounding;
+- paints its own ground from that field's relief (height, slope, water) instead of inheriting another
+  mission's painting, so a carved quebrada or valley is coloured as what it is.
 
-Run `python3 scripts/build_geographic_heightmaps.py`; the script formats its output.
+The Rímac fields also carry the base river metadata so `isRiver`, the riparian grove and the
+river-stone scatter keep working.
+
+Run `python3 scripts/build_geographic_heightmaps.py`; the script formats its own output.
 """
 
 from __future__ import annotations
@@ -21,6 +23,7 @@ import math
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 
 from reencode_heightmaps import reencode_file
 
@@ -28,6 +31,9 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'src/model/defs'
 
 WORLD = 256.0
+WATER = 2.2
+GROUND_SIZE = 128
+PALETTE_SIZE = 16
 
 
 def smooth(a: float, b: float, x: float) -> float:
@@ -61,7 +67,7 @@ def carve_river(h: float, x: float, z: float, bridge_x: float) -> float:
 
 
 def site_pad(h: float, x: float, z: float, site: tuple[float, float], elevation: float) -> float:
-    """Flatten a disc at the authored site anchor to the elevation the base field used.
+    """Flatten a disc at the authored site anchor to the mission's `site.y`.
 
     The full-flat radius clears the largest site model footprint (half-diagonal ~11 m) with margin;
     the keepout rectangles are construction exclusions, not the pad.
@@ -70,20 +76,125 @@ def site_pad(h: float, x: float, z: float, site: tuple[float, float], elevation:
     return h * (1.0 - m) + elevation * m
 
 
-# Site anchors and elevations, mirrored from AUTHORED_SITES (src/model/defs/sites.ts) and the
-# elevation their base heightfield flattens to. `tests/geographic-heightfields.test.ts` pins the
-# pad against the real anchor, so a drift in either place fails CI.
+# Site anchors and pad elevations, mirrored from AUTHORED_SITES (src/model/defs/sites.ts) and the
+# `MissionSite.y` of every mission that uses the field. `tests/geographic-heightfields.test.ts` pins
+# the pad against the real anchor, so a drift in either place fails CI.
 QUIPAIPAN_SITE = (166.4, 174.1333)  # cuscoIncaPoint(124.8, 130.6)
 QUIPAIPAN_Y = 5.0
+CUSCO1536_SITE = (166.4, 174.1333)
+CUSCO1536_Y = 5.0
 LIMA_SITE = (90.0, 150.0)  # LIMA_SITE_ORIGIN
 LIMA_Y = 5.6
 ARICA_SITE = (179.7333, 97.3333)  # aricaPoint(134.8, 73)
-CALLAO_Y = 4.0  # the arica pad elevation (the Callao mission keeps the same model offset)
+CALLAO_Y = 4.0
 TARAPACA_Y = 4.0
 CHANCA_SITE = (179.84, 97.28)  # chancaPoint(112.4, 60.8)
 VILCABAMBA_Y = 5.0
 INDEPENDENCE_SITE = (179.7333, 94.6667)  # independencePoint(134.8, 71)
 BRENA_Y = 5.0
+
+Height = Callable[[float, float], float]
+Paint = Callable[[Height, float, float], tuple[float, float, float, float]]
+
+
+def slope_at(h: Height, x: float, z: float, step: float = 2.0) -> float:
+    dx = (h(x + step, z) - h(x - step, z)) / (2 * step)
+    dz = (h(x, z + step) - h(x, z - step)) / (2 * step)
+    return math.hypot(dx, dz)
+
+
+def mottle(x: float, z: float) -> float:
+    return 0.85 + 0.3 * (0.5 + 0.5 * math.sin(x * 0.11 + 1.3) * math.sin(z * 0.09 + 0.4))
+
+
+def normalize(weights: tuple[float, float, float, float]) -> tuple[float, float, float, float]:
+    total = max(1e-6, sum(weights))
+    return tuple(max(0.0, w) / total for w in weights)  # type: ignore[return-value]
+
+
+def paint_highland(h: Height, x: float, z: float) -> tuple[float, float, float, float]:
+    """Puna grass on the flats, bare rock on the slopes and summits (Quipaipan, Cusco).
+
+    The weights are zone-dominant on purpose: the game reads `grass > 0.6` to place groves and
+    `rock > 0.6` / `sand > 0.45` to keep trees off cliffs and beaches (`WorldViewDecor.treeless`).
+    """
+    elevation = h(x, z)
+    slope = slope_at(h, x, z)
+    rock = max(smooth(0.26, 0.5, slope), smooth(7.4, 8.8, elevation))
+    mottle_v = mottle(x, z)
+    grass = (1.0 - rock) * 0.9 * mottle_v
+    dirt = (1.0 - rock) * 0.14
+    sand = (1.0 - rock) * 0.03
+    return normalize((grass, dirt, sand, rock))
+
+
+def paint_cusco1536(h: Height, x: float, z: float) -> tuple[float, float, float, float]:
+    """Highland paint plus the city's trodden basin and the stone of Sacsayhuamán."""
+    grass, dirt, sand, rock = paint_highland(h, x, z)
+    city = 1.0 - smooth(20.0, 48.0, math.hypot(x - 166.0, z - 174.0))
+    stone = 1.0 - smooth(0.45, 1.0, math.hypot((x - 158.0) / 30.0, (z - 141.0) / 14.0))
+    return normalize((grass * (1.0 - city), dirt + 0.8 * city, sand, rock + 0.9 * stone))
+
+
+def paint_sierra(h: Height, x: float, z: float) -> tuple[float, float, float, float]:
+    """Terraced valley floor, gravel wash and rocky sides (Mantaro/Breña)."""
+    elevation = h(x, z)
+    slope = slope_at(h, x, z)
+    rock = max(smooth(0.28, 0.52, slope), smooth(8.5, 11.5, elevation))
+    wash = math.exp(-((x - 128.0) / 14.0) ** 2) * (1.0 - rock)
+    valley = 1.0 - smooth(3.3, 4.6, elevation)
+    grass = (1.0 - rock - wash) * (0.55 + 0.4 * valley) * mottle(x, z)
+    sand = 0.7 * wash
+    dirt = max(0.0, 1.0 - rock - grass - sand)
+    return normalize((grass, dirt, sand, rock))
+
+
+def paint_quebrada(h: Height, x: float, z: float) -> tuple[float, float, float, float]:
+    """Atacama desert: sand and rock, with a green oasis and the planted wash floor."""
+    elevation = h(x, z)
+    slope = slope_at(h, x, z)
+    rock = max(smooth(0.26, 0.5, slope), smooth(7.4, 9.0, elevation))
+    oasis = 1.0 - smooth(10.0, 26.0, math.hypot(x - 92.0, z - 140.0))
+    wash = math.exp(-((z - 132.0) / 15.0) ** 2) * (1.0 - smooth(200.0, 228.0, x))
+    grass = 0.55 * oasis * (1.0 - rock)
+    sand = (1.0 - rock - grass) * (0.45 + 0.45 * wash)
+    dirt = max(0.0, 1.0 - rock - grass - sand)
+    return normalize((grass, dirt, sand, rock))
+
+
+def paint_coastal_city(
+    h: Height, x: float, z: float, city: tuple[float, float], river: bool = True, oasis: float = 0.85
+) -> tuple[float, float, float, float]:
+    """Irrigated green plain, urban dirt, gravel beach and rocky hills (Lima, Callao).
+
+    `oasis` is how much of the non-beach plain reads green: the Lima valley is an oasis (groves grow
+    where `grass > 0.6`), while the Callao sand plain stays dry like the base Arica field.
+    """
+    elevation = h(x, z)
+    slope = slope_at(h, x, z)
+    rock = max(smooth(0.28, 0.55, slope), smooth(8.0, 11.0, elevation))
+    beach = 1.0 - smooth(WATER + 0.15, WATER + 1.6, elevation)
+    urban = 1.0 - smooth(16.0, 40.0, math.hypot(x - city[0], z - city[1]))
+    river_band = math.exp(-((z - rimac_z(x)) / 22.0) ** 2) if river else 0.0
+    green = max(river_band, oasis * (1.0 - beach))
+    free = 1.0 - rock
+    grass = free * 0.9 * green
+    dirt = free * 0.7 * urban * (1.0 - green)
+    sand = free * max(0.8 * beach, 0.55 * (1.0 - green))
+    return normalize((grass, dirt, sand, rock))
+
+
+def paint_cloud_forest(h: Height, x: float, z: float) -> tuple[float, float, float, float]:
+    """Wet cloud-forest floor: dense green on the flats, rock on the ridges, gravel on the banks."""
+    elevation = h(x, z)
+    slope = slope_at(h, x, z)
+    rock = max(smooth(0.26, 0.5, slope), smooth(9.5, 13.5, elevation))
+    bank = max(math.exp(-((x - 132.0) / 14.0) ** 2), 1.0 - smooth(2.3, 3.2, elevation))
+    free = 1.0 - rock
+    grass = free * (1.0 - bank * 0.8) * 0.92
+    sand = free * 0.85 * bank
+    dirt = max(0.0, 1.0 - rock - grass - sand)
+    return normalize((grass, dirt, sand, rock))
 
 
 def quipaipan(x: float, z: float) -> float:
@@ -96,44 +207,25 @@ def quipaipan(x: float, z: float) -> float:
     return site_pad(max(2.7, h), x, z, QUIPAIPAN_SITE, QUIPAIPAN_Y)
 
 
-def tarapaca(x: float, z: float) -> float:
-    h = 5.6 + 0.35 * noise(x, z, 1.3)
-    # Quebrada de Tarapacá: a deep, dry incision with a stepped north bank, not a river.
-    canyon = math.exp(-((z - 132) / 15.0) ** 2) * smooth(26, 52, x) * (1 - smooth(198, 228, x))
-    h = h * (1 - canyon) + 3.0 * canyon
-    step = math.exp(-((z - 112) / 8.0) ** 2) * smooth(40, 70, x) * (1 - smooth(180, 214, x))
-    h += 0.9 * step
-    oasis = 1 - smooth(10, 26, math.hypot(x - 92, z - 140))
-    h = h * (1 - oasis) + 4.4 * oasis
-    h += smooth(226, 256, z) * 9 + smooth(226, 256, x) * 8
-    return site_pad(max(2.9, h), x, z, ARICA_SITE, TARAPACA_Y)
-
-
-def vilcabamba(x: float, z: float) -> float:
-    h = 5.2 + 0.5 * noise(x, z, 2.1)
-    h += 7.0 * (0.5 + 0.5 * math.sin(x * 0.045 + 1.1)) * smooth(30, 70, x)
-    h += 5.0 * (0.5 + 0.5 * math.sin(z * 0.05 + 0.3))
-    river = math.exp(-((x - 132) / 13.0) ** 2)
-    h = h * (1 - river) + 1.0 * river
-    bank = math.exp(-((x - 132) / 34.0) ** 2)
-    h = h * (1 - bank) + 2.8 * bank
-    h += smooth(232, 256, z) * 10 + smooth(232, 256, x) * 9
-    return site_pad(max(0.9, h), x, z, CHANCA_SITE, VILCABAMBA_Y)
-
-
-def mantaro(x: float, z: float) -> float:
-    h = 4.0 + 0.35 * noise(x, z, 0.7)
-    valley = math.exp(-((x - 128) / 34.0) ** 2)
-    h = h * (1 - valley) + 3.0 * valley
-    # The Mantaro bed is a dry, seasonal gravel wash: the base field has no river metadata or fords,
-    # so it must stay above the waterline or it would cut the map in two at bake time.
-    river = math.exp(-((x - 128) / 7.0) ** 2)
-    h = h * (1 - river) + 2.9 * river
-    terraces = math.sin(x * 0.11) * 0.8
-    h += terraces * smooth(60, 100, x) * (1 - smooth(156, 196, x))
-    h += smooth(0, 28, 28 - x) * 9 + smooth(228, 256, x) * 10
-    h += smooth(232, 256, z) * 8 + smooth(0, 24, 24 - z) * 7
-    return site_pad(max(2.9, h), x, z, INDEPENDENCE_SITE, BRENA_Y)
+def cusco1536(x: float, z: float) -> float:
+    """Cusco 1536: the basin, Sacsayhuamán on its ridge, the campiña terraces and the retreat valley."""
+    h = 5.2 + 0.35 * noise(x, z, 0.9)
+    basin = 1.0 - smooth(30.0, 92.0, math.hypot(x - 166.0, z - 174.0))
+    h = h * (1.0 - basin) + 5.0 * basin
+    # Campiña: low irrigated terraces between the Inca camp and the city.
+    camp = math.exp(-((z - 118.0) / 28.0) ** 2) * smooth(58.0, 92.0, x) * (1.0 - smooth(150.0, 182.0, x))
+    h += (0.55 * math.sin(x * 0.16) + 0.3 * math.sin(z * 0.21)) * camp
+    # Sacsayhuamán: a ridge north of the plaza with a flattened fortress shoulder.
+    ridge = 1.0 - smooth(0.55, 1.0, math.hypot((x - 158.0) / 36.0, (z - 141.0) / 17.0))
+    shoulder = 1.0 - smooth(0.0, 0.42, math.hypot((x - 158.0) / 22.0, (z - 141.0) / 8.0))
+    h = h * (1.0 - ridge) + (7.3 + 0.9 * math.sin(x * 0.12)) * ridge
+    h = h * (1.0 - shoulder * 0.35) + 7.6 * shoulder * 0.35
+    # Retreat corridor: the road south-west to Ollantaytambo stays low and open.
+    retreat = math.exp(-((x - 77.0) / 22.0) ** 2) * smooth(150.0, 186.0, z)
+    h = h * (1.0 - retreat) + 4.6 * retreat
+    h += smooth(236.0, 256.0, x) * 9.0 + smooth(240.0, 256.0, z) * 7.0
+    h += smooth(0.0, 22.0, 22.0 - z) * 6.0 + smooth(0.0, 20.0, 20.0 - x) * 5.0
+    return site_pad(max(3.2, h), x, z, CUSCO1536_SITE, CUSCO1536_Y)
 
 
 def lima1821(x: float, z: float) -> float:
@@ -187,59 +279,141 @@ def callao(x: float, z: float) -> float:
     return site_pad(max(0.4, h), x, z, ARICA_SITE, CALLAO_Y)
 
 
+def tarapaca(x: float, z: float) -> float:
+    h = 5.6 + 0.35 * noise(x, z, 1.3)
+    # Quebrada de Tarapacá: a deep, dry incision with a stepped north bank, not a river.
+    canyon = math.exp(-((z - 132) / 15.0) ** 2) * smooth(26, 52, x) * (1 - smooth(198, 228, x))
+    h = h * (1 - canyon) + 3.0 * canyon
+    step = math.exp(-((z - 112) / 8.0) ** 2) * smooth(40, 70, x) * (1 - smooth(180, 214, x))
+    h += 0.9 * step
+    oasis = 1 - smooth(10, 26, math.hypot(x - 92, z - 140))
+    h = h * (1 - oasis) + 4.4 * oasis
+    h += smooth(226, 256, z) * 9 + smooth(226, 256, x) * 8
+    return site_pad(max(2.9, h), x, z, ARICA_SITE, TARAPACA_Y)
+
+
+def vilcabamba(x: float, z: float) -> float:
+    h = 5.2 + 0.5 * noise(x, z, 2.1)
+    h += 7.0 * (0.5 + 0.5 * math.sin(x * 0.045 + 1.1)) * smooth(30, 70, x)
+    h += 5.0 * (0.5 + 0.5 * math.sin(z * 0.05 + 0.3))
+    river = math.exp(-((x - 132) / 13.0) ** 2)
+    h = h * (1 - river) + 1.0 * river
+    bank = math.exp(-((x - 132) / 34.0) ** 2)
+    h = h * (1 - bank) + 2.8 * bank
+    h += smooth(232, 256, z) * 10 + smooth(232, 256, x) * 9
+    return site_pad(max(0.9, h), x, z, CHANCA_SITE, VILCABAMBA_Y)
+
+
+def mantaro(x: float, z: float) -> float:
+    h = 4.0 + 0.35 * noise(x, z, 0.7)
+    valley = math.exp(-((x - 128) / 34.0) ** 2)
+    h = h * (1 - valley) + 3.0 * valley
+    # The Mantaro bed is a dry, seasonal gravel wash: the base field has no river metadata or fords,
+    # so it must stay above the waterline or it would cut the map in two at bake time.
+    river = math.exp(-((x - 128) / 7.0) ** 2)
+    h = h * (1 - river) + 2.9 * river
+    terraces = math.sin(x * 0.11) * 0.8
+    h += terraces * smooth(60, 100, x) * (1 - smooth(156, 196, x))
+    h += smooth(0, 28, 28 - x) * 9 + smooth(228, 256, x) * 10
+    h += smooth(232, 256, z) * 8 + smooth(0, 24, 24 - z) * 7
+    return site_pad(max(2.9, h), x, z, INDEPENDENCE_SITE, BRENA_Y)
+
+
 @dataclass(frozen=True)
 class Field:
     name: str
     size: int
-    fn: object
+    fn: Height
+    paint: Paint
     base_module: str
     imports: tuple[str, ...]
-    ground: str
     river: str | None = None
 
 
 FIELDS = (
-    Field('quipaipan', 257, quipaipan, 'cuscoHeightmap', ('CUSCO_GROUND', 'CUSCO_GROUND_SIZE'), 'CUSCO'),
+    Field('quipaipan', 257, quipaipan, paint_highland, 'heightmapCodec', ()),
+    Field('cusco1536', 129, cusco1536, paint_cusco1536, 'heightmapCodec', ()),
     Field(
         'lima1821',
         129,
         lima1821,
+        lambda h, x, z: paint_coastal_city(h, x, z, LIMA_SITE),
         'limaHeightmap',
-        (
-            'LIMA_GROUND',
-            'LIMA_GROUND_SIZE',
-            'LIMA_RIVER_HALF_WIDTH',
-            'LIMA_RIVER_PATH',
-        ),
-        'LIMA',
+        ('LIMA_RIVER_HALF_WIDTH', 'LIMA_RIVER_PATH'),
         river='LIMA',
     ),
     Field(
         'miraflores',
         129,
         miraflores,
+        lambda h, x, z: paint_coastal_city(h, x, z, LIMA_SITE),
         'limaHeightmap',
-        (
-            'LIMA_GROUND',
-            'LIMA_GROUND_SIZE',
-            'LIMA_RIVER_HALF_WIDTH',
-            'LIMA_RIVER_PATH',
-        ),
-        'LIMA',
+        ('LIMA_RIVER_HALF_WIDTH', 'LIMA_RIVER_PATH'),
         river='LIMA',
     ),
-    Field('callao', 129, callao, 'aricaHeightmap', ('ARICA_GROUND', 'ARICA_GROUND_SIZE'), 'ARICA'),
-    Field('tarapaca', 257, tarapaca, 'aricaHeightmap', ('ARICA_GROUND', 'ARICA_GROUND_SIZE'), 'ARICA'),
-    Field('vilcabamba', 257, vilcabamba, 'chancaHeightmap', ('CHANCA_GROUND', 'CHANCA_GROUND_SIZE'), 'CHANCA'),
     Field(
-        'mantaro',
-        257,
-        mantaro,
-        'independenceHeightmap',
-        ('INDEPENDENCE_GROUND', 'INDEPENDENCE_GROUND_SIZE'),
-        'INDEPENDENCE',
+        'callao',
+        129,
+        callao,
+        lambda h, x, z: paint_coastal_city(h, x, z, ARICA_SITE, False, 0.12),
+        'heightmapCodec',
+        (),
     ),
+    Field('tarapaca', 257, tarapaca, paint_quebrada, 'heightmapCodec', ()),
+    Field('vilcabamba', 257, vilcabamba, paint_cloud_forest, 'heightmapCodec', ()),
+    Field('mantaro', 257, mantaro, paint_sierra, 'heightmapCodec', ()),
 )
+
+
+def quantize_palette(cells: list[tuple[int, int, int, int]]) -> tuple[list[tuple[int, int, int, int]], list[int]]:
+    """Pick the 16 most frequent 4-bit colours and map every cell to the nearest one.
+
+    The grid is 128 x 128 x 4 bytes (64 KB), which the `dist` budget cannot pay per mission. A 4-bit
+    palette index per cell keeps the 2 m painted-ground resolution the model-mission pattern requires.
+    Bucketing the normalized cells (16 levels per channel) keeps pure colours pure and low mixtures
+    alive, and the palette is taken from the data so every entry is a colour the field actually uses.
+    """
+    histogram: dict[tuple[int, int, int, int], int] = {}
+    for cell in cells:
+        key = tuple(min(255, round(channel / 17) * 17) for channel in cell)
+        histogram[key] = histogram.get(key, 0) + 1  # type: ignore[index]
+    palette: list[tuple[int, int, int, int]] = []
+    for key, _ in sorted(histogram.items(), key=lambda item: -item[1]):
+        total = max(1, sum(key))
+        entry = tuple(round(channel * 255 / total) for channel in key)  # normalized weights
+        if entry not in palette:
+            palette.append(entry)  # type: ignore[arg-type]
+        if len(palette) == PALETTE_SIZE:
+            break
+    indices: list[int] = []
+    for cell in cells:
+        best = 0
+        best_distance = 1 << 30
+        for i, entry in enumerate(palette):
+            distance = sum((cell[c] - entry[c]) ** 2 for c in range(4))
+            if distance < best_distance:
+                best_distance = distance
+                best = i
+        indices.append(best)
+    return palette, indices
+
+
+def pack_indices(indices: list[int]) -> str:
+    raw = bytearray()
+    for i in range(0, len(indices), 2):
+        raw.append((indices[i] & 0x0F) | ((indices[i + 1] if i + 1 < len(indices) else 0) & 0x0F) << 4)
+    return base64.b64encode(raw).decode('ascii')
+
+
+def encode_ground(field: Field) -> tuple[str, list[tuple[int, int, int, int]]]:
+    cells: list[tuple[int, int, int, int]] = []
+    for gz in range(GROUND_SIZE):
+        z = (gz + 0.5) * WORLD / GROUND_SIZE
+        for gx in range(GROUND_SIZE):
+            x = (gx + 0.5) * WORLD / GROUND_SIZE
+            cells.append(tuple(max(0, min(255, round(w * 255))) for w in field.paint(field.fn, x, z)))  # type: ignore[arg-type]
+    palette, indices = quantize_palette(cells)
+    return pack_indices(indices), palette
 
 
 def write(field: Field) -> None:
@@ -256,8 +430,11 @@ def write(field: Field) -> None:
     for value in values:
         raw.extend(int(value).to_bytes(2, 'little'))
     b64 = base64.b64encode(raw).decode('ascii')
+    ground_b64, palette = encode_ground(field)
+    palette_ts = ', '.join('[' + ', '.join(str(c) for c in entry) + ']' for entry in palette)
 
     imports = ''.join(f'  {name},\n' for name in field.imports)
+    base_import = f"import {{\n{imports}}} from './{field.base_module}';\n" if field.imports else ''
     river = (
         f"  river: {{ path: {field.river}_RIVER_PATH, halfWidth: {field.river}_RIVER_HALF_WIDTH }},\n"
         if field.river
@@ -265,7 +442,8 @@ def write(field: Field) -> None:
     )
     text = (
         '// Generated by scripts/build_geographic_heightmaps.py. Do not edit by hand.\n'
-        f"import {{\n{imports}}} from './{field.base_module}';\n"
+        f'{base_import}'
+        "import { decodePalettizedGround, type GroundPaletteEntry } from './groundCodec';\n"
         "import type { AuthoredHeightField } from './authoredTerrain';\n"
         '\n'
         f'export const {key}_HEIGHTMAP_SIZE = {size};\n'
@@ -282,19 +460,24 @@ def write(field: Field) -> None:
         '  return out;\n'
         '}\n'
         f'export const {key}_HEIGHTMAP = decode();\n'
-        '/** Mission heightfield: the base site paint and river, with this mission\'s relief. */\n'
+        f'export const {key}_GROUND_SIZE = {GROUND_SIZE};\n'
+        f'const {key}_GROUND_B64 =\n'
+        f"  '{ground_b64}';\n"
+        f'const {key}_GROUND_PALETTE: readonly GroundPaletteEntry[] = [{palette_ts}];\n'
+        f'export const {key}_GROUND = decodePalettizedGround({key}_GROUND_B64, {key}_GROUND_PALETTE, {key}_GROUND_SIZE);\n'
+        '/** Mission heightfield: this mission\'s relief and the paint derived from it. */\n'
         f'export const {key}_HEIGHTFIELD: AuthoredHeightField = {{\n'
         f'  size: {key}_HEIGHTMAP_SIZE,\n'
         f'  worldSize: {key}_HEIGHTMAP_WORLD_SIZE,\n'
         f'  heights: {key}_HEIGHTMAP,\n'
-        f'  ground: {{ size: {field.ground}_GROUND_SIZE, weights: {field.ground}_GROUND }},\n'
+        f'  ground: {{ size: {key}_GROUND_SIZE, weights: {key}_GROUND }},\n'
         f'{river}'
         '};\n'
     )
     path = OUT / f'{field.name}Heightmap.ts'
     path.write_text(text)
     reencode_file(path)
-    print(f'wrote {field.name} ({size}x{size}, {len(b64)} base64 chars)')
+    print(f'wrote {field.name} ({size}x{size}, {len(b64)} height chars, {len(ground_b64)} ground chars)')
 
 
 if __name__ == '__main__':

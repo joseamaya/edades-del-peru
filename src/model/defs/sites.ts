@@ -88,13 +88,6 @@ import { aricaLength, aricaPoint } from './aricaSite';
 import { cuscoIncaLength, cuscoIncaPoint } from './cuscoIncaSite';
 import { independenceLength, independencePoint } from './independenceSite';
 import {
-  CUSCO_GROUND,
-  CUSCO_GROUND_SIZE,
-  CUSCO_HEIGHTMAP,
-  CUSCO_HEIGHTMAP_SIZE,
-  CUSCO_HEIGHTMAP_WORLD_SIZE,
-} from './cuscoHeightmap';
-import {
   JUNTA_GROUND,
   JUNTA_GROUND_SIZE,
   JUNTA_HEIGHTMAP,
@@ -977,12 +970,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     anchor: cuscoIncaPoint({ x: 124.8, z: 130.6 }),
     cameraHeight: cuscoIncaLength(58),
     framing: 'site-biased',
-    heightField: {
-      size: CUSCO_HEIGHTMAP_SIZE,
-      worldSize: CUSCO_HEIGHTMAP_WORLD_SIZE,
-      heights: CUSCO_HEIGHTMAP,
-      ground: { size: CUSCO_GROUND_SIZE, weights: CUSCO_GROUND },
-    },
+    // Both missions that use this site supply their own field (`m6b` Quipaipan, `m_cusco_1536`).
     pathCellSize: 1,
     heritageProxies: [
       {

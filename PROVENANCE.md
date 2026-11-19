@@ -469,6 +469,18 @@ slot is absent (offline / without assets).
   and the huaca are abstractions, never historical photographs.
 - **Review**: no human art-review gate applies to in-engine captures; the ayllu site is procedural.
 
+### Geographic identity Phase 2 evidence (in-engine contact sheet)
+
+- **Location**: `docs/media/geographic-identity-phase2.webp` (2000x562 WebP q80, 105 KB).
+- **Source**: `node scripts/screenshot.mjs geo-<letter> --url='/?mission=<id>&intro=0&fog=0&seed=777' --click
+--wait=7000 --site --no-hud` for `m6b_guerra_civil`, `m_cusco_1536`, `m_lima_1821`, `m_miraflores`,
+  `m_real_felipe`, `m_tarapaca`, `m_vilcabamba` and `m_brena`; tiled 4x2 with ffmpeg at 500x281 per cell.
+  The same eight captures, shuffled, fed the blind identification test recorded in the roadmap.
+- **Content**: project-owned game renders with the HUD hidden, SwiftShader. Top row Quipaipan, Cusco 1536,
+  Lima 1821, Miraflores; bottom row Real Felipe, Tarapacá, Vilcabamba, Breña. Shows the per-mission painted
+  ground derived from each field, not a finished site composition.
+- **Review**: no human art-review gate applies to in-engine evidence captures.
+
 ### Geographic identity Phase 1 evidence (in-engine contact sheet)
 
 - **Location**: `docs/media/geographic-identity-phase1.webp` (2000x562 WebP q80, 100 KB).

@@ -6,14 +6,16 @@ import { launchChromium, withViteServer, reviewDir, cliArg } from './lib.mjs';
  * Capture game screenshots for the subagent visual review.
  * Usage: node scripts/screenshot.mjs [name] [--url=...] [--wait=ms] [--seed=...] [--click] [--site] [--height=N]
  * `--click` presses the first `.ed-primary` button (the mission briefing's start) before the wait.
- * `--site` flies the camera over the mission's authored site anchor (useful for site-view evidence) and
- * `--height=N` overrides the camera zoom of that framing (default 78, the map-wide isometric limit).
+ * `--site` flies the camera over the mission's authored site anchor (useful for site-view evidence),
+ * `--height=N` overrides the camera zoom of that framing (default 78, the map-wide isometric limit) and
+ * `--no-hud` hides the DOM HUD so a capture shows the terrain and the site alone.
  */
 const name = process.argv[2] ?? 'default';
 const urlArg = cliArg('url');
 const wait = parseInt(cliArg('wait', '6000'), 10);
 const clickStart = process.argv.includes('--click');
 const siteView = process.argv.includes('--site');
+const noHud = process.argv.includes('--no-hud');
 const siteHeight = Number.parseFloat(cliArg('height', '78'));
 const seed = parseInt(cliArg('seed', '12345'), 10);
 const numShots = parseInt(cliArg('shots', '1'), 10);
@@ -45,6 +47,12 @@ async function main() {
       .catch(() => {});
   }
   await page.waitForTimeout(wait);
+  if (noHud) {
+    await page.evaluate(() => {
+      const root = document.getElementById('ui-root');
+      if (root) root.style.display = 'none';
+    });
+  }
   if (siteView) {
     await page
       .evaluate(

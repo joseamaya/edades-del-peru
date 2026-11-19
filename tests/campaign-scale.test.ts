@@ -20,7 +20,8 @@ describe('model-mission scale', () => {
       const siteId = mission.layout?.site?.id;
       expect(siteId, `${mission.id} has no authored site`).toBeTruthy();
       const site = getAuthoredSite(siteId!)!;
-      const field = site.heightField!;
+      // A mission may override its site's field (Phase 1/2); the scale rules follow what the mission runs.
+      const field = mission.layout?.site?.heightField ?? site.heightField!;
       expect(field.worldSize, `${mission.id} heightfield world size`).toBe(256);
       expect(field.ground?.size, `${mission.id} painted ground samples`).toBe(128);
       const groundStep = field.worldSize / ((field.ground?.size ?? 0) - 1);

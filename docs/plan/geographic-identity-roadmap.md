@@ -145,8 +145,38 @@ After this phase:
 
 ## 5. Phase 2 — Pilots
 
+**Status (2026-11-19):** first slice landed. `m_cusco_1536` has its own field (basin, Sacsayhuamán ridge and
+shoulder, campiña terraces, retreat corridor) and every mission-scoped field now paints its own ground from
+that field's relief instead of inheriting another mission's painting. The paint pays for itself: per-mission
+128 x 128 RGBA grids are stored as 4-bit palette indices (`src/model/defs/groundCodec.ts`), and the dead
+`cusco_inca_site` field was removed, so `dist` went from 24.83 to 24.74 MB. The paint keeps the thresholds the game reads: groves still grow where `grass > 0.6` and `treeless` still
+fires on `sand > 0.45` / `rock > 0.6`, pinned per mission in `tests/geographic-heightfields.test.ts` (Lima
+1821/Miraflores keep the irrigated oasis, Callao and Tarapacá stay as bare as their base fields). A blind
+identification test over the eight fields scored **8/8**, with the caveats recorded below.
+
+Still open in this phase: Lima 1535's city-grid composition, Vilcabamba's denser cloud-forest vegetation
+(procedural, no new assets), and the remaining composition work; the formal blind protocol with a larger
+sample belongs to Phase 4.
+
 The three pilots validate the approach before the rest of the catalogue is touched. They represent the
 three hardest environments and the three highest-leverage reuse chains.
+
+### Blind test (2026-11-19, eight fields)
+
+An independent reviewer was shown the eight HUD-less site captures without their mission ids and asked to map
+each to one of eight missions from a short geography brief: **8/8 correct**.
+
+The reviewer's caveats, kept here because they scope the result:
+
+- Lima 1821 vs Miraflores were separated by the urban grid vs the redoubt line and headland; a crop without
+  houses would be indistinguishable.
+- Vilcabamba vs Breña both read as flat green and treed; the brighter grass and thinner trees vs the town plaza
+  decided it.
+- Tarapacá vs Quipaipan differ mostly by the ochre vs green-olive ground and the dry wash.
+- Cusco 1536 vs Quipaipan both centre on a stepped stone platform; the city terrace below the ridge decided it.
+
+So the fields are distinguishable, but three pairs still lean on colour and on the site model rather than on
+landform alone. Phase 3/4 should widen those differences (relief amplitude and composition), not just the palette.
 
 ### Pilot A — `m_cusco_1536` (high Andes, urban siege)
 

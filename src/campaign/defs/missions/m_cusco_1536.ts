@@ -1,5 +1,6 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import { highValleyVegetation } from '../../../model/defs/profiles';
+import { CUSCO1536_HEIGHTFIELD } from '../../../model/defs/cusco1536Heightmap';
 import type { MissionDef } from '../../types';
 
 // Cusco 1536: the Inca camp, Sacsayhuamán, the city and the withdrawal road.
@@ -50,6 +51,7 @@ export const mCusco1536: MissionDef = {
     site: {
       id: 'cusco_inca_site',
       y: 5,
+      heightField: CUSCO1536_HEIGHTFIELD,
       focus: { x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256 },
       keepout: [{ x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256, rx: 0.09, rz: 0.08 }],
       buildKeepout: [{ x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256, rx: 0.08, rz: 0.07 }],
