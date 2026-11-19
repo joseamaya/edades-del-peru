@@ -811,7 +811,8 @@ export class WorldViewDecor {
     if (decor.glb) group.userData.authoredGlb = decor.glb;
     if (parent) parent.add(group);
     else this.game.scene.add(group);
-    const current = (): boolean => (parent ? group.parent === parent : this.game.scenarioDecor === group);
+    const current = (): boolean =>
+      parent ? this.game.scenarioDecor === parent && group.parent === parent : this.game.scenarioDecor === group;
     if (decor.glb) {
       void loadDecorModel(decor.glb)
         .then((model) => {

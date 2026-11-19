@@ -252,7 +252,7 @@ stay as they were, because the fix broke walkability or belongs to composition:
 | Tarapacá ↔ Quipaipan | 0.91 m | **1.75 m** | taller pampa hills and border ridges; a narrower, deeper dry quebrada with a taller stepped bank |
 | Vilcabamba ↔ Breña | 3.67 m | **4.71 m** | valley walls as broad, long-wavelength slopes: one walkable component, grass 9,451 cells, and the fort on a spur that visibly falls away |
 | Vilcabamba ↔ Quipaipan | 3.20 m | **4.30 m** | the same valley walls; this was the pair the blind test confused |
-| Lima 1821 ↔ Miraflores | 1.57 m | 1.57 m | by design (shared anchor); separated by **composition**: three earthwork redoubts (Arica battery kit) now stand between the camp and Lima, matching the objectives |
+| Lima 1821 ↔ Miraflores | 1.57 m | 1.57 m | by design (shared anchor); separated by **composition**: three earthwork redoubts (Arica battery kit) stand south of Lima on the mission's own objective nodes, facing the Chilean advance |
 
 The next slice follows the walkability rule the Vilcabamba fix established: a BFS on the 1 m path grid at
 `MAX_WALKABLE_SLOPE`, requiring one component covering ≥99 % of the open cells (`tests/geographic-heightfields.test.ts`). Evidence: [`geographic-identity-phase3.webp`](../media/geographic-identity-phase3.webp). The remaining families
