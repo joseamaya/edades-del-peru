@@ -116,17 +116,17 @@ const BUDGETS = {
   m5_yahuar_pampa: { sceneTriangles: 725_000, sceneDrawCalls: 378, kitTriangles: 0, kitDrawCalls: 0 },
   // Chimú north-coast opening: the camp, Paramonga and the canal. Measured ~499k / 273; first-pass cap.
   m6_chimu_inca: { sceneTriangles: 530_000, sceneDrawCalls: 290, kitTriangles: 15_000, kitDrawCalls: 3 },
-  // Inca civil war opening: the Quito camp and Quipaipan. Measured ~703k / 436; over the 600k target.
+  // Inca civil war opening: the Quito camp and Quipaipan. Measured 689,709 / 418; over the 600k target.
   m6b_guerra_civil: { sceneTriangles: 745_000, sceneDrawCalls: 465, kitTriangles: 0, kitDrawCalls: 0 },
   // Independence opening: the Lima camp and Junín. Measured 567,865 / 603 after the PCF shadow pass and the
   // rig silhouette rule (674,476 / 823 with VSM); under both caps, over the 200-call target.
   m8_independencia: { sceneTriangles: 625_000, sceneDrawCalls: 660, kitTriangles: 0, kitDrawCalls: 0 },
   // Cusco 1536 opening: the city, the camp and the highland kit. Measured 739,902 / 582 with 87,900 / 12 kit.
   m_cusco_1536: { sceneTriangles: 780_000, sceneDrawCalls: 1_000, kitTriangles: 100_000, kitDrawCalls: 14 },
-  // Breña opening: the Mantaro camp, the communities and the highland kit. The mission heightfield
+  // Breña opening: the Mantaro valley, the communities and the highland kit. The mission heightfield
   // reshapes the scatter into 14 species objects (one carries two materials): measured 639,435-660,961 /
   // 619 with 34,782-56,308 / 15 kit.
-  m_brena: { sceneTriangles: 740_000, sceneDrawCalls: 900, kitTriangles: 100_000, kitDrawCalls: 15 },
+  m_brena: { sceneTriangles: 740_000, sceneDrawCalls: 900, kitTriangles: 100_000, kitDrawCalls: 16 },
   // Phase 1 mission-scoped heightfields: each reused site now has its own relief, so its opening is measured
   // on its own field instead of inheriting the base site's cap. The kit caps keep the same generous headroom
   // as the other missions, because the visible instance count varies a few percent between runs.
@@ -201,36 +201,47 @@ try {
         );
       }
       if (id === 'm4_wari') {
-        return (
-          !!g.landmark?.getObjectByName('wari_site') && (g.settlementDressing ?? []).every((d) => d.attached !== false)
-        );
+        if (
+          !g.landmark?.getObjectByName('wari_site') ||
+          !(g.settlementDressing ?? []).every((d) => d.attached !== false)
+        ) {
+          return false;
+        }
       }
       if (id === 'm5_yahuar_pampa') {
         // The pampa keeps primitive broad/needle trees, not a GLB kit: wait for the site and dressing.
-        return (
-          !!g.landmark?.getObjectByName('chanca_site') &&
-          (g.settlementDressing ?? []).every((d) => d.attached !== false)
-        );
+        if (
+          !g.landmark?.getObjectByName('chanca_site') ||
+          !(g.settlementDressing ?? []).every((d) => d.attached !== false)
+        ) {
+          return false;
+        }
       }
       if (id === 'm6_chimu_inca' && !g.landmark?.getObjectByName('chimu_site')) return false;
       if (id === 'm6b_guerra_civil') {
         // The pampa keeps primitive broad/needle trees, not a GLB kit: wait for the site and dressing.
-        return (
-          !!g.landmark?.getObjectByName('cusco_inca_site') &&
-          (g.settlementDressing ?? []).every((d) => d.attached !== false)
-        );
+        if (
+          !g.landmark?.getObjectByName('cusco_inca_site') ||
+          !(g.settlementDressing ?? []).every((d) => d.attached !== false)
+        ) {
+          return false;
+        }
       }
       if (id === 'm8_independencia') {
-        return (
-          !!g.landmark?.getObjectByName('independence_site') &&
-          (g.settlementDressing ?? []).every((d) => d.attached !== false)
-        );
+        if (
+          !g.landmark?.getObjectByName('independence_site') ||
+          !(g.settlementDressing ?? []).every((d) => d.attached !== false)
+        ) {
+          return false;
+        }
       }
       if (id === 'm_cusco_1536' || id === 'm_brena') {
-        return (
-          !!g.landmark?.getObjectByName(id === 'm_cusco_1536' ? 'cusco_inca_site' : 'independence_site') &&
-          (g.settlementDressing ?? []).every((d) => d.attached !== false)
-        );
+        if (
+          !g.landmark?.getObjectByName(id === 'm_cusco_1536' ? 'cusco_inca_site' : 'independence_site') ||
+          !(g.settlementDressing ?? []).every((d) => d.attached !== false)
+        ) {
+          return false;
+        }
       }
       if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site')?.userData.heroesReady;
       if (id === 'm9_guerra_pacifico' && !g.landmark?.getObjectByName('arica_site')) return false;

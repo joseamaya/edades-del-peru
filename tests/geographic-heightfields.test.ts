@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import { AUTHORED_SITES, getAuthoredSite } from '../src/model/defs/sites';
 import { sampleAuthoredHeight } from '../src/model/defs/authoredTerrain';
-import { resolveMapProfile } from '../src/model/defs/profiles';
+import { WATER_LEVEL, resolveMapProfile } from '../src/model/defs/profiles';
 import { TerrainData } from '../src/sim/TerrainData';
 import type { MissionDef } from '../src/campaign/types';
 import type { AuthoredHeightField } from '../src/model/defs/authoredTerrain';
@@ -22,6 +22,37 @@ const CASES: Array<{ id: string; size: number; hasRiver: boolean }> = [
   { id: 'm_vilcabamba', size: 257, hasRiver: false },
   { id: 'm_brena', size: 257, hasRiver: false },
 ];
+
+const SAMPLE_STEPS = 65;
+
+const RING: Array<[number, number]> = [
+  [10, 0],
+  [-10, 0],
+  [0, 10],
+  [0, -10],
+  [7, 7],
+  [-7, 7],
+  [7, -7],
+  [-7, -7],
+];
+
+function countWater(field: AuthoredHeightField): number {
+  let water = 0;
+  for (const [x, z] of sampleGrid(SAMPLE_STEPS)) {
+    if (sampleAuthoredHeight(field, x, z) < WATER_LEVEL - 0.15) water++;
+  }
+  return water;
+}
+
+function sampleGrid(steps: number): Array<[number, number]> {
+  const out: Array<[number, number]> = [];
+  for (let zi = 0; zi < steps; zi++) {
+    for (let xi = 0; xi < steps; xi++) {
+      out.push([(xi / (steps - 1)) * 256, (zi / (steps - 1)) * 256]);
+    }
+  }
+  return out;
+}
 
 function resolve(id: string): Case {
   const mission = MISSIONS.find((m) => m.id === id);
@@ -67,20 +98,53 @@ describe('geographic phase 1 heightfields', () => {
     }
   });
 
+  it('keeps every pair of fields visibly apart on a common grid', () => {
+    const grids = CASES.map(({ id }) => {
+      const { override } = resolve(id);
+      return sampleGrid(SAMPLE_STEPS).map(([x, z]) => sampleAuthoredHeight(override, x, z));
+    });
+    for (let a = 0; a < grids.length; a++) {
+      for (let b = a + 1; b < grids.length; b++) {
+        const first = grids[a]!;
+        const second = grids[b]!;
+        const label = `${CASES[a]!.id} vs ${CASES[b]!.id}`;
+        let sum = 0;
+        let near = 0;
+        for (let i = 0; i < first.length; i++) {
+          const delta = Math.abs(first[i]! - second[i]!);
+          sum += delta;
+          if (delta < 0.25) near++;
+        }
+        // A renamed copy of a field would keep both numbers high; the shapes must also disagree.
+        expect(sum / first.length, `${label} mean height delta`).toBeGreaterThan(0.75);
+        expect(near / first.length, `${label} flat-agreement share`).toBeLessThan(0.6);
+      }
+    }
+  });
+
   it('keeps each landmark grounded on the elevation its base field used', () => {
     for (const { id } of CASES) {
       const { mission, base, override } = resolve(id);
       const anchor = AUTHORED_SITES[mission.layout!.site!.id]!.anchor;
       const expected = sampleAuthoredHeight(base, anchor.x, anchor.z);
       expect(sampleAuthoredHeight(override, anchor.x, anchor.z), id).toBeCloseTo(expected, 2);
-      for (const [dx, dz] of [
-        [3, 0],
-        [-3, 0],
-        [0, 3],
-        [0, -3],
-      ]) {
-        expect(sampleAuthoredHeight(override, anchor.x + dx!, anchor.z + dz!), id).toBeCloseTo(expected, 1);
+      // The flat pad must clear the largest site model footprint (half-diagonal ~11 m).
+      for (const [dx, dz] of RING) {
+        expect(sampleAuthoredHeight(override, anchor.x + dx, anchor.z + dz), `${id} ${dx},${dz}`).toBeCloseTo(
+          expected,
+          1,
+        );
       }
+    }
+  });
+
+  it('does not flood a mission the base field left dry', () => {
+    for (const { id } of CASES) {
+      const { base, override } = resolve(id);
+      const dryBase = countWater(base) === 0;
+      if (!dryBase || override.river) continue;
+      // A carved channel below the waterline with no river/ford metadata splits the map in two.
+      expect(countWater(override), id).toBe(0);
     }
   });
 

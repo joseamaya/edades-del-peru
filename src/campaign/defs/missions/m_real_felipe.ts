@@ -51,7 +51,8 @@ export const mRealFelipe: MissionDef = {
     },
     site: {
       id: 'real_felipe_site',
-      y: 5,
+      // Same arica model and pad as m9_guerra_pacifico and m_tarapaca: y 5 left it floating a metre.
+      y: 4,
       heightField: CALLAO_HEIGHTFIELD,
       focus: REAL_FELIPE,
       keepout: [{ x: REAL_FELIPE.x, z: REAL_FELIPE.z, rx: 0.075, rz: 0.075 }],

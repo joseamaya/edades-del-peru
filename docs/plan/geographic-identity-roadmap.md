@@ -33,12 +33,12 @@ that geography is coherent with the place, the period and the documented sources
 
 Scale: 0 = no identity, 1 = labels/palette only, 2 = one strong cue but generic terrain, 3 = unmistakable.
 
-| Score | Missions |
-| --- | --- |
-| **3** | `m1_caral`, `m_tambotoco` |
-| **2** | `m2_chavin` (partial), `m_junta_cusco` (partial), `m_lima` (partial) |
+| Score | Missions                                                                                                                                                                                                                    |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **3** | `m1_caral`, `m_tambotoco`                                                                                                                                                                                                   |
+| **2** | `m2_chavin` (partial), `m_junta_cusco` (partial), `m_lima` (partial)                                                                                                                                                        |
 | **1** | `m3_moche_recuay`, `m4_wari`, `m5_yahuar_pampa`, `m6_chimu_inca`, `m6b_guerra_civil`, `m_cusco_1536`, `m7_tupac_amaru`, `m8_independencia`, `m_lima_1821`, `m_real_felipe`, `m9_guerra_pacifico`, `m_miraflores`, `m_brena` |
-| **0** | `m_tarapaca`, `m_vilcabamba` |
+| **0** | `m_tarapaca`, `m_vilcabamba`                                                                                                                                                                                                |
 
 ### 2.2 Current reuse
 
@@ -54,15 +54,15 @@ Scale: 0 = no identity, 1 = labels/palette only, 2 = one strong cue but generic 
 `scripts/bench_scene.mjs` already carries mission-specific caps. Several are above the general
 600k/200 target in [`art-direction.md`](../design/art-direction.md):
 
-| Mission | Opening cap (triangles / calls) | Late cap |
-| --- | ---: | ---: |
-| `m_lima` | 800k / 860 | 1.1M / 1,250 |
-| `m_junta_cusco` | 780k / 1,000 | — |
-| `m8_independencia` | 625k / 660 | 920k / 1,325 |
-| `m7_tupac_amaru` | 575k / 710 | 860k / 1,140 |
-| `m9_guerra_pacifico` | 570k / 640 | 860k / 1,160 |
-| `m6b_guerra_civil` | 745k / 465 | 1.025M / 715 |
-| `m6_chimu_inca` | 530k / 290 | 815k / 550 |
+| Mission              | Opening cap (triangles / calls) |     Late cap |
+| -------------------- | ------------------------------: | -----------: |
+| `m_lima`             |                      800k / 860 | 1.1M / 1,250 |
+| `m_junta_cusco`      |                    780k / 1,000 |            — |
+| `m8_independencia`   |                      625k / 660 | 920k / 1,325 |
+| `m7_tupac_amaru`     |                      575k / 710 | 860k / 1,140 |
+| `m9_guerra_pacifico` |                      570k / 640 | 860k / 1,160 |
+| `m6b_guerra_civil`   |                      745k / 465 | 1.025M / 715 |
+| `m6_chimu_inca`      |                      530k / 290 |   815k / 550 |
 
 This is the hard constraint: geographic identity must be bought with relief, distribution and merging, not
 with more objects.
@@ -108,21 +108,28 @@ and the baseline is captured.
 **Status (2026-11-19):** the geometry foundation is implemented. The seven missions now use a
 `MissionSite.heightField` override on their existing site: Quipaipan, Lima 1821, Miraflores, Callao,
 Tarapacá, Vilcabamba and Mantaro. Each field flattens a pad at the site anchor to the base field's elevation
-and inherits its painted ground (plus Lima's Rímac river), so the shared landmark keeps its grounding and its
-`treeless` scatter. The site models, per-mission paint and full compositions remain in Phase 2/3. Evidence:
+and inherits its painted ground (plus the Rímac river in Lima and Miraflores), so the shared landmark keeps its grounding and its
+`treeless` scatter. Measured separation between any two fields: mean |Δh| 0.9 m and at most 29 % of the grid
+within 0.25 m. The site models and full compositions remain in Phase 2/3. Evidence:
 [`geographic-identity-phase1.webp`](../media/geographic-identity-phase1.webp).
+
+**Known limitation (feeds Phase 2):** with geometry alone the new landforms read weakly, because the splat is
+still the base site's paint authored for the old relief — a carved quebrada or river valley is coloured as the
+plain it replaced. Phase 2 pairs each pilot field with paint derived from that field (and the pilot's
+composition), which needs a compact ground encoding: a 64×64 RGBA grid is ~16 KB raw per field and the current
+`dist` headroom is ~170 KB, so the ground payload has to use the same delta-varint treatment as the heights.
 
 Add one authored heightfield per reused mission. This is the highest identity return per unit of work.
 
-| New heightfield | Mission | Removes the reuse with | Notes |
-| --- | --- | --- | --- |
-| `quipaipan` | `m6b_guerra_civil` | `m_cusco_1536` | Open pampa, dry wash, low hills |
-| `lima_1821` | `m_lima_1821` | `m_lima`, `m_miraflores` | Lima edge + Callao road |
-| `miraflores` | `m_miraflores` | `m_lima`, `m_lima_1821` | Coastal cliff + redoubt line |
-| `callao` | `m_real_felipe` | `m9_guerra_pacifico`, `m_tarapaca` | Bay + star fortress |
-| `tarapaca` | `m_tarapaca` | `m9_guerra_pacifico`, `m_real_felipe` | Inland quebrada, no sea |
-| `vilcabamba` | `m_vilcabamba` | `m5_yahuar_pampa` | Cloud-forest slope + Urubamba |
-| `mantaro` | `m_brena` | `m8_independencia` | Deep valley + terraces + passes |
+| New heightfield | Mission            | Removes the reuse with                | Notes                           |
+| --------------- | ------------------ | ------------------------------------- | ------------------------------- |
+| `quipaipan`     | `m6b_guerra_civil` | `m_cusco_1536`                        | Open pampa, dry wash, low hills |
+| `lima_1821`     | `m_lima_1821`      | `m_lima`, `m_miraflores`              | Lima edge + Callao road         |
+| `miraflores`    | `m_miraflores`     | `m_lima`, `m_lima_1821`               | Coastal cliff + redoubt line    |
+| `callao`        | `m_real_felipe`    | `m9_guerra_pacifico`, `m_tarapaca`    | Bay + star fortress             |
+| `tarapaca`      | `m_tarapaca`       | `m9_guerra_pacifico`, `m_real_felipe` | Inland quebrada, no sea         |
+| `vilcabamba`    | `m_vilcabamba`     | `m5_yahuar_pampa`                     | Cloud-forest slope + Urubamba   |
+| `mantaro`       | `m_brena`          | `m8_independencia`                    | Deep valley + terraces + passes |
 
 After this phase:
 
@@ -215,35 +222,35 @@ heightfield pass; they finish the mission around the new field.
 
 ### 6.1 High Andes and pampas
 
-| Mission | Main change | Complexity |
-| --- | --- | --- |
-| `m4_wari` | Terraced basin, andenes, dry quebradas, `andes` kit | M |
-| `m5_yahuar_pampa` | Remove accidental lake, add pucará hill, puna | M |
-| `m6b_guerra_civil` | New Quipaipan pampa (Phase 1) | M |
-| `m7_tupac_amaru` | New Tinta/Sangarará site; stop using the Cusco colonial site | M–L |
-| `m_junta_cusco` | High-andes region, pass/altiplano, `andes` kit | M |
-| `m8_independencia` | Two contrasting pampas, high-andes region | M |
-| `m_brena` | New Mantaro valley (Phase 1), terraces, `andes` kit | L |
+| Mission            | Main change                                                  | Complexity |
+| ------------------ | ------------------------------------------------------------ | ---------- |
+| `m4_wari`          | Terraced basin, andenes, dry quebradas, `andes` kit          | M          |
+| `m5_yahuar_pampa`  | Remove accidental lake, add pucará hill, puna                | M          |
+| `m6b_guerra_civil` | New Quipaipan pampa (Phase 1)                                | M          |
+| `m7_tupac_amaru`   | New Tinta/Sangarará site; stop using the Cusco colonial site | M–L        |
+| `m_junta_cusco`    | High-andes region, pass/altiplano, `andes` kit               | M          |
+| `m8_independencia` | Two contrasting pampas, high-andes region                    | M          |
+| `m_brena`          | New Mantaro valley (Phase 1), terraces, `andes` kit          | L          |
 
 ### 6.2 Coastal and southern desert
 
-| Mission | Main change | Complexity |
-| --- | --- | --- |
-| `m3_moche_recuay` | River, dunes, adobe huacas, canal | M |
-| `m6_chimu_inca` | Dunes, dry river, Chan Chan, canal | M |
-| `m_lima_1821` | New Lima edge/Callao heightfield (Phase 1) | M |
-| `m_miraflores` | New redoubt-line heightfield (Phase 1) | M |
-| `m_real_felipe` | New Callao bay/star fortress (Phase 1) | L |
-| `m9_guerra_pacifico` | Morro backdrop, port terrace | M |
-| `m_tarapaca` | New quebrada heightfield (Phase 1), no sea | L |
+| Mission              | Main change                                | Complexity |
+| -------------------- | ------------------------------------------ | ---------- |
+| `m3_moche_recuay`    | River, dunes, adobe huacas, canal          | M          |
+| `m6_chimu_inca`      | Dunes, dry river, Chan Chan, canal         | M          |
+| `m_lima_1821`        | New Lima edge/Callao heightfield (Phase 1) | M          |
+| `m_miraflores`       | New redoubt-line heightfield (Phase 1)     | M          |
+| `m_real_felipe`      | New Callao bay/star fortress (Phase 1)     | L          |
+| `m9_guerra_pacifico` | Morro backdrop, port terrace               | M          |
+| `m_tarapaca`         | New quebrada heightfield (Phase 1), no sea | L          |
 
 ### 6.3 Refine the strong missions
 
-| Mission | Main change | Complexity |
-| --- | --- | --- |
-| `m1_caral` | Dry-season channel, lomas, terrace contrast | S–M |
-| `m2_chavin` | Deepen valley, river, `andes` kit, palette | M |
-| `m_tambotoco` | Optional distant peaks and rock clusters only | S |
+| Mission       | Main change                                   | Complexity |
+| ------------- | --------------------------------------------- | ---------- |
+| `m1_caral`    | Dry-season channel, lomas, terrace contrast   | S–M        |
+| `m2_chavin`   | Deepen valley, river, `andes` kit, palette    | M          |
+| `m_tambotoco` | Optional distant peaks and rock clusters only | S          |
 
 ---
 
@@ -267,30 +274,30 @@ the performance caps are unchanged except for the justified `selva` pack.
 
 ## 8. Dependencies
 
-| Work | Depends on |
-| --- | --- |
-| New heightfields | Historical/geographic validation of the place |
-| `selva` pack | Art/provenance review; `dist` budget; new bench cap |
-| Quipaipan split | Cusco 1536 site plan; mission objectives unchanged |
-| Lima split | Callao/Miraflores site plans; 1821/Miraflores mission layouts |
-| Tarapacá | Quebrada validation; removal of the sea |
-| Real Felipe | Callao bay/fortress validation |
-| `andes` on all highland missions | Phase 0 config; `bench_scene` per mission |
-| Acceptance test | Capture protocol; blind-test panel |
+| Work                             | Depends on                                                    |
+| -------------------------------- | ------------------------------------------------------------- |
+| New heightfields                 | Historical/geographic validation of the place                 |
+| `selva` pack                     | Art/provenance review; `dist` budget; new bench cap           |
+| Quipaipan split                  | Cusco 1536 site plan; mission objectives unchanged            |
+| Lima split                       | Callao/Miraflores site plans; 1821/Miraflores mission layouts |
+| Tarapacá                         | Quebrada validation; removal of the sea                       |
+| Real Felipe                      | Callao bay/fortress validation                                |
+| `andes` on all highland missions | Phase 0 config; `bench_scene` per mission                     |
+| Acceptance test                  | Capture protocol; blind-test panel                            |
 
 ---
 
 ## 9. Relative complexity
 
-| Work type | Size | Why |
-| --- | --- | --- |
-| Config-only (region, atmosphere, vegetation kit, labels) | **S** | Data changes; no new art |
-| Authored heightfield from an existing recipe | **M** | Script, data, tests, layout |
-| Site/composition variant reusing modules | **M** | Layout, collision, keepouts, phases |
-| New heightfield + new site composition | **M–L** | Both terrain and place |
-| New vegetation pack with 1–2 GLBs | **L** | Asset, LOD, budgets, provenance |
-| New terrain-system feature (biome blend, mist volume) | **L–XL** | Avoid in the first pass |
-| Capture/blind-test harness | **S** | Script + review process |
+| Work type                                                | Size     | Why                                 |
+| -------------------------------------------------------- | -------- | ----------------------------------- |
+| Config-only (region, atmosphere, vegetation kit, labels) | **S**    | Data changes; no new art            |
+| Authored heightfield from an existing recipe             | **M**    | Script, data, tests, layout         |
+| Site/composition variant reusing modules                 | **M**    | Layout, collision, keepouts, phases |
+| New heightfield + new site composition                   | **M–L**  | Both terrain and place              |
+| New vegetation pack with 1–2 GLBs                        | **L**    | Asset, LOD, budgets, provenance     |
+| New terrain-system feature (biome blend, mist volume)    | **L–XL** | Avoid in the first pass             |
+| Capture/blind-test harness                               | **S**    | Script + review process             |
 
 ---
 
@@ -310,15 +317,15 @@ the performance caps are unchanged except for the justified `selva` pack.
 
 ## 11. Risks
 
-| Risk | Impact | Mitigation |
-| --- | --- | --- |
-| Historical validation stalls | New heightfields cannot be authored | Start with the two best-documented pilots (Cusco, Lima) and queue Vilcabamba/Tarapacá behind review |
-| New vegetation breaks the cap | Pilot fails performance | Instance, cluster, LOD, near-only leaf shadows; reduce density |
-| Site variants multiply draw calls | Later missions already over target | Merge by material; reuse modules; no new GLB per city |
-| Palette-only work is mistaken for identity | The audit repeats | Grayscale and blind tests are mandatory |
-| The `selva` pack looks like a new biome | Scope creep | One pack, one mission, one cap, no species claims |
-| The family model becomes over-abstracted | More design than game | Do not add `landscapePresets.ts` until three missions repeat the same preset |
-| Captures are not comparable | Acceptance is subjective | Fixed seed, camera, HUD hidden, top-down and grayscale |
+| Risk                                       | Impact                              | Mitigation                                                                                          |
+| ------------------------------------------ | ----------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Historical validation stalls               | New heightfields cannot be authored | Start with the two best-documented pilots (Cusco, Lima) and queue Vilcabamba/Tarapacá behind review |
+| New vegetation breaks the cap              | Pilot fails performance             | Instance, cluster, LOD, near-only leaf shadows; reduce density                                      |
+| Site variants multiply draw calls          | Later missions already over target  | Merge by material; reuse modules; no new GLB per city                                               |
+| Palette-only work is mistaken for identity | The audit repeats                   | Grayscale and blind tests are mandatory                                                             |
+| The `selva` pack looks like a new biome    | Scope creep                         | One pack, one mission, one cap, no species claims                                                   |
+| The family model becomes over-abstracted   | More design than game               | Do not add `landscapePresets.ts` until three missions repeat the same preset                        |
+| Captures are not comparable                | Acceptance is subjective            | Fixed seed, camera, HUD hidden, top-down and grayscale                                              |
 
 ---
 

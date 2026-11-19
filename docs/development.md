@@ -140,7 +140,7 @@ Definition of Done and the building audit see
 - **Mission-scoped heightfields**: a mission can override its authored site's heightfield with
   `MissionSite.heightField`; the site model, anchor, collision and painted ground stay shared while the terrain
   geometry is mission-specific. Each override keeps the base field's `ground` (splat and `treeless` scatter) and,
-  for Lima, its Rímac `river`, and flattens a pad at the authored site anchor to the elevation the base field used
+  for Lima and Miraflores, the Rímac `river`, and flattens a pad at the authored site anchor to the elevation the base field used
   there, so the landmark does not float or sink. This is the Phase 1 split seam, applied to Quipaipan, Lima 1821,
   Miraflores, Callao, Tarapacá, Vilcabamba and Mantaro
   (`scripts/build_geographic_heightmaps.py`).
