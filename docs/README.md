@@ -94,7 +94,7 @@ and new records change.
 | [`design/campaign-redesign.md`](./design/campaign-redesign.md) | Approved structure for the Tahuantinsuyo, Virreinato, Independencia and República chapters, including the four-mission launch catalogue and the 13-mission expansion | Approved (partially implemented) |
 | [`design/art-direction.md`](./design/art-direction.md) | Stylized-realism rules: camera, palette, characters, architecture, landscape, light, budgets (Tambotoco reference) | Living |
 | [`design/mission-geographic-identity.md`](./design/mission-geographic-identity.md) | Audit of the 20 mission landscapes, the 20 geographic proposals, acceptance criteria and capture protocol | Approved |
-| [`design/geographic-families.md`](./design/geographic-families.md) | Geographic families, shared components, reuse rules and the minimal architecture for mission landscapes | Proposal |
+| [`design/geographic-families.md`](./design/geographic-families.md) | Geographic families, shared components, reuse rules and the minimal architecture for mission landscapes | Approved |
 | [`design/geographic-similarity-matrix.md`](./design/geographic-similarity-matrix.md) | Pairwise similarity of the 20 missions and the reuse clusters behind it | Snapshot |
 | [`design/tambotoco-art-pilot.md`](./design/tambotoco-art-pilot.md) | Pilot audit, reference scene, asset inventory, size ledger, backlog and staged plan | Living |
 | [`design/visual-language.md`](./design/visual-language.md) | Silhouettes, materials, emblems, rigged models and set-pieces | Living |
