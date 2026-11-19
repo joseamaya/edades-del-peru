@@ -108,7 +108,8 @@ and the baseline is captured.
 **Status (2026-11-19):** the geometry foundation is implemented. The seven missions now use a
 `MissionSite.heightField` override on their existing site (model and anchors unchanged): Quipaipan,
 Lima 1821, Miraflores, Callao, Tarapacá, Vilcabamba and Mantaro. The site models and full compositions
-remain in Phase 2/3.
+remain in Phase 2/3. Evidence:
+[`geographic-identity-phase1.webp`](../media/geographic-identity-phase1.webp).
 
 Add one authored heightfield per reused mission. This is the highest identity return per unit of work.
 
