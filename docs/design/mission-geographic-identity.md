@@ -1,12 +1,19 @@
 # Mission geographic identity
 
-**Status:** Proposal · **Audit date:** 2026-11-18 · **Scope:** the 20 released missions
+**Status:** Approved · **Audit date:** 2026-11-18 · **Scope:** the 20 released missions
 
 > **Post-audit note (2026-11-19):** Phase 0 has been implemented. It gives `m8_independencia` and
 > `m_junta_cusco` an explicit `high_andes` region, puts the high-valley missions on the `andes` vegetation
 > kit, adds mission-level atmosphere, removes the accidental Chanca/Colonial lakes and fixes the Vilcabamba
 > water label. The audit rows and counts below describe the **2026-11-18** state unless a sentence says
 > otherwise; the current implementation state is in the roadmap.
+>
+> **Close-out (2026-11-19):** the three confusable pairs are separated and measured. Vilcabamba now carries a
+> wet Urubamba with one ford, a painted gravel floor and visual-only canopy bands on the walls; Quipaipan
+> keeps its dry pampa and gains a deeper arroyo; Callao's bay now reaches the Real Felipe terrace while the
+> siege camp and the battery sites stay dry; Lima 1821 and Miraflores were already separated by the urban grid
+> versus the redoubt line. The blind test, the grayscale pass and the bench sweep that this document schedules
+> in §8 are recorded in the roadmap and the similarity matrix.
 
 This document audits the geographic identity of the twenty released missions and proposes a specific
 landscape for each one. It is a design reference, not an implementation authorisation: no scene, model,
@@ -938,8 +945,11 @@ protocol. Each mission needs:
 7. **Before/after** pairs for every pilot, same seed and camera.
 8. **`bench_scene --assert`** output for opening and late states.
 
-The captures should be produced by a new script (for example `scripts/geography_capture.mjs`) and written
-to `review/` (gitignored). Only the final, reviewed images belong in `docs/media/`.
+The captures should be produced by the existing capture tool:
+`yarn shot <name> --url="/?mission=<id>&seed=777&fog=0&intro=0" --click --site --height=78 --no-hud --no-labels`
+(`--no-labels` hides the in-world place names, which otherwise give the mission away; `--height` selects the
+wide framing). They are written to `review/` (gitignored); only the final, reviewed images belong in
+`docs/media/`.
 
 ---
 

@@ -583,6 +583,18 @@ Definition of Done and the building audit see
   dwellings stay quincha: the kit wall material swapped to stone reads as rubble at that wall scale, so
   the stone late houses need their own asset (issue 436). Guarded by `tests/authored-sites.test.ts` and
   the Caral E2E.
+- **Geographic-identity close-out** (2026-11-19): Vilcabamba's mission field now carries the Urubamba as a
+  real channel (`AuthoredHeightField.river` + one `fords` entry at z 139, half-width 14) and paints its green
+  only on the slopes, so `getAuthoredGround` gates the groves onto the walls and the floor stays open. The
+  canopy above the walkable band is visual only: `MissionLayout.groves` scatters `registerVisual` trees into
+  `Game.decorGroves`, which already followed Caral's LOD + fog rule and now also serves mission bands (no
+  resource, obstacle or yield). Callao's bay bight reaches the fortress terrace, Quipaipan's arroyo is deeper and Tarapacá's quebrada is
+  now a real dry valley with ~4.8 m banks; all of them move walkable cells and resource placement, and the
+  Urubamba ford changes walkability, so `REPLAY_VERSION` is 41. `Water.setFow` shares the terrain's fog mask (unexplored rivers and bays used to
+  stay visible). `MissionDef.start.units[].stance` opens a mission's garrison in `defensivo`, which keeps
+  Vilcabamba's 45 s hold from unravelling when a stray enemy worker enters the aggro radius. Guarded by
+  `tests/geographic-heightfields.test.ts`, the mission E2E specs and `bench_scene --assert` (the Vilcabamba
+  cap is the documented `selva` exception).
 - **Caral objective flow** (issue 390): `obj_complejos` activates on `t_a3_obra_muros` (all six monuments
   stand) and gates each visit on `ObjectiveDef.inspectRadius` (a player unit within 8 m of the card's footprint);
   `obj_asamblea` is announced with Act III (`awaitsCall`: listed but pending until the player calls it); the Act III camera reveal is a `reveal` trigger effect that plays

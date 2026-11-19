@@ -112,6 +112,12 @@ The existing kit is the right asset base. Use it more intelligently:
 | `cloud_forest` | Frond/fern/palm (no invented species names) | Fern, grass, wet earth | High, layered, clustered | Vilcabamba |
 
 The `andes` pack already exists. Using it on all `high_valley` missions is **configuration**, not new art.
+
+The `cloud_forest` profile does not need a new GLB: Vilcabamba implements it with the region's palm/broad mix
+on the painted slopes (the grove gate is `grass > 0.6`), 400 visual-only canopy trees in `MissionLayout.groves`
+(shared batch, wind, LOD and fog, no resource or obstacle) and a fern-heavy ground cover. The `puna` profile
+keeps Quipaipan waterless and gives it a deeper dry arroyo painted as gravel, so the two pilots never read as
+the same field.
 The `puna` profile can be built from the existing ichu ground cover plus sparse molle/pacay; it does not
 need a new tree. The `cloud_forest` authoring profile is the only one that probably needs a new runtime pack
 (`selva`) and one or two new GLBs.

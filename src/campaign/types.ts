@@ -1,6 +1,16 @@
 import type { CinematicBeat } from './defs/cinematics';
-import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind, Resources, ResourceKind, MapType } from '../core/types';
-import type { GeographicRegion, MapOverrides } from '../model/defs/profiles';
+import {
+  Era,
+  CivId,
+  HistoricalPeriod,
+  UnitKind,
+  BuildingKind,
+  Resources,
+  ResourceKind,
+  MapType,
+  type CombatStance,
+} from '../core/types';
+import type { GeographicRegion, MapOverrides, TreeVariant } from '../model/defs/profiles';
 import type { PortraitId } from '../model/defs/commanders';
 import type { LandmarkId } from '../model/defs/landmarks';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
@@ -166,6 +176,24 @@ export interface MissionLayout {
   decor?: MissionDecor | readonly MissionDecor[];
   /** Visual-only roads that read the provincial network. */
   roads?: MissionRoad[];
+  /**
+   * Visual-only tree bands (ellipses in normalized coordinates). They share the tree batch, the wind,
+   * the LOD and the fog rule, but are neither resources nor obstacles: a mission can close a forest
+   * canopy over its slopes without turning them into a gatherable labyrinth.
+   */
+  groves?: readonly MissionGrove[];
+}
+
+export interface MissionGrove {
+  x: number;
+  z: number;
+  rx: number;
+  rz: number;
+  count: number;
+  /** Trees only above this height (metres), so a band hugs a slope instead of the valley floor. */
+  minHeight?: number;
+  /** Tree variant; omitted picks from the region's mix. */
+  variant?: TreeVariant;
 }
 
 /** World point. `ref` anchors to the player/enemy center, canal, landmark, site or departure point; without it, absolute. */
@@ -461,7 +489,19 @@ export interface MissionDef {
      */
     base?: boolean;
     buildings?: { kind: BuildingKind; dx: number; dz: number; tag?: string }[];
-    units?: { kind: UnitKind; dx: number; dz: number; tag?: string; count?: number }[];
+    /**
+     * `stance` fixes the opening combat stance; omitted keeps the unit default (`agresivo`). A defence
+     * scenario uses `defensivo` so the garrison holds its ground instead of chasing a stray enemy across
+     * the map and abandoning a `hold` objective.
+     */
+    units?: {
+      kind: UnitKind;
+      dx: number;
+      dz: number;
+      tag?: string;
+      count?: number;
+      stance?: CombatStance;
+    }[];
   };
   /** Tag existing buildings at start (e.g. the enemy center). */
   mark?: { tag: string; kind: BuildingKind; owner: 0 | 1 }[];

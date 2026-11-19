@@ -1144,7 +1144,14 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     buildKeepout: [{ x: 0.7025, z: 0.38, rx: 0.085, rz: 0.075 }],
     wallCollision: { meshPatterns: [], maxStartYAboveBase: chancaLength(1.2) },
     walkableCorridor: { width: chancaLength(8) },
-    terrain: { ...DEFAULT_SITE_TERRAIN, flatNormals: true, suppressSnow: true },
+    // The Urubamba runs dark and quiet under the canopy: low foam keeps the narrow channel from reading
+    // as a white ribbon, and the green water separates it from the coastal missions' turquoise sea.
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      flatNormals: true,
+      suppressSnow: true,
+      water: { deep: '#183a33', shallow: '#35685a', sheen: 0.12, foam: 0.1, fog: 0.3, refraction: 0.15 },
+    },
   },
   // Huanacaure (legendary Ayar route) on a new 256 m Pacaritambo–Cusco transect. The ayllu world is
   // drawn by `AylluSite`: cave mouth, Huanacaure shrine, valley hamlets and the planned Inticancha.

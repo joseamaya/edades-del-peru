@@ -741,12 +741,12 @@ test('the valley paints the Áspero approach and grows edge groves without gamep
         approaches: valley.approaches.length,
         groves: valley.groves.length,
         species: [...new Set(valley.groves.map((grove: any) => grove.species))].sort(),
-        placed: g.caralGroves.length,
-        slotIds: g.caralGroves.map((grove: any) => g.trees.nodeIdAt(grove.slot)),
-        unwalkable: g.caralGroves
+        placed: g.decorGroves.length,
+        slotIds: g.decorGroves.map((grove: any) => g.trees.nodeIdAt(grove.slot)),
+        unwalkable: g.decorGroves
           .filter((grove: any) => !g.pathfinder.isWalkable(grove.x, grove.z))
           .map((grove: any) => [grove.x, grove.z]),
-        inKeepout: g.caralGroves.some((grove: any) => inKeepout(grove.x, grove.z)),
+        inKeepout: g.decorGroves.some((grove: any) => inKeepout(grove.x, grove.z)),
         negativeResources: [...g.resourceNodes.keys()].some((id: number) => id < 0),
         wetOutsideFord,
         pathSand: path.sand,
@@ -1956,7 +1956,7 @@ test('a loaded Caral save keeps the Blender setpiece and the same valley scenery
     g.toggleCanal();
     g.startAssembly();
     g.saveMatch();
-    return { groves: g.caralGroves.length as number };
+    return { groves: g.decorGroves.length as number };
   });
   await page.goto('/?load=1&fog=0&low=1&noloop=1');
   await page.waitForFunction(
@@ -1970,7 +1970,7 @@ test('a loaded Caral save keeps the Blender setpiece and the same valley scenery
         g?.getAssemblyState() === 'activo' &&
         g?.sitePhase === 'fill' &&
         g?.caralValleyPlan?.approaches.length === 1 &&
-        g?.caralGroves?.length > 0 &&
+        g?.decorGroves?.length > 0 &&
         landmark?.getObjectByName('caral_site') !== undefined &&
         landmark?.getObjectByName('caral_pyramid_mayor') !== undefined &&
         landmark?.getObjectByName('caral_anfiteatro') !== undefined &&
@@ -1986,9 +1986,9 @@ test('a loaded Caral save keeps the Blender setpiece and the same valley scenery
     const g = (window as unknown as { game: any }).game;
     const wells = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'well');
     return {
-      groves: g.caralGroves.length as number,
+      groves: g.decorGroves.length as number,
       quarryRadius: Math.min(...wells.map((n: any) => n.navRadius)),
-      inField: g.caralGroves.some((grove: any) =>
+      inField: g.decorGroves.some((grove: any) =>
         g.caralValleyPlan.fields.some(
           (field: any) =>
             Math.abs(grove.x - field.x) <= field.size / 2 && Math.abs(grove.z - field.z) <= field.size / 2,

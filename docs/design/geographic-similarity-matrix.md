@@ -1,6 +1,6 @@
 # Geographic similarity matrix
 
-**Status:** Snapshot · **Audited:** 2026-11-18 · **Scope:** the 20 released missions
+**Status:** Snapshot · **Audited:** 2026-11-18 · **Close-out:** 2026-11-19 · **Scope:** the 20 released missions
 
 > **Post-audit note (2026-11-19):** Phase 0 changed some of the state this snapshot records: `m8_independencia`
 > and `m_junta_cusco` now have an explicit `high_andes` region, the high-valley missions use the `andes`
@@ -123,12 +123,52 @@ pairs that scored 5 are no longer the same place even though they still share th
 | C15 ↔ C20 (Independence / Breña) | 5 | **4** | Mantaro valley and dry wash vs the Junín plain |
 | C6 ↔ C11 (Yahuar Pampa / Vilcabamba) | 4 | **3** | only the `chanca_site` model is shared: Vilcabamba has its own field and is `amazon` vs `high_andes` |
 
-Nothing scores 5 any more. The remaining 4s keep the same field family plus the same region/palette; the 3s share only the site model. By the scale above, 4 is
-"same site model plus the same region/palette, one major layer differs". By the scale above, 4 is
-"same site model plus the same region/palette, one major layer differs" — which is exactly the state after the
-heightfield and paint splits.
+Nothing scores 5 any more. The remaining 4s keep the same field family plus the same region/palette; the 3s
+share only the site model. By the scale above, 4 is "same site model plus the same region/palette, one major
+layer differs" — which is exactly the state after the heightfield and paint splits.
 
-## Same-topography groups
+## Close-out (2026-11-19)
+
+The geographic-identity close-out finished the three pairs the brief singled out and re-ran the blind test on
+the result. Captures use the same camera (site anchor, zoom 78), 1600 × 900, HUD and in-world place names
+hidden (`yarn shot … --no-hud --no-labels`); the blind sheet is
+[`geographic-identity-closeout.webp`](../media/geographic-identity-closeout.webp).
+
+| Pair | What separates them now | Score (was) |
+| --- | --- | ---: |
+| C11 ↔ C8 (Vilcabamba / Quipaipan) | A wet, meandering Urubamba with one ford, forested walls (400 visual-only canopy trees) and a painted gravel floor, against a waterless olive pampa cut by a dry arroyo; different macro-region (`amazon` vs `high_andes`) | **1** (1) |
+| C14 ↔ C19 (Lima 1821 / Miraflores) | A grid-like layout of colonial houses along the roads around the church (roads + site model, no grid generator), against a camp and earthwork redoubt line on the coastal plain; still the same `colonial_site` model, coast and Rímac | **4** (4) |
+| C16 ↔ C17 (Callao / Tarapacá) | The bay now reaches the Real Felipe terrace, so the fortress frame reads maritime; Tarapacá is now a real inland quebrada (a ~32 m gravel floor with ~4.8 m banks and its village oasis) with no water. The `arica_site` model is still shared | **2** (3) |
+
+**Blind test (six missions, three builds).** Six labels-off site captures were matched against six geography
+briefs, each mission used once. The reviewers are independent agents with no access to this document; they are
+not human players, which is the main limitation of this round.
+
+| Build | Reviewer 1 | Reviewer 2 | What was wrong |
+| --- | ---: | ---: | --- |
+| First build (no bay in the Callao frame) | 4/6 | 4/6 | Miraflores ↔ Callao: the fortress frame had no water, the redoubt camp had the coast |
+| After the Callao bay | 6/6 | 6/6 | — |
+| After the canopy and the Urubamba palette | 4/6 | 4/6 | Tarapacá ↔ Quipaipan: both read as an arid plain, and Tarapacá's gravel bed matched Quipaipan's brief |
+| Final build (Tarapacá quebrada with banks) | 6/6 | 6/6 | — |
+
+Two fixes came straight out of those rows. The Callao bay was moved into the fortress frame (geometry only:
+the bight reaches the terrace; the siege camp and both battery sites stay dry, and the `m_real_felipe` E2E
+still builds both batteries). Tarapacá's quebrada became a real dry valley (a ~32 m gravel floor, ~4.8 m of
+bank relief, the village oasis on its floor) instead of a shallow dip, which separated it from Quipaipan
+without touching Quipaipan's own pampa. Every round was re-run on the build it describes; the final row is
+the shipped build.
+
+**Grayscale.** The six captures were converted to grayscale (Pillow `ImageOps.grayscale`) and reviewed: the
+site footprint, the objective ring and the river/wash remain the dominant shapes in every pair. The weakest
+case is Quipaipan, whose dry arroyo loses contrast in grayscale; its identity there rests on the open pampa
+silhouette and the stepped platform, not on the wash.
+
+**Fog of war.** The close-out also fixed a pre-existing gap: the water plane ignored the fog-of-war mask, so an
+unexplored river or bay stayed visible as a bright band. `Water` now samples the same `fowMap` as the terrain.
+Static props (rocks, shrubs) and the objective ring still ignore the mask; that is unchanged and documented as a
+known limitation.
+
+## Same-topography groups (audit snapshot)
 
 | Topography | Missions |
 | --- | --- |
@@ -136,7 +176,7 @@ heightfield and paint splits.
 | Flat plain/basin with a single authored site | C4, C6, C8, C10, C12, C15, C20 |
 | Green valley with a river and a colonial site | C9, C14, C19 |
 | Open pampa with a site and scattered trees | C6, C8, C15 |
-| Flat grass with a pond and palms | C11 (the only jungle mission) |
+| Flat grass with a dry channel and palms | C11 (the only jungle mission) |
 
 ## Same-composition group
 

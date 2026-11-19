@@ -333,7 +333,9 @@ test('later campaign briefing and tutorial fit 1600x900 (m5-m6b)', async ({ cont
   await expectCampaignLayout(context, ['m_tambotoco', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']);
 });
 
-test('later campaign briefing and tutorial fit 1600x900 (m7-m9)', async ({ context }) => {
+// Twelve missions in one test does not fit a 360 s budget on CI software WebGL (~30 s each). Split in
+// two so each half fits and the shards can run them in parallel.
+test('later campaign briefing and tutorial fit 1600x900 (m7-m9a)', async ({ context }) => {
   test.setTimeout(360_000);
   await expectCampaignLayout(context, [
     'm_lima',
@@ -342,6 +344,12 @@ test('later campaign briefing and tutorial fit 1600x900 (m7-m9)', async ({ conte
     'm7_tupac_amaru',
     'm_junta_cusco',
     'm_lima_1821',
+  ]);
+});
+
+test('later campaign briefing and tutorial fit 1600x900 (m7-m9b)', async ({ context }) => {
+  test.setTimeout(360_000);
+  await expectCampaignLayout(context, [
     'm8_independencia',
     'm_real_felipe',
     'm9_guerra_pacifico',
@@ -1027,7 +1035,10 @@ test('the launch catalogue shows four entries per campaign', async ({ page }) =>
   const menu = page.locator('.ed-campaign-panel');
   const virreinato = menu.locator('.ed-campaign-card[data-campaign="virreinato"]');
   await expect(virreinato).toContainText('CAMPAÑA III DE V');
-  await expect(virreinato).toContainText('2 en desarrollo');
+  // The Virreinato arc is fully released, so its card carries no "in development" count.
+  await expect(virreinato).toContainText('Disponible');
+  await expect(virreinato).toContainText('0 / 4 misiones completadas');
+  await expect(virreinato).not.toContainText('en desarrollo');
   await virreinato.click();
   const rows = menu.locator('.ed-senda-mission');
   await expect(rows).toHaveCount(4);
@@ -1035,7 +1046,8 @@ test('the launch catalogue shows four entries per campaign', async ({ page }) =>
   await expect(rows.nth(0)).toContainText('La Ciudad de los Reyes');
   await expect(rows.nth(1)).toContainText('Misión 2 de 4');
   await expect(rows.nth(1)).toContainText('Cusco en llamas');
-  await expect(rows.nth(1)).toHaveClass(/planned/);
+  await expect(rows.nth(1)).not.toHaveClass(/planned/);
+  await expect(menu.locator('.ed-senda-mission.planned')).toHaveCount(0);
   await expect(rows.nth(3)).toContainText('Misión 4 de 4');
   await expect(rows.nth(3)).toContainText('La Gran Rebelión');
 });

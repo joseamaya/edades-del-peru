@@ -43,6 +43,7 @@ import { attachFaunaKit } from '../rendering/faunaKit';
 import { BuildingKind } from '../core/types';
 import { getCiv } from '../model/defs/civs';
 import type { MissionCanal, MissionSite } from '../campaign/types';
+import type { TreeVariant } from '../model/defs/profiles';
 import { archProfileFor } from '../model/defs/architecture';
 import { LANDMARKS, PadSize, setpiecePadRadius } from '../model/defs/landmarks';
 import { getPeriod } from '../model/defs/periods';
@@ -1199,6 +1200,58 @@ export class WorldViewDecor {
     this.game.props.place(placements, heightAt);
     this.game.wildlife.spawn(fauna, heightAt);
     if (!this.game.headless) void attachFaunaKit(this.game.wildlife);
+    this.spawnGroveBands();
+  }
+
+  /**
+   * A mission's visual-only forest bands: the closed canopy of a valley wall. They are drawn by the tree
+   * instancer (same batch, wind, LOD and fog rule as Caral's valley groves) and carry no resource,
+   * obstacle or yield, so the slopes stay walkable and the mission's economy is untouched.
+   */
+  private spawnGroveBands(): void {
+    const bands = this.game.missionLayout?.groves;
+    if (!bands?.length || this.game.headless) return;
+    const size = this.game.settings.mapSize;
+    const mix = Object.entries(this.game.mapProfile.vegetation.variants)
+      .filter(([, weight]) => (weight ?? 0) > 0)
+      .map(([variant, weight]) => [variant as TreeVariant, weight ?? 0] as [TreeVariant, number]);
+    if (!mix.length) return;
+    const rng = new RNG(this.game.settings.mapSeed * 7919 + 11);
+    const trees = [...this.game.resourceNodes.values()].filter((n) => n.kind === 'tree');
+    const heightAt = (x: number, z: number): number => this.game.terrain.getHeight(x, z);
+    for (const band of bands) {
+      const cx = band.x * size;
+      const cz = band.z * size;
+      let placed = 0;
+      for (let attempt = 0; attempt < band.count * 10 && placed < band.count; attempt++) {
+        const angle = rng.range(0, Math.PI * 2);
+        const radius = Math.sqrt(rng.float());
+        // Soft rim: a band's canopy thins toward its edge instead of ending on a hard ellipse contour.
+        if (rng.float() < radius * radius * 0.7) continue;
+        const x = cx + Math.cos(angle) * band.rx * size * radius;
+        const z = cz + Math.sin(angle) * band.rz * size * radius;
+        if (x < 2 || z < 2 || x > size - 2 || z > size - 2) continue;
+        if (this.game.terrain.isWater(x, z) || this.game.isReserved(x, z)) continue;
+        if (!this.game.pathfinder.isWalkable(x, z) || this.treeless(x, z)) continue;
+        if (band.minHeight !== undefined && heightAt(x, z) < band.minHeight) continue;
+        // Visual-only trunks need no stand point, so they may sit closer than the 6.5 m of a gatherable tree.
+        if (trees.some((n) => distance2D(n.pos.x, n.pos.z, x, z) < 3.5)) continue;
+        const variant = band.variant ?? weightedPick(rng, mix);
+        if (!variant) continue;
+        const slot = this.game.trees.registerVisual(
+          variant,
+          x,
+          heightAt(x, z),
+          z,
+          rng.range(0.8, 1.25),
+          rng.range(0, Math.PI * 2),
+        );
+        if (slot >= 0) {
+          this.game.decorGroves.push({ slot, x, z });
+          placed++;
+        }
+      }
+    }
   }
 
   /**
@@ -1446,7 +1499,7 @@ export class WorldViewDecor {
       for (const grove of valley.groves) {
         const y = this.game.terrain.getHeight(grove.x, grove.z);
         const slot = this.game.trees.registerVisual(grove.species, grove.x, y, grove.z, grove.scale, grove.rotY);
-        if (slot >= 0) this.game.caralGroves.push({ slot, x: grove.x, z: grove.z });
+        if (slot >= 0) this.game.decorGroves.push({ slot, x: grove.x, z: grove.z });
       }
     }
     // The valley plots are painted fertile ground in the authored terrain (scripts/build_caral_heightmap.py),
