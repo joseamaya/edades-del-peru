@@ -246,6 +246,18 @@ and the steep-terrain hydrology.
 
 ## 6. Phase 3 — Remaining families
 
+**Status (2026-11-19, first pair):** the three pairs the blind test could not separate on landform alone are
+being widened by relief, not palette:
+
+| Pair | Before (mean |Δh|) | Now | Change |
+| --- | ---: | ---: | --- |
+| Tarapacá ↔ Quipaipan | 0.91 m | 1.75 m | taller pampa hills and border ridges; a narrower, deeper dry quebrada with a taller stepped bank |
+| Vilcabamba ↔ Breña | 3.70 m | 7.34 m | steep sides and a hard ridge close to the Urubamba; Breña opens into a broad terraced valley |
+| Lima 1821 ↔ Miraflores | 1.44 m | 1.57 m | still close by design (shared site anchor); their difference is the redoubt line and the headland, so this pair belongs to composition |
+
+Evidence: [`geographic-identity-phase3.webp`](../media/geographic-identity-phase3.webp). The remaining families
+(recintos, setpieces and Lima 1821's redoubts) follow below.
+
 Phase 1 created the geometry foundation; Phase 3 completes the mission-level composition, vegetation,
 materials and site work for every mission not closed in Phase 2. Rows marked “Phase 1” are not a second
 heightfield pass; they finish the mission around the new field.
