@@ -366,19 +366,18 @@ FIELDS = (
 
 
 def quantize_palette(cells: list[tuple[int, int, int, int]]) -> tuple[list[tuple[int, int, int, int]], list[int]]:
-    """Pick the 16 most frequent coarse colours and map every cell to the nearest one.
+    """Pick the 16 most frequent 4-bit colours and map every cell to the nearest one.
 
     The grid is 128 x 128 x 4 bytes (64 KB), which the `dist` budget cannot pay per mission. A 4-bit
     palette index per cell keeps the 2 m painted-ground resolution the model-mission pattern requires.
+    Bucketing the normalized cells (16 levels per channel) keeps pure colours pure and low mixtures
+    alive, and the palette is taken from the data so every entry is a colour the field actually uses.
     """
     histogram: dict[tuple[int, int, int, int], int] = {}
     for cell in cells:
-        # 3 bits per channel: the bucket centre sits on the 0..255 grid, so pure colours stay pure.
-        key = tuple((channel >> 5) * 255 // 7 for channel in cell)
+        key = tuple(min(255, round(channel / 17) * 17) for channel in cell)
         histogram[key] = histogram.get(key, 0) + 1  # type: ignore[index]
     palette = [key for key, _ in sorted(histogram.items(), key=lambda item: -item[1])[:PALETTE_SIZE]]
-    # Keep every entry a normalized weight set (sum 255), as the authored grids are.
-    palette = [tuple(round(c * 255 / max(1, sum(entry))) for c in entry) for entry in palette]  # type: ignore[misc]
     indices: list[int] = []
     for cell in cells:
         best = 0
