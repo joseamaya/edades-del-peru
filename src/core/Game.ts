@@ -393,7 +393,9 @@ export class Game {
     this.missionRegion = mis?.region;
     this.missionAtmosphere = mis?.atmosphere;
     this.missionLayout = mis?.layout;
-    this.siteDef = getAuthoredSite(this.missionLayout?.site?.id);
+    const authoredSite = getAuthoredSite(this.missionLayout?.site?.id);
+    const heightField = this.missionLayout?.site?.heightField;
+    this.siteDef = authoredSite && heightField ? { ...authoredSite, heightField } : authoredSite;
     this.sitePhase = this.siteDef?.phases?.initial ?? 'in_use';
     this.enemyActive = !mis || mis.enemy.active;
     this.rng = new RNG((this.settings.mapSeed * 2654435761) >>> 0);

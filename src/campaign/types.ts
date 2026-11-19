@@ -4,6 +4,7 @@ import type { GeographicRegion, MapOverrides } from '../model/defs/profiles';
 import type { PortraitId } from '../model/defs/commanders';
 import type { LandmarkId } from '../model/defs/landmarks';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
+import type { AuthoredHeightField } from '../model/defs/authoredTerrain';
 import type { SetpieceId } from '../model/defs/setpieces';
 import type { HeritageBuildingId } from '../model/defs/heritage';
 import type { AuthoredSiteId, DecorModelId } from '../model/defs/sites';
@@ -109,6 +110,11 @@ export interface MissionSite {
   buildKeepout?: MissionSiteKeepout[];
   /** Opening construction phase of the site's main monument. */
   phase?: string;
+  /**
+   * Mission-scoped heightfield override. The site model, anchors and collision stay unchanged; only the
+   * terrain geometry differs, so a reused site model does not reuse another mission's landscape.
+   */
+  heightField?: AuthoredHeightField;
 }
 
 /** Source-backed geography named on the map and minimap (toponyms are proper nouns, never translated). */

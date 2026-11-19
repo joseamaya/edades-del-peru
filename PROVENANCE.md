@@ -470,6 +470,15 @@ slot is absent (offline / without assets).
   and the huaca are abstractions, never historical photographs.
 - **Review**: no human art-review gate applies to in-engine captures; the ayllu site is procedural.
 
+### Geographic identity Phase 1 evidence (in-engine contact sheet)
+
+- **Location**: `docs/media/geographic-identity-phase1.webp` (1440x270 WebP q82, 47 KB).
+- **Source**: `node scripts/screenshot.mjs phase1-<id> --url='/?mission=<id>&intro=0&fog=0&seed=777' --click --wait=7000`
+  for m6b, m_tarapaca and m_vilcabamba; tiled 3x1 with ffmpeg.
+- **Content**: project-owned game renders; left Quipaipan, centre Tarapacá, right Vilcabamba. HUD visible,
+  SwiftShader. Documents the Phase 1 mission-scoped heightfields, not a finished site composition.
+- **Review**: no human art-review gate applies to in-engine evidence captures.
+
 ### Geographic identity Phase 0 evidence (in-engine contact sheet)
 
 - **Location**: `docs/media/geographic-identity-phase0.webp` (1920x540 WebP q82, 103 KB).
