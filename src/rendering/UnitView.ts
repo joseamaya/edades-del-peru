@@ -52,7 +52,7 @@ export class UnitView {
     ctx: BuildContext,
   ) {
     // `Unit.gender` already resolves a tagged commander before the id split.
-    const choice = unitModelAsset(unit.kind, unit.era, ctx.civ.id, unit.id, unit.gender, unit.tag ?? '');
+    const choice = unitModelAsset(unit.kind, unit.era, ctx.civ.id, unit.id, unit.gender, unit.tag ?? '', ctx.missionId);
     this.rig = choice ? acquireRig(choice.asset, choice.variant) : null;
     const model = this.rig
       ? this.rig.root

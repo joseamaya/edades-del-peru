@@ -973,6 +973,7 @@ export class Game {
       arch: archProfileFor(civ.id, p.era),
       caralSetpiece: !!this.setpiecePlan || !!this.missionLayout?.site,
       caralLate: this.caralLate,
+      missionId: this.mission?.def.id ?? this.settings.missionId,
     };
   }
 

@@ -7,6 +7,7 @@ import {
   ANDEAN_CULTURES,
   ANDEAN_ROLES,
   andeanCultureForEra,
+  type AndeanCulture,
   type AndeanRole,
   type AndeanRigVariant,
 } from './andeanCharacters';
@@ -258,6 +259,23 @@ function postColonialFieldRole(kind: UnitKind): PostColonialRole | null {
   return null;
 }
 
+/** The only mission that uses the 1780 rebel outfit; 1536/1572 keep the Andean rig. */
+const REBELDE_MISSION_ID = 'm7_tupac_amaru';
+
+/** Andean rig choice shared by the pre-Hispanic path and the post-1532 Inca override. */
+function andeanRigChoice(culture: AndeanCulture, kind: UnitKind, unitGender: PersonGender): RigModelChoice | null {
+  const suffix = unitGender === 'female' ? 'f' : 'm';
+  const variant = (role: AndeanRole): RigVariant => `${culture}_${role}_${suffix}` as RigVariant;
+  if (kind === UnitKind.WORKER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('worker') };
+  if (kind === UnitKind.SCOUT) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('scout') };
+  if (kind === UnitKind.SOLDIER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('soldier') };
+  if (kind === UnitKind.MUSKETEER || kind === UnitKind.RIFLEMAN) {
+    return { asset: CARAL_WORKER_ASSET_ID, variant: variant('ranged') };
+  }
+  if (kind === UnitKind.COMMISSAR) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('amauta') };
+  return null;
+}
+
 /**
  * Rigged model for a unit kind, or `null` to keep the procedural model.
  * Every pre-Hispanic Andean culture, the post-1532 humanoids, the m7 Inca rebels,
@@ -271,15 +289,16 @@ export function unitModelAsset(
   id = 0,
   gender?: PersonGender,
   tag = '',
+  missionId = '',
 ): RigModelChoice | null {
   // A named commander passes its declared gender; anonymous units keep the deterministic id split.
   const unitGender = gender ?? genderForId(id);
   const baseKind = unitBaseKind(kind);
-  if (baseKind !== kind) return unitModelAsset(baseKind, era, civ, id, gender, tag);
+  if (baseKind !== kind) return unitModelAsset(baseKind, era, civ, id, gender, tag, missionId);
   if (tag === 'manco_capac' && civ === CivId.INCA_KILLKE) {
     return { asset: TAMBOTOCO_HERO_ASSET_ID, variant: 'inca_killke_soldier_m' };
   }
-  if (civ === CivId.HUESTE_INDIANA) return unitModelAsset(kind, era, CivId.REALISTAS, id, gender);
+  if (civ === CivId.HUESTE_INDIANA) return unitModelAsset(kind, era, CivId.REALISTAS, id, gender, tag, missionId);
   if (civ === CivId.CARAL && era === Era.FORMATIVE) {
     const female = unitGender === 'female';
     if (kind === UnitKind.WORKER) {
@@ -306,11 +325,18 @@ export function unitModelAsset(
   const vehicleVariant = vehicleVariantFor(kind, era, civ);
   if (vehicleVariant) return { asset: VEHICLE_RIG_ASSET_ID, variant: vehicleVariant };
   if (civ === CivId.INCA && era === Era.VICEROYALTY) {
-    // INCA has no Viceroyalty period; this is the m7 campaign override (1780).
-    const role = postColonialFieldRole(kind);
-    if (role) {
-      const suffix = unitGender === 'female' ? 'f' : 'm';
-      return { asset: CARAL_WORKER_ASSET_ID, variant: `rebelde_${role}_${suffix}` as RebeldeRigVariant };
+    // INCA has no Viceroyalty period in the civ def. m7 (1780) uses the late-colonial rebel
+    // abstraction; the 1536 and 1572 resistance keeps the Andean rig and weapons.
+    if (missionId === REBELDE_MISSION_ID) {
+      const role = postColonialFieldRole(kind);
+      if (role) {
+        const suffix = unitGender === 'female' ? 'f' : 'm';
+        return { asset: CARAL_WORKER_ASSET_ID, variant: `rebelde_${role}_${suffix}` as RebeldeRigVariant };
+      }
+    } else {
+      const andean = andeanCultureForEra(civ, Era.TAHUANTINSUYO);
+      const choice = andean ? andeanRigChoice(andean, kind, unitGender) : null;
+      if (choice) return choice;
     }
   }
   const modernCulture = modernCultureForCiv(civ);
@@ -345,15 +371,8 @@ export function unitModelAsset(
     }
   }
   if (andeanCulture) {
-    const suffix = unitGender === 'female' ? 'f' : 'm';
-    const variant = (role: AndeanRole): RigVariant => `${andeanCulture}_${role}_${suffix}` as RigVariant;
-    if (kind === UnitKind.WORKER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('worker') };
-    if (kind === UnitKind.SCOUT) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('scout') };
-    if (kind === UnitKind.SOLDIER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('soldier') };
-    if (kind === UnitKind.MUSKETEER || kind === UnitKind.RIFLEMAN) {
-      return { asset: CARAL_WORKER_ASSET_ID, variant: variant('ranged') };
-    }
-    if (kind === UnitKind.COMMISSAR) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('amauta') };
+    const choice = andeanRigChoice(andeanCulture, kind, unitGender);
+    if (choice) return choice;
   }
   return null;
 }

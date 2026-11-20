@@ -193,7 +193,8 @@ Definition of Done and the building audit see
 - **Rigged 3D models (optional, glTF/GLB)**: `src/model/defs/modelAssets.ts` maps a unit kind to a registered
   asset id plus an optional presentation variant. The **shared humanoid rig** covers the Caral worker/scout, the
   Inca chasqui and Amauta, every pre-Hispanic Andean culture, the post-1532 infantry, workers and scouts, the m7
-  Inca rebels (`rebelde_*`) and the contemporary Republic humanoids; the **mounted cavalry** (`mounted_rig`,
+  Inca rebels (`rebelde_*`; the Inca of 1536 and 1572 keep the Andean `inca_*` rig) and the contemporary
+  Republic humanoids; the **mounted cavalry** (`mounted_rig`,
   Viceroyalty/Republic `HUSSAR`/`CAVALRY`), the **siege/tank rig** (`siege_rig`, `ARTILLERY`/`MORTAR`/`TANK`) and
   the **vehicle rig** (`vehicle_rig`, contemporary `HUSSAR`/`ANTI_AIR`/`NUCLEAR` as motorcycle, AA and rocket
   truck) cover the vehicles.

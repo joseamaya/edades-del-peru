@@ -57,6 +57,8 @@ export interface BuildContext {
   caralSetpiece?: boolean;
   /** The late city (Caral Act IV): the fields sow a little maize. */
   caralLate?: boolean;
+  /** Mission id, used by the Inca 1536/1572 vs 1780 outfit choice. */
+  missionId?: string;
 }
 
 const sharedGeo: Record<string, THREE.BufferGeometry> = {};
@@ -1107,8 +1109,9 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
     case 'center_war':
       buildConcrete(b, 3.4, true);
       break;
+    // Legacy era models kept for mod overrides; no campaign era maps to *_atomic or *_information.
     case 'center_atomic':
-      buildConcrete(b, 3.6, true, true);
+      buildConcrete(b, 3.6, true);
       break;
     case 'center_information':
       buildModern(b, 3.6, true);
@@ -1128,7 +1131,7 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
       buildConcrete(b, 1.9, false);
       break;
     case 'house_atomic':
-      buildConcrete(b, 2.0, false, true);
+      buildConcrete(b, 2.0, false);
       break;
     case 'house_information':
       buildModern(b, 2.0, false);
@@ -1178,7 +1181,7 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
       break;
 
     case 'refinery':
-      buildConcrete(b, 2.2, false, true);
+      buildCivic(b, 2.2, 'stone');
       break;
     case 'plant_stone':
       buildModern(b, 2.3, true);
@@ -1191,10 +1194,10 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
       buildBarracks(b, 2.7, 'brick');
       break;
     case 'barracks_war':
-      buildMilitary(b, 2.7, false);
+      buildMilitary(b, 2.7);
       break;
     case 'barracks_atomic':
-      buildMilitary(b, 2.8, true);
+      buildMilitary(b, 2.8);
       break;
     case 'barracks_information':
       buildModern(b, 2.8, false);
@@ -1210,10 +1213,10 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
       buildBarracks(b, 2.6, 'brick');
       break;
     case 'arsenal_war':
-      buildMilitary(b, 2.6, false);
+      buildMilitary(b, 2.6);
       break;
     case 'arsenal_atomic':
-      buildMilitary(b, 2.7, true);
+      buildMilitary(b, 2.7);
       break;
     case 'arsenal_information':
       buildModern(b, 2.7, false);
@@ -1229,10 +1232,10 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
       buildStable(b, 2.8, 'brick');
       break;
     case 'stable_war':
-      buildMilitary(b, 2.8, false);
+      buildMilitary(b, 2.8);
       break;
     case 'stable_atomic':
-      buildMilitary(b, 2.9, true);
+      buildMilitary(b, 2.9);
       break;
     case 'stable_information':
       buildModern(b, 2.9, false);
@@ -1245,10 +1248,10 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
       buildFactory(b, 3.0, 'brick');
       break;
     case 'factory_war':
-      buildMilitary(b, 3.0, false);
+      buildMilitary(b, 3.0);
       break;
     case 'factory_atomic':
-      buildMilitary(b, 3.1, true);
+      buildMilitary(b, 3.1);
       break;
     case 'factory_information':
       buildModern(b, 3.1, true);
@@ -1309,10 +1312,10 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
       buildCivic(b, 2.7, 'stone');
       break;
     case 'institute_war':
-      buildMilitary(b, 2.7, false);
+      buildMilitary(b, 2.7);
       break;
     case 'institute_atomic':
-      buildMilitary(b, 2.8, true);
+      buildMilitary(b, 2.8);
       break;
     case 'institute_information':
       buildModern(b, 2.8, true);
@@ -1832,8 +1835,8 @@ function buildAndeanCivic(b: Builder, size: number, tower: boolean, center = fal
   });
 }
 
-function buildAndeanMilitary(b: Builder, size: number, tower: boolean): void {
-  buildAndeanStructure(b, { size, tiers: 1, roof: 'flat', tower, banner: true, role: 'military' });
+function buildAndeanMilitary(b: Builder, size: number): void {
+  buildAndeanStructure(b, { size, tiers: 1, roof: 'flat', tower: false, banner: true, role: 'military' });
 }
 
 function buildAndeanFortress(b: Builder, size: number): void {
@@ -2234,7 +2237,7 @@ function buildCivic(b: Builder, size: number, matType: 'stone' | 'brick', center
   addWindows(b, w, w * 0.44, w * 0.46, 2, { span: 0.3 });
 }
 
-function buildConcrete(b: Builder, size: number, tower: boolean, radar = false): void {
+function buildConcrete(b: Builder, size: number, tower: boolean): void {
   if (b.isAndean) {
     // `tower` is only set for the center in the concrete family (center_war).
     buildAndeanCivic(b, size, tower, tower);
@@ -2249,23 +2252,6 @@ function buildConcrete(b: Builder, size: number, tower: boolean, radar = false):
   if (tower) {
     b.box(w * 0.4, w * 0.7, w * 0.4, mixHex(b.pal.concrete, '#ffffff', 0.62), { y: w * 0.9, tex: 'concrete' });
     b.box(w * 0.46, w * 0.12, w * 0.46, b.pal.darkMetal, { y: w * 1.25, tex: 'metalDark' });
-  }
-  if (radar) {
-    b.pivot('quipus_watchers');
-    b.cyl(0.05, 0.05, w * 0.6, 6, b.pal.darkMetal, { y: w * 0.7 });
-    b.sphere(w * 0.3, b.pal.metal, { y: w * 1.0, metalness: 0.6, roughness: 0.3 });
-  }
-  // lit windows
-  for (let i = 0; i < 3; i++) {
-    b.box(0.2, 0.14, 0.05, b.pal.emissive, {
-      x: (i - 1) * w * 0.24,
-      y: w * 0.4,
-      z: w * 0.47,
-      emissive: b.pal.emissive,
-      emissiveIntensity: 1.3,
-      transparent: true,
-      opacity: 0.9,
-    });
   }
   // door
   b.box(0.32, w * 0.34, 0.06, b.pal.darkMetal, { y: w * 0.18, z: w * 0.47 });
@@ -2311,7 +2297,7 @@ function buildModern(b: Builder, size: number, tower: boolean): void {
 
 function buildBarracks(b: Builder, size: number, wallType: 'wood' | 'brick'): void {
   if (b.isAndean) {
-    buildAndeanMilitary(b, size, false);
+    buildAndeanMilitary(b, size);
     return;
   }
   const w = size;
@@ -2345,7 +2331,7 @@ function buildBarracks(b: Builder, size: number, wallType: 'wood' | 'brick'): vo
 
 function buildStable(b: Builder, size: number, wallType: 'wood' | 'brick'): void {
   if (b.isAndean) {
-    buildAndeanMilitary(b, size, false);
+    buildAndeanMilitary(b, size);
     return;
   }
   const w = size;
@@ -2377,9 +2363,9 @@ function buildStable(b: Builder, size: number, wallType: 'wood' | 'brick'): void
   b.cyl(0.02, 0.02, w * 0.55, 6, b.pal.darkWood, { y: w * 0.9, x: -w * 0.3 });
 }
 
-function buildMilitary(b: Builder, size: number, antenna: boolean): void {
+function buildMilitary(b: Builder, size: number): void {
   if (b.isAndean) {
-    buildAndeanMilitary(b, size, antenna);
+    buildAndeanMilitary(b, size);
     return;
   }
   const w = size;
@@ -2395,17 +2381,6 @@ function buildMilitary(b: Builder, size: number, antenna: boolean): void {
     z: w * 0.32,
     tex: 'concrete',
   });
-  b.cyl(0.1, 0.1, 0.06, 8, b.pal.emissive, {
-    x: w * 0.34,
-    y: w * 0.8,
-    z: w * 0.32,
-    emissive: b.pal.emissive,
-    emissiveIntensity: 1.6,
-  });
-  if (antenna) {
-    b.cyl(0.02, 0.02, w * 0.6, 6, b.pal.darkMetal, { y: w * 0.8, z: -w * 0.3 });
-    b.sphere(0.06, b.pal.emissive, { y: w * 1.1, z: -w * 0.3, emissive: b.pal.emissive, emissiveIntensity: 2 });
-  }
   b.box(w * 0.5, w * 0.22, 0.06, b.pal.darkMetal, { y: w * 0.4, z: w * 0.41 });
   b.box(0.34, w * 0.3, 0.06, b.pal.darkMetal, { y: w * 0.16, z: w * 0.41 });
   addWindows(b, w, w * 0.36, w * 0.41, 2, { span: 0.3 });
