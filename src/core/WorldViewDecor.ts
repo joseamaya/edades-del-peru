@@ -10,6 +10,7 @@ import { FISHERS_PER_GROUND, HARVEST_STAND_RANGE } from '../entities/Unit';
 import { disposeStaticGltf } from '../rendering/StaticModel';
 import { loadSceneryModel } from '../rendering/sceneryModels';
 import { loadSiteModel } from '../rendering/siteModels';
+import { SiteLandmarks } from '../rendering/SiteLandmarks';
 import { mergeStaticByMaterial } from '../rendering/mergeStatic';
 import { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
 import { AylluSite } from '../rendering/AylluSite';
@@ -252,6 +253,16 @@ export class WorldViewDecor {
     this.game.siteAnchor = { ...def.anchor };
     this.addSiteObstacles(def);
     this.addSiteHeritageProxies(group, def.heritageProxies);
+    this.spawnSiteLandmarks(site.y ?? 0);
+    if (def.hideModel || site.hideModel) {
+      // Keep the authored site's name discoverable by tooling (bench_scene, capture scripts) even
+      // when the procedural composition replaces its GLB.
+      const marker = new THREE.Object3D();
+      marker.name = def.modelName;
+      marker.visible = false;
+      marker.userData.siteModelMarker = true;
+      group.add(marker);
+    }
     const token = ++this.game.landmarkLoadToken;
     const current = (): boolean => token === this.game.landmarkLoadToken && this.game.landmark === group;
     let siteModel: THREE.Object3D | null = null;
@@ -374,6 +385,7 @@ export class WorldViewDecor {
         attachCity(city, () => (this.game.chavinCity = city));
       }
     }
+    if (def.hideModel || site.hideModel) return;
     void loadSiteModel(def.id)
       .then((model) => {
         if (!current()) {
@@ -421,6 +433,29 @@ export class WorldViewDecor {
       .catch((error: unknown) => {
         console.warn(`[site] failed to load authored ${def.id} site`, error);
       });
+  }
+
+  /**
+   * Procedural landmark completions for an authored site: Cusco's plaza and Sacsayhuamán, the
+   * Real Felipe bastions, the Tarapacá village and the Vilcabamba refuge. They live in their own
+   * scene group so texture disposal never touches the shared generated PBR sets.
+   */
+  spawnSiteLandmarks(baseY: number): void {
+    if (this.game.headless) return;
+    const specs = this.game.missionLayout?.siteLandmarks;
+    this.game.siteLandmarks?.dispose();
+    this.game.siteLandmarks = null;
+    if (!specs?.length) return;
+    const landmarks = new SiteLandmarks(
+      specs,
+      this.game.settings.mapSize,
+      (x, z) => this.game.terrain.getHeight(x, z),
+      baseY,
+    );
+    this.game.siteLandmarks = landmarks;
+    this.game.scene.add(landmarks.group);
+    applyFowToObject(landmarks.group, this.game.fowUniforms);
+    this.enableLandmarkShadows(landmarks.group);
   }
 
   /** Frame the base, or the base/site midpoint for sites that need both in shot. */

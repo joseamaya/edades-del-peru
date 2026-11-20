@@ -52,11 +52,18 @@ export const mCusco1536: MissionDef = {
     site: {
       id: 'cusco_inca_site',
       y: 5,
+      // The bundled GLB is a bare grey ushnu; this mission draws the plaza, halls and platform.
+      hideModel: true,
       heightField: CUSCO1536_HEIGHTFIELD,
       focus: { x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256 },
       keepout: [{ x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256, rx: 0.09, rz: 0.08 }],
       buildKeepout: [{ x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256, rx: 0.08, rz: 0.07 }],
     },
+    // The Cusco platform is the ushnu; the plaza and the Sacsayhuamán wall front complete it.
+    siteLandmarks: [
+      { kind: 'cusco-plaza', x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256 },
+      { kind: 'sacsayhuaman', x: CUSCO_1536_SACSAY.x / 256, z: CUSCO_1536_SACSAY.z / 256 },
+    ],
     roads: [
       {
         from: { dx: CUSCO_1536_CAMP.x, dz: CUSCO_1536_CAMP.z },

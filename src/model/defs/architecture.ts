@@ -214,12 +214,31 @@ const CIV_ARCH_SOURCE: Partial<Record<CivId, string>> = {
 
 const PROFILE_CACHE = new Map<string, HistoricalArchitectureProfile>();
 
+/** Civilizations that keep an Andean building language under Viceroyalty rule (1532–1821). */
+const COLONIAL_ANDEAN_CIVS = new Set<CivId>([CivId.INCA, CivId.INCA_KILLKE, CivId.AYLLUS]);
+
+/** True for the hybrid profile the Inca and the valley ayllus keep after 1532. */
+export function isColonialAndeanProfile(profile: HistoricalArchitectureProfile): boolean {
+  return profile.id.endsWith('|colonial-andean');
+}
+
+/** The single gate `ProceduralModel` uses to choose the Andean builders over the colonial ones. */
+export function usesAndeanArchitecture(profile: HistoricalArchitectureProfile, era: Era, style: ArchStyle): boolean {
+  if (isColonialAndeanProfile(profile)) return true;
+  return era <= Era.TAHUANTINSUYO && style !== 'colonial' && style !== 'republican';
+}
+
 /**
  * Architectural profile for a civilization at a tech level. After 1532 (`era >=
  * VICEROYALTY`) the era governs the look (colonial/republican), matching
  * `Builder.isAndean` in the model generator; the civilization's own style only
  * applies pre-Hispanic. Keyed by `Era`, which is what the model cache and
  * `Builder.isAndean` use.
+ *
+ * The exception is the Inca and the valley ayllus: conquest did not replace their masonry,
+ * thatch and terraces overnight. They keep a `colonial-andean` profile (fieldstone walls,
+ * thatch with a partial tile ridge, terraced foundations) instead of the Spanish colonial kit.
+ * Source: `docs/historia/arquitectura.md` (Inca continuity and colonial hybridisation).
  */
 export function archProfileFor(civId: CivId, era: Era): HistoricalArchitectureProfile {
   const key = `${civId}|${era}`;
@@ -227,7 +246,14 @@ export function archProfileFor(civId: CivId, era: Era): HistoricalArchitecturePr
   if (cached) return cached;
 
   const civ = getCiv(civId);
-  const style: ArchStyle = era >= Era.REPUBLIC ? 'republican' : era >= Era.VICEROYALTY ? 'colonial' : civ.visual.arch;
+  const colonialAndean = era === Era.VICEROYALTY && COLONIAL_ANDEAN_CIVS.has(civId);
+  const style: ArchStyle = colonialAndean
+    ? civ.visual.arch
+    : era >= Era.REPUBLIC
+      ? 'republican'
+      : era >= Era.VICEROYALTY
+        ? 'colonial'
+        : civ.visual.arch;
 
   const useCivOverride = style === civ.visual.arch;
   const override = useCivOverride ? CIV_ARCH[civId] : undefined;
@@ -241,6 +267,18 @@ export function archProfileFor(civId: CivId, era: Era): HistoricalArchitecturePr
     ornament: override?.ornament ?? base.ornament,
     provenance: CIV_ARCH_SOURCE[civId] ?? 'docs/historia/arquitectura.md',
   };
+  if (colonialAndean) {
+    // Fieldstone, mud mortar and thatch stay the rule; the tile ridge and the niches are the
+    // documented colonial-era additions, not a wholesale replacement of the Andean kit.
+    profile.id = `${key}|colonial-andean`;
+    profile.wall = 'fieldstone';
+    profile.roof = 'thatch';
+    profile.foundation = 'terrace';
+    profile.monumentalTiers = Math.min(base.monumentalTiers, 2);
+    profile.ornament = { niches: civId === CivId.INCA, tapestry: civId === CivId.INCA };
+    profile.silhouette = civId === CivId.INCA ? 'ushnu' : 'circular-plaza';
+    profile.provenance = 'docs/historia/arquitectura.md';
+  }
   PROFILE_CACHE.set(key, profile);
   return profile;
 }

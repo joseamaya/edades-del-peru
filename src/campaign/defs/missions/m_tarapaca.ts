@@ -5,7 +5,6 @@ import type { MissionDef } from '../../types';
 // Tarapacá: the village in the quebrada, the heights held by the Chilean columns and the Pachica road.
 const TARAPACA_VILLAGE = { x: 96, z: 168 } as const;
 const TARAPACA_HEIGHTS = { x: 160, z: 120 } as const;
-const TARAPACA_SITE = { x: 176, z: 96 } as const;
 const TARAPACA_PACHICA = { x: 62, z: 196 } as const;
 const TARAPACA_BASE = { x: 72, z: 200 } as const;
 const TARAPACA_ENEMY = { x: 200, z: 72 } as const;
@@ -52,12 +51,14 @@ export const mTarapaca: MissionDef = {
     },
     site: {
       id: 'tarapaca_site',
-      y: 4,
+      // The village pad is flat at 6.942 m in the mission heightfield; the test pins the pair.
+      y: 6.942,
       heightField: TARAPACA_HEIGHTFIELD,
-      focus: { x: TARAPACA_SITE.x / 256, z: TARAPACA_SITE.z / 256 },
-      keepout: [{ x: TARAPACA_SITE.x / 256, z: TARAPACA_SITE.z / 256, rx: 0.08, rz: 0.07 }],
-      buildKeepout: [{ x: TARAPACA_SITE.x / 256, z: TARAPACA_SITE.z / 256, rx: 0.07, rz: 0.06 }],
+      focus: { x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256 },
+      keepout: [{ x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256, rx: 0.095, rz: 0.075 }],
+      buildKeepout: [{ x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256, rx: 0.095, rz: 0.075 }],
     },
+    siteLandmarks: [{ kind: 'tarapaca-village', x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256 }],
     roads: [
       {
         from: { dx: TARAPACA_VILLAGE.x, dz: TARAPACA_VILLAGE.z },
