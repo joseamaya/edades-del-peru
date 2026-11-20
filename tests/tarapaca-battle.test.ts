@@ -60,7 +60,8 @@ describe('Tarapacá battle simulation', () => {
       game.destroy();
       setAutoStart(true);
     }
-  });
+    // The fixed-step simulation runs 70 s of game time; CI workers need more than Vitest's 5 s default.
+  }, 20_000);
 
   it('has no harvestable nodes on a one-day battle map', () => {
     const game = headlessMission('m_tarapaca');
