@@ -4,7 +4,7 @@ import { BUILDING_DEFS } from '../src/model/defs/buildings';
 import { UNIT_ARCHETYPES } from '../src/model/defs/units';
 import { TECHS } from '../src/model/defs/techs';
 import { PERIODS } from '../src/model/defs/periods';
-import { CivId, Era, HistoricalPeriod } from '../src/core/types';
+import { CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
 
 describe('tech tree', () => {
   it('is generated from the defs without losing any unlock', () => {
@@ -33,6 +33,19 @@ describe('tech tree', () => {
       canResearch: (id) => id === 'chavin_pilgrimage',
     });
     expect(tree[0]?.techs.map((node) => node.id)).toEqual(['chavin_pilgrimage']);
+  });
+
+  it('uses mission-scoped unit labels', () => {
+    const tree = techTreeData({
+      civ: CivId.REPUBLIC,
+      period: HistoricalPeriod.REPUBLIC,
+      era: Era.REPUBLIC,
+      canBuild: () => true,
+      canTrain: () => true,
+      unitName: (kind) => (kind === UnitKind.REPUBLICA_DEFENSOR ? 'Defensor de Tarapacá' : 'unidad'),
+    });
+    const node = tree[0]?.units.find((unit) => unit.id === UnitKind.REPUBLICA_DEFENSOR);
+    expect(node?.name).toBe('Defensor de Tarapacá');
   });
 
   it('has one column per era and unique ids inside each column', () => {

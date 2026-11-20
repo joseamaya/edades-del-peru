@@ -962,7 +962,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     buildKeepout: [...TARAPACA_BUILD_KEEPOUT],
     wallCollision: { meshPatterns: [], maxStartYAboveBase: 1.2 },
     walkableCorridor: { width: aricaLength(8) },
-    terrain: { ...DEFAULT_SITE_TERRAIN, flatNormals: true, suppressSnow: true },
+    terrain: { ...DEFAULT_SITE_TERRAIN, palette: 'atacama', flatNormals: true, suppressSnow: true },
   },
   // La Breña (1882–1883) reuses the Ayacucho chapel/camp as a labelled sierra-central abstraction.
   brena_site: {

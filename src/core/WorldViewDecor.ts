@@ -985,7 +985,12 @@ export class WorldViewDecor {
     // Dense forests: a handful of tree clusters per biome instead of lone trees.
     // They also act as natural barriers, as in the reference RTS maps.
     const treeWeight = this.game.mapProfile.resources.tree;
-    const clusters = Math.min(24, Math.max(6, Math.round(((s.mapSize * s.mapSize) / 1800) * (treeWeight / 0.4))));
+    // A mission can zero its wood nodes (Tarapacá's single-day battle); do not force a minimum grove
+    // into that map. Otherwise keep the usual 6-24 clusters.
+    const clusters =
+      treeWeight <= 0
+        ? 0
+        : Math.min(24, Math.max(6, Math.round(((s.mapSize * s.mapSize) / 1800) * (treeWeight / 0.4))));
     for (let c = 0; c < clusters; c++) {
       let cx = 0;
       let cz = 0;

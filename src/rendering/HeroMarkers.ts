@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import type { Unit } from '../entities/Unit';
-import { COMMANDERS, commanderAccent, commanderById, type HeroCrest } from '../model/defs/commanders';
+import { COMMANDERS, commanderAccent, commanderById, hasFieldMarker, type HeroCrest } from '../model/defs/commanders';
 
-const MAX_HEROES = Object.values(COMMANDERS).filter((commander) => commander.hero).length;
+const MAX_HEROES = Object.values(COMMANDERS).filter((commander) => hasFieldMarker(commander)).length;
 const _dummy = new THREE.Object3D();
 const _color = new THREE.Color();
 const GOLD = new THREE.Color('#ffd166');
@@ -81,8 +81,9 @@ export class HeroMarkers {
   }
 
   /**
-   * Follow the living Ayar. `detail` (close zoom) adds the pole and crest to the ring; the ring alone
-   * carries identity at the strategic zoom, so eight banners never cover the board.
+   * Follow the living campaign characters. `detail` (close zoom) adds the pole and crest to the ring;
+   * the ring alone carries identity at the strategic zoom. Field commanders (Cáceres, Pizarro,
+   * Pumacahua) get the same marker without the Ayar hero attire.
    */
   sync(units: Iterable<Unit>, zoom: number, maxZoom: number): void {
     const detail = zoom < maxZoom * HERO_DETAIL_ZOOM;
@@ -92,7 +93,7 @@ export class HeroMarkers {
     for (const unit of units) {
       if (unit.dead || unit.owner !== 0) continue;
       const commander = commanderById(unit.tag);
-      if (!commander?.hero) continue;
+      if (!hasFieldMarker(commander)) continue;
       heroes.push({
         unit,
         accent: commanderAccent(commander),

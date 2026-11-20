@@ -5,7 +5,7 @@
  * documented silhouette without shipping a new multi-megabyte model per mission.
  */
 export type SiteLandmarkKind =
-  'cusco-plaza' | 'sacsayhuaman' | 'real-felipe' | 'tarapaca-village' | 'vilcabamba-refuge';
+  'cusco-plaza' | 'sacsayhuaman' | 'real-felipe' | 'tarapaca-village' | 'tarapaca-heights' | 'vilcabamba-refuge';
 
 export interface MissionSiteLandmark {
   kind: SiteLandmarkKind;

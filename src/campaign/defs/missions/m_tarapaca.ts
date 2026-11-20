@@ -5,9 +5,13 @@ import type { MissionDef } from '../../types';
 // Tarapacá: the village in the quebrada, the heights held by the Chilean columns and the Pachica road.
 const TARAPACA_VILLAGE = { x: 96, z: 168 } as const;
 const TARAPACA_HEIGHTS = { x: 160, z: 120 } as const;
-const TARAPACA_PACHICA = { x: 62, z: 196 } as const;
-const TARAPACA_BASE = { x: 72, z: 200 } as const;
-const TARAPACA_ENEMY = { x: 200, z: 72 } as const;
+const TARAPACA_PACHICA = { x: 198, z: 150 } as const;
+const TARAPACA_ARICA = { x: 150, z: 36 } as const;
+const TARAPACA_ENEMY = { x: 210, z: 64 } as const;
+// The three Chilean columns enter from different edges; none starts on the objective.
+const TARAPACA_COLUMN_EAST = { x: 142, z: 168 } as const;
+const TARAPACA_COLUMN_NORTH = { x: 200, z: 54 } as const;
+const TARAPACA_COLUMN_SOUTH = { x: 214, z: 222 } as const;
 
 export const mTarapaca: MissionDef = {
   id: 'm_tarapaca',
@@ -36,17 +40,17 @@ export const mTarapaca: MissionDef = {
       { text: 'Quebrada de Tarapacá', x: 132 / 256, z: 128 / 256, kind: 'region' },
       { text: 'Alturas de Tarapacá', x: TARAPACA_HEIGHTS.x / 256, z: TARAPACA_HEIGHTS.z / 256, kind: 'region' },
       { text: 'Pachica', x: TARAPACA_PACHICA.x / 256, z: TARAPACA_PACHICA.z / 256, kind: 'region' },
-      { text: 'Camino a Arica', x: 196 / 256, z: 196 / 256, kind: 'region' },
+      { text: 'Camino a Arica', x: TARAPACA_ARICA.x / 256, z: TARAPACA_ARICA.z / 256, kind: 'region' },
     ],
-    base: { x: TARAPACA_BASE.x / 256, z: TARAPACA_BASE.z / 256 },
-    opening: { x: 100 / 256, z: 190 / 256 },
+    // The battle opens in the village itself: there is no generic town and no rear base.
+    base: { x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256 },
+    opening: { x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256 },
     enemyBase: { x: TARAPACA_ENEMY.x / 256, z: TARAPACA_ENEMY.z / 256 },
     discoveries: [],
     terrain: {
       flats: [
         { name: 'Pueblo de Tarapacá', x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256, rx: 0.14, rz: 0.11 },
-        { name: 'Quebrada de Tarapacá', x: 132 / 256, z: 128 / 256, rx: 0.12, rz: 0.1 },
-        { name: 'Alturas', x: TARAPACA_HEIGHTS.x / 256, z: TARAPACA_HEIGHTS.z / 256, rx: 0.12, rz: 0.1 },
+        { name: 'Quebrada de Tarapacá', x: 132 / 256, z: 128 / 256, rx: 0.09, rz: 0.07 },
       ],
     },
     site: {
@@ -58,7 +62,10 @@ export const mTarapaca: MissionDef = {
       keepout: [{ x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256, rx: 0.095, rz: 0.075 }],
       buildKeepout: [{ x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256, rx: 0.095, rz: 0.075 }],
     },
-    siteLandmarks: [{ kind: 'tarapaca-village', x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256 }],
+    siteLandmarks: [
+      { kind: 'tarapaca-village', x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256 },
+      { kind: 'tarapaca-heights', x: TARAPACA_HEIGHTS.x / 256, z: TARAPACA_HEIGHTS.z / 256 },
+    ],
     roads: [
       {
         from: { dx: TARAPACA_VILLAGE.x, dz: TARAPACA_VILLAGE.z },
@@ -70,24 +77,47 @@ export const mTarapaca: MissionDef = {
         to: { dx: TARAPACA_PACHICA.x, dz: TARAPACA_PACHICA.z },
         width: 3,
       },
+      {
+        from: { dx: TARAPACA_VILLAGE.x, dz: TARAPACA_VILLAGE.z },
+        to: { dx: TARAPACA_ARICA.x, dz: TARAPACA_ARICA.z },
+        width: 2,
+      },
     ],
   },
-  atmosphere: { fogDensity: 0.0014, sunWarmth: 1.08, skyTint: '#e8ddc8' },
+  // Atacama: ochre ground, no palms and only a trace of scrub. The regional south-coast profile is
+  // already arid, but its palette and coastal vegetation still read green from the RTS camera.
+  mapOverrides: {
+    climate: { aridity: 1, moisture: 0.12, temperature: 0.9 },
+    vegetation: {
+      density: 0,
+      variants: { broad: 0 },
+      groundCover: 0,
+      groundCoverWeights: { grass: 0, ichu: 0, fern: 0, pebble: 1.6, gravel: 1.2 },
+    },
+    // A single-day battle needs no harvestable ring: keep the quebrada free of gameplay trees.
+    resources: { tree: 0, mine: 0, well: 0, berry: 0, hunt: 0, fishing: 0 },
+    groundTint: '#d8b07a',
+  },
+  atmosphere: { fogDensity: 0.0018, sunWarmth: 1.16, skyTint: '#e6d2b0' },
   timeOfDay: 'morning',
   startingEra: Era.REPUBLIC,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
   unitSpeedScale: 0.75,
-  startingResources: { food: 1200, wood: 700, silver: 700, stone: 500 },
+  // A battle of one day: the army lives off its train, not a settlement economy.
+  startingResources: { food: 0, wood: 0, silver: 0, stone: 0 },
   start: {
+    // The army is deployed in the village; neither side raises a base or a generic opening crew.
+    playerBase: false,
+    enemyBase: false,
+    openingUnits: false,
     units: [
-      { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 5 },
-      { kind: UnitKind.REPUBLICA_DEFENSOR, dx: 8, dz: 0, count: 8 },
-      { kind: UnitKind.RIFLEMAN, dx: 10, dz: 2, count: 3 },
-      { kind: UnitKind.SOLDIER, dx: 12, dz: -2, count: 4 },
-      { kind: UnitKind.RIFLEMAN, dx: 6, dz: 0, count: 1, tag: 'caceres' },
+      { kind: UnitKind.REPUBLICA_DEFENSOR, dx: 0, dz: 0, count: 8, stance: 'defensivo' },
+      { kind: UnitKind.RIFLEMAN, dx: 3, dz: 2, count: 3, stance: 'defensivo' },
+      { kind: UnitKind.SOLDIER, dx: -3, dz: 2, count: 4, stance: 'defensivo' },
+      { kind: UnitKind.RIFLEMAN, dx: 1, dz: -2, count: 1, tag: 'caceres', stance: 'defensivo' },
     ],
   },
-  enemy: { active: true, difficulty: 'normal', aggression: 0.9 },
+  enemy: { active: true, difficulty: 'normal', aggression: 0.9, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/tarapaca/intro-epilogo.webp',
@@ -125,21 +155,11 @@ export const mTarapaca: MissionDef = {
     UnitKind.SNIPER,
     UnitKind.SCOUT,
   ],
-  allowedBuildings: [
-    BuildingKind.CENTER,
-    BuildingKind.HOUSE,
-    BuildingKind.FARM,
-    BuildingKind.MILL,
-    BuildingKind.SAWMILL,
-    BuildingKind.BARRACKS,
-    BuildingKind.ARSENAL,
-    BuildingKind.FORTRESS,
-    BuildingKind.WALL,
-    BuildingKind.GATE,
-    BuildingKind.TOWER,
-    BuildingKind.MARKET,
-  ],
+  // No settlement construction: the mission is a single-day battle, not a founding scenario.
+  allowedBuildings: [],
   buildingNames: { [BuildingKind.FORTRESS]: 'Fortín' },
+  unitNames: { [UnitKind.REPUBLICA_DEFENSOR]: 'Defensor de Tarapacá' },
+  commanderNotes: { buendia: 'Mando general · no en el campo' },
   objectives: [
     {
       id: 'a1_pueblo',
@@ -163,7 +183,7 @@ export const mTarapaca: MissionDef = {
       id: 'a2_pachica',
       kind: 'reach',
       pos: { dx: TARAPACA_PACHICA.x, dz: TARAPACA_PACHICA.z },
-      radius: 12,
+      radius: 10,
       optional: true,
       hidden: true,
       title: 'Enlaza con la columna de Pachica',
@@ -172,9 +192,9 @@ export const mTarapaca: MissionDef = {
       id: 'a3_resistir',
       kind: 'hold',
       pos: { dx: TARAPACA_HEIGHTS.x, dz: TARAPACA_HEIGHTS.z },
-      radius: 20,
+      radius: 22,
       time: 60,
-      minUnits: 5,
+      minUnits: 4,
       hidden: true,
       requires: 'a2_alturas',
       title: 'Sostén las alturas hasta la retirada chilena',
@@ -182,7 +202,7 @@ export const mTarapaca: MissionDef = {
     {
       id: 'a3_retirada',
       kind: 'reach',
-      pos: { dx: 220, dz: 220 },
+      pos: { dx: TARAPACA_ARICA.x, dz: TARAPACA_ARICA.z },
       radius: 16,
       hidden: true,
       requires: 'a3_resistir',
@@ -198,13 +218,33 @@ export const mTarapaca: MissionDef = {
   triggers: [
     {
       id: 't_intro',
-      condition: { type: 'time', seconds: 6 },
+      condition: { type: 'time', seconds: 1 },
       effects: [
         {
           type: 'dialogue',
           speaker: 'Cáceres',
           duration: 9,
           text: '—Mi sector no tiene caballería ni cañones. Aguante el pueblo y suba a las alturas: el que domina la quebrada domina el campo.',
+        },
+      ],
+    },
+    {
+      // The first Chilean column attacks the village, as it did historically. It enters east of the
+      // village and marches in; it never materialises on the hold position.
+      id: 't_apertura',
+      condition: { type: 'time', seconds: 3 },
+      effects: [
+        {
+          type: 'wave',
+          owner: 1,
+          units: [
+            { kind: UnitKind.CHILE_INFANTE, count: 6 },
+            { kind: UnitKind.RIFLEMAN, count: 1 },
+          ],
+          spawn: { dx: TARAPACA_COLUMN_EAST.x, dz: TARAPACA_COLUMN_EAST.z },
+          pos: { dx: TARAPACA_VILLAGE.x, dz: TARAPACA_VILLAGE.z },
+          radius: 5,
+          target: { dx: TARAPACA_VILLAGE.x, dz: TARAPACA_VILLAGE.z },
         },
       ],
     },
@@ -222,8 +262,8 @@ export const mTarapaca: MissionDef = {
           type: 'reinforce',
           owner: 0,
           units: [{ kind: UnitKind.REPUBLICA_DEFENSOR, count: 4 }],
-          pos: { dx: TARAPACA_VILLAGE.x, dz: TARAPACA_VILLAGE.z },
-          radius: 10,
+          pos: { dx: TARAPACA_PACHICA.x, dz: TARAPACA_PACHICA.z },
+          radius: 8,
         },
       ],
     },
@@ -236,7 +276,7 @@ export const mTarapaca: MissionDef = {
           kicker: 'Acto II · Las alturas',
           title: 'Tres columnas',
           image: 'media/tarapaca/intro-alturas.webp',
-          text: 'Las columnas chilenas se escalonan en la quebrada. La resistencia peruana debe recuperar las alturas antes de que lleguen los refuerzos de Pachica.',
+          text: 'Las columnas chilenas se escalonan en la quebrada. La resistencia peruana debe recuperar las alturas con los refuerzos de Pachica.',
         },
         { type: 'objective', objectiveId: 'a2_alturas', state: 'activate', announce: true },
         { type: 'objective', objectiveId: 'a2_pachica', state: 'activate' },
@@ -244,12 +284,14 @@ export const mTarapaca: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [
-            { kind: UnitKind.CHILE_INFANTE, count: 6 },
+            { kind: UnitKind.CHILE_INFANTE, count: 7 },
             { kind: UnitKind.RIFLEMAN, count: 2 },
+            { kind: UnitKind.CAVALRY, count: 1 },
           ],
+          spawn: { dx: TARAPACA_COLUMN_NORTH.x, dz: TARAPACA_COLUMN_NORTH.z },
           pos: { dx: TARAPACA_HEIGHTS.x, dz: TARAPACA_HEIGHTS.z },
-          radius: 12,
-          target: { dx: TARAPACA_VILLAGE.x, dz: TARAPACA_VILLAGE.z },
+          radius: 7,
+          target: { dx: TARAPACA_HEIGHTS.x, dz: TARAPACA_HEIGHTS.z },
         },
       ],
     },
@@ -276,11 +318,14 @@ export const mTarapaca: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [
-            { kind: UnitKind.CHILE_INFANTE, count: 8 },
-            { kind: UnitKind.CAVALRY, count: 2 },
+            { kind: UnitKind.CHILE_INFANTE, count: 6 },
+            { kind: UnitKind.RIFLEMAN, count: 2 },
+            { kind: UnitKind.CAVALRY, count: 1 },
+            { kind: UnitKind.ARTILLERY, count: 1 },
           ],
+          spawn: { dx: TARAPACA_COLUMN_SOUTH.x, dz: TARAPACA_COLUMN_SOUTH.z },
           pos: { dx: TARAPACA_HEIGHTS.x, dz: TARAPACA_HEIGHTS.z },
-          radius: 14,
+          radius: 7,
           target: { dx: TARAPACA_HEIGHTS.x, dz: TARAPACA_HEIGHTS.z },
         },
       ],

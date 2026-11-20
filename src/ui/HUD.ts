@@ -24,7 +24,6 @@ import {
   unitClassFor,
   unitAvailableToCiv,
   unitDisplayIcon,
-  unitDisplayName,
   unitAvailableInPeriod,
 } from '../model/defs/units';
 import { TECHS, techAvailable } from '../model/defs/techs';
@@ -67,6 +66,7 @@ import {
 } from '../model/defs/commanders';
 import type { HeritageBuildingDef, HeritageBuildingId } from '../model/defs/heritage';
 import { portraitSvg } from './Portrait';
+import { textOverlap } from './textOverlap';
 import { DamageNumbers } from './DamageNumbers';
 import { openCodex } from './Codex';
 import { openTechTree } from './TechTree';
@@ -1208,6 +1208,7 @@ export class HUD {
             canResearch: (techId) => this.game.canResearchTech(techId),
             buildingName: (kind) => this.game.buildingName(kind),
             buildingIcon: (kind) => this.game.buildingIcon(kind),
+            unitName: (kind) => this.game.unitName(kind),
           }
         : undefined,
     );
@@ -1369,15 +1370,25 @@ export class HUD {
           ? t('hud.victory.retreat')
           : null;
     const title = outcomeTitle ?? (victory ? t('hud.victory.title') : t('hud.victory.defeat'));
-    const sub =
-      winText && loseText ? (victory ? winText : loseText) : victory ? t('hud.victory.win') : t('hud.victory.lose');
-    const epilogue =
-      victory && edu?.epilogue
-        ? `<div class="ed-hist"><b style="color:var(--gold)">${t('hud.victory.epilogue')}</b> ${edu.epilogue}</div>
+    const hasEpilogue = victory && !!edu?.epilogue;
+    // The mission's `victory` line and the educational epilogue often say the same thing; keep the
+    // result sentence when it adds information, and drop it only when the epilogue already carries it.
+    const duplicateResult = hasEpilogue && !!winText && textOverlap(winText, edu!.epilogue!) >= 0.5;
+    const sub = duplicateResult
+      ? ''
+      : winText && loseText
+        ? victory
+          ? winText
+          : loseText
+        : victory
+          ? t('hud.victory.win')
+          : t('hud.victory.lose');
+    const epilogue = hasEpilogue
+      ? `<div class="ed-hist"><b style="color:var(--gold)">${t('hud.victory.epilogue')}</b> ${edu.epilogue}</div>
            <div class="ed-note" style="font-size:12px;color:var(--text-dim);margin-bottom:12px">
              ${t('hud.victory.epilogueHint')}
            </div>`
-        : '';
+      : '';
     const optional = victory
       ? (this.game.mission?.activeObjectives ?? []).filter(({ def, state }) => def.optional && state !== 'pendiente')
       : [];
@@ -1410,7 +1421,7 @@ export class HUD {
     panel.innerHTML = `
       <div class="ed-menu-kicker">${campaign ? campaign.title.toUpperCase() : t('app.series')}${mis ? ` · ${mis.subtitle}` : ''}</div>
       <h2 class="epilogue-title ${victory ? 'win' : 'lose'}">${title}</h2>
-      <div class="sub" style="white-space:pre-line;line-height:1.6">${sub}</div>
+      ${sub ? `<div class="sub" style="white-space:pre-line;line-height:1.6">${sub}</div>` : ''}
       ${epilogue}
       ${optionalSummary}
       <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:14px">${stats}</div>
@@ -1898,7 +1909,6 @@ export class HUD {
 
   private renderUnitPanel(units: Unit[]): void {
     const first = units[0];
-    const civ = this.game.players[first.owner]?.civ;
     const commander = units.length === 1 ? commanderById(first.tag) : undefined;
     const cast = units.flatMap((u) => {
       const c = commanderById(u.tag);
@@ -1921,7 +1931,7 @@ export class HUD {
       ? commanderLabel(commander)
       : mixed
         ? `${t('hud.unit.group')} ×${units.length}`
-        : `${unitDisplayName(first.kind, civ, first.era)} ×${units.length}`;
+        : `${this.game.unitName(first.kind, first.owner)} ×${units.length}`;
     this.setDesc(
       commander ? portraitSvg(commander, 30) : mixed ? '👥' : unitDisplayIcon(first.kind, first.era),
       title,
@@ -1937,7 +1947,7 @@ export class HUD {
       for (const [kind, count] of groups) {
         this.addCard(
           unitDisplayIcon(kind, first.era),
-          `${count}× ${unitDisplayName(kind, this.game.players[first.owner]?.civ, first.era)}`,
+          `${count}× ${this.game.unitName(kind, first.owner)}`,
           t('hud.unit.filter'),
           () => this.game.selectUnits(units.filter((u) => u.kind === kind).map((u) => u.id)),
           { cat: 'sel' },
@@ -2061,7 +2071,7 @@ export class HUD {
       const item = b.productionQueue[i];
       const card = this.addCard(
         unitDisplayIcon(item.unit, b.era),
-        unitDisplayName(item.unit, this.game.players[b.owner]?.civ, b.era),
+        this.game.unitName(item.unit, b.owner),
         `${Math.round(item.progress * 100)}% ✖`,
         () => this.game.executeCommand({ kind: 'cancel', buildingId: b.id, index: i }),
         {
@@ -2079,7 +2089,7 @@ export class HUD {
       const ownerCiv = this.game.players[b.owner]?.civ;
       if (!unitAvailableToCiv(unitKind, ownerCiv)) continue;
       const stats = getUnitStats(unitKind, b.era);
-      const unitName = unitDisplayName(unitKind, this.game.players[b.owner]?.civ, b.era);
+      const unitName = this.game.unitName(unitKind, b.owner);
       const tech = UNIT_ARCHETYPES[unitKind].requiresTech?.[0];
       const techOk = !tech || this.game.players[0].techs.has(tech);
       const eraOk = !!UNIT_ARCHETYPES[unitKind].eraModel[this.game.players[0].era];
@@ -2181,7 +2191,7 @@ export class HUD {
     });
     if (b.constructionComplete && b.productionQueue.length > 0) {
       s += t('hud.building.training', {
-        unit: unitDisplayName(b.productionQueue[0].unit, this.game.players[b.owner]?.civ, b.era),
+        unit: this.game.unitName(b.productionQueue[0].unit, b.owner),
       });
     }
     if (b.isFarm && b.constructionComplete) {
@@ -2838,8 +2848,8 @@ export class HUD {
       .map(
         (c) =>
           `<div class="ed-cmd-card">${portraitSvg(c, 56)}<div class="ed-cmd-info"><b>${escapeHtml(c.name)}</b><span>${escapeHtml(c.role)}</span>${
-            c.status === 'abstraction' ? `<em>${t('hud.menu.briefing.stylized')}</em>` : ''
-          }</div></div>`,
+            mis.commanderNotes?.[c.id] ? `<em>${escapeHtml(mis.commanderNotes[c.id]!)}</em>` : ''
+          }${c.status === 'abstraction' ? `<em>${t('hud.menu.briefing.stylized')}</em>` : ''}</div></div>`,
       )
       .join('');
     const introArt = artIntroForMission(mis.id, { includeUnreviewed: includeUnreviewedArt() });

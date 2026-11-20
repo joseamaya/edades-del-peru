@@ -148,7 +148,7 @@ Definition of Done and the building audit see
 - **Mission-scoped site landmarks**: `MissionLayout.siteLandmarks`
   (`src/model/defs/siteLandmarks.ts`) draws procedural landmark compositions for the sites whose bundled GLB is a
   labelled abstraction from another place: Cusco's plaza/ushnu and Sacsayhuamán, the Real Felipe bastions, the
-  Tarapacá village and the Vilcabamba refuge. `SiteLandmarks` merges geometry per material and lives in its own
+  Tarapacá village and heights and the Vilcabamba refuge. `SiteLandmarks` merges geometry per material and lives in its own
   scene group so disposing a match never touches the shared generated PBR textures. `MissionSite.hideModel`
   drops the bundled GLB per mission (Cusco 1536) while `AuthoredSiteDef.hideModel` does it for a site used by
   one mission (Real Felipe, Tarapacá, Vilcabamba); both are presentation-only. The Real Felipe trace also
@@ -231,9 +231,12 @@ Definition of Done and the building audit see
   a diagnostics snapshot.
 - **HUD identity & commander portraits (UI only)**: the HUD uses inline-SVG Andean motifs (chakana divider,
   stepped-fret top-bar band) with no image assets. `src/model/defs/commanders.ts` maps campaign speakers to
-  stylized portrait medallions (`src/ui/Portrait.ts`: SVG, civilization palette + emblem + initials);
-  `MissionDef.commanders` shows portrait cards in the briefing, and `Mission.triggerDialogue` resolves the
-  `Nombre:` prefix to a portrait. `status: 'abstraction'` marks stylistic reconstructions (never likenesses).
+  stylized portrait medallions (`src/ui/Portrait.ts`: civilization palette + emblem + presentation headwear,
+  beard and uniform cues; still not likenesses). `MissionDef.commanders` shows portrait cards in the
+  briefing, `MissionDef.commanderNotes` marks a briefing-only commander (e.g. Buendía as the army's chief),
+  and `Mission.triggerDialogue` resolves the `Nombre:` prefix to a portrait. `status: 'abstraction'` marks
+  stylistic reconstructions; `fieldCommander: true` gives a tagged modern lead a battle marker without the
+  Ayar hero attire.
 - **HUD right column** (issues 401–402): `#ed-objectives`, `#ed-tutorial` and `#ed-help` share one
   `#ed-right-column` flex stack whose bottom is the live command-bar height (`--ed-command-bar-h`), so the
   panels can never cover each other or reach the bar. The objectives panel hugs its content and the
@@ -406,12 +409,16 @@ Definition of Done and the building audit see
   `focusTarget` and `findThreat` only consider known entities, and `explore` sweeps toward the mirror of the AI base
   through the map centre until it finds the enemy. It is no longer omniscient. (Local combat micro still reacts to
   enemies near a unit, exactly like the player's own units.) The army is trained to an era-based
-  **mix** (`ARMY_MIX`) nudged to counter the enemy's composition (`armyWeights`). `Game.addAI(playerId, difficulty?)`
+  **mix** (`ARMY_MIX`) nudged to counter the enemy's composition (`armyWeights`). `Game.addAI(playerId, difficulty?, options?)`
   attaches an AI to any player, so `yarn sim [--difficulty=…] [--p1=…] [--player=scripted]` runs **AI-vs-AI**
   headless matches (seeds, winner, peak armies); `--difficulty`/`--p1` set each seat's profile (default
   `normal`) and `--player=scripted` runs the `ScriptedPlayer` bot as player 0 (the player-side difficulty
-  benchmark), so a run measures one profile against another. The runner drives fixed 1/60 steps with `?noloop=1` (no real-time warm-up), so it is
-  **deterministic per seed** and usable as a regression signal. Baseline on the default seed set (`--max=1500`,
+  benchmark), so a run measures one profile against another. Campaign missions pass `AIOptions`:
+  `economy: false` skips workers/build/training/research/era, `attacks: false` leaves the offensive to
+  authored waves, and `aggression` overrides the menu difficulty's cadence. The mission's
+  `enemy.difficulty`/`enemy.aggression` are wired here; they are not read from the menu settings. The runner
+  drives fixed 1/60 steps with `?noloop=1` (no real-time warm-up), so it is **deterministic per seed** and
+  usable as a regression signal. Baseline on the default seed set (`--max=1500`,
   player-0 wins / losses / undecided): `easy` 0/1/7, `normal` 4/2/2, `hard` 1/5/2, `legendary` 0/4/4. Player 0
   has a positional edge, so read each row against the `normal` mirror, not 50%. **The AI-vs-AI win-rate is not a
   usable difficulty yardstick** (seat bias + stalemate-prone + tiny decisive sample) and the profiles are not
@@ -430,6 +437,12 @@ Definition of Done and the building audit see
   presses nearby buildings, raids workers (on `hard`+), and, when the enemy has **no soldiers left**, marches on
   the base so a won match doesn't stall on leftover buildings. Training is chronology-guarded (`unitMinPeriod` in
   `Building.queueUnit`, the AI candidate filter and the HUD).
+- **Campaign force contract**: `MissionDef.start.playerBase`/`enemyBase` remove the generic centre/houses per
+  seat, and `openingUnits` (default: the seat's base flag) gates the four workers + scout, so a base-less
+  party keeps only its authored roster. `MissionDef.enemy.economy: false` / `attacks: false` turn the AI into
+  a scripted opponent (micro and defense only), and `wave.spawn` separates an enemy wave's entry point from
+  the `pos` it attacks or holds. Tarapacá is the reference battle: both seats are base-less, it has no
+  economy, and its three columns enter from the map edges.
 - **UI/inputs in `src/core/Game.ts` and `src/ui/HUD.ts`**: left click selects / drag = box-select (rectangle
   `#ed-selbox`) · right click = order (**right button no longer pans**; panning is by screen edges, WASD/arrows,
   middle-mouse drag, or dragging the **bottom-left minimap**). Minimap: drag = move viewport, right click = order

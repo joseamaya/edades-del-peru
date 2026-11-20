@@ -429,11 +429,15 @@ test('the missions with corrected rosters boot with units and no errors', async 
       timeout: 30_000,
     });
     const info = await page.evaluate(() => {
-      const g = (window as unknown as { game: { units: Map<number, unknown>; buildings: Map<number, unknown> } }).game;
-      return { units: g.units.size, buildings: g.buildings.size };
+      const g = (
+        window as unknown as { game: { units: Map<number, unknown>; buildings: Map<number, unknown>; mission?: any } }
+      ).game;
+      const start = g.mission?.def?.start;
+      const expectsBuildings = (start?.playerBase ?? start?.base ?? true) || (start?.enemyBase ?? true);
+      return { units: g.units.size, buildings: g.buildings.size, expectsBuildings };
     });
     expect(info.units, `${id} has no units`).toBeGreaterThan(0);
-    expect(info.buildings, `${id} has no buildings`).toBeGreaterThan(0);
+    expect(info.buildings, `${id} has no buildings`).toBeGreaterThanOrEqual(info.expectsBuildings ? 1 : 0);
   }
   expect(errors).toEqual([]);
 });

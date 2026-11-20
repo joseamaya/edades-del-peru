@@ -1,6 +1,12 @@
 import * as THREE from 'three';
 import { EntityView } from '../entities/EntityView';
-import { commanderAccent, commanderById, type CommanderDef, type HeroPattern } from '../model/defs/commanders';
+import {
+  commanderAccent,
+  commanderById,
+  hasFieldMarker,
+  type CommanderDef,
+  type HeroPattern,
+} from '../model/defs/commanders';
 import { acquireRig } from './ModelAssets';
 import type { RigInstance } from './RigInstance';
 import { buildModel, disposeModel, type BuildContext } from '../model/ProceduralModel';
@@ -45,7 +51,7 @@ export class UnitView {
   private scene: THREE.Scene | null = null;
   private net: FishingNetFx | null = null;
   private heroAttire: RigAttireTools | null = null;
-  private heroDressed = false;
+  private identityDressed = false;
 
   constructor(
     private readonly unit: Unit,
@@ -62,13 +68,14 @@ export class UnitView {
     this.ensureHeroIdentity();
   }
 
-  /** Apply the hero identity once, also for units whose tag arrives after the view (save/load). */
+  /** Apply the hero/field-commander identity once, also for units whose tag arrives after the view (save/load). */
   private ensureHeroIdentity(): void {
-    if (this.heroDressed) return;
+    if (this.identityDressed) return;
     const commander = commanderById(this.unit.tag);
-    if (!commander?.hero) return;
-    this.heroDressed = true;
-    this.view.group.scale.multiplyScalar(1.16 * (commander.bulk ?? 1));
+    if (!hasFieldMarker(commander)) return;
+    this.identityDressed = true;
+    this.view.group.scale.multiplyScalar(commander.hero ? 1.16 * (commander.bulk ?? 1) : 1.08);
+    if (!commander.hero) return;
     this.dressHero(commander);
     // The hero's mantle and band are attached after the rig was built; re-pick the shadow silhouette.
     if (this.rig) limitShadowCasters(this.rig.root);

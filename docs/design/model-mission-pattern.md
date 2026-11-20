@@ -103,6 +103,23 @@ definitions instead.
 - Workers behave as the player expects: they keep working after a build (farm the new field or help the
   nearest site) and show the right tool or net for the task.
 
+### 5a. Armies without a settlement
+
+A battle scenario is not a skirmish with a smaller build menu. Declare the force contract explicitly:
+
+- `start.playerBase` / `start.enemyBase` (`false` = no centre, houses or fields for that seat),
+  `start.openingUnits` (`false` = no generic four workers + scout; defaults to the seat's base flag).
+  The legacy `start.base` remains the player alias. A base-less seat anchors `ref: 'player'`/`'enemy'`
+  on its opening spot, so authored points still resolve.
+- `enemy.economy: false` skips worker management, construction, training, research and era advance;
+  `enemy.attacks: false` keeps combat micro and defense but leaves the offensive to authored waves.
+  Wire the mission's `enemy.difficulty`/`aggression` — they are not the menu difficulty.
+- Give every enemy wave a `spawn` (entry point) and a `target`/`pos` (objective); `pos` alone is the legacy
+  "spawn here" contract and must not sit inside the player's hold radius. Guard the distance in a test.
+- If the mission has a build objective (Lima's cabildo, the Junta's barracks), keep a small founding crew
+  and the specific building; do not restore the generic town. Tarapacá has no build objective, so it can
+  be a true zero-economy battle.
+
 ## 5b. Named characters
 
 When the mission is about named people, put them on the board instead of only in the narration.
@@ -110,10 +127,15 @@ When the mission is about named people, put them on the board instead of only in
 - A unit's mission `tag` doubles as the commander id (`src/model/defs/commanders.ts`): tagged units get a
   world nameplate (`CharacterLabels`) and the selection panel shows the commander's name and role. The same
   ids feed the briefing portraits and dialogue.
-- Brief the whole cast the story needs; `commanders` is not limited to two figures.
+- Brief the whole cast the story needs; `commanders` is not limited to two figures. If a commander is the
+  army's overall chief but is not on the board, keep the card and say so with `MissionDef.commanderNotes`
+  ("Mando general · no en el campo") instead of adding a decorative unit.
 - Lead characters need field identity, not only a tag: a hero ring/banner, an accent on the tunic or
   portrait, a `★` nameplate and a hero card in the selection panel. Professional RTS leads are readable at
-  a glance; a name over a generic soldier is not enough.
+  a glance; a name over a generic soldier is not enough. Modern leads use `fieldCommander: true` (marker and
+  a slight scale, no Andean hero attire); the Ayar keep `hero: true`.
+- Mission-scoped names belong in `MissionDef.unitNames` (e.g. Tarapacá's republican unique) rather than in a
+  global archetype name.
 - If the legend loses a character on the way, stage the loss: the `memory` trigger effect retires the unit
   without a death animation and raises a named huaca at the scripted spot (`MemoryStones`).
 - Never invent a likeness: nameplates and medallions say who the person is and are labelled `abstraction`

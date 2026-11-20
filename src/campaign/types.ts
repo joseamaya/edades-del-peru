@@ -338,6 +338,8 @@ export type TriggerEffect =
       owner: 0 | 1;
       units: { kind: UnitKind; count: number }[];
       pos: MissionPoint;
+      /** Spawn origin. `pos` is the objective/position the wave marches to; defaults to `pos` (legacy). */
+      spawn?: MissionPoint;
       radius?: number;
       /** `base`: march on the player; `position`: hold the spawn point (a guarded field). */
       objective?: 'base' | 'position';
@@ -500,10 +502,23 @@ export interface MissionDef {
   startingResources: Resources;
   start: {
     /**
-     * `false`: the player starts as a party on the move, with no centre or dwellings (Tambotoco: the Ayar
-     * leave the cave with nothing built). Defeat then waits until the party has neither buildings nor units.
+     * Legacy alias for `playerBase`; `false`: the player starts as a party on the move, with no centre or
+     * dwellings (Tambotoco: the Ayar leave the cave with nothing built). Defeat then waits until the party
+     * has neither buildings nor units.
      */
     base?: boolean;
+    /** Per-side player base. Overrides `base` when set. */
+    playerBase?: boolean;
+    /**
+     * `false`: the enemy starts with no constructed base (Tarapacá: the Chilean columns arrive as scripted
+     * waves instead of a skirmish town). Defeat/objective logic still uses the enemy's start anchor.
+     */
+    enemyBase?: boolean;
+    /**
+     * Generic opening deployment (four workers + one scout). Defaults to the base flag, so a base-less
+     * party never receives anonymous workers.
+     */
+    openingUnits?: boolean;
     buildings?: { kind: BuildingKind; dx: number; dz: number; tag?: string }[];
     /**
      * `stance` fixes the opening combat stance; omitted keeps the unit default (`agresivo`). A defence
@@ -521,7 +536,18 @@ export interface MissionDef {
   };
   /** Tag existing buildings at start (e.g. the enemy center). */
   mark?: { tag: string; kind: BuildingKind; owner: 0 | 1 }[];
-  enemy: { active: boolean; difficulty: 'easy' | 'normal' | 'hard' | 'legendary'; aggression: number };
+  enemy: {
+    active: boolean;
+    difficulty: 'easy' | 'normal' | 'hard' | 'legendary';
+    aggression: number;
+    /**
+     * `false`: scripted enemy. The AI keeps perception, combat micro and defense, but skips worker
+     * management, construction, training, research and era advancement.
+     */
+    economy?: boolean;
+    /** `false`: the AI never launches its own attacks; authored waves carry the offensive. */
+    attacks?: boolean;
+  };
   /**
    * If set, the player can only train these units (a scenario restriction, e.g.
    * a naval campaign with no siege train). Omit for the full roster.
@@ -534,10 +560,23 @@ export interface MissionDef {
   allowedBuildings?: BuildingKind[];
   /** Player-facing building labels for this scenario (e.g. Caral's «Depósito comunal»). */
   buildingNames?: Partial<Record<BuildingKind, string>>;
+  /** Player-facing unit labels for this scenario (e.g. Tarapacá's Republican unique). */
+  unitNames?: Partial<Record<UnitKind, string>>;
+  /**
+   * Briefing-only notes for commander cards, e.g. Buendía as the army's overall commander when he is
+   * not a unit on the field. Not a likeness claim.
+   */
+  commanderNotes?: Partial<Record<PortraitId, string>>;
   /** Period-appropriate building icons that override the global defaults (e.g. Caral's neutral farm). */
   buildingIcons?: Partial<Record<BuildingKind, string>>;
   /** If set, only these technologies may be researched in the match. */
   allowedTechs?: string[];
   objectives: ObjectiveDef[];
   triggers: TriggerDef[];
+}
+
+/** Whether a seat starts with a constructed base; `start.base` is the player's legacy alias. */
+export function seatStartsWithBase(start: MissionDef['start'] | undefined, owner: 0 | 1): boolean {
+  if (!start) return true;
+  return owner === 0 ? (start.playerBase ?? start.base ?? true) : (start.enemyBase ?? true);
 }

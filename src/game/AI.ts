@@ -66,12 +66,23 @@ type HarvestNode = ResourceNode & { farm?: Building };
 /** A long-range siege unit. */
 const isSiege = (kind: UnitKind): boolean => UNIT_CATEGORY[kind] === 'siege';
 
+export interface AIOptions {
+  /** Campaign override on top of the difficulty's attack cadence (0..2). */
+  aggression?: number;
+  /** `false`: no worker management, construction, training, research or era advance. */
+  economy?: boolean;
+  /** `false`: no autonomous attack waves; combat micro and defense still run. */
+  attacks?: boolean;
+}
+
 export class AI {
   private game: Game;
   readonly playerId: number;
   private rng: RNG;
   private mult: { aggression: number; reaction: number };
   private profile: AIProfile;
+  private readonly economy: boolean;
+  private readonly attacks: boolean;
   private attackTimer = 60;
   /** Consecutive attack checks where the army was below the ideal threshold. */
   private attackStall = 0;
@@ -94,12 +105,15 @@ export class AI {
   /** Coarse threat map keyed by 24 m zones, fed by perception. */
   private threatZones = new Map<string, { value: number; at: number }>();
 
-  constructor(game: Game, playerId: number, difficulty?: Difficulty) {
+  constructor(game: Game, playerId: number, difficulty?: Difficulty, options: AIOptions = {}) {
     this.game = game;
     this.playerId = playerId;
     const diff = difficulty ?? game.settings.difficulty ?? 'normal';
     this.mult = DIFFICULTY_MULT[diff] ?? DIFFICULTY_MULT.normal;
+    if (options.aggression !== undefined) this.mult = { ...this.mult, aggression: options.aggression };
     this.profile = profileFor(diff);
+    this.economy = options.economy ?? true;
+    this.attacks = options.attacks ?? true;
     this.rng = new RNG(game.settings.mapSeed + playerId * 77);
   }
 
@@ -116,11 +130,11 @@ export class AI {
       this.lastPerception = t;
       this.updatePerception(t);
     }
-    if (this.economyTimer > 0.6) {
+    if (this.economy && this.economyTimer > 0.6) {
       this.economyTimer = 0;
       this.manageWorkers();
     }
-    if (this.buildingTimer > 1.2) {
+    if (this.economy && this.buildingTimer > 1.2) {
       this.buildingTimer = 0;
       this.buildQueues();
     }
@@ -128,7 +142,7 @@ export class AI {
       this.scoutTimer = 6;
       this.explore();
     }
-    if (this.attackTimer <= 0) {
+    if (this.attacks && this.attackTimer <= 0) {
       this.attackTimer = this.rng.range(30, 60) / Math.max(0.4, this.mult.aggression);
       this.launchAttack();
     }
@@ -142,11 +156,13 @@ export class AI {
       this.defenseTimer = 0.4 * this.mult.reaction;
       this.defendEconomy();
     }
-    this.advanceEraCheck();
-    this.researchTimer -= dt;
-    if (this.researchTimer <= 0) {
-      this.researchTimer = 8;
-      this.researchCheck();
+    if (this.economy) {
+      this.advanceEraCheck();
+      this.researchTimer -= dt;
+      if (this.researchTimer <= 0) {
+        this.researchTimer = 8;
+        this.researchCheck();
+      }
     }
   }
 

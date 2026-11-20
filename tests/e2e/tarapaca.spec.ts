@@ -20,16 +20,20 @@ test('m_tarapaca holds the village with real move orders', async ({ page }) => {
     const units = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead) as any[];
     const target = { x: 96, z: 168 };
     for (const unit of units) {
-      g.executeCommand({ kind: 'order', unitIds: [unit.id], order: { kind: 'move', target }, clear: true }, false);
+      // Cáceres is a protect objective: keep him behind the line instead of parking him in the melee.
+      const order = unit.tag === 'caceres' ? { kind: 'move', target: { x: 70, z: 190 } } : { kind: 'move', target };
+      g.executeCommand({ kind: 'order', unitIds: [unit.id], order, clear: true }, false);
     }
     const dt = 1 / 60;
     let t = 0;
-    for (let i = 0; i < Math.ceil(85 / dt) && !g.mission.ended; i++) {
+    for (let i = 0; i < Math.ceil(120 / dt) && !g.mission.ended; i++) {
       g.update(dt, t);
       t += dt;
     }
     return {
       units: units.length,
+      workers: units.filter((u) => u.kind === 'worker').length,
+      buildings: g.buildings.size,
       pueblo: g.mission.getObjectiveState('a1_pueblo') as string,
       alturas: g.mission.getObjectiveState('a2_alturas') as string,
       ended: g.mission.ended as boolean,
@@ -37,6 +41,8 @@ test('m_tarapaca holds the village with real move orders', async ({ page }) => {
   });
 
   expect(out.units).toBeGreaterThanOrEqual(6);
+  expect(out.workers, 'Tarapacá is a battle, not a settlement').toBe(0);
+  expect(out.buildings, 'neither side starts with a generic base').toBe(0);
   expect(out.pueblo, 'the village was not held after real move orders').toBe('completed');
   expect(out.alturas, 'the heights did not open after the hold').toBe('activo');
   expect(out.ended).toBe(false);

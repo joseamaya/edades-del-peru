@@ -136,16 +136,22 @@ async function snapshots(page: Page): Promise<Snapshots> {
     }
     const chips = read();
 
-    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as
+    let worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as
       { id: number } | undefined;
-    if (!worker) throw new Error('the mission has no player worker to open the build panel');
+    // A pure battle (Tarapacá) has no economy; spawn a temporary worker so the layout probe can still
+    // measure the build/selection panel.
+    if (!worker) {
+      const c = g.playerCenter(0);
+      worker = g.spawnScriptedUnit('worker', 0, c.x + 2, c.z + 2);
+    }
     g.selectUnits([worker.id]);
     await render();
     const build = read();
 
     let building = [...g.buildings.values()].find((b: any) => b.owner === 0 && !b.dead) as { id: number } | undefined;
-    // A party that starts with nothing built (Tambotoco): raise its first communal store to measure the panel.
-    if (!building && g.mission.def.start.base === false) {
+    // A party that starts with nothing built (Tambotoco, Tarapacá): raise a building to measure the panel.
+    const noBase = (g.mission.def.start.playerBase ?? g.mission.def.start.base) === false;
+    if (!building && noBase) {
       const c = g.playerCenter(0);
       building = g.spawnScriptedBuilding('mill', 0, c.x + 6, c.z + 6);
     }

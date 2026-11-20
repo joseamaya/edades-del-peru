@@ -69,6 +69,11 @@ export interface CommanderDef {
   source?: string;
   /** Lead figure: gets a field banner, a hero ring and the hero card in the HUD. */
   hero?: boolean;
+  /**
+   * Field commander: gets a battle marker/ring and keeps the unit's ordinary body (modern officers
+   * must not wear the Ayar hero attire). Use for tagged protect objectives such as Cáceres.
+   */
+  fieldCommander?: boolean;
   /** Presentation accent for the field marker, nameplate, medallion and hero attire (not a historical colour). */
   accent?: string;
   /**
@@ -91,6 +96,15 @@ export interface CommanderDef {
   pattern?: HeroPattern;
   /** Multiplier on the hero's build (Cachi is broader, the Mamas slightly lighter). */
   bulk?: number;
+  /** Presentation-only portrait silhouette cues; not a claim of a documented uniform. */
+  headwear?: 'bicorne' | 'morion' | 'helmet' | 'hat' | 'headdress' | 'none';
+  beard?: boolean;
+  uniform?: 'civil' | 'military' | 'cloth';
+}
+
+/** Whether a commander gets a field marker: Ayar heroes and modern field commanders. */
+export function hasFieldMarker(commander: CommanderDef | undefined): commander is CommanderDef {
+  return !!(commander?.hero || commander?.fieldCommander);
 }
 
 export const COMMANDERS: Record<PortraitId, CommanderDef> = {
@@ -156,6 +170,8 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.PATRIOTAS,
     status: 'documented',
     source: 'docs/historia/campanas/independencia.md',
+    headwear: 'bicorne',
+    uniform: 'military',
   },
   bolivar: {
     gender: 'male',
@@ -165,6 +181,8 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.PATRIOTAS,
     status: 'documented',
     source: 'docs/historia/campanas/independencia.md',
+    headwear: 'bicorne',
+    uniform: 'military',
   },
   sucre: {
     gender: 'male',
@@ -174,6 +192,8 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.PATRIOTAS,
     status: 'documented',
     source: 'docs/historia/campanas/independencia.md',
+    headwear: 'bicorne',
+    uniform: 'military',
   },
   salom: {
     gender: 'male',
@@ -201,6 +221,10 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.REPUBLIC,
     status: 'documented',
     source: 'docs/historia/campanas/brena.md',
+    fieldCommander: true,
+    headwear: 'hat',
+    beard: true,
+    uniform: 'military',
   },
   buendia: {
     gender: 'male',
@@ -210,6 +234,9 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.REPUBLIC,
     status: 'documented',
     source: 'docs/historia/campanas/tarapaca.md',
+    headwear: 'bicorne',
+    beard: true,
+    uniform: 'military',
   },
   tupac_amaru_i: {
     gender: 'male',
@@ -246,6 +273,9 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.REPUBLIC,
     status: 'documented',
     source: 'docs/historia/campanas/guerra_del_pacifico.md',
+    headwear: 'bicorne',
+    beard: true,
+    uniform: 'military',
   },
   bolognesi: {
     gender: 'male',
@@ -255,6 +285,9 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.REPUBLIC,
     status: 'documented',
     source: 'docs/historia/campanas/guerra_del_pacifico.md',
+    headwear: 'helmet',
+    beard: true,
+    uniform: 'military',
   },
   atahualpa: {
     gender: 'male',
@@ -291,6 +324,9 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.PATRIOTAS,
     status: 'documented',
     source: 'docs/historia/campanas/junta_cusco.md',
+    headwear: 'hat',
+    beard: true,
+    uniform: 'military',
   },
   melgar: {
     gender: 'male',
@@ -309,6 +345,9 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.REALISTAS,
     status: 'documented',
     source: 'docs/historia/campanas/junta_cusco.md',
+    headwear: 'bicorne',
+    beard: true,
+    uniform: 'military',
   },
   manco_capac: {
     gender: 'male',
@@ -453,6 +492,9 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.HUESTE_INDIANA,
     status: 'documented',
     source: 'docs/historia/campanas/lima.md',
+    headwear: 'morion',
+    beard: true,
+    uniform: 'military',
   },
   quizu_yupanqui: {
     gender: 'male',
