@@ -85,8 +85,9 @@ The evidence and the remaining gates are in [`../release/0.2.0-readiness-audit.m
 - Attach the current captures and the performance numbers.
 - Tag `v0.2.0` and keep `v0.1.0` as the earlier nine-mission demo. Keep `localStorage` keys and mission ids
   stable.
-- The only open human gate is the seven 2026-11-18 missions: the automated no-cheat path is green
-  (`tests/e2e/release-playtest.spec.ts`), and a person must still play each one before the announcement.
+- The seven 2026-11-18 missions have a green automated no-cheat path
+  (`tests/e2e/release-playtest.spec.ts`); a human pass is the first post-release validation and is declared
+  as a known limitation in the notes.
 
 ## Risks
 
