@@ -82,6 +82,7 @@ export function dressUniform(
       hat = new THREE.Mesh(track(new THREE.CylinderGeometry(0.11, 0.13, 0.12, 10)), hatMat);
     }
     hat.name = 'attire_post_hat';
+    hat.userData.hat = spec.hat;
     attach('Head', hat, new THREE.Vector3(head.x, head.y + 0.19, head.z));
   }
 

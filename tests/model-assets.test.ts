@@ -397,23 +397,23 @@ describe('rigged model assets', () => {
   it('covers Realistas in the Independence period and the post-1532 workers and scouts', () => {
     expect(unitModelAsset(UnitKind.SOLDIER, Era.REPUBLIC, CivId.REALISTAS, 3)).toEqual({
       asset: 'caral_worker',
-      variant: 'realistas_soldier_m',
+      variant: 'realistas_bicorn_soldier_m',
     });
     expect(unitModelAsset(UnitKind.SNIPER, Era.REPUBLIC, CivId.REALISTAS, 2)).toEqual({
       asset: 'caral_worker',
-      variant: 'realistas_ranged_f',
+      variant: 'realistas_bicorn_ranged_f',
     });
     expect(unitModelAsset(UnitKind.MISSIONARY, Era.REPUBLIC, CivId.REALISTAS, 2)).toEqual({
       asset: 'caral_worker',
-      variant: 'realistas_missionary_f',
+      variant: 'realistas_bicorn_missionary_f',
     });
     expect(unitModelAsset(UnitKind.WORKER, Era.REPUBLIC, CivId.REALISTAS, 2)).toEqual({
       asset: 'caral_worker',
-      variant: 'realistas_worker_f',
+      variant: 'realistas_bicorn_worker_f',
     });
     expect(unitModelAsset(UnitKind.SCOUT, Era.REPUBLIC, CivId.REALISTAS, 3)).toEqual({
       asset: 'caral_worker',
-      variant: 'realistas_scout_m',
+      variant: 'realistas_bicorn_scout_m',
     });
     expect(unitModelAsset(UnitKind.WORKER, Era.VICEROYALTY, CivId.REALISTAS, 2)).toEqual({
       asset: 'caral_worker',
@@ -432,9 +432,37 @@ describe('rigged model assets', () => {
       variant: 'chile_scout_m',
     });
     expect(RIG_VARIANT_CLIPS.realistas_worker_f?.gather).toBe('Farm_Harvest');
+    expect(RIG_VARIANT_CLIPS.realistas_bicorn_worker_f?.gather).toBe('Farm_Harvest');
+    expect(RIG_VARIANT_CLIPS.realistas_bicorn_soldier_m?.attack).toBe('Punch_Jab');
     expect(RIG_VARIANT_CLIPS.republica_worker_m?.build).toBe('Push_Loop');
     expect(RIG_VARIANT_CLIPS.republica_worker_m?.walk_carry).toBe('Walk_Carry_Loop');
     expect(modelAssetIdsForMatch(HistoricalPeriod.INDEPENDENCE, [CivId.REALISTAS])).toContain('caral_worker');
+  });
+
+  it('keeps the morion in 1535–1572 and wears the bicorn in 1780–1826', () => {
+    expect(
+      unitModelAsset(UnitKind.SOLDIER, Era.VICEROYALTY, CivId.REALISTAS, 2, undefined, '', 'm_cusco_1536'),
+    ).toEqual({ asset: 'caral_worker', variant: 'realistas_soldier_f' });
+    expect(
+      unitModelAsset(UnitKind.SOLDIER, Era.VICEROYALTY, CivId.REALISTAS, 2, undefined, '', 'm_vilcabamba'),
+    ).toEqual({ asset: 'caral_worker', variant: 'realistas_soldier_f' });
+    expect(
+      unitModelAsset(UnitKind.SOLDIER, Era.VICEROYALTY, CivId.REALISTAS, 2, undefined, '', 'm7_tupac_amaru'),
+    ).toEqual({ asset: 'caral_worker', variant: 'realistas_bicorn_soldier_f' });
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.REPUBLIC, CivId.REALISTAS, 2, undefined, '', 'm_real_felipe')).toEqual({
+      asset: 'caral_worker',
+      variant: 'realistas_bicorn_soldier_f',
+    });
+    expect(
+      unitModelAsset(UnitKind.CAVALRY, Era.VICEROYALTY, CivId.REALISTAS, 2, undefined, '', 'm_cusco_1536'),
+    ).toEqual({ asset: 'mounted_rig', variant: 'mounted_realistas' });
+    expect(
+      unitModelAsset(UnitKind.CAVALRY, Era.VICEROYALTY, CivId.REALISTAS, 2, undefined, '', 'm7_tupac_amaru'),
+    ).toEqual({ asset: 'mounted_rig', variant: 'mounted_realistas_bicorn' });
+    expect(unitModelAsset(UnitKind.CAVALRY, Era.REPUBLIC, CivId.REALISTAS, 2)).toEqual({
+      asset: 'mounted_rig',
+      variant: 'mounted_realistas_bicorn',
+    });
   });
 
   it('maps contemporary Republic humanoids to the modern uniform', () => {
@@ -573,6 +601,15 @@ describe('rigged model assets', () => {
       MOUNTED_SPECS.mounted_realistas.hatColor,
     );
     rig.dispose();
+
+    const late = acquireRig('mounted_rig', 'mounted_realistas_bicorn')!;
+    expect(late.root.getObjectByName('GEO-Hat-Bicorn-Crown')?.visible).toBe(true);
+    expect(late.root.getObjectByName('GEO-Hat-Morion-Crown')?.visible).toBe(false);
+    const lateTrousers = late.root.getObjectByName('GEO-Merged-Rider-Trousers') as THREE.Mesh;
+    expect((lateTrousers.material as THREE.MeshStandardMaterial).color.getHex()).toBe(
+      MOUNTED_SPECS.mounted_realistas_bicorn.trousers,
+    );
+    late.dispose();
   });
 
   it('falls back from run to walk on rigs without a gallop', async () => {
@@ -720,8 +757,13 @@ describe('rigged model assets', () => {
     const rig = acquireRig('ual_mannequin', 'realistas_soldier_m')!;
     expect(rig.root.getObjectByName('attire_post_coat')).toBeDefined();
     expect(rig.root.getObjectByName('attire_post_hat')).toBeDefined();
+    expect(rig.root.getObjectByName('attire_post_hat')?.userData.hat).toBe('morion');
     expect(rig.root.getObjectByName('attire_post_weapon')).toBeDefined();
     rig.dispose();
+
+    const late = acquireRig('ual_mannequin', 'realistas_bicorn_soldier_m')!;
+    expect(late.root.getObjectByName('attire_post_hat')?.userData.hat).toBe('bicorn');
+    late.dispose();
   });
 
   it('ships a worker GLB with one skeleton, the worker clips and the cotton garment', () => {

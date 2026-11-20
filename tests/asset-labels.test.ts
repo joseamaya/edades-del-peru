@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
-import { BuildingKind } from '../src/core/types';
+import { BuildingKind, Era } from '../src/core/types';
 import { BUILDING_DEFS, BUILDING_INFO } from '../src/model/defs/buildings';
 import { getAuthoredSite } from '../src/model/defs/sites';
-import { POST_COLONIAL_SPECS } from '../src/model/defs/postColonialCharacters';
+import {
+  POST_COLONIAL_SPECS,
+  postColonialSpecForVariant,
+  realistaHatFor,
+} from '../src/model/defs/postColonialCharacters';
 import type { MissionDef } from '../src/campaign/types';
 
 function mission(id: string): MissionDef {
@@ -52,8 +56,19 @@ describe('culture and era building labels', () => {
     expect(POST_COLONIAL_SPECS.patriotas.hat).toBe('bicorn');
     expect(POST_COLONIAL_SPECS.republica.hat).toBe('kepi');
     expect(POST_COLONIAL_SPECS.chile.hat).toBe('kepi');
-    // The 1535/1536 Spanish (HUESTE_INDIANA -> realistas) keep the morion; the late realistas era split is pending.
+  });
+
+  it('keeps the morion for 1535–1572 and gives the late realistas the bicorn', () => {
     expect(POST_COLONIAL_SPECS.realistas.hat).toBe('morion');
+    expect(realistaHatFor(Era.VICEROYALTY, 'm_lima')).toBe('morion');
+    expect(realistaHatFor(Era.VICEROYALTY, 'm_cusco_1536')).toBe('morion');
+    expect(realistaHatFor(Era.VICEROYALTY, 'm_vilcabamba')).toBe('morion');
+    expect(realistaHatFor(Era.VICEROYALTY, 'm7_tupac_amaru')).toBe('bicorn');
+    expect(realistaHatFor(Era.REPUBLIC, 'm_junta_cusco')).toBe('bicorn');
+    expect(realistaHatFor(Era.REPUBLIC, 'm_real_felipe')).toBe('bicorn');
+    expect(postColonialSpecForVariant('realistas_soldier_m').hat).toBe('morion');
+    expect(postColonialSpecForVariant('realistas_bicorn_soldier_m').hat).toBe('bicorn');
+    expect(postColonialSpecForVariant('not_a_variant')).toBeNull();
   });
 
   it('keeps Yachaywasi for the Inca scenarios and names the others by culture/era', () => {
