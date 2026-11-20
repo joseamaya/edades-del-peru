@@ -5,7 +5,7 @@
 export const es = {
   'app.title': 'EDADES DEL PERÚ',
   'app.series': 'LA SENDA DEL SOL',
-  'app.version': 'La Senda del Sol · v0.2',
+  'app.version': 'La Senda del Sol · v0.2.0',
 
   'resource.food': 'Comida',
   'resource.wood': 'Madera',
@@ -259,6 +259,7 @@ export const es = {
     '<p><b>Código.</b> MIT · © Miguel Amaya.</p>' +
     '<p><b>Terreno.</b> Mapas CC0 de Poly Haven (Rob Tuytel, Charlotte Baglioni). La textura de pasto de Caral deriva de Ciudades Sagradas, José Amaya, <b>CC BY 4.0</b>.</p>' +
     '<p><b>Modelos y animaciones.</b> Quaternius (CC0).</p>' +
+    '<p><b>Motor.</b> three.js (MIT) y Google Draco (Apache-2.0).</p>' +
     '<p><b>Texturas de materiales.</b> Generadas para el proyecto con Cloudflare Workers AI.</p>' +
     '<p><b>Imágenes.</b> Renders y capturas del proyecto; no son fotografías históricas.</p>',
   'hud.menu.credits.full': 'Ver atribución completa',

@@ -147,7 +147,8 @@ All twenty released missions have a model-mission document. For the live status 
 | [`design/blender-art.md`](./design/blender-art.md) | Blender sources, export, ingestion, manifest and review | Living |
 | [`design/settlement-generator.md`](./design/settlement-generator.md) | Settlement layout design (core implemented; dropsites and defense deferred) | Approved (core implemented; extras deferred) |
 | [`design/prp-status.md`](./design/prp-status.md) | Map/architecture/landscape audit and building classification | Snapshot |
-| [`release/0.2.0-readiness-audit.md`](./release/0.2.0-readiness-audit.md) | The 0.2.0 closeout audit: repository state, 20-mission matrix, tests, performance and remaining gates | Living |
+| [`release/0.2.0-readiness-audit.md`](./release/0.2.0-readiness-audit.md) | The 0.2.0 closeout audit: repository state, 20-mission matrix, tests, performance and remaining gates | Snapshot |
+| [`release/0.2.0-release-notes.md`](./release/0.2.0-release-notes.md) | Player-facing 0.2.0 release notes, known limitations and verification summary | Snapshot |
 | [`design/release-candidate.md`](./design/release-candidate.md) | Release status, art gate and publish checklist from 2026-10-30 | Archived |
 | [`itch-description.md`](./itch-description.md) | Draft itch.io page | Proposal |
 | [`modding/README.md`](./modding/README.md) | Mod format and loading | Living |

@@ -41,6 +41,12 @@ async function playMission(page: Page, missionId: string): Promise<PlaytestResul
     const def = m.def;
     const dt = 1 / 60;
     let t = 0;
+    // The campaign missions are 256 m; park a protected commander in the corner opposite the enemy.
+    const MAP_MIDPOINT = 128;
+    const SAFE_INSET = 30;
+    const SAFE_FAR = MAP_MIDPOINT * 2 - SAFE_INSET;
+    // Cáceres fights with the army in the Breña; San Martín is too exposed at Callao.
+    const PROTECT_FOLLOWS_ARMY = new Set(['m_brena']);
 
     const point = (p: any) => g.resolveMissionPoint(p);
     const workers = () =>
@@ -96,11 +102,14 @@ async function playMission(page: Page, missionId: string): Promise<PlaytestResul
 
     // San Martín is a required protect objective and dies to the Callao waves if he stays at the base.
     // Park him in the corner opposite the enemy centre; the Breña keeps Cáceres with the army instead.
-    if (id !== 'm_brena') {
+    if (!PROTECT_FOLLOWS_ARMY.has(id)) {
       const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center') as any;
       const ex = enemy?.pos.x ?? 200;
       const ez = enemy?.pos.z ?? 200;
-      const safe = { x: ex > 128 ? 30 : 226, z: ez > 128 ? 30 : 226 };
+      const safe = {
+        x: ex > MAP_MIDPOINT ? SAFE_INSET : SAFE_FAR,
+        z: ez > MAP_MIDPOINT ? SAFE_INSET : SAFE_FAR,
+      };
       for (const u of all()) if (protectedTags.has(u.tag)) order([u], safe, 'move');
     }
 

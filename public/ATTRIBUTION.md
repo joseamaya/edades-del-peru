@@ -8,6 +8,12 @@ distributed. The authoritative source, including hashes and per-asset records, i
 
 MIT License, Copyright (c) 2026 Miguel Amaya. The full text is in [`LICENSE`](./LICENSE).
 
+## Engine and decoders
+
+- **three.js** — MIT, © three.js authors. <https://github.com/mrdoob/three.js/blob/dev/LICENSE>
+- **Google Draco** — Apache-2.0, © Google. <https://github.com/google/draco/blob/master/LICENSE>
+- Vite is a build tool and is not shipped in `dist/`.
+
 ## Terrain textures
 
 - **Poly Haven CC0 1.0** — `grass_ground` (Charlotte Baglioni), `brown_mud_02`, `coast_sand_01`,
@@ -16,7 +22,8 @@ MIT License, Copyright (c) 2026 Miguel Amaya. The full text is in [`LICENSE`](./
 - **`caral_grass` — CC BY 4.0**, derived from the *Ciudades Sagradas* Caral remaster v2,
   © José Amaya. Required attribution:
   **“Ciudades Sagradas, José Amaya, CC BY 4.0”**.
-  <https://creativecommons.org/licenses/by/4.0/>
+  Licence: <https://creativecommons.org/licenses/by/4.0/>. The source material is reproduced in
+  `art-src/textures/caral/` in the repository: <https://github.com/joseamaya/edades-del-peru>.
 
 ## Models and animations
 

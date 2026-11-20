@@ -11,7 +11,7 @@ const EMPTY: CampaignProgress = { version: 2, completed: {} };
  * The 0.1.0 build stored a single number: how many missions of its linear nine-mission path were
  * completed. Keep that order here so a returning player keeps the campaigns those missions belong to.
  */
-export const LEGACY_MISSION_ORDER = [
+const LEGACY_MISSION_ORDER = [
   'm1_caral',
   'm2_chavin',
   'm3_moche_recuay',

@@ -40,8 +40,8 @@ if (!fs.existsSync(entryPath)) {
 }
 const entryGzip = zlib.gzipSync(fs.readFileSync(entryPath), { level: 9 }).length;
 // The landing page defers the game bundle: index-*.js is a small loader that imports boot-*.js and
-// three-*.js. Enforce the 600 KB loader budget, but report the real first-play payload too, so a
-// green check cannot hide a multi-megabyte boot chunk.
+// three-*.js. Enforce the 600 KB loader budget, and report the real first-play payload separately so
+// the release record shows what the player actually downloads.
 const entrySource = fs.readFileSync(entryPath, 'utf8');
 const firstPlayFiles = new Set([entryPath]);
 for (const match of entrySource.matchAll(/["'`](\.\/[^"'`]+\.js)["'`]/g)) {

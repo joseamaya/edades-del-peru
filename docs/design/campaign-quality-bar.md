@@ -54,24 +54,25 @@ and `m_vilcabamba` rows were added on 2026-11-18; the rest is the 2026-11-14 aud
 | m6_chimu_inca      | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6b_guerra_civil   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | P    | M     |
-| m_cusco_1536       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | P    | M     |
-| m_vilcabamba       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | P    | M     |
+| m_cusco_1536       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
+| m_vilcabamba       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
 | m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_junta_cusco      | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | P    | M     |
-| m_lima_1821        | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | P    | M     |
+| m_lima_1821        | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m8_independencia   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m_real_felipe      | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | P    | M     |
-| m_tarapaca         | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | P    | M     |
+| m_real_felipe      | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
+| m_tarapaca         | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
-| m_miraflores       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | P    | M     |
-| m_brena            | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | P    | M     |
+| m_miraflores       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
+| m_brena            | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
 
 **0.2.0 closeout note (2026-11-19).** The seven missions added on 2026-11-18 now have a real-command,
 no-cheat full path in `tests/e2e/release-playtest.spec.ts` (nightly slow tier): place/build/move/attack-move
 only, with no injected resources, health or objective states. Their **Tests** gate moves to **M**; **Play**
 stays **P** because the project's own gate requires a human no-cheat playtest, and that is the only open
 release item. **Persistence** stays **P** for the same seven: the save round-trip covers the opening, not a
-mid-act save.
+mid-act save. **Performance** moves to **M** for the seven because their openings are in
+`yarn bench:check` and pass; their real-GPU frame time is still a P2 item.
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín's intro render

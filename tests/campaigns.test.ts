@@ -223,6 +223,11 @@ describe('campaign progress', () => {
     expect(completedMissions(legacyNine, 'virreinato')).toEqual(['m7_tupac_amaru']);
     expect(completedMissions(legacyNine, 'independencia')).toEqual(['m8_independencia']);
     expect(completedMissions(legacyNine, 'republica')).toEqual(['m9_guerra_pacifico']);
+    // The migrated completions unlock later missions, not only the campaign openings.
+    expect(isMissionUnlocked(legacyNine, 'm6b_guerra_civil')).toBe(true);
+    expect(isMissionUnlocked(legacyNine, 'm_real_felipe')).toBe(true);
+    expect(isMissionUnlocked(legacyNine, 'm_cusco_1536')).toBe(false);
+    expect(isMissionUnlocked(parseCampaignProgress('4'), 'm6b_guerra_civil')).toBe(false);
     expect(completedMissions(parseCampaignProgress('0'), 'preinca')).toEqual([]);
   });
 
