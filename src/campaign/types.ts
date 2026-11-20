@@ -426,7 +426,7 @@ export interface MissionDef {
    * Historical outcome of the mission when it is not a victory in the ordinary sense. The result screen
    * uses it to label the ending ("RESISTENCIA CUMPLIDA", "RETIRADA CUMPLIDA") and drops the kill tally.
    */
-  outcome?: 'resistencia' | 'retirada' | 'derrota';
+  outcome?: 'resistencia' | 'retirada';
   /** Historical period of the mission (resolves dates and coetaneous civilizations). */
   period: HistoricalPeriod;
   /** Optional clarification when the mission covers only part of its historical period. */

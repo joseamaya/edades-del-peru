@@ -5,7 +5,7 @@ import { CUSCO_INCA_MAP_SIZE, cuscoIncaLength } from '../../../model/defs/cuscoI
 
 export const m6bGuerraCivil: MissionDef = {
   id: 'm6b_guerra_civil',
-  commanders: ['atahualpa', 'huascar'],
+  commanders: ['atahualpa', 'huascar', 'quizquiz'],
   title: 'La Guerra Civil',
   subtitle: 'Cusco–Quito · 1529–1532',
   history:

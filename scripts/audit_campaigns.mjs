@@ -127,7 +127,7 @@ async function auditVictory(browser, base, id, title) {
   const text = await epilogue.innerText();
   const buttons = await epilogue.getByRole('button').allTextContents();
   const entry = { id, title, text: text.slice(0, 1800), buttons, errors };
-  if (!['VICTORIA', 'RESISTENCIA CUMPLIDA', 'RETIRADA CUMPLIDA', 'DEFENSA CUMPLIDA'].some((h) => text.includes(h)))
+  if (!['VICTORIA', 'RESISTENCIA CUMPLIDA', 'RETIRADA CUMPLIDA'].some((h) => text.includes(h)))
     issue(id, 'victory', 'victory heading missing');
   if (!text.includes('Epílogo')) issue(id, 'victory', 'epilogue missing');
   if (!text.includes('Códice')) issue(id, 'victory', 'codex hint missing');

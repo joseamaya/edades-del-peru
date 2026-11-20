@@ -1362,15 +1362,13 @@ export class HUD {
     if (victory && mis?.epilogueImage) {
       ov.style.background = `linear-gradient(180deg, rgba(6,8,12,.55), rgba(6,8,12,.86)), url("${publicAsset(mis.epilogueImage)}") center / cover`;
     }
-    const title = victory
-      ? mis?.outcome === 'resistencia'
+    const outcomeTitle =
+      victory && mis?.outcome === 'resistencia'
         ? t('hud.victory.resistencia')
-        : mis?.outcome === 'retirada'
+        : victory && mis?.outcome === 'retirada'
           ? t('hud.victory.retirada')
-          : mis?.outcome === 'derrota'
-            ? t('hud.victory.derrota')
-            : t('hud.victory.title')
-      : t('hud.victory.defeat');
+          : null;
+    const title = outcomeTitle ?? (victory ? t('hud.victory.title') : t('hud.victory.defeat'));
     const sub =
       winText && loseText ? (victory ? winText : loseText) : victory ? t('hud.victory.win') : t('hud.victory.lose');
     const epilogue =
@@ -1395,7 +1393,8 @@ export class HUD {
     const peaceful = mis?.enemy.active === false;
     const commonStats = `${t('hud.victory.created', { count: p?.stats.created ?? 0 })}<br>
          ${t('hud.victory.period', { period: getPeriod(this.game.settings.period).name })}`;
-    const stats = mis?.outcome
+    const documentedEnding = victory && !!mis?.outcome;
+    const stats = documentedEnding
       ? commonStats
       : peaceful
         ? `${t('hud.victory.heritage', { count: this.game.getVisitedHeritage().length })}<br>${commonStats}`
@@ -1432,7 +1431,7 @@ export class HUD {
           civ: player.civ,
           colorHex: player.colorHex,
         })),
-        { playerId: 0, combat: !peaceful },
+        { playerId: 0, combat: !peaceful && !documentedEnding },
       );
     }
     const row = this.el('div', 'row', panel);

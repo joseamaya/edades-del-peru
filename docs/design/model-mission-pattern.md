@@ -17,7 +17,9 @@ those two are the "what" and the "why".
    (Caral: valley cotton becomes the coast's nets, and the drought ends the city). Avoid
    `gather + build + survive` under a new name.
 3. **The documented outcome is the ending.** If the history ends in abandonment, conquest or defeat, the
-   mission ends there too, framed as history rather than as the player's failure.
+   mission ends there too, framed as history rather than as the player's failure. Missions whose documented
+   ending is a retreat or a resistance set `MissionDef.outcome`; the result screen then reads
+   `RETIRADA CUMPLIDA` / `RESISTENCIA CUMPLIDA` and omits the kill tally.
 4. **History is not invented.** Every name, date, building and event comes from `docs/historia/`. Where the
    sources are silent, use an assumption that is labelled (dossier certainty table, art manifest
    `confidence`). With no known rulers, the narrator is an anonymous voice of the community.

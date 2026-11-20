@@ -195,7 +195,7 @@ export const m4Wari: MissionDef = {
           kicker: 'Acto II · La red',
           title: 'Los centros provinciales',
           image: 'media/wari/intro-complejo.webp',
-          text: 'Los andenes producen. Levanta un mercado en dos centros provinciales para articular la esfera wari; los caminos ya unen el territorio.',
+          text: 'Los andenes producen. Levanta un centro administrativo wari en dos nodos de la red para articular la esfera; los caminos ya unen el territorio.',
         },
         { type: 'objective', objectiveId: 'obj_red', state: 'activate' },
       ],

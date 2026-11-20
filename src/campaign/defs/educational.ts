@@ -59,9 +59,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
     context:
       'Chavín de Huántar, a 3180 msnm en el Callejón de Conchucos (Áncash), fue el gran centro ceremonial y ' +
       'de peregrinaje de los Andes. Su oráculo atraía ofrendas de lejos y su arte se difundió por buena parte ' +
-      'de los Andes centrales. La interpretación tradicional la describe como una sociedad teocrática liderada ' +
-      'por una casta sacerdotal, un modelo que la investigación reciente matiza; no se conocen nombres de ' +
-      'gobernantes. El juego representa las ofrendas con plata; las fuentes citan conchas, obsidiana y metales.',
+      'de los Andes centrales. Fue una sociedad teocrática liderada por una casta sacerdotal; no se conocen ' +
+      'nombres de gobernantes. El juego representa las ofrendas con plata; las fuentes citan conchas, ' +
+      'obsidiana y metales.',
     didYouKnow:
       'No hay guerra directa documentada entre Chavín y Paracas: su emparejamiento en el juego es de coetaneidad. La cronología de las fases del templo sigue siendo debatida por los arqueólogos.',
     epilogue:
@@ -79,7 +79,7 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   },
   m3_moche_recuay: {
     briefing:
-      'Valles de Moche y Chicama, c. 300–600 d.C. El agua del canal sostiene los campos y el prestigio ' +
+      'Valles de Moche y Chicama, c. 300–800 d.C. El agua del canal sostiene los campos y el prestigio ' +
       'del valle. No hay una batalla única documentada: defiende el valle sin inventar un rey ni una guerra. ' +
       'Cada bando alista su unidad única: el Guerrero Moche y el Guerrero Recuay.',
     context:
@@ -319,12 +319,12 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
     context:
       'San Martín proclamó la independencia en Lima el 28 de julio de 1821. La campaña continuó en la sierra ' +
       'con Bolívar y Sucre: la batalla de Junín (6 de agosto de 1824) y la de Ayacucho (9 de diciembre de 1824) ' +
-      'sellaron la independencia del Perú y el fin del poder español.',
+      'sellaron la independencia del Perú; el último bastión realista, el Callao, resistió hasta 1826.',
     didYouKnow:
       'San Martín desembarcó en Paracas en 1820; la victoria militar la completaron Bolívar y Sucre en la sierra.',
     epilogue:
-      'La victoria de Ayacucho puso fin al poder español en el Perú. La campaña del juego representa sus dos ' +
-      'encuentros como posiciones que deben sostenerse, no como una batalla única.',
+      'La victoria de Ayacucho selló la independencia; el Callao resistió hasta 1826. La campaña del juego ' +
+      'representa sus dos encuentros como posiciones que deben sostenerse, no como una batalla única.',
     sources: [
       { text: 'Wikipedia: Independencia del Perú', url: 'https://es.wikipedia.org/wiki/Independencia_del_Per%C3%BA' },
       { text: 'Basadre, J. Historia de la República del Perú.' },
@@ -474,7 +474,7 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'Arica, 7 de junio de 1880. Tras Angamos, la Guerra del Pacífico continúa en tierra. La guarnición ' +
       'peruana, al mando de Francisco Bolognesi, defiende el puerto del asalto chileno; la plaza cae ese día.',
     context:
-      'En la Guerra del Pacífico (1879–1883), por el salitre y el guano, el Perú y Bolivia se enfrentaron a ' +
+      'En la Guerra del Pacífico (1879–1883), por el salitre, el Perú y Bolivia se enfrentaron a ' +
       'Chile. Al mando del monitor Huáscar, el almirante Miguel Grau contuvo con audaces correrías a una escuadra ' +
       'superior hasta caer en Angamos (8 de octubre de 1879). La derrota aliada en Tacna (26 de mayo de 1880) dejó ' +
       'Arica aislada. En Arica, el parlamento de Juan de la Cruz Salvo exigió la rendición el 5 de junio de 1880; ' +

@@ -7,7 +7,7 @@ export const m3MocheRecuay: MissionDef = {
   title: 'La Frontera de los Valles',
   subtitle: 'Intermedio Temprano · c. 300–800 d.C.',
   history:
-    'Los señores de Moche dominan los valles de Chicama, Moche y Virú. Desde el Callejón de Huaylas, los Recuay presionan la frontera.\n' +
+    'Los señores de Moche dominan los valles de Chicama, Moche y Virú. Desde la sierra recuay, los Recuay presionan la frontera.\n' +
     'Asegura los valles y sus canales, defiende las huacas y sostén el intercambio de élite con la sierra.',
   victory:
     'Moche impone su dominio sobre la costa norte. Sus huacas y su cerámica marcan el apogeo del Intermedio Temprano.',
@@ -18,7 +18,7 @@ export const m3MocheRecuay: MissionDef = {
   narrator: 'Voz de los valles moche',
   intro: [
     {
-      kicker: 'VALLE DE MOCHE · c. 300–600 d.C.',
+      kicker: 'VALLE DE MOCHE · c. 300–800 d.C.',
       title: 'La Frontera de los Valles',
       text: 'Los señores de Moche dominan los valles de Chicama, Moche y Virú. El agua de los canales sostiene los campos, las huacas y el poder del valle.',
       seconds: 9,
@@ -206,7 +206,7 @@ export const m3MocheRecuay: MissionDef = {
           pos: { ref: 'site', dx: mocheLength(22), dz: -mocheLength(24) },
           radius: mocheLength(6),
         },
-        { type: 'dialogue', text: 'Otra columna baja desde el Callejón de Huaylas. ¡Refuerza el flanco este!' },
+        { type: 'dialogue', text: 'Otra columna baja desde la sierra recuay. ¡Refuerza el flanco este!' },
       ],
     },
     {

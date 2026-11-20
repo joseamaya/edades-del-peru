@@ -82,7 +82,7 @@ export const m8Independencia: MissionDef = {
     {
       kicker: 'AYACUCHO · 9 DE DICIEMBRE DE 1824',
       title: 'La rendición realista',
-      text: 'El ejército de Sucre resiste en Ayacucho hasta la rendición realista. La victoria sella la independencia del Perú y el fin del poder español.',
+      text: 'El ejército de Sucre resiste en Ayacucho hasta la rendición realista. La victoria sella la independencia; el Callao resistirá hasta 1826.',
       seconds: 10,
       source: 'docs/historia/campanas/independencia.md',
       image: 'media/independencia/intro-ayacucho.webp',
