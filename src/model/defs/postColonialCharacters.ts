@@ -36,7 +36,7 @@ export const POST_COLONIAL_SPECS: Record<PostColonialCulture, PostColonialSpec> 
     coat: 0x2a4a8a,
     trim: 0xe8e0d0,
     trousers: 0x2b2f36,
-    hat: 'kepi',
+    hat: 'bicorn',
     hatColor: 0x2b2f36,
     weapon: 'musket',
     sidearm: 'none',

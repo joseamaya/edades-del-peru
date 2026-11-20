@@ -161,6 +161,7 @@ export const mLima1821: MissionDef = {
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
+  buildingNames: { [BuildingKind.FORTRESS]: 'Fortín' },
   objectives: [
     {
       id: 'a1_cortar',

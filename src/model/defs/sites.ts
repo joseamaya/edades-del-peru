@@ -1082,7 +1082,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       water: { deep: '#0f2a2e', shallow: '#2a5652', sheen: 0.15, foam: 0.12, fog: 0.3, refraction: 0.2 },
     },
   },
-  // Miraflores (1881) reuses the Lima colonial kit at the city phase, with its own labelled site.
+  // Miraflores (1881) uses the Lima colonial kit as the city backdrop; the redoubts are the player's
+  // forts at the objective nodes. The Plaza Mayor proxy is deliberately absent: it belongs to Lima.
   miraflores_site: {
     id: 'miraflores_site',
     label: 'Lima y la línea de Miraflores',
@@ -1103,7 +1104,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     },
     pathCellSize: 1,
     phases: { phases: ['ciudad'], initial: 'ciudad' },
-    heritageProxies: [{ id: 'lima_plaza', x: LIMA_SITE_ORIGIN.x, z: LIMA_SITE_ORIGIN.z, w: 12, d: 10, h: 6 }],
+    heritageProxies: [],
     blockers: [
       { x: LIMA_SITE_ORIGIN.x, z: LIMA_SITE_ORIGIN.z, w: 12, d: 10 },
       ...colonialBlockers(LIMA_COLONIAL, true),

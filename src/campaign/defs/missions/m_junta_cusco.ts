@@ -154,6 +154,7 @@ export const mJuntaCusco: MissionDef = {
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
+  buildingNames: { [BuildingKind.FORTRESS]: 'Fortín' },
   objectives: [
     {
       id: 'a1_cabildo',

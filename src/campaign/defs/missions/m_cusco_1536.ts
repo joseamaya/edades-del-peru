@@ -140,6 +140,7 @@ export const mCusco1536: MissionDef = {
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
+  buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
   objectives: [
     {
       id: 'a1_sacsay',

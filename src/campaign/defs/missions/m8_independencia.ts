@@ -89,6 +89,7 @@ export const m8Independencia: MissionDef = {
     },
   ],
   epilogueImage: 'media/independencia/intro-epilogo.webp',
+  buildingNames: { [BuildingKind.FORTRESS]: 'Fortín', [BuildingKind.INSTITUTE]: 'Academia' },
   objectives: [
     {
       id: 'obj_junin',

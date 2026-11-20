@@ -112,6 +112,7 @@ export const m9GuerraPacifico: MissionDef = {
     UnitKind.SNIPER,
     UnitKind.SCOUT,
   ],
+  buildingNames: { [BuildingKind.FORTRESS]: 'Fortín', [BuildingKind.INSTITUTE]: 'Academia' },
   objectives: [
     {
       id: 'obj_puerto',

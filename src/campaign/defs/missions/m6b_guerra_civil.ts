@@ -97,6 +97,7 @@ export const m6bGuerraCivil: MissionDef = {
     ],
   },
   enemy: { active: true, difficulty: 'normal', aggression: 0.6 },
+  buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
   objectives: [
     {
       id: 'obj_avanzar',

@@ -155,6 +155,7 @@ export const mBrena: MissionDef = {
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
+  buildingNames: { [BuildingKind.FORTRESS]: 'Fortín' },
   objectives: [
     {
       id: 'a1_comunidades',

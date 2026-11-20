@@ -143,6 +143,7 @@ export const mRealFelipe: MissionDef = {
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
+  buildingNames: { [BuildingKind.FORTRESS]: 'Fortín' },
   objectives: [
     {
       id: 'a1_baterias',

@@ -99,6 +99,7 @@ export const m6ChimuInca: MissionDef = {
   },
   mark: [{ tag: 'chan_chan', kind: BuildingKind.CENTER, owner: 1 }],
   enemy: { active: true, difficulty: 'hard', aggression: 1.2 },
+  buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
   objectives: [
     {
       id: 'obj_avanzar',

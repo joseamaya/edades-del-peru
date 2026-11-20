@@ -279,7 +279,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
   },
   fortress: {
     id: BuildingKind.FORTRESS,
-    name: 'Pucará',
+    name: 'Fortaleza',
     description: 'Fortaleza defensiva con guarnición y unidades de élite. Necesaria para avanzar de era.',
     category: 'defense',
     minEra: Era.REGIONAL_STATES,
@@ -631,7 +631,7 @@ export const BUILDING_INFO: Record<BuildingKind, { name: string; icon: string; c
   arsenal: { name: 'Arsenal', icon: '🎯', category: 'Militar' },
   stable: { name: 'Establo', icon: '🐎', category: 'Militar' },
   factory: { name: 'Taller de Artillería', icon: '🏭', category: 'Militar' },
-  fortress: { name: 'Pucará', icon: '🏰', category: 'Defensa' },
+  fortress: { name: 'Fortaleza', icon: '🏰', category: 'Defensa' },
   wall: { name: 'Muralla', icon: '🧱', category: 'Defensa' },
   gate: { name: 'Puerta', icon: '🚪', category: 'Defensa' },
   tower: { name: 'Atalaya', icon: '🗼', category: 'Defensa' },

@@ -138,6 +138,7 @@ export const mTarapaca: MissionDef = {
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
+  buildingNames: { [BuildingKind.FORTRESS]: 'Fortín' },
   objectives: [
     {
       id: 'a1_pueblo',
