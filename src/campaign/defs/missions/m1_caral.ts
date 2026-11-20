@@ -335,7 +335,7 @@ export const m1Caral: MissionDef = {
       // Announced with Act III (listed in the panel and called from the pyramid card), but the
       // assembly only starts when the player calls it.
       awaitsCall: true,
-      title: 'Convoca una asamblea comunal (abstracción jugable) en la Plaza Central',
+      title: 'Convoca una asamblea comunal en la Plaza Central',
     },
     {
       id: 'a3_prosperidad',

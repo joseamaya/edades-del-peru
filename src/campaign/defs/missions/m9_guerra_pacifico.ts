@@ -18,12 +18,13 @@ export const m9GuerraPacifico: MissionDef = {
   title: 'La Defensa de Arica',
   subtitle: 'Arica · 1880',
   history:
-    'Tras el combate de Angamos (8 de octubre de 1879), la Guerra del Pacífico continúa en tierra. El 7 de junio de 1880 el ejército chileno asalta Arica: la guarnición de Francisco Bolognesi defiende el puerto hasta la caída de la plaza.\n' +
+    'Tras el combate de Angamos (8 de octubre de 1879), la Guerra del Pacífico continúa en tierra. La derrota aliada en Tacna (26 de mayo de 1880) deja a Arica aislada; el 7 de junio el ejército chileno asalta la plaza: la guarnición de Francisco Bolognesi defiende el puerto hasta la caída.\n' +
     'Rechaza el parlamento, mina los accesos y sostén la última línea hasta el asalto final. La historia termina con la caída; el epílogo la cuenta.',
   victory:
     'La defensa de Arica cumple su deber: el asalto se cobra la plaza y Bolognesi y sus defensores quedan como símbolo de la resistencia peruana. La historia documentada sigue su curso.',
   defeat:
     'La defensa de Arica se quiebra antes del asalto final. La plaza cae sin que la guarnición llegue a sostener la última línea.',
+  outcome: 'resistencia',
   period: HistoricalPeriod.REPUBLIC,
   periodNote: 'La misión se sitúa entre el 5 y el 7 de junio de 1880',
   narrator: 'Defensores de Arica',
@@ -34,6 +35,11 @@ export const m9GuerraPacifico: MissionDef = {
   map: { seed: 1879, type: 'coast', size: ARICA_MAP_SIZE },
   region: 'south_coast',
   layout: {
+    labels: [
+      { text: 'Arica', x: ARICA_BASE_ANCHOR.x, z: ARICA_BASE_ANCHOR.z, kind: 'settlement' },
+      { text: 'Morro de Arica', x: 0.62, z: 0.28, kind: 'region' },
+      { text: 'Campamento chileno', x: ARICA_CAMP_ANCHOR.x, z: ARICA_CAMP_ANCHOR.z, kind: 'region' },
+    ],
     base: ARICA_BASE_ANCHOR,
     enemyBase: ARICA_CAMP_ANCHOR,
     terrain: {
@@ -107,7 +113,12 @@ export const m9GuerraPacifico: MissionDef = {
     UnitKind.SCOUT,
   ],
   objectives: [
-    { id: 'obj_puerto', kind: 'protect', entityTag: 'puerto', title: 'Protege el fuerte y el puerto de Arica' },
+    {
+      id: 'obj_puerto',
+      kind: 'protect',
+      entityTag: 'puerto',
+      title: 'Sostén la defensa del fuerte y el puerto hasta el asalto final',
+    },
     {
       id: 'a1_parlamento',
       kind: 'wait',
@@ -173,7 +184,7 @@ export const m9GuerraPacifico: MissionDef = {
           type: 'dialogue',
           speaker: 'bolognesi',
           duration: 8,
-          text: '—El parlamentario Salvo exige la rendición. Arica no se rinde: defenderemos la plaza hasta quemar el último cartucho.',
+          text: '—El parlamentario Salvo exige la rendición. Arica no se rinde: según la tradición, responderemos que defenderemos la plaza hasta quemar el último cartucho.',
         },
       ],
     },

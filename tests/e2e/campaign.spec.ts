@@ -116,12 +116,26 @@ test('every campaign mission shows its educational epilogue on victory', async (
       timeout: 30_000,
     });
     await page.evaluate(() => (window as unknown as { game: any }).game.showVictory(0));
-    const victory = page.locator('.ed-overlay', { hasText: 'VICTORIA' });
+    const victory = page.locator('.ed-epilogue');
     await expect(victory).toBeVisible({ timeout: 15_000 });
+    const heading = (await victory.locator('.epilogue-title').innerText()).trim();
+    expect(['VICTORIA', 'RESISTENCIA CUMPLIDA', 'RETIRADA CUMPLIDA']).toContain(heading);
     await expect(victory).toContainText('Epílogo');
     await expect(victory).toContainText('Códice');
     await page.close();
   }
+});
+
+test('a documented resistance ends with its label and no kill tally', async ({ page }) => {
+  await page.goto('/?mission=m9_guerra_pacifico&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.evaluate(() => (window as unknown as { game: any }).game.showVictory(0));
+  const epilogue = page.locator('.ed-epilogue');
+  await expect(epilogue).toBeVisible({ timeout: 15_000 });
+  await expect(epilogue.locator('.epilogue-title')).toHaveText('RESISTENCIA CUMPLIDA');
+  await expect(epilogue).not.toContainText('Bajas infligidas');
 });
 
 test('the tutorial guides in the first mission', async ({ page }) => {

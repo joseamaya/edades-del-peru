@@ -7,11 +7,11 @@ columna _Arquitectura_ es la que resulta de `archProfileFor(civ, era)` (ver [`ar
 y _Landmark_ los hitos visuales (`src/model/defs/landmarks.ts`). Datos históricos en [`campanas/`](./campanas/)
 y [`mapas.md`](./mapas.md).
 
-La saga se organiza en cinco campañas. La primera, **Culturas Preincas**, está disponible con
-Caral, Chavín, Moche/Recuay y Wari; las demás campañas tienen su apertura publicada y un catálogo de
-cuatro misiones. La tabla recoge las nueve fichas originales; las once misiones añadidas después
+La saga se organiza en cinco campañas, todas publicadas con cuatro misiones (veinte en total). La tabla
+recoge las nueve fichas del catálogo original; las once misiones añadidas después
 (`m_tambotoco`, `m6b_guerra_civil`, `m_junta_cusco`, `m_lima`, `m_lima_1821`, `m_real_felipe`, `m_tarapaca`, `m_miraflores`, `m_brena`, `m_cusco_1536` y `m_vilcabamba`) tienen su ficha
-en su dossier y en su documento de misión modelo.
+en su dossier y en su documento de misión modelo. La numeración 1–9 es la del catálogo original; el menú
+numera las misiones por campaña.
 
 | #   | Misión                    | Periodo             | Civilización       | Región          | Mapa  | Clima / suelo                           | Vegetación   | Recursos                                     | Arquitectura                           | Landmark                        | Fuente                                                                 |
 | --- | ------------------------- | ------------------- | ------------------ | --------------- | ----- | --------------------------------------- | ------------ | -------------------------------------------- | -------------------------------------- | ------------------------------- | ---------------------------------------------------------------------- |

@@ -4,13 +4,14 @@ import { INDEPENDENCE_MAP_SIZE, independenceLength } from '../../../model/defs/i
 
 export const m8Independencia: MissionDef = {
   id: 'm8_independencia',
-  commanders: ['san_martin', 'bolivar', 'sucre'],
+  commanders: ['sucre'],
   title: 'La Independencia',
   subtitle: 'Junín–Ayacucho · 1824',
   history:
     'San Martín proclama la independencia en Lima en 1821. La campaña final se libra en la sierra: la caballería patriota sostiene Junín (6 de agosto de 1824) y, meses después, el ejército de Sucre resiste en Ayacucho (9 de diciembre de 1824).\n' +
     'Sostén Junín, protege a Sucre y resiste en Ayacucho hasta la rendición realista.',
-  victory: 'La victoria de Ayacucho sella la independencia del Perú y el fin del poder español.',
+  victory:
+    'La victoria de Ayacucho sella la independencia del Perú; el último bastión realista resistirá en el Callao hasta 1826.',
   defeat: 'La campaña de la sierra se pierde y la independencia queda en suspenso.',
   period: HistoricalPeriod.INDEPENDENCE,
   playerCiv: CivId.PATRIOTAS,
@@ -19,6 +20,11 @@ export const m8Independencia: MissionDef = {
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
   unitSpeedScale: 0.75,
   layout: {
+    labels: [
+      { text: 'Junín', x: 0.35, z: 0.63, kind: 'settlement' },
+      { text: 'Ayacucho', x: 0.702, z: 0.37, kind: 'settlement' },
+      { text: 'Pampa de Quinua', x: 0.65, z: 0.37, kind: 'region' },
+    ],
     base: { x: 0.35, z: 0.63 },
     enemyBase: { x: 0.772, z: 0.37 },
     terrain: {
@@ -76,7 +82,7 @@ export const m8Independencia: MissionDef = {
     {
       kicker: 'AYACUCHO · 9 DE DICIEMBRE DE 1824',
       title: 'La rendición realista',
-      text: 'El ejército de Sucre resiste en Ayacucho hasta la rendición realista. La victoria sella la independencia del Perú y el fin del poder español.',
+      text: 'El ejército de Sucre resiste en Ayacucho hasta la rendición realista. La victoria sella la independencia; el Callao resistirá hasta 1826.',
       seconds: 10,
       source: 'docs/historia/campanas/independencia.md',
       image: 'media/independencia/intro-ayacucho.webp',

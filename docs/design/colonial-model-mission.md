@@ -10,9 +10,9 @@ references them.
 
 In 1780 José Gabriel Condorcanqui, Túpac Amaru II, rose against the reparto, the mita and the obrajes.
 Micaela Bastidas organised the supplies and the network of communities. The rebellion won at Sangarará, but
-the January 1781 siege of Cusco failed when the relief from Lima broke it; Túpac Amaru and Micaela were
-captured and executed on 18 May 1781. The mission's mechanic is that arc: muster, win the field, hold the
-siege, and withdraw when the history already decided the defeat.
+the January 1781 siege of Cusco failed when the relief from Lima broke it; Túpac Amaru was captured at
+Langui on 6 April 1781, and he and Micaela were executed on 18 May 1781. The mission's mechanic is that arc:
+muster, win the field, hold the siege, and withdraw when the history already decided the defeat.
 
 ## Acts
 

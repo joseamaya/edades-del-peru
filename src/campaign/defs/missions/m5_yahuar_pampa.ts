@@ -51,6 +51,11 @@ export const m5YahuarPampa: MissionDef = {
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
   unitSpeedScale: 0.75,
   layout: {
+    labels: [
+      { text: 'Cusco', x: 0.36, z: 0.62, kind: 'settlement' },
+      { text: 'Pampa de Yahuar', x: 0.5, z: 0.5, kind: 'region' },
+      { text: 'Camino a Andahuaylas', x: 0.7725, z: 0.38, kind: 'region' },
+    ],
     base: { x: 0.36, z: 0.62 },
     enemyBase: { x: 0.7725, z: 0.38 },
     site: {

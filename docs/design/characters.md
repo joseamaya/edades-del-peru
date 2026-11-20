@@ -61,8 +61,9 @@ name.
 | `m5_yahuar_pampa` | Anccu Hualloc | `anccu_hualloc` | Abstraction | Briefing portrait only | [`yahuar_pampa.md`](../historia/campanas/yahuar_pampa.md) |
 | `m6_chimu_inca` | Túpac Yupanqui | `tupac_yupanqui` | Abstraction | Briefing portrait; field nameplate | [`chimu_inca.md`](../historia/campanas/chimu_inca.md) |
 | `m6_chimu_inca` | Minchancaman | `minchancaman` | Abstraction | Briefing portrait only | [`chimu_inca.md`](../historia/campanas/chimu_inca.md) |
-| `m6b_guerra_civil` | Atahualpa | `atahualpa` | Abstraction | Briefing portrait; field nameplate | [`guerra_civil_inca.md`](../historia/campanas/guerra_civil_inca.md) |
+| `m6b_guerra_civil` | Atahualpa | `atahualpa` | Abstraction | Briefing portrait; narrator | [`guerra_civil_inca.md`](../historia/campanas/guerra_civil_inca.md) |
 | `m6b_guerra_civil` | Huáscar | `huascar` | Abstraction | Briefing portrait only | [`guerra_civil_inca.md`](../historia/campanas/guerra_civil_inca.md) |
+| `m6b_guerra_civil` | Quizquiz | `quizquiz` | Abstraction | Briefing portrait; protected field nameplate | [`guerra_civil_inca.md`](../historia/campanas/guerra_civil_inca.md) |
 | `m_lima` | Francisco Pizarro | `pizarro` | Documented | Briefing portrait; field nameplate | [`lima.md`](../historia/campanas/lima.md) |
 | `m_lima` | Quizu Yupanqui | `quizu_yupanqui` | Abstraction | Briefing portrait only | [`lima.md`](../historia/campanas/lima.md) |
 | `m7_tupac_amaru` | Túpac Amaru II | `tupac_amaru` | Documented | Briefing portrait; field nameplate | [`tupac_amaru.md`](../historia/campanas/tupac_amaru.md) |
@@ -71,8 +72,6 @@ name.
 | `m_junta_cusco` | Mariano Melgar | `melgar` | Documented | Briefing portrait; field nameplate | [`junta_cusco.md`](../historia/campanas/junta_cusco.md) |
 | `m_junta_cusco` | Juan Ramírez Orozco | `ramirez_orozco` | Documented | Briefing portrait only | [`junta_cusco.md`](../historia/campanas/junta_cusco.md) |
 | `m_lima_1821` | José de San Martín | `san_martin` | Documented | Briefing portrait; protected field nameplate | [`lima_1821.md`](../historia/campanas/lima_1821.md) |
-| `m8_independencia` | José de San Martín | `san_martin` | Documented | Briefing portrait only | [`independencia.md`](../historia/campanas/independencia.md) |
-| `m8_independencia` | Simón Bolívar | `bolivar` | Documented | Briefing portrait only | [`independencia.md`](../historia/campanas/independencia.md) |
 | `m8_independencia` | Antonio José de Sucre | `sucre` | Documented | Briefing portrait; protected field nameplate; narrator | [`independencia.md`](../historia/campanas/independencia.md) |
 | `m_real_felipe` | Bartolomé Salom | `salom` | Documented | Briefing portrait; protected field nameplate | [`real_felipe.md`](../historia/campanas/real_felipe.md) |
 | `m_real_felipe` | José Ramón Rodil | `rodil` | Documented | Briefing portrait only | [`real_felipe.md`](../historia/campanas/real_felipe.md) |

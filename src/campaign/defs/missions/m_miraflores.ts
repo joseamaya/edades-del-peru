@@ -24,6 +24,7 @@ export const mMiraflores: MissionDef = {
     'Los reductos resisten lo suficiente para retirar a Cáceres y parte de la fuerza. Lima cae y la guerra continúa en la sierra: la resistencia de la Breña empieza en esta retirada.',
   defeat:
     'La línea se rompe antes de la retirada. Cáceres cae o es capturado y la resistencia de la sierra pierde a su jefe.',
+  outcome: 'retirada',
   period: HistoricalPeriod.REPUBLIC,
   periodNote: 'Defensa de Lima · enero de 1881',
   narrator: 'Defensores de Lima',
@@ -106,7 +107,7 @@ export const mMiraflores: MissionDef = {
     {
       kicker: 'MIRAFLORES · 15 DE ENERO',
       title: 'Los reductos',
-      text: 'La línea de Miraflores se apoya en diez reductos. Cáceres manda el sector derecho; la resistencia depende de sostener los reductos y de retirar a los jefes antes de que la ciudad caiga.',
+      text: 'La línea de Miraflores contará con diez reductos; los primeros tres deben quedar en pie antes del ataque. Cáceres manda el sector derecho; la resistencia depende de sostener los reductos y de retirar a los jefes antes de que la ciudad caiga.',
       seconds: 9,
       source: 'docs/historia/campanas/miraflores.md',
       image: 'media/miraflores/intro-reductos.webp',

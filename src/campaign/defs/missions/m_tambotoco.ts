@@ -58,7 +58,7 @@ export const mTambotoco: MissionDef = {
   defeat:
     'Los ayllus del valle rechazan a los recién llegados. Sin tierras ni agua, la peregrinación no funda Inticancha y la leyenda se pierde en la sierra.',
   period: HistoricalPeriod.LATE_INTERMEDIATE,
-  periodNote: 'Leyenda · ss. XII–XIV',
+  periodNote: 'Leyenda · sin fecha histórica',
   narrator: 'Memoria de los Ayar',
   playerCiv: CivId.INCA_KILLKE,
   enemyCiv: CivId.AYLLUS,
@@ -479,7 +479,7 @@ export const mTambotoco: MissionDef = {
           type: 'dialogue',
           speaker: 'Memoria de los Ayar',
           duration: 8,
-          text: 'Sin el agua de la acequia, los alcabizas ceden sus tierras. Los ayllus del valle bajan las armas y vuelven a sus aldeas.',
+          text: 'Sin el agua de la acequia, los alcabizas ceden sus tierras y se repliegan. La resistencia continuará bajo Mayta Cápac.',
         },
         {
           type: 'act',

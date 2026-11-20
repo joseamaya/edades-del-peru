@@ -357,10 +357,10 @@ test('plays m6b by holding Quipaipan and capturing Huáscar with real orders', a
     const m = g.mission;
     const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
     const site = g.siteCenter as { x: number; z: number };
-    const atahualpa = [...g.units.values()].find((u: any) => u.tag === 'atahualpa') as any;
+    const quizquiz = [...g.units.values()].find((u: any) => u.tag === 'quizquiz') as any;
     const army = () =>
       [...g.units.values()]
-        .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.tag !== 'atahualpa')
+        .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.tag !== 'quizquiz')
         .map((u: any) => u.id);
     const move = (ids: number[], x: number, z: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
@@ -369,8 +369,8 @@ test('plays m6b by holding Quipaipan and capturing Huáscar with real orders', a
         { kind: 'order', unitIds: ids, order: { kind: 'attack_move', target: { x, z } }, clear: true },
         false,
       );
-    // Atahualpa stays behind the line; the army marches to the pampa de Quipaipan.
-    move([atahualpa.id], site.x - 30, site.z + 18);
+    // Quizquiz stays behind the line; the army marches to the pampa de Quipaipan.
+    move([quizquiz.id], site.x - 30, site.z + 18);
     attackMove(army(), site.x, site.z);
     const dt = 1 / 60;
     let t = 0;
@@ -405,7 +405,7 @@ test('plays m6b by holding Quipaipan and capturing Huáscar with real orders', a
       target: progress?.target ?? 0,
       enemyAlive: !enemy.dead,
       enemyTag: enemy.tag ?? null,
-      atahualpa: m.getObjectiveState('obj_atahualpa') as string,
+      quizquiz: m.getObjectiveState('obj_quizquiz') as string,
       captura: m.getObjectiveState('obj_captura') as string,
       mapSize: g.settings.mapSize,
       site: g.siteDef?.id,
@@ -417,7 +417,7 @@ test('plays m6b by holding Quipaipan and capturing Huáscar with real orders', a
   expect(out.held).toBeGreaterThanOrEqual(out.target);
   expect(out.enemyAlive, 'the Cusco centre is not razed to win').toBe(true);
   expect(out.enemyTag, 'no fabricated Huáscar tag on a generic centre').toBeNull();
-  expect(out.atahualpa).not.toBe('failed');
+  expect(out.quizquiz).not.toBe('failed');
   expect(out.captura, 'the hold opens the capture, which closes the mission').toBe('completed');
   expect(out.mapSize, 'the model mission runs on 256 m').toBe(256);
   expect(out.site).toBe('cusco_inca_site');

@@ -21,6 +21,7 @@ export const mCusco1536: MissionDef = {
     'El ejército inca disputa Sacsayhuamán y obliga a los españoles a pelear por la ciudad. El calendario agrícola fuerza la retirada: Manco no toma el Cusco, pero conserva el ejército y la resistencia continúa en Vilcabamba.',
   defeat:
     'Los contraataques rompen el cerco y Manco cae o es capturado antes de la retirada. La rebelión pierde a su jefe y el Cusco queda en manos de los Pizarro.',
+  outcome: 'retirada',
   period: HistoricalPeriod.VICEROYALTY,
   periodNote: 'Rebelión de Manco Inca · 1536',
   narrator: 'Rebelión de Manco Inca',

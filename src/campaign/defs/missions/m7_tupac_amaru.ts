@@ -39,6 +39,7 @@ export const m7TupacAmaru: MissionDef = {
     'La rebelión se retira del Cusco: el cerco no toma la ciudad, pero la causa sobrevive. La historia documentada sigue su curso: Túpac Amaru II y Micaela Bastidas serán capturados y ejecutados en 1781.',
   defeat:
     'La rebelión se deshace antes de retirarse. El Virreinato alcanza a sus líderes y la Gran Rebelión se ahoga en sangre.',
+  outcome: 'retirada',
   period: HistoricalPeriod.VICEROYALTY,
   periodNote: 'La misión se sitúa en 1780–1781',
   narrator: 'La Gran Rebelión',
@@ -50,7 +51,7 @@ export const m7TupacAmaru: MissionDef = {
   map: { seed: 1780, type: 'andes', size: TUPAC_MAP_SIZE },
   layout: {
     labels: [
-      { text: 'Valle del Cusco', x: 0.36, z: 0.62, kind: 'region' },
+      { text: 'Tinta–Tungasuca', x: 0.36, z: 0.62, kind: 'region' },
       { text: 'Tungasuca', x: TUPAC_TUNGASUCA_ANCHOR.x, z: TUPAC_TUNGASUCA_ANCHOR.z, kind: 'settlement' },
       { text: 'Sangarará', x: TUPAC_SANGARARA_ANCHOR.x, z: TUPAC_SANGARARA_ANCHOR.z, kind: 'region' },
       { text: 'Cusco', x: 0.702, z: 0.38, kind: 'settlement' },
@@ -71,7 +72,7 @@ export const m7TupacAmaru: MissionDef = {
     },
     terrain: {
       flats: [
-        { name: 'Valle del Cusco', x: 0.36, z: 0.62, rx: 0.15, rz: 0.12 },
+        { name: 'Tinta–Tungasuca', x: 0.36, z: 0.62, rx: 0.15, rz: 0.12 },
         { name: 'Ruta de Sangarará', x: TUPAC_SANGARARA_ANCHOR.x, z: TUPAC_SANGARARA_ANCHOR.z, rx: 0.1, rz: 0.09 },
         {
           name: 'Laderas del Cusco',

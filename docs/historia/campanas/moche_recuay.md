@@ -1,7 +1,7 @@
 # Campaña 3 — La Frontera de los Valles
 
 - **Periodo**: Intermedio Temprano (P2).
-- **Fecha**: c. 300–600 d.C.
+- **Fecha**: c. 300–800 d.C.
 - **Lugar**: costa norte y sierra de Áncash (valles Moche/Chicama y **Callejón de Huaylas**).
 - **Bandos**: **Moche** (jugador) frente a **Recuay**.
 - **Comandantes**: **no se conocen nombres** de gobernantes moche ni recuay. No se inventan personajes.

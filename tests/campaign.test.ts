@@ -473,7 +473,7 @@ describe('campaign educational content', () => {
   it('m3 is a model mission with three acts and in-engine images', () => {
     const m3 = MISSIONS.find((m) => m.id === 'm3_moche_recuay')!;
     expect(m3.modelMission).toBe(true);
-    expect(m3.narrator).toBe('Voz del valle');
+    expect(m3.narrator).toBe('Voz de los valles moche');
     expect(m3.map.size).toBe(256);
     expect(m3.unitSpeedScale).toBe(0.75);
     expect(m3.intro?.length).toBe(3);

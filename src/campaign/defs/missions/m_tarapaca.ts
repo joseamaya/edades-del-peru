@@ -16,7 +16,7 @@ export const mTarapaca: MissionDef = {
   title: 'La quebrada',
   subtitle: 'Tarapacá · 27 de noviembre de 1879',
   history:
-    'Tras la campaña naval, el ejército peruano se repliega en Tarapacá. El 27 de noviembre de 1879, tres columnas chilenas atacan el pueblo y las alturas de la quebrada de San Lorenzo.\n' +
+    'Tras la campaña naval, el ejército peruano se repliega en Tarapacá. El 27 de noviembre de 1879, tres columnas chilenas atacan el pueblo y las alturas de la quebrada de Tarapacá.\n' +
     'La resistencia peruana, sin caballería ni artillería al inicio, recibe refuerzos desde Pachica y captura piezas chilenas. La victoria táctica no cambia el curso de la guerra: la provincia se pierde y el ejército se retira a Arica.',
   victory:
     'La quebrada queda en manos peruanas y se capturan cañones chilenos. La victoria es táctica: la provincia se pierde y la retirada por el desierto lleva al ejército hacia Arica.',
@@ -34,7 +34,7 @@ export const mTarapaca: MissionDef = {
   layout: {
     labels: [
       { text: 'Tarapacá', x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256, kind: 'settlement' },
-      { text: 'Quebrada de San Lorenzo', x: 132 / 256, z: 128 / 256, kind: 'region' },
+      { text: 'Quebrada de Tarapacá', x: 132 / 256, z: 128 / 256, kind: 'region' },
       { text: 'Alturas de Tarapacá', x: TARAPACA_HEIGHTS.x / 256, z: TARAPACA_HEIGHTS.z / 256, kind: 'region' },
       { text: 'Pachica', x: TARAPACA_PACHICA.x / 256, z: TARAPACA_PACHICA.z / 256, kind: 'region' },
       { text: 'Camino a Arica', x: 196 / 256, z: 196 / 256, kind: 'region' },
@@ -46,7 +46,7 @@ export const mTarapaca: MissionDef = {
     terrain: {
       flats: [
         { name: 'Pueblo de Tarapacá', x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256, rx: 0.14, rz: 0.11 },
-        { name: 'Quebrada de San Lorenzo', x: 132 / 256, z: 128 / 256, rx: 0.12, rz: 0.1 },
+        { name: 'Quebrada de Tarapacá', x: 132 / 256, z: 128 / 256, rx: 0.12, rz: 0.1 },
         { name: 'Alturas', x: TARAPACA_HEIGHTS.x / 256, z: TARAPACA_HEIGHTS.z / 256, rx: 0.12, rz: 0.1 },
       ],
     },

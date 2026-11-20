@@ -490,7 +490,7 @@ export const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'paramonga',
-        text: 'Avanza con Túpac Yupanqui hasta Paramonga, al norte del campamento chimú.',
+        text: 'Avanza con Túpac Yupanqui hasta Paramonga.',
         highlight: '#ed-objectives',
         check: { type: 'objectiveCompleted', objectiveId: 'obj_avanzar' },
       },

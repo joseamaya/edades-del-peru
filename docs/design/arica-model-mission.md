@@ -49,10 +49,10 @@ recorded here and in the quality bar. The Morro is not invented as a new mesh.
 
 ## Economy and units
 
-- Workers, line infantry, riflemen, `REPUBLICA_DEFENSOR`, scouts and a missionary; no artillery train, no
+- Workers, line infantry, riflemen, `REPUBLICA_DEFENSOR` and scouts; no artillery train, no
   cavalry (the 1880 garrison fought on foot in the scenario).
 - The player base is the port terrace; the soldiers start around the cuartel and the fort.
-- The royalist pressure is scripted: the bombardment wave, the Cusco-style sortie and the final assault.
+- The royalist pressure is scripted: the bombardment wave, the sortie and the final assault.
   The enemy does not run an economy in this mission; the waves are labelled as an abstraction in the
   dossier.
 

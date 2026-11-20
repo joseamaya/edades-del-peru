@@ -18,7 +18,7 @@ exchange that keeps the frontier open.
 
 | Act                       | Place                     | Player action                                                     | Historical idea                                                       |
 | ------------------------- | ------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| I · El valle (c. 300–600) | Moche valley and canal    | Open the canal gate; the fields and huacas recover                | Water is the valley's power and the canal is its infrastructure       |
+| I · El valle (c. 300–800) | Moche valley and canal    | Open the canal gate; the fields and huacas recover                | Water is the valley's power and the canal is its infrastructure       |
 | II · La frontera          | Huacas plaza              | Hold the plaza 90 s against Recuay waves                          | The conflict is attested, but as frontier pressure, not one battle    |
 | III · El intercambio      | Huaca de la Luna          | Deliver 250 silver in the elite exchange (400 optional)           | Moche and Recuay kept long-distance elite exchange through the frontier|
 

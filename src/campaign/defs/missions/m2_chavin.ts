@@ -53,6 +53,11 @@ export const m2Chavin: MissionDef = {
   // Callejón de Conchucos: cool highland mist around the ceremonial center.
   atmosphere: { fogDensity: 0.0042, skyTint: '#c8d6d0', sunWarmth: 0.9 },
   layout: {
+    labels: [
+      { text: 'Chavín de Huántar', x: 0.51, z: 0.456, kind: 'settlement' },
+      { text: 'Callejón de Conchucos', x: 0.3, z: 0.61, kind: 'region' },
+      { text: 'Río Mosna', x: 0.5, z: 0.2, kind: 'water' },
+    ],
     base: { x: 0.3, z: 0.61 },
     site: {
       id: 'chavin_site',
