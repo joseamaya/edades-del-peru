@@ -34,6 +34,7 @@ describe('mission site landmarks', () => {
     expect(mission('m_tarapaca').layout?.siteLandmarks?.map((landmark) => landmark.kind)).toEqual([
       'tarapaca-village',
       'tarapaca-heights',
+      'tarapaca-pachica',
     ]);
     for (const siteId of ['real_felipe_site', 'tarapaca_site', 'vilcabamba_site'] as const) {
       expect(getAuthoredSite(siteId)?.hideModel, siteId).toBe(true);
@@ -56,6 +57,7 @@ describe('mission site landmarks', () => {
       'real-felipe',
       'tarapaca-village',
       'tarapaca-heights',
+      'tarapaca-pachica',
       'vilcabamba-refuge',
     ];
     const heightAt = (x: number, z: number): number => 5 + Math.sin(x * 0.02) * 0.25 + Math.cos(z * 0.02) * 0.2;

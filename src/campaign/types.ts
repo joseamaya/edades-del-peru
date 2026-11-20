@@ -262,6 +262,13 @@ export interface ObjectiveDef {
   nodes?: MissionPoint[];
   /** Radius around `pos` for `reach`/`hold`/`build`. */
   radius?: number;
+  /**
+   * `reach`/`hold` only: the objective is not satisfied while a hostile unit stands inside `radius`.
+   * A reconquest is not a walk-in: the heights must be cleared before they count as taken.
+   */
+  clearEnemies?: boolean;
+  /** Wider radius for `clearEnemies` (defaults to `radius`), so a defender cannot step out and back. */
+  clearRadius?: number;
   /** Unit kind that must hold the position (optional; all player units by default). */
   unitKind?: UnitKind;
   /**
@@ -567,6 +574,8 @@ export interface MissionDef {
    * not a unit on the field. Not a likeness claim.
    */
   commanderNotes?: Partial<Record<PortraitId, string>>;
+  /** Mission-scoped role line for a commander card (e.g. Cáceres in Tarapacá, not only La Breña). */
+  commanderRoles?: Partial<Record<PortraitId, string>>;
   /** Period-appropriate building icons that override the global defaults (e.g. Caral's neutral farm). */
   buildingIcons?: Partial<Record<BuildingKind, string>>;
   /** If set, only these technologies may be researched in the match. */

@@ -143,6 +143,38 @@ describe('mission objective progress', () => {
     expect(m.getObjectiveProgress('food')).toEqual({ current: 4, target: 10, format: 'count' });
     expect(m.getObjectiveProgress('farms')).toEqual({ current: 1, target: 2, format: 'count' });
   });
+
+  it('does not take a contested position until the last defender is gone', () => {
+    const player = { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.SOLDIER, pos: { x: 0, z: 0 } };
+    const enemy = { id: 2, tag: '', owner: 1, dead: false, kind: UnitKind.RIFLEMAN, pos: { x: 8, z: 0 } };
+    const game = stubGame(player) as any;
+    game.players[0].team = 0;
+    game.players.push({ ...game.players[0], team: 1 });
+    game.units.set(enemy.id, enemy);
+    const missionDef: MissionDef = {
+      ...def,
+      objectives: [
+        {
+          id: 'heights',
+          kind: 'reach',
+          pos: { dx: 0, dz: 0 },
+          radius: 6,
+          clearEnemies: true,
+          clearRadius: 10,
+          title: 'reconquistar',
+        },
+      ],
+      triggers: [],
+    };
+    const m = new Mission(game, missionDef, () => {});
+    m.start();
+    m.update(0.1, 0);
+    expect(m.getObjectiveState('heights'), 'the enemy still holds the position').toBe('activo');
+
+    enemy.dead = true;
+    m.update(0.1, 0);
+    expect(m.getObjectiveState('heights')).toBe('completed');
+  });
 });
 
 describe('mission canal objectives', () => {

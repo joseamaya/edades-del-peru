@@ -392,7 +392,7 @@ function tarapacaVillage(b: LandmarkBuilder, x: number, z: number, s: number, ya
   const chapelZ = z - 5 * s;
   const chapelBase = b.padHeight(chapelX, chapelZ, 3.5 * s, 5 * s);
   foundation(chapelX, chapelZ, 7 * s, 10 * s, chapelBase, yaw);
-  b.addHall(chapelX, chapelZ, 7 * s, 10 * s, 3.2 * s, yaw, 'adobe', 'tile', chapelBase);
+  b.addHall(chapelX, chapelZ, 7 * s, 10 * s, 3.2 * s, yaw, 'adobe', 'earthRoof', chapelBase);
   const houses = [
     [-12, -9, 8, 6, 0],
     [-2, -11, 7, 5, 0.08],
@@ -430,6 +430,29 @@ function tarapacaHeights(b: LandmarkBuilder, x: number, z: number, s: number, ya
     const base = b.padHeight(cx, cz, (w * s) / 2, (d * s) / 2);
     b.addBox('fieldstone', w * s, 1.8 * s, d * s, cx, base + 0.9 * s, cz, 0, yaw + rot);
   }
+}
+
+function tarapacaPachica(b: LandmarkBuilder, x: number, z: number, s: number, yaw: number): void {
+  // The hamlet the reinforcements marched from: a few adobe houses around a short street and a
+  // stone corral. It is a landmark, not a second town: no walls, no towers, no gameplay footprint.
+  const pad = b.padHeight(x, z, 10 * s, 8 * s);
+  b.addBox('path', 18 * s, 0.08 * s, 3 * s, x, pad + 0.05 * s, z, 0, yaw);
+  for (const [dx, dz, w, d, rot] of [
+    [-6, -5, 5, 4, 0.05],
+    [2, -6, 6, 4.5, -0.08],
+    [6, 4, 5, 4, 0.4],
+    [-5, 5, 4.5, 3.5, -0.3],
+  ] as const) {
+    const cx = x + dx * s;
+    const cz = z + dz * s;
+    const base = b.padHeight(cx, cz, (w * s) / 2, (d * s) / 2);
+    b.addHall(cx, cz, w * s, d * s, 2.6 * s, yaw + rot, 'adobe', 'earthRoof', base);
+  }
+  // Corral open to the street; low enough to read as an animal pen, not a fort.
+  const wallY = b.padHeight(x + 2 * s, z + 8 * s, 5 * s, 3 * s);
+  b.addBox('fieldstone', 10 * s, 0.9 * s, 0.6 * s, x + 2 * s, wallY + 0.45 * s, z + 8 * s, 0, yaw);
+  b.addBox('fieldstone', 0.6 * s, 0.9 * s, 6 * s, x - 3 * s, wallY + 0.45 * s, z + 7 * s, 0, yaw);
+  b.addBox('fieldstone', 0.6 * s, 0.9 * s, 6 * s, x + 7 * s, wallY + 0.45 * s, z + 7 * s, 0, yaw);
 }
 
 function vilcabambaRefuge(b: LandmarkBuilder, x: number, z: number, s: number, yaw: number): void {
@@ -473,6 +496,9 @@ function buildOne(b: LandmarkBuilder, spec: MissionSiteLandmark, mapSize: number
       break;
     case 'tarapaca-heights':
       tarapacaHeights(b, x, z, s, yaw);
+      break;
+    case 'tarapaca-pachica':
+      tarapacaPachica(b, x, z, s, yaw);
       break;
     case 'vilcabamba-refuge':
       vilcabambaRefuge(b, x, z, s, yaw);

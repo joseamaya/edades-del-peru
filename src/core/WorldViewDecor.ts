@@ -1048,6 +1048,8 @@ export class WorldViewDecor {
         continue;
       const h = this.game.terrain.getHeight(x, z);
       const kind = this.pickResourceKind(rng, x, z, h);
+      // A zeroed resource profile means this map carries no nodes at all.
+      if (!kind) break;
       const minGap = kind === 'tree' ? 6 : 3;
       if ([...this.game.resourceNodes.values()].some((n) => distance2D(n.pos.x, n.pos.z, x, z) < minGap)) continue;
       const amount =
@@ -1362,7 +1364,7 @@ export class WorldViewDecor {
     return marsh || painted[2]! > 0.45 || painted[3]! > 0.6;
   }
 
-  pickResourceKind(rng: RNG, x: number, z: number, h: number): ResourceNode['kind'] {
+  pickResourceKind(rng: RNG, x: number, z: number, h: number): ResourceNode['kind'] | null {
     const w = this.game.mapProfile.resources;
     const beach = this.game.terrain.isBeach(x, z);
     const high = h > 6;
@@ -1376,7 +1378,10 @@ export class WorldViewDecor {
       ['well', w.well * (beach ? 0.05 : 0.8) * (0.6 + slope * 1.8) * (high ? 1.4 : 1)],
       ['berry', w.berry * (beach ? 1.2 : 0.7) * (0.5 + moist)],
     ];
-    return weightedPick(rng, options) ?? 'tree';
+    // An all-zero profile (Tarapacá's one-day battle) means "no nodes", not "a tree by default".
+    const total = options.reduce((sum, [, weight]) => sum + Math.max(0, weight), 0);
+    if (total <= 0) return null;
+    return weightedPick(rng, options);
   }
 
   /** Resolve a mission point against the player/enemy base, site, canal or landmark. */

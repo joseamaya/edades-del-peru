@@ -66,6 +66,7 @@ import {
 } from '../model/defs/commanders';
 import type { HeritageBuildingDef, HeritageBuildingId } from '../model/defs/heritage';
 import { portraitSvg } from './Portrait';
+import { minimapGroundColor } from './minimapPalette';
 import { textOverlap } from './textOverlap';
 import { DamageNumbers } from './DamageNumbers';
 import { openCodex } from './Codex';
@@ -1907,6 +1908,11 @@ export class HUD {
     });
   }
 
+  /** Mission-scoped role line for a commander card (Tarapacá's Cáceres is not only La Breña). */
+  private commanderRole(id: PortraitId, fallback: string): string {
+    return this.game.missionDef?.commanderRoles?.[id] ?? fallback;
+  }
+
   private renderUnitPanel(units: Unit[]): void {
     const first = units[0];
     const commander = units.length === 1 ? commanderById(first.tag) : undefined;
@@ -1936,7 +1942,7 @@ export class HUD {
       commander ? portraitSvg(commander, 30) : mixed ? '👥' : unitDisplayIcon(first.kind, first.era),
       title,
       commander
-        ? `${commander.hero ? `${t('hud.unit.hero')} · ` : ''}${commander.role}<br>${this.unitDesc(first)}`
+        ? `${commander.hero ? `${t('hud.unit.hero')} · ` : ''}${this.commanderRole(commander.id, commander.role)}<br>${this.unitDesc(first)}`
         : `${chips}${this.unitDesc(first)}`,
     );
     this.clearGrid();
@@ -2290,6 +2296,7 @@ export class HUD {
 
   private minimapBg: HTMLCanvasElement | null = null;
   private minimapSeed = -1;
+  private minimapPalette: string | null = null;
 
   private renderMinimap(): void {
     const ctx = this.minimapCtx;
@@ -2298,10 +2305,13 @@ export class HUD {
     const terrain = this.game.terrain;
     const fow = this.game.fow;
     const fogOn = this.game.settings.fogOfWar;
+    // The site palette wins over the regional one (Tarapacá's atacama), exactly as the terrain does.
+    const palette = this.game.siteDef?.terrain.palette ?? this.game.mapProfile.region;
 
-    // cached terrain background (only regenerated if the seed changes)
-    if (!this.minimapBg || this.minimapSeed !== this.game.settings.mapSeed) {
+    // cached terrain background (seed or palette changes)
+    if (!this.minimapBg || this.minimapSeed !== this.game.settings.mapSeed || this.minimapPalette !== palette) {
       this.minimapSeed = this.game.settings.mapSeed;
+      this.minimapPalette = palette;
       this.minimapBg = document.createElement('canvas');
       this.minimapBg.width = this.minimapBg.height = w;
       const bctx = this.minimapBg.getContext('2d')!;
@@ -2310,12 +2320,7 @@ export class HUD {
           const wx = (x / w) * s;
           const wz = (y / w) * s;
           const h = terrain.getHeight(wx, wz);
-          let c: string;
-          if (terrain.isWater(wx, wz)) c = 'rgba(30,80,120,0.9)';
-          else if (h > 9) c = 'rgba(150,145,140,0.95)';
-          else if (h > 5) c = 'rgba(110,120,90,0.95)';
-          else if (terrain.isBeach(wx, wz)) c = 'rgba(200,180,130,0.95)';
-          else c = 'rgba(90,120,70,0.95)';
+          const c = minimapGroundColor(palette, h, terrain.isWater(wx, wz), terrain.isBeach(wx, wz));
           bctx.fillStyle = c;
           bctx.fillRect(x, y, 1, 1);
         }
@@ -2847,7 +2852,7 @@ export class HUD {
       })
       .map(
         (c) =>
-          `<div class="ed-cmd-card">${portraitSvg(c, 56)}<div class="ed-cmd-info"><b>${escapeHtml(c.name)}</b><span>${escapeHtml(c.role)}</span>${
+          `<div class="ed-cmd-card">${portraitSvg(c, 56)}<div class="ed-cmd-info"><b>${escapeHtml(c.name)}</b><span>${escapeHtml(this.commanderRole(c.id, c.role))}</span>${
             mis.commanderNotes?.[c.id] ? `<em>${escapeHtml(mis.commanderNotes[c.id]!)}</em>` : ''
           }${c.status === 'abstraction' ? `<em>${t('hud.menu.briefing.stylized')}</em>` : ''}</div></div>`,
       )

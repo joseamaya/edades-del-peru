@@ -33,17 +33,11 @@ for (const mis of COMPLETABLE_MISSIONS) {
       if (g.getPaused()) g.togglePause();
 
       const def = m.def;
+      // The harness proves the evaluator, not bodyguard micro: a protected officer is never teleported
+      // into an objective point with the assault group, but he is not parked away from the army either.
       const protectedTags = new Set(
         def.objectives.filter((o: any) => o.kind === 'protect' && !o.optional).map((o: any) => o.entityTag as string),
       );
-      const parkProtected = (): void => {
-        for (const u of g.units.values()) {
-          if (u.owner === 0 && !u.dead && u.tag && protectedTags.has(u.tag)) {
-            u.pos.set(30, g.terrain.getHeight(30, 30), 30);
-          }
-        }
-      };
-      parkProtected();
       const centerOf = (owner: number): { x: number; z: number } => {
         const c = [...g.buildings.values()].find(
           (b: any) => b.owner === owner && b.kind === 'center' && !b.dead,
@@ -72,9 +66,6 @@ for (const mis of COMPLETABLE_MISSIONS) {
         // keep the player alive: waves would otherwise defeat it during the clock
         for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
         for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
-        // The spec proves the evaluator, not bodyguard micro: keep protected commanders out of the
-        // objective teleports so a scripted artillery shell cannot fail a protect goal by itself.
-        parkProtected();
 
         for (const o of def.objectives) {
           if (m.getObjectiveState(o.id) !== 'activo') continue;
@@ -158,12 +149,7 @@ for (const mis of COMPLETABLE_MISSIONS) {
               const base = refPoint(o.pos!);
               const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
               for (const u of g.units.values()) {
-                if (
-                  u.owner === 0 &&
-                  !u.dead &&
-                  (!o.entityTag || u.tag === o.entityTag) &&
-                  (o.entityTag || !protectedTags.has(u.tag))
-                ) {
+                if (u.owner === 0 && !u.dead && (o.entityTag ? u.tag === o.entityTag : !protectedTags.has(u.tag))) {
                   u.pos.set(tp.x, g.terrain.getHeight(tp.x, tp.z), tp.z);
                 }
               }
