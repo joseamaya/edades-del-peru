@@ -1,4 +1,4 @@
-import { Era, CivId, HistoricalPeriod, UnitKind } from '../../../core/types';
+import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import type { MissionDef } from '../../types';
 import { MOCHE_MAP_SIZE, mocheLength } from '../../../model/defs/mocheSite';
 
@@ -104,6 +104,7 @@ export const m3MocheRecuay: MissionDef = {
   },
   mark: [],
   enemy: { active: true, difficulty: 'normal', aggression: 1 },
+  buildingNames: { [BuildingKind.INSTITUTE]: 'Casa de los ancestros' },
   objectives: [
     {
       id: 'obj_canal',

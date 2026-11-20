@@ -95,6 +95,7 @@ export const m5YahuarPampa: MissionDef = {
     { tag: 'centro_chanca', kind: BuildingKind.CENTER, owner: 1 },
   ],
   enemy: { active: true, difficulty: 'hard', aggression: 1.3 },
+  buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
   objectives: [
     { id: 'obj_defend', kind: 'defend', entityTag: 'cusco', time: 480, title: 'Defiende el Cusco 8 minutos' },
     {

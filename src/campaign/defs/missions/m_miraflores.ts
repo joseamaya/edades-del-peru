@@ -45,14 +45,8 @@ export const mMiraflores: MissionDef = {
     base: { x: MIRAFLORES_CAMP.x / 256, z: MIRAFLORES_CAMP.z / 256 },
     opening: { x: 112 / 256, z: 176 / 256 },
     enemyBase: { x: MIRAFLORES_ENEMY.x / 256, z: MIRAFLORES_ENEMY.z / 256 },
-    // The Miraflores line: the earthwork redoubts that separated it from the 1535/1821 city, built from
-    // the Arica battery kit already in the bundle (documented abstraction, no new assets).
-    // Placed on the mission's own objective nodes (reductos 1, 2 and 3), the line facing Lima.
-    decor: [
-      { glb: 'arica_battery', at: 'player', dx: -40, dz: 30, yaw: 1.57, scale: 0.8 },
-      { glb: 'arica_battery', at: 'player', dx: 0, dz: 30, yaw: 1.57, scale: 0.75 },
-      { glb: 'arica_battery', at: 'player', dx: 40, dz: 30, yaw: 1.57, scale: 0.7 },
-    ],
+    // The redoubts are the player's forts at the objective nodes (reductos 1-3); the old Arica
+    // battery decor has been removed because it was a coastal battery from another battle.
     discoveries: [],
     terrain: {
       flats: [
@@ -66,7 +60,8 @@ export const mMiraflores: MissionDef = {
       y: 5.6,
       heightField: MIRAFLORES_HEIGHTFIELD,
       phase: 'ciudad',
-      focus: { x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256 },
+      // The site camera frames the redoubt line; the Lima colonial kit stays as the city backdrop north.
+      focus: { x: MIRAFLORES_REDOUBT_2.x / 256, z: MIRAFLORES_REDOUBT_2.z / 256 },
       keepout: [{ x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256, rx: 0.06, rz: 0.05 }],
       buildKeepout: [{ x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256, rx: 0.04, rz: 0.04 }],
     },
@@ -147,6 +142,7 @@ export const mMiraflores: MissionDef = {
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
+  buildingNames: { [BuildingKind.FORTRESS]: 'Reducto' },
   objectives: [
     {
       id: 'a1_reductos',

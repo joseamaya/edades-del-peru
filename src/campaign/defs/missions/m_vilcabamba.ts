@@ -156,6 +156,7 @@ export const mVilcabamba: MissionDef = {
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
+  buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
   objectives: [
     {
       id: 'a1_huayna',
