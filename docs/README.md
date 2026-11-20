@@ -149,6 +149,7 @@ All twenty released missions have a model-mission document. For the live status 
 | [`design/prp-status.md`](./design/prp-status.md) | Map/architecture/landscape audit and building classification | Snapshot |
 | [`release/0.2.0-readiness-audit.md`](./release/0.2.0-readiness-audit.md) | The 0.2.0 closeout audit: repository state, 20-mission matrix, tests, performance and remaining gates | Snapshot |
 | [`release/0.2.0-narrative-audit.md`](./release/0.2.0-narrative-audit.md) | The 0.2.0 narrative and historical audit: five campaigns, twenty missions, sources, continuity and findings (Spanish) | Snapshot |
+| [`release/0.2.0-asset-historical-audit.md`](./release/0.2.0-asset-historical-audit.md) | The 0.2.0 asset historical and visual audit: buildings, structures, objects, weapons and reuse across five campaigns and twenty missions (Spanish) | Snapshot |
 | [`release/0.2.0-release-notes.md`](./release/0.2.0-release-notes.md) | Player-facing 0.2.0 release notes, known limitations and verification summary | Snapshot |
 | [`design/release-candidate.md`](./design/release-candidate.md) | Release status, art gate and publish checklist from 2026-10-30 | Archived |
 | [`itch-description.md`](./itch-description.md) | Draft itch.io page | Proposal |
@@ -161,10 +162,11 @@ periodisation, contemporaneity matrix, maps, outfits, architecture, technology, 
 sheets (`fichas_campana.md`), unique units, one dossier per civilization and one per mission, plus the
 research proposals for the later campaigns.
 
-`development/performance-audit.md` and `release/0.2.0-narrative-audit.md` are the two documents that stay
-in **Spanish** although they are not player-facing: the first is a historical measurement log kept in its
-original language so the numbers and quotes stay traceable; the second audits the Spanish text the player
-reads and quotes the Spanish dossiers.
+`development/performance-audit.md`, `release/0.2.0-narrative-audit.md` and
+`release/0.2.0-asset-historical-audit.md` are the three documents that stay in **Spanish** although they are
+not player-facing: the first is a historical measurement log kept in its original language so the numbers and
+quotes stay traceable; the second audits the Spanish text the player reads and quotes the Spanish dossiers;
+the third audits the material culture against the Spanish historical dossiers and the player-facing labels.
 
 ## Keeping the map current
 
