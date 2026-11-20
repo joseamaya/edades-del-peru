@@ -106,6 +106,12 @@ Arica. Sources and certainty: [`docs/historia/campanas/tarapaca.md`](../historia
   holds the village with move orders.
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts` (a battle scene measures the command panel
   with a unit; no injected worker).
+- Visual evidence (seed 777, HUD on): `yarn shot tarapaca-opening --url='/?mission=m_tarapaca&seed=777&fog=0&low=1&intro=0' --click --wait=55000`,
+  `tarapaca-heights --target=160,120 --height=38`, `tarapaca-pachica --target=198,150 --height=34` and
+  `tarapaca-briefing --wait=6000` after the same URL. The opening shot shows the exchange (13/16 and
+  “Unidad bajo ataque”), not a silent stand-off.
+- Intro art: `node scripts/capture_republica_arc.mjs --mission=m_tarapaca` rewrites the four
+  `public/media/tarapaca/intro-*.webp` images from the current desert scene.
 - Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in
   `yarn bench:check`.
 - Open: human no-cheat playtest.
