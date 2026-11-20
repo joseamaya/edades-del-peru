@@ -10,6 +10,8 @@ import {
 } from '../src/model/defs/modelAssets';
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
 import { CIVS } from '../src/model/defs/civs';
+import { BUILDING_DEFS } from '../src/model/defs/buildings';
+import type { PersonGender } from '../src/model/defs/people';
 import { andeanCultureForVariant, andeanPalette, andeanRoleForVariant } from '../src/model/defs/andeanCharacters';
 import { getPeriod } from '../src/model/defs/periods';
 import { unitTrainableInPeriod } from '../src/model/defs/units';
@@ -326,6 +328,31 @@ describe('rigged model assets', () => {
     });
   });
 
+  it('keeps the Inca of 1536 and 1572 in the Andean rig and gives m7 the rebel outfit', () => {
+    const soldier = (missionId: string, kind = UnitKind.SOLDIER, gender: PersonGender = 'male') =>
+      unitModelAsset(kind, Era.VICEROYALTY, CivId.INCA, 1, gender, '', missionId);
+    expect(soldier('m_cusco_1536')).toEqual({ asset: 'caral_worker', variant: 'inca_soldier_m' });
+    expect(soldier('m_vilcabamba')).toEqual({ asset: 'caral_worker', variant: 'inca_soldier_m' });
+    expect(soldier('m7_tupac_amaru')).toEqual({ asset: 'caral_worker', variant: 'rebelde_soldier_m' });
+    expect(soldier('m_cusco_1536', UnitKind.MUSKETEER)).toEqual({
+      asset: 'caral_worker',
+      variant: 'inca_ranged_m',
+    });
+    expect(soldier('m7_tupac_amaru', UnitKind.MUSKETEER)).toEqual({
+      asset: 'caral_worker',
+      variant: 'rebelde_ranged_m',
+    });
+    expect(soldier('m_cusco_1536', UnitKind.WORKER, 'female')).toEqual({
+      asset: 'caral_worker',
+      variant: 'inca_worker_f',
+    });
+    // The 1536/1572 rosters exclude these two; a mod that unlocks them gets the procedural fallback.
+    expect(soldier('m_cusco_1536', UnitKind.SNIPER)).toBeNull();
+    expect(soldier('m_cusco_1536', UnitKind.MISSIONARY)).toBeNull();
+    // No mission (free play) does not get the 1780 rebel abstraction.
+    expect(soldier('')).toEqual({ asset: 'caral_worker', variant: 'inca_soldier_m' });
+  });
+
   it('maps the remaining pre-Hispanic cultures and the Caral infantry', () => {
     for (const [civ, culture, era, period] of [
       [CivId.CUPISNIQUE, 'cupisnique', Era.REGIONAL_STATES, HistoricalPeriod.EARLY_HORIZON],
@@ -449,7 +476,7 @@ describe('rigged model assets', () => {
       [UnitKind.SNIPER, 'ranged'],
       [UnitKind.MISSIONARY, 'missionary'],
     ] as const) {
-      expect(unitModelAsset(kind, Era.VICEROYALTY, CivId.INCA, 2)).toEqual({
+      expect(unitModelAsset(kind, Era.VICEROYALTY, CivId.INCA, 2, 'female', '', 'm7_tupac_amaru')).toEqual({
         asset: 'caral_worker',
         variant: `rebelde_${role}_f`,
       });
@@ -486,7 +513,7 @@ describe('rigged model assets', () => {
 
     // The Amauta's tech is Late Horizon-only, so m7 never offers it (#327).
     expect(unitTrainableInPeriod(UnitKind.COMMISSAR, HistoricalPeriod.VICEROYALTY, CivId.INCA)).toBe(false);
-    expect(unitModelAsset(UnitKind.COMMISSAR, Era.VICEROYALTY, CivId.INCA)).toBeNull();
+    expect(unitModelAsset(UnitKind.COMMISSAR, Era.VICEROYALTY, CivId.INCA, 1, 'male', '', 'm7_tupac_amaru')).toBeNull();
   });
 
   it('covers every trainable unit combination', () => {
@@ -503,9 +530,14 @@ describe('rigged model assets', () => {
         combos.push({ civ: CivId.INCA, period: HistoricalPeriod.VICEROYALTY, kind });
       }
     }
-    const missing = combos.filter(
-      ({ civ, period, kind }) => unitModelAsset(kind, getPeriod(period).level, civ) === null,
-    );
+    const missing = combos.filter(({ civ, period, kind }) => {
+      // The 1536/1572 rosters exclude the sniper and the missionary; see the explicit null
+      // assertions in the Inca test. No campaign unit reaches them.
+      if (civ === CivId.INCA && period === HistoricalPeriod.VICEROYALTY) {
+        if (kind === UnitKind.SNIPER || kind === UnitKind.MISSIONARY) return false;
+      }
+      return unitModelAsset(kind, getPeriod(period).level, civ) === null;
+    });
     expect(missing).toEqual([]);
   });
 
@@ -976,5 +1008,31 @@ describe('rigged model assets', () => {
     const [status] = modelAssetStatus(['ual_mannequin']);
     expect(status.state).toBe('ready');
     expect(status.clips).toContain(asset.definition.clips.idle);
+  });
+});
+
+describe('late-era building models', () => {
+  const forbidden = /(_atomic|_information|_modern)$|^(plant_|exchange_)/;
+  for (const era of [Era.VICEROYALTY, Era.REPUBLIC] as const) {
+    it(`uses a period-appropriate model family in era ${era}`, () => {
+      for (const def of Object.values(BUILDING_DEFS)) {
+        const type = def.eraModel[era]?.type;
+        if (type) expect(type).not.toMatch(forbidden);
+      }
+    });
+  }
+
+  it('maps the core buildings to the stone/brick family', () => {
+    expect(BUILDING_DEFS.center.eraModel[Era.VICEROYALTY]?.type).toBe('center_imperial');
+    expect(BUILDING_DEFS.center.eraModel[Era.REPUBLIC]?.type).toBe('center_imperial');
+    expect(BUILDING_DEFS.house.eraModel[Era.REPUBLIC]?.type).toBe('house_steam');
+    expect(BUILDING_DEFS.mill.eraModel[Era.REPUBLIC]?.type).toBe('mill_imperial');
+    expect(BUILDING_DEFS.sawmill.eraModel[Era.REPUBLIC]?.type).toBe('sawmill_imperial');
+    expect(BUILDING_DEFS.smelter.eraModel[Era.REPUBLIC]?.type).toBe('smelter_imperial');
+    expect(BUILDING_DEFS.barracks.eraModel[Era.VICEROYALTY]?.type).toBe('barracks_imperial');
+    expect(BUILDING_DEFS.fortress.eraModel[Era.REPUBLIC]?.type).toBe('fortress_imperial');
+    expect(BUILDING_DEFS.refinery.eraModel[Era.REPUBLIC]?.type).toBe('refinery');
+    expect(BUILDING_DEFS.wall.eraModel[Era.REPUBLIC]?.type).toBe('wall_colonial');
+    expect(BUILDING_DEFS.market.eraModel[Era.REPUBLIC]?.type).toBe('market_imperial');
   });
 });
