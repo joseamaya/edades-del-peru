@@ -31,6 +31,7 @@ export interface MainMenuActions {
   onCodex(): void;
   onControls(): void;
   onOptions(): void;
+  onCredits(): void;
   onIntro(): void;
   onReplay(): void;
 }
@@ -127,6 +128,7 @@ export function renderMainMenu(overlay: HTMLElement, a: MainMenuActions): void {
   add('📖', t('hud.menu.main.codex'), t('hud.menu.main.codexHint'), a.onCodex);
   add('?', t('hud.menu.main.controls'), t('hud.menu.main.controlsHint'), a.onControls);
   add('⚙', t('hud.menu.main.options'), t('hud.menu.main.optionsHint'), a.onOptions);
+  add('©', t('hud.menu.main.credits'), t('hud.menu.main.creditsHint'), a.onCredits);
   if (a.saveIncompatible) {
     const note = document.createElement('p');
     note.className = 'ed-menu-note';

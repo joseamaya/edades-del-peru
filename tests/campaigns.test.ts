@@ -217,6 +217,12 @@ describe('campaign progress', () => {
       'm3_moche_recuay',
       'm4_wari',
     ]);
+    // 0.1.0 counted nine missions in one linear path; keep each one in its current chapter.
+    const legacyNine = parseCampaignProgress('9');
+    expect(completedMissions(legacyNine, 'inca')).toEqual(['m5_yahuar_pampa', 'm6_chimu_inca']);
+    expect(completedMissions(legacyNine, 'virreinato')).toEqual(['m7_tupac_amaru']);
+    expect(completedMissions(legacyNine, 'independencia')).toEqual(['m8_independencia']);
+    expect(completedMissions(legacyNine, 'republica')).toEqual(['m9_guerra_pacifico']);
     expect(completedMissions(parseCampaignProgress('0'), 'preinca')).toEqual([]);
   });
 

@@ -43,4 +43,6 @@ The sack of Chorrillos and the occupation of Lima are stated in the epilogue, ne
 - Completable: `tests/e2e/campaign-completable.spec.ts`.
 - Real commands: `tests/e2e/miraflores.spec.ts` builds the three redoubts with ordinary place/build orders.
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts`.
-- Open: human no-cheat playtest and a performance row.
+- Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in
+  `yarn bench:check`.
+- Open: human no-cheat playtest.

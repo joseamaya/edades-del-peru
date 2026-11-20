@@ -7,6 +7,22 @@ export interface CampaignProgress {
 
 const EMPTY: CampaignProgress = { version: 2, completed: {} };
 
+/**
+ * The 0.1.0 build stored a single number: how many missions of its linear nine-mission path were
+ * completed. Keep that order here so a returning player keeps the campaigns those missions belong to.
+ */
+export const LEGACY_MISSION_ORDER = [
+  'm1_caral',
+  'm2_chavin',
+  'm3_moche_recuay',
+  'm4_wari',
+  'm5_yahuar_pampa',
+  'm6_chimu_inca',
+  'm7_tupac_amaru',
+  'm8_independencia',
+  'm9_guerra_pacifico',
+] as const;
+
 function validCompleted(value: unknown): value is Record<string, string[]> {
   if (!value || typeof value !== 'object') return false;
   return Object.values(value as Record<string, unknown>).every(
@@ -32,9 +48,13 @@ export function parseCampaignProgress(raw: string | null): CampaignProgress {
   if (!/^\d+$/.test(legacyText)) return { ...EMPTY, completed: {} };
   const legacy = Number.parseInt(legacyText, 10);
   if (!Number.isFinite(legacy) || legacy < 1) return { ...EMPTY, completed: {} };
-  const preinca = CAMPAIGNS.find((c) => c.id === 'preinca');
-  const completed = preinca ? preinca.releasedMissionIds.slice(0, legacy) : [];
-  return { version: 2, completed: { preinca: completed } };
+  const done = new Set<string>(LEGACY_MISSION_ORDER.slice(0, legacy));
+  const completed: Record<string, string[]> = {};
+  for (const campaign of CAMPAIGNS) {
+    const ids = campaign.releasedMissionIds.filter((id) => done.has(id));
+    if (ids.length) completed[campaign.id] = ids;
+  }
+  return { version: 2, completed };
 }
 
 export function completedMissions(progress: CampaignProgress, campaignId: CampaignId): string[] {

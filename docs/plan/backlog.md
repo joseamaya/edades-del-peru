@@ -1,6 +1,6 @@
 # Development backlog
 
-**Status:** living · **Last updated:** 2026-11-17
+**Status:** living · **Last updated:** 2026-11-19
 
 A short, ordered queue for the current roadmap. This is not a second issue tracker: when an item has a
 GitHub issue or PR, link it here instead of copying the discussion. The live mission status is in
@@ -16,9 +16,9 @@ GitHub issue or PR, link it here instead of copying the discussion. The live mis
 | B7 | Package the itch build | The Pages build exists; the itch upload was deferred | The package is built from the release commit, checked and uploaded with `butler` | Blocked (tooling) |
 | B13 | Optimize the m6b and m8 late views | They are the tightest high-quality views from D3 (29.2 and 28.2 FPS; 1.27M/663 and 1.14M/911) | Reduce the late unit-crowd cost (LOD/shadow silhouette, material consolidation) and re-run `yarn bench:site-views`; otherwise record an explicit reject | Queued |
 | B14 | Launch catalogue of four missions per campaign | The menu promised 10/9/5/5 entries and most were never playable | `CAMPAIGNS[*].path` has four entries; the 13 expansion missions live in `EXPANSION_MISSIONS` and no path lists them; menu, briefing and tests use «Misión N de 4» and Roman campaign numerals | Done (2026-11-18) |
-| B15 | Close the Independencia arc art and performance | `m_lima_1821` and `m_real_felipe` have current in-engine captures but reuse the Lima and Arica kits and have no bench rows | A recorded human art review and `bench_scene.mjs` rows for both missions | Queued |
-| B16 | Close the República arc art and performance | `m_tarapaca`, `m_miraflores` and `m_brena` have current in-engine captures but reuse the Arica/Lima/Ayacucho kits and have no bench rows | A recorded human art review and `bench_scene.mjs` rows for the three missions | In review (this branch) |
-| B17 | Close the Virreinato arc art and performance | `m_cusco_1536` and `m_vilcabamba` reuse the Cusco/Chanca kits and have no bench rows | A recorded human art review and `bench_scene.mjs` rows for both missions | In review (this branch) |
+| B15 | Close the Independencia arc art and performance | `m_lima_1821` and `m_real_felipe` reuse the Lima and Arica kits | `bench_scene.mjs` rows are in `yarn bench:check`; a recorded human art review is still queued | Bench done (2026-11-19); art queued |
+| B16 | Close the República arc art and performance | `m_tarapaca`, `m_miraflores` and `m_brena` reuse the Arica/Lima/Ayacucho kits | `bench_scene.mjs` rows for all three are in `yarn bench:check`; a recorded human art review is still queued | Bench done (2026-11-19); art queued |
+| B17 | Close the Virreinato arc art and performance | `m_cusco_1536` and `m_vilcabamba` reuse the Cusco/Chanca kits | `bench_scene.mjs` rows for both are in `yarn bench:check`; a recorded human art review is still queued | Bench done (2026-11-19); art queued |
 
 ## Closed this cycle
 

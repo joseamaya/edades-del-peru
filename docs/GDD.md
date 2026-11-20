@@ -1,6 +1,6 @@
 # Game design document — Edades del Perú
 
-**Status:** living · **Version:** 0.1.0 · **Last updated:** 2026-11-14
+**Status:** living · **Version:** 0.2.0 · **Last updated:** 2026-11-19
 
 This document is the design source of truth. It states the intent, the pillars and the scope; it does not
 repeat the rules that belong to the detailed documents. When this document and a detailed document disagree

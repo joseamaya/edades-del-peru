@@ -5,7 +5,7 @@
 export const es = {
   'app.title': 'EDADES DEL PERÚ',
   'app.series': 'LA SENDA DEL SOL',
-  'app.version': 'La Senda del Sol · v0.1',
+  'app.version': 'La Senda del Sol · v0.2',
 
   'resource.food': 'Comida',
   'resource.wood': 'Madera',
@@ -226,6 +226,8 @@ export const es = {
   'hud.menu.main.controlsHint': 'Controles y conceptos básicos',
   'hud.menu.main.options': 'Opciones',
   'hud.menu.main.optionsHint': 'Calidad, cámara, sonido y música',
+  'hud.menu.main.credits': 'Créditos',
+  'hud.menu.main.creditsHint': 'Licencias y procedencia de los recursos',
   'hud.menu.main.replay': 'Ver última repetición',
   'hud.menu.titleIntro.sub': 'Cinco mil años de historia, desde Caral hasta la República.',
   'hud.menu.titleIntro.enter': 'Entrar',
@@ -251,6 +253,16 @@ export const es = {
   'hud.menu.controls.keys':
     '<b>Clic izquierdo / arrastrar</b><span>Seleccionar unidad, edificio o caja de selección</span><b>Doble clic</b><span>Seleccionar todas las unidades del mismo tipo</span><b>E</b><span>Seleccionar todo tu ejército</span><b>Botón derecho</b><span>Mover · recolectar · atacar · construir (con obreros)</span><b>Ctrl + Botón derecho</b><span>Atacar-mover</span><b>Shift + Botón derecho</b><span>Encolar órdenes / fijar punto de reunión</span><b>G · V</b><span>Construir chacra · vivienda</span><b>WASD / flechas / bordes</b><span>Mover la cámara · botón central: arrastrar</span><b>Minimapa</b><span>Clic o arrastra para mover la cámara · clic derecho: orden</span><b>Rueda</b><span>Zoom · <b>Z/X</b> rotar (si está activada) · <b>F</b> seguir / soltar</span><b>H</b><span>Ir a la ciudad · <b>Espacio</b> última batalla</span><b>P</b><span>Pausa · <b>☰ Menú</b> opciones y salir</span><b>Meta</b><span>Destruye a tu rival o construye la Huaca Sagrada y protégela 5 min</span>',
   'hud.menu.controls.back': '← Volver',
+  'hud.menu.credits.title': 'CRÉDITOS',
+  'hud.menu.credits.sub': 'Edades del Perú · La Senda del Sol',
+  'hud.menu.credits.body':
+    '<p><b>Código.</b> MIT · © Miguel Amaya.</p>' +
+    '<p><b>Terreno.</b> Mapas CC0 de Poly Haven (Rob Tuytel, Charlotte Baglioni). La textura de pasto de Caral deriva de Ciudades Sagradas, José Amaya, <b>CC BY 4.0</b>.</p>' +
+    '<p><b>Modelos y animaciones.</b> Quaternius (CC0).</p>' +
+    '<p><b>Texturas de materiales.</b> Generadas para el proyecto con Cloudflare Workers AI.</p>' +
+    '<p><b>Imágenes.</b> Renders y capturas del proyecto; no son fotografías históricas.</p>',
+  'hud.menu.credits.full': 'Ver atribución completa',
+  'hud.menu.credits.back': '← Volver',
   'hud.menu.briefing.mission': 'MISIÓN HISTÓRICA',
   'hud.menu.briefing.kicker': 'Campaña {n} · {campaign} · Misión {mission} de {total}',
   'hud.menu.briefing.factPeriod': 'Periodo',

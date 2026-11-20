@@ -15,6 +15,26 @@ with Chimú).
 
 **Play all five campaigns:** <https://joseamaya.github.io/edades-del-peru/>
 
+## Release 0.2.0
+
+The current release is **0.2.0**, campaign-only: five campaigns and twenty missions. `v0.1.0` (October
+2026) is kept as the earlier nine-mission demo. The evidence, the performance numbers and the closeout
+checklist are in [`docs/release/0.2.0-readiness-audit.md`](./docs/release/0.2.0-readiness-audit.md).
+
+**Requires a desktop browser with WebGL2** (recent Chrome, Edge, Firefox or Safari), a mouse and a
+keyboard. The interface and the historical content are in Spanish. Quality adapts automatically; the
+reference Intel iGPU runs the high preset at about 28–38 FPS at 1600×900, and the low preset is the
+fallback (46–50 FPS on the tightest views).
+
+Known limitations for 0.2.0:
+
+- The seven missions added on 2026-11-18 have an automated no-cheat full path
+  (`tests/e2e/release-playtest.spec.ts`) and are **pending a final human no-cheat playtest**; their save
+  coverage is the mission opening, not a mid-act save.
+- The reused site kits (Moche, Wari, Cusco, Chanca, Lima, Arica) keep their own art-review status (#343).
+- No real-GPU frame time is recorded for those seven missions yet; only the SwiftShader structural ratchet.
+- Campaign progress stored by 0.1.0 is migrated from its single mission count, which is approximate.
+
 ## Media
 
 The match runs with the **cinematic look** on by default (SSAO, bloom, vignette, chromatic aberration, a
@@ -218,5 +238,6 @@ golden rule — **do not invent history**. Bug reports and ideas go to
 
 ## License
 
-Distributed under the **MIT** license — see [`LICENSE`](./LICENSE). The texture assets and their provenance are
-documented in [`PROVENANCE.md`](./PROVENANCE.md).
+Distributed under the **MIT** license — see [`LICENSE`](./LICENSE). The texture assets, their licences and the
+required CC BY attribution are in [`ATTRIBUTION.md`](./public/ATTRIBUTION.md) and
+[`PROVENANCE.md`](./PROVENANCE.md).

@@ -45,4 +45,6 @@ The executions and violence of Concepción/Huamachuco are told in the epilogue a
 - Completable: `tests/e2e/campaign-completable.spec.ts`.
 - Real commands: `tests/e2e/brena.spec.ts` builds the three communities with ordinary place/build orders.
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts`.
-- Open: human no-cheat playtest and a performance row.
+- Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in
+  `yarn bench:check`.
+- Open: human no-cheat playtest.

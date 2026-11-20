@@ -2467,6 +2467,7 @@ export class HUD {
       onCodex: () => this.showCodex(),
       onControls: () => this.showControls(),
       onOptions: () => this.showOptions('main'),
+      onCredits: () => this.showCredits(),
       onIntro: () => this.showSeriesIntro(),
       onReplay: () => {
         this.setMenuOpen(false);
@@ -2764,6 +2765,26 @@ export class HUD {
     keys.innerHTML = t('hud.menu.controls.keys');
     const back = this.el('button', 'ed-primary', panel);
     back.textContent = t('hud.menu.controls.back');
+    back.addEventListener('click', () => this.showMainMenu());
+  }
+
+  /** Licences, attribution and the no-photograph disclaimer. */
+  showCredits(): void {
+    this.clearOverlays();
+    this.setMenuOpen(true);
+    const ov = this.el('div', 'ed-overlay');
+    const panel = this.el('div', 'ed-panel', ov);
+    panel.style.maxWidth = '680px';
+    panel.innerHTML = `<h2>${t('hud.menu.credits.title')}</h2><div class="sub">${t('hud.menu.credits.sub')}</div>`;
+    const body = this.el('div', 'ed-hist', panel);
+    body.innerHTML = t('hud.menu.credits.body');
+    const full = this.el('a', 'ed-ghostbtn', panel) as HTMLAnchorElement;
+    full.href = publicAsset('ATTRIBUTION.md');
+    full.target = '_blank';
+    full.rel = 'noreferrer';
+    full.textContent = t('hud.menu.credits.full');
+    const back = this.el('button', 'ed-primary', panel);
+    back.textContent = t('hud.menu.credits.back');
     back.addEventListener('click', () => this.showMainMenu());
   }
 

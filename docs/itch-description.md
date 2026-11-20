@@ -23,14 +23,15 @@ del Perú desde Caral hasta la actualidad. Cada partida se juega en un **períod
 histórico** y solo puedes enfrentar civilizaciones **coetáneas**: Moche contra
 Recuay, Chanca contra Inca; nunca Moche contra Chimú.
 
-- **9 escenarios de campaña** con fecha, lugar, bandos y comandantes reales
-  (Cusi Yupanqui, Túpac Yupanqui, Túpac Amaru II, Grau y Bolognesi…).
+- **20 escenarios de campaña** en cinco capítulos, con fecha, lugar, bandos y
+  comandantes reales (Cusi Yupanqui, Túpac Yupanqui, Túpac Amaru II, Grau y Bolognesi…).
 - **10 períodos históricos** y sus civilizaciones, con contenido educativo
   verificado y citado.
 - **Modo educativo**: prólogo, briefing histórico, tutorial guiado y un códice
   con los dosieres reales.
-- Generado de forma **procedimental** (mapas, modelos y audio) con iluminación
-  cinematográfica, color por época y agua con refracción.
+- Mapas, arquitectura y audio **procedimentales**, con modelos CC0 de Quaternius
+  para las unidades, iluminación cinematográfica, color por época y agua con
+  refracción.
 
 ## Etiquetas sugeridas
 
@@ -51,15 +52,20 @@ Recuay, Chanca contra Inca; nunca Moche contra Chimú.
 
 ## Créditos y procedencia
 
-- Texturas de terreno/material: generadas con IA (Cloudflare Workers AI); detalle
-  y licencias en [`PROVENANCE.md`](../PROVENANCE.md).
+- Terreno: mapas **CC0** de Poly Haven y la textura de pasto de Caral derivada de
+  *Ciudades Sagradas*, José Amaya, **CC BY 4.0**.
+- Modelos y animaciones: **Quaternius (CC0)**.
+- Texturas de materiales: generadas para el proyecto con **Cloudflare Workers AI**.
 - Textiles andinos: abstracciones de motivos atestiguados; imágenes de referencia
   de dominio público (The Met).
-- Modelos y audio: **procedimentales** (sin assets de terceros).
-- Licencia del código: **MIT**.
+- Audio: **procedimental** (WebAudio).
+- Licencia del código: **MIT**. Atribución completa en [`ATTRIBUTION.md`](../public/ATTRIBUTION.md)
+  y [`PROVENANCE.md`](../PROVENANCE.md).
 
 ## Pendiente antes de publicar
 
-- Revisar términos de uso comercial de Cloudflare Workers AI para las texturas.
-- Exportar un build de producción (`yarn build`) y comprimir `dist/`.
+- Confirmar los términos de uso comercial de Cloudflare Workers AI y del modelo
+  de imagen; esta distribución es gratuita.
+- Exportar el build de producción (`yarn build`) desde el commit del release y
+  comprobar `yarn dist:check`.
 - Capturas finales a 1920×1080 y un GIF corto de gameplay.

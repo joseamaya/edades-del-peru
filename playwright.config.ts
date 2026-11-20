@@ -13,6 +13,7 @@ const SLOW_SPECS = [
   '**/ai.spec.ts',
   '**/campaign-completable.spec.ts',
   '**/campaign-playtest.spec.ts',
+  '**/release-playtest.spec.ts',
   '**/chavin-campaign.spec.ts',
   '**/moche-campaign.spec.ts',
   '**/wari-campaign.spec.ts',

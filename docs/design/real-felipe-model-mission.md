@@ -59,5 +59,6 @@ Optional/failure: if Salom dies or the camp falls, the mission is lost.
 - Real commands: `tests/e2e/real-felipe.spec.ts` builds a battery and checks the network objective advances
   without direct objective calls.
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts` cover the briefing and act cards.
-- Open: human no-cheat playtest, a dedicated star-fort GLB and a performance row if the late view warrants
-  it.
+- Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in
+  `yarn bench:check`.
+- Open: human no-cheat playtest and a dedicated star-fort GLB.
