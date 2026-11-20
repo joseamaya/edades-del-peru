@@ -1,6 +1,7 @@
 import { CivId } from '../../core/types';
 import {
   POST_COLONIAL_SPECS,
+  REALISTA_BICORN_HAT_COLOR,
   postColonialCultureForCiv,
   type PostColonialCulture,
   type PostColonialSpec,
@@ -13,6 +14,7 @@ import { REBELDE_PALETTE } from './rebeldeCharacters';
  */
 export const MOUNTED_VARIANTS = [
   'mounted_realistas',
+  'mounted_realistas_bicorn',
   'mounted_patriotas',
   'mounted_republica',
   'mounted_chile',
@@ -40,6 +42,12 @@ const HORSE_COATS: Record<PostColonialCulture | 'rebelde', HorsePalette> = {
 
 export const MOUNTED_SPECS: Record<MountedRigVariant, MountedSpec> = {
   mounted_realistas: { ...specFromCulture('realistas'), ...HORSE_COATS.realistas },
+  mounted_realistas_bicorn: {
+    ...specFromCulture('realistas'),
+    hat: 'bicorn',
+    hatColor: REALISTA_BICORN_HAT_COLOR,
+    ...HORSE_COATS.realistas,
+  },
   mounted_patriotas: { ...specFromCulture('patriotas'), ...HORSE_COATS.patriotas },
   mounted_republica: { ...specFromCulture('republica'), ...HORSE_COATS.republica },
   mounted_chile: { ...specFromCulture('chile'), ...HORSE_COATS.chile },
@@ -68,8 +76,12 @@ const MOUNTED_BY_CULTURE: Record<PostColonialCulture, MountedRigVariant> = {
   chile: 'mounted_chile',
 };
 
-export function mountedVariantForCiv(civ: CivId): MountedRigVariant | null {
+export function mountedVariantForCiv(
+  civ: CivId,
+  realistaHat: 'morion' | 'bicorn' = 'morion',
+): MountedRigVariant | null {
   if (civ === CivId.INCA) return 'mounted_rebelde';
+  if (civ === CivId.REALISTAS && realistaHat === 'bicorn') return 'mounted_realistas_bicorn';
   const culture = postColonialCultureForCiv(civ);
   return culture ? MOUNTED_BY_CULTURE[culture] : null;
 }

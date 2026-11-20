@@ -15,8 +15,10 @@ import {
   POST_COLONIAL_CULTURES,
   POST_COLONIAL_ROLES,
   postColonialCultureForCiv,
+  realistaHatFor,
   type PostColonialRigVariant,
   type PostColonialRole,
+  type RealistaHat,
 } from './postColonialCharacters';
 import { MOUNTED_VARIANTS, mountedVariantForCiv, type MountedRigVariant } from './mountedCharacters';
 import type { RebeldeRigVariant } from './rebeldeCharacters';
@@ -125,11 +127,11 @@ const POST_COLONIAL_ROLE_CLIPS: Record<
   Partial<Record<RigClipState, string | null>>
 > = FIELD_ROLE_CLIPS;
 
-const POST_COLONIAL_VARIANT_CLIPS = variantClips(
-  POST_COLONIAL_CULTURES,
-  POST_COLONIAL_ROLES,
-  (role) => POST_COLONIAL_ROLE_CLIPS[role],
-) as Partial<Record<PostColonialRigVariant, Partial<Record<RigClipState, string | null>>>>;
+const POST_COLONIAL_VARIANT_CLIPS = {
+  ...variantClips(POST_COLONIAL_CULTURES, POST_COLONIAL_ROLES, (role) => POST_COLONIAL_ROLE_CLIPS[role]),
+  // The late realistas keep the same field clips as the 1535–1572 Spanish, only the headwear changes.
+  ...variantClips(['realistas_bicorn'], POST_COLONIAL_ROLES, (role) => POST_COLONIAL_ROLE_CLIPS[role]),
+} as Partial<Record<PostColonialRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
 const REBELDE_VARIANT_CLIPS = variantClips(
   ['rebelde'],
@@ -295,6 +297,8 @@ export function unitModelAsset(
   const unitGender = gender ?? genderForId(id);
   const baseKind = unitBaseKind(kind);
   if (baseKind !== kind) return unitModelAsset(baseKind, era, civ, id, gender, tag, missionId);
+  // 1535/1536/1572 keep the morion; the 1780 and Independence realistas wear the bicorn.
+  const realistaHat: RealistaHat | null = civ === CivId.REALISTAS ? realistaHatFor(era, missionId) : null;
   if (tag === 'manco_capac' && civ === CivId.INCA_KILLKE) {
     return { asset: TAMBOTOCO_HERO_ASSET_ID, variant: 'inca_killke_soldier_m' };
   }
@@ -317,7 +321,7 @@ export function unitModelAsset(
     return { asset: 'quaternius_alpaca', variant: 'caravan' };
   }
   if ((kind === UnitKind.HUSSAR || kind === UnitKind.CAVALRY) && (era === Era.VICEROYALTY || era === Era.REPUBLIC)) {
-    const variant = mountedVariantForCiv(civ);
+    const variant = mountedVariantForCiv(civ, realistaHat ?? 'morion');
     if (variant) return { asset: MOUNTED_RIG_ASSET_ID, variant };
   }
   const siegeVariant = siegeVariantFor(kind, era, civ);
@@ -367,7 +371,8 @@ export function unitModelAsset(
     const role = postColonialFieldRole(kind);
     if (role) {
       const suffix = unitGender === 'female' ? 'f' : 'm';
-      return { asset: CARAL_WORKER_ASSET_ID, variant: `${postColonial}_${role}_${suffix}` };
+      const culture = postColonial === 'realistas' && realistaHat === 'bicorn' ? 'realistas_bicorn' : postColonial;
+      return { asset: CARAL_WORKER_ASSET_ID, variant: `${culture}_${role}_${suffix}` as PostColonialRigVariant };
     }
   }
   if (andeanCulture) {

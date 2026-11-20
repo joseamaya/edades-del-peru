@@ -1,4 +1,4 @@
-import { CivId } from '../../core/types';
+import { CivId, Era } from '../../core/types';
 import { cultureForVariant, roleForVariant } from './variantHelpers';
 
 export const POST_COLONIAL_CULTURES = ['realistas', 'patriotas', 'republica', 'chile'] as const;
@@ -6,7 +6,11 @@ export const POST_COLONIAL_ROLES = ['soldier', 'ranged', 'missionary', 'worker',
 
 export type PostColonialCulture = (typeof POST_COLONIAL_CULTURES)[number];
 export type PostColonialRole = (typeof POST_COLONIAL_ROLES)[number];
-export type PostColonialRigVariant = `${PostColonialCulture}_${PostColonialRole}_${'f' | 'm'}`;
+/** The 1535–1572 Spanish keep the morion; 1780–1826 realistas wear the bicorn. */
+export type RealistaHat = 'morion' | 'bicorn';
+export type PostColonialRigVariant =
+  | `${PostColonialCulture}_${PostColonialRole}_${'f' | 'm'}`
+  | `realistas_${RealistaHat}_${PostColonialRole}_${'f' | 'm'}`;
 
 export interface PostColonialSpec {
   civ: CivId;
@@ -17,6 +21,23 @@ export interface PostColonialSpec {
   hatColor: number;
   weapon: 'musket' | 'rifle' | 'none';
   sidearm: 'sword' | 'none';
+}
+
+/** Bicorn colour shared with the patriotas; the late realistas are the same dark felt. */
+export const REALISTA_BICORN_HAT_COLOR = 0x2b2f36;
+
+/** The 1780 campaign is the only Viceroyalty mission whose realistas are late-colonial. */
+export const REALISTA_BICORN_MISSION_ID = 'm7_tupac_amaru';
+
+/**
+ * Headwear for the Spanish/realista humanoids. The Independence missions run on `Era.REPUBLIC`;
+ * the 1780 m7 campaign is still `Era.VICEROYALTY` but already late-colonial. 1535, 1536 and 1572
+ * keep the morion. A Viceroyalty skirmish has no date, so it keeps the conservative early default.
+ */
+export function realistaHatFor(era: Era, missionId: string): RealistaHat {
+  if (era === Era.REPUBLIC) return 'bicorn';
+  if (missionId === REALISTA_BICORN_MISSION_ID) return 'bicorn';
+  return 'morion';
 }
 
 /** Uniform abstractions from `docs/historia/atuendos.md` §6. */
@@ -62,6 +83,20 @@ export const POST_COLONIAL_SPECS: Record<PostColonialCulture, PostColonialSpec> 
     sidearm: 'none',
   },
 };
+
+/**
+ * Spec for a variant. `realistas_bicorn_*` is the same culture and coat as `realistas_*`, with
+ * the late-colonial headwear; every other culture keeps its own spec.
+ */
+export function postColonialSpecForVariant(variant: string): PostColonialSpec | null {
+  const culture = postColonialCultureForVariant(variant);
+  if (!culture) return null;
+  const spec = POST_COLONIAL_SPECS[culture];
+  if (variant.startsWith('realistas_bicorn_')) {
+    return { ...spec, hat: 'bicorn', hatColor: REALISTA_BICORN_HAT_COLOR };
+  }
+  return spec;
+}
 
 export function postColonialCultureForVariant(variant: string): PostColonialCulture | null {
   return cultureForVariant(POST_COLONIAL_CULTURES, variant);

@@ -118,7 +118,7 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
   sin maskapaycha ni metal imperial. Los honderos y porras son la abstracción de juego del señorío
   (`docs/design/tambotoco-model-mission.md`); no hay una prenda Killke documentada pieza por pieza.
 
-| Virreinato (Realistas) | casaca/chupa azul, divisa roja | morrión/bicornio | fusil/arcabuz + sable/lanza | cuera (frontera) | — |
+| Virreinato (Realistas) | casaca/chupa azul, divisa roja | morrión (1535–1572) / bicornio (1780–1826) | fusil/arcabuz + sable/lanza | cuera (frontera) | — |
 | República (Patriotas/Guerra del Pacífico) | guerrera/dormán azul, pantalón | kepí (chacó en gala) | fusil Comblain/Peabody-Martini + bayoneta | — | — |
 | Contemporáneo (Perú) | uniforme de campaña | casco | fusil de asalto | chaleco | — |
 
