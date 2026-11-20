@@ -167,6 +167,28 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
       [Era.REPUBLIC]: { type: 'soldier_elite', scale: 1.06 },
       [Era.CONTEMPORARY]: { type: 'soldier_elite', scale: 1.12 },
     },
+    eraIdentity: {
+      [Era.FORMATIVE]: {
+        name: 'Guerrero',
+        icon: '🗡️',
+        description: 'Infantería básica con lanza y macana. Barata y numerosa.',
+      },
+      [Era.VICEROYALTY]: {
+        name: 'Soldado',
+        icon: '🗡️',
+        description: 'Infantería de línea con pica y espada; la base de los ejércitos virreinales.',
+      },
+      [Era.REPUBLIC]: {
+        name: 'Infante',
+        icon: '🗡️',
+        description: 'Infantería de línea de la República; sostiene la posición y cubre a los fusileros.',
+      },
+      [Era.CONTEMPORARY]: {
+        name: 'Soldado',
+        icon: '🗡️',
+        description: 'Infantería básica contemporánea.',
+      },
+    },
   },
   moche_warrior: {
     id: UnitKind.MOCHE_WARRIOR,

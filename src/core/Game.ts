@@ -51,7 +51,7 @@ import { disposeStaticGltf } from '../rendering/StaticModel';
 import { Projectile } from '../entities/Projectile';
 import { ProjectileView } from '../rendering/ProjectileView';
 import { attachBuilding, attachResource, attachUnit, detachUnit, rebuildBuilding } from '../rendering/RenderSync';
-import { AI } from '../game/AI';
+import { AI, type AIOptions } from '../game/AI';
 import type { Difficulty } from './Config';
 import { Economy } from '../game/Economy';
 import { HUD } from '../ui/HUD';
@@ -102,7 +102,7 @@ import { getAuthoredSite, isLatePeriod, type AuthoredSiteDef } from '../model/de
 import { detectSoftwareRenderer } from '../util/gpu';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
-import { getUnitStats, unitAvailableToCiv, type DamageClass } from '../model/defs/units';
+import { getUnitStats, unitAvailableToCiv, unitDisplayName, type DamageClass } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { AudioEngine } from '../audio/AudioEngine';
 import { Mission } from '../campaign/Mission';
@@ -113,6 +113,7 @@ import { MatchStatsCollector } from '../game/matchStats';
 import { applyMarketTrade, createMarketState, marketQuote, type MarketQuote, type MarketState } from '../game/market';
 import { getMission } from '../campaign/defs/campaign';
 import type { MissionDef, MissionAtmosphere, MissionLayout, MissionLabel, MissionPoint } from '../campaign/types';
+import { seatStartsWithBase } from '../campaign/types';
 import { CommandProcessor } from '../game/CommandProcessor';
 import { InputController } from './InputController';
 import { WorldViewDecor } from './WorldViewDecor';
@@ -466,12 +467,20 @@ export class Game {
     const tutorialDef = mis ? tutorialForMission(mis.id) : undefined;
     this.tutorial =
       mis && mis.tutorial && tutorialDef && this.settings.showHints ? new Tutorial(this, tutorialDef) : null;
-    if (!mis || mis.enemy.active) this.addAI(1);
+    if (!mis || mis.enemy.active) {
+      this.addAI(1, mis?.enemy.difficulty, {
+        aggression: mis?.enemy.aggression,
+        economy: mis?.enemy.economy,
+        attacks: mis?.enemy.attacks,
+      });
+    }
     if (!this.headless) {
       this.audio.setEra(this.players[0].era);
       this.initAudio();
     }
-    if (mis && !this.pendingSnapshot && !this.headless) this.applyMissionSetup(mis);
+    // Headless games must start with the authored roster too: the sim/parity harness should not run a
+    // campaign mission on generic opening units only.
+    if (mis && !this.pendingSnapshot) this.applyMissionSetup(mis);
     if (this.pendingSnapshot) {
       this.applySnapshot(this.pendingSnapshot);
       // A loaded Caral save skips the opening-base pass that usually draws the valley: regenerate the
@@ -991,11 +1000,30 @@ export class Game {
   playerCenter(owner: number): { x: number; z: number } {
     const c = [...this.buildings.values()].find((b) => b.owner === owner && b.kind === BuildingKind.CENTER && !b.dead);
     if (c) return { x: c.pos.x, z: c.pos.z };
-    // A party with no base (Tambotoco) anchors on its opening spot; other base-less missions (m8's armies)
-    // keep the map centre their `ref: 'player'` points were authored against.
-    const spot = owner === 0 && this.missionDef?.start?.base === false ? this.startSpots[0] : undefined;
+    // A party with no base anchors on its opening spot: Tambotoco's Ayar, Tarapacá's battle line, and
+    // every scripted seat that starts without a constructed centre.
+    const spot = !this.startBaseFor(owner) ? this.startSpots[owner] : undefined;
     if (spot) return { x: spot[0], z: spot[1] };
     return { x: this.settings.mapSize / 2, z: this.settings.mapSize / 2 };
+  }
+
+  /** Whether a seat starts with a constructed base (legacy `start.base` is the player's alias). */
+  startBaseFor(owner: number): boolean {
+    return seatStartsWithBase(this.missionDef?.start, owner === 0 ? 0 : 1);
+  }
+
+  /** Whether a seat receives the generic four workers + scout; defaults to its own base flag. */
+  openingUnitsFor(owner: number): boolean {
+    const start = this.missionDef?.start;
+    if (!start) return true;
+    return start.openingUnits ?? this.startBaseFor(owner);
+  }
+
+  /** Player-facing unit name, with the mission's scoped override for the player's seat. */
+  unitName(kind: UnitKind, owner = 0): string {
+    const p = this.players[owner];
+    const override = owner === 0 ? this.missionDef?.unitNames?.[kind] : undefined;
+    return override ?? unitDisplayName(kind, p?.civ, p?.era ?? this.settings.startingEra);
   }
 
   /** Find the nearest solid land to a point (for scripted spawns). */
@@ -1988,8 +2016,8 @@ export class Game {
   }
 
   /** Attach an AI controller to a player (AI-vs-AI runs/tests). */
-  addAI(playerId: number, difficulty?: Difficulty): void {
-    this.ais.push(new AI(this, playerId, difficulty));
+  addAI(playerId: number, difficulty?: Difficulty, options: AIOptions = {}): void {
+    this.ais.push(new AI(this, playerId, difficulty, options));
     // Attaching an AI after boot (sim/test) must still give it the balanced
     // opening gather plan; human seats never get this call.
     const workers = [...this.units.values()].filter(

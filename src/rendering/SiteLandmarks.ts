@@ -412,6 +412,26 @@ function tarapacaVillage(b: LandmarkBuilder, x: number, z: number, s: number, ya
   }
 }
 
+function tarapacaHeights(b: LandmarkBuilder, x: number, z: number, s: number, yaw: number): void {
+  // A dry trench line on the crest, with stone returns and taller outcrops so the objective reads as a
+  // defensible height rather than an empty pampa. The heightfield itself stays walkable.
+  const y = b.padHeight(x, z, 14 * s, 10 * s);
+  b.addBox('ditch', 24 * s, 0.22 * s, 1.4 * s, x, y + 0.11 * s, z + 5 * s, 0, yaw);
+  b.addBox('fieldstone', 20 * s, 1.3 * s, 0.9 * s, x - s, y + 0.65 * s, z + 5.6 * s, 0, yaw);
+  b.addBox('fieldstone', 0.9 * s, 1.1 * s, 8 * s, x - 11 * s, y + 0.55 * s, z + 1.5 * s, 0, yaw);
+  b.addBox('fieldstone', 0.9 * s, 1.1 * s, 6 * s, x + 11 * s, y + 0.55 * s, z + 2 * s, 0, yaw);
+  for (const [dx, dz, w, d, rot] of [
+    [4, -3, 3.4, 2.2, 0.4],
+    [-6, -5, 2.6, 1.8, -0.3],
+    [8, 1, 2.2, 1.6, 0.7],
+  ] as const) {
+    const cx = x + dx * s;
+    const cz = z + dz * s;
+    const base = b.padHeight(cx, cz, (w * s) / 2, (d * s) / 2);
+    b.addBox('fieldstone', w * s, 1.8 * s, d * s, cx, base + 0.9 * s, cz, 0, yaw + rot);
+  }
+}
+
 function vilcabambaRefuge(b: LandmarkBuilder, x: number, z: number, s: number, yaw: number): void {
   const y = b.padHeight(x, z, 13 * s, 9 * s);
   // A low levelled platform, retained on the downhill west edge, with a low perimeter wall.
@@ -450,6 +470,9 @@ function buildOne(b: LandmarkBuilder, spec: MissionSiteLandmark, mapSize: number
       break;
     case 'tarapaca-village':
       tarapacaVillage(b, x, z, s, yaw);
+      break;
+    case 'tarapaca-heights':
+      tarapacaHeights(b, x, z, s, yaw);
       break;
     case 'vilcabamba-refuge':
       vilcabambaRefuge(b, x, z, s, yaw);

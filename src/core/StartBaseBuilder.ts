@@ -20,11 +20,11 @@ export class StartBaseBuilder {
 
   spawnStartBase(player: number, x: number, z: number): void {
     const ctx = this.game.makeBuildContext(player);
-    // A party on the move (Tambotoco) starts with nothing built: no centre, no dwellings, no plots.
-    const camp = !(player === 0 && this.game.missionDef?.start?.base === false);
+    // A party on the move (Tambotoco, Tarapacá) starts with nothing built: no centre, no dwellings, no plots.
+    const hasBase = this.game.startBaseFor(player);
     // center and starting dwellings, laid out by the terrain-aware planner
     const plan = this.game.settlementPlanFor(player, x, z);
-    if (camp) this.placeBase(player, plan);
+    if (hasBase) this.placeBase(player, plan);
     this.spawnStartUnits(player, x, z, ctx);
   }
 
@@ -52,36 +52,41 @@ export class StartBaseBuilder {
   }
 
   private spawnStartUnits(player: number, x: number, z: number, ctx: BuildContext): void {
-    // nearby resources to start
-    this.spawnStartResources(player, x, z);
+    const hasBase = this.game.startBaseFor(player);
+    const openingUnits = this.game.openingUnitsFor(player);
+    // Nearby resources to start. A pure battle (Tarapacá) has neither a base nor an opening crew, so it
+    // also skips the opening resource ring.
+    if (hasBase || openingUnits) this.spawnStartResources(player, x, z);
     // After the opening nodes: the valley groves keep clear of every existing resource.
     if (player === 0 && this.game.siteDef?.environs?.valley === 'caral') this.game.world.addCaralValley(x, z);
-    // The Caral opening deploys outside the civic core, on the camera-facing
-    // side where the frame reads. Other matches and AI seats keep their ring.
-    const startingSpots =
-      player === 0 && this.game.siteDef?.environs?.opening === 'caral' ? this.startingUnitSpots(x, z) : undefined;
-    placeStartingUnits({
-      player,
-      x,
-      z,
-      seed: this.game.settings.mapSeed,
-      spots: startingSpots,
-      mainComponentSpot: (sx, sz) => this.game.mainComponentSpot(sx, sz),
-      createUnit: (kind, sx, sz) => {
-        const unit = new Unit(
-          kind === 'worker' ? UnitKind.WORKER : UnitKind.SCOUT,
-          player,
-          this.game.players[player].era,
-          ctx,
-        );
-        unit.pos.set(sx, this.game.terrain.getHeight(sx, sz), sz);
-        unit.setContext(this.game.unitContext);
-        this.game.applyPlayerBonuses(unit, this.game.players[player]);
-        this.game.attachUnit(unit);
-        this.game.units.set(unit.id, unit);
-        this.game.players[player].populationUsed += unit.stats.population;
-      },
-    });
+    if (openingUnits) {
+      // The Caral opening deploys outside the civic core, on the camera-facing
+      // side where the frame reads. Other matches and AI seats keep their ring.
+      const startingSpots =
+        player === 0 && this.game.siteDef?.environs?.opening === 'caral' ? this.startingUnitSpots(x, z) : undefined;
+      placeStartingUnits({
+        player,
+        x,
+        z,
+        seed: this.game.settings.mapSeed,
+        spots: startingSpots,
+        mainComponentSpot: (sx, sz) => this.game.mainComponentSpot(sx, sz),
+        createUnit: (kind, sx, sz) => {
+          const unit = new Unit(
+            kind === 'worker' ? UnitKind.WORKER : UnitKind.SCOUT,
+            player,
+            this.game.players[player].era,
+            ctx,
+          );
+          unit.pos.set(sx, this.game.terrain.getHeight(sx, sz), sz);
+          unit.setContext(this.game.unitContext);
+          this.game.applyPlayerBonuses(unit, this.game.players[player]);
+          this.game.attachUnit(unit);
+          this.game.units.set(unit.id, unit);
+          this.game.players[player].populationUsed += unit.stats.population;
+        },
+      });
+    }
     // auto-gathering
     // AI seats start gathering immediately; the human player keeps control of
     // the opening workers so they stay selectable at the base. AI-vs-AI seats

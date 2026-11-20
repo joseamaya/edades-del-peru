@@ -134,7 +134,9 @@ async function playMission(page: Page, missionId: string): Promise<PlaytestResul
           }
           run(3);
         } else if (o.kind === 'hold') {
-          order(front(), o.pos, 'attack_move');
+          // Hold objectives need boots inside the radius; Tarapacá's defensive line holds with `move`
+          // while the other missions keep the established attack-move probe.
+          order(front(), o.pos, id === 'm_tarapaca' ? 'move' : 'attack_move');
           run(25);
         } else if (o.kind === 'reach') {
           order(all(), o.pos, 'attack_move');

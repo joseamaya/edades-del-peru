@@ -41,6 +41,8 @@ export interface TechTreeMatch {
   /** Optional mission-scoped building labels (Caral's «Depósito comunal»). */
   buildingName?(kind: BuildingKind): string;
   buildingIcon?(kind: BuildingKind): string;
+  /** Optional mission-scoped unit labels (Tarapacá's republican unique). */
+  unitName?(kind: UnitKind): string;
 }
 
 /** The tech tree is generated from the defs; it never duplicates balance data. */
@@ -62,7 +64,7 @@ export function techTreeData(match?: TechTreeMatch): TechTreeEra[] {
           .filter((def) => def.eraModel[match.era] && unitAvailableToCiv(def.id, match.civ) && match.canTrain(def.id))
           .map((def) => ({
             id: def.id,
-            name: unitDisplayName(def.id, match.civ, match.era),
+            name: match.unitName?.(def.id) ?? unitDisplayName(def.id, match.civ, match.era),
             icon: unitDisplayIcon(def.id, match.era),
             unique: def.category === 'unique',
           })),

@@ -1,11 +1,11 @@
-import type { Era, Resources } from '../core/types';
+import type { CivId, Era, Resources } from '../core/types';
 
 const MATCH_SNAPSHOT_INTERVAL = 5;
 
 export interface PlayerSnapshot {
   id: number;
   name: string;
-  civ: string;
+  civ: CivId;
   colorHex: string;
   resources: Resources;
   gathered: Resources;
@@ -29,7 +29,7 @@ export interface MatchSnapshot {
 interface PlayerLike {
   id: number;
   name: string;
-  civ: string;
+  civ: CivId;
   colorHex: string;
   resources: Resources;
   populationUsed: number;

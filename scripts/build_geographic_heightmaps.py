@@ -315,8 +315,10 @@ def tarapaca(x: float, z: float) -> float:
     # The V spans ~32 m with ~4.5 m of relief; 0.45 max gradient stays under MAX_WALKABLE_SLOPE.
     canyon = (1.0 - smooth(5.0, 11.0, abs(z - 134.0))) * smooth(22, 48, x) * (1 - smooth(198, 230, x))
     h = h * (1 - canyon) + 2.0 * canyon
-    step = math.exp(-((z - 116.0) / 7.0) ** 2) * smooth(40, 70, x) * (1 - smooth(180, 214, x))
-    h += 1.4 * step
+    # The heights north of the village: a broad 3 m crest (not a cliff) so the objective reads as high
+    # ground from the RTS camera while the road from the village stays walkable.
+    step = math.exp(-((z - 116.0) / 12.0) ** 2) * smooth(40, 70, x) * (1 - smooth(180, 214, x))
+    h += 3.0 * step
     oasis = 1 - smooth(10, 26, math.hypot(x - 92, z - 140))
     h = h * (1 - oasis) + 4.6 * oasis
     h += smooth(226, 256, z) * 9 + smooth(226, 256, x) * 8

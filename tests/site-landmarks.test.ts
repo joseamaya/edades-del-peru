@@ -27,11 +27,14 @@ describe('mission site landmarks', () => {
   it('replaces the borrowed GLBs with procedural landmarks', () => {
     for (const [missionId, kind] of [
       ['m_real_felipe', 'real-felipe'],
-      ['m_tarapaca', 'tarapaca-village'],
       ['m_vilcabamba', 'vilcabamba-refuge'],
     ] as const) {
       expect(mission(missionId).layout?.siteLandmarks?.map((landmark) => landmark.kind)).toEqual([kind]);
     }
+    expect(mission('m_tarapaca').layout?.siteLandmarks?.map((landmark) => landmark.kind)).toEqual([
+      'tarapaca-village',
+      'tarapaca-heights',
+    ]);
     for (const siteId of ['real_felipe_site', 'tarapaca_site', 'vilcabamba_site'] as const) {
       expect(getAuthoredSite(siteId)?.hideModel, siteId).toBe(true);
     }
@@ -52,6 +55,7 @@ describe('mission site landmarks', () => {
       'sacsayhuaman',
       'real-felipe',
       'tarapaca-village',
+      'tarapaca-heights',
       'vilcabamba-refuge',
     ];
     const heightAt = (x: number, z: number): number => 5 + Math.sin(x * 0.02) * 0.25 + Math.cos(z * 0.02) * 0.2;

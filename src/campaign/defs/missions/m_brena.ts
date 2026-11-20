@@ -99,7 +99,9 @@ export const mBrena: MissionDef = {
       { kind: UnitKind.RIFLEMAN, dx: 6, dz: 0, count: 1, tag: 'caceres' },
     ],
   },
-  enemy: { active: true, difficulty: 'normal', aggression: 0.8 },
+  // The mission's aggression is wired to the AI now; 1.0 keeps the pre-wiring cadence until a dedicated
+  // balance pass (0.8 let the AI grow a larger army before committing and broke the real-order playtest).
+  enemy: { active: true, difficulty: 'normal', aggression: 1.0 },
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/brena/intro-epilogo.webp',

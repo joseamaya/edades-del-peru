@@ -1,6 +1,7 @@
 import { TECHS } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
-import { RESOURCE_KEYS, type Resources } from '../core/types';
+import { getCiv } from '../model/defs/civs';
+import { RESOURCE_KEYS, type CivId, type Resources } from '../core/types';
 import { RESOURCE_INFO } from '../core/Config';
 import type { MatchSnapshot, PlayerSnapshot } from '../game/matchStats';
 import { t } from '../i18n';
@@ -8,7 +9,7 @@ import { t } from '../i18n';
 export interface MatchStatsPlayerMeta {
   id: number;
   name: string;
-  civ: string;
+  civ: CivId;
   colorHex: string;
 }
 
@@ -36,6 +37,11 @@ function esc(value: string): string {
     const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
     return map[char] ?? char;
   });
+}
+
+/** Player-facing civilization name; the snapshot stores the internal id. */
+function civLabel(civ: CivId): string {
+  return getCiv(civ)?.name ?? civ;
 }
 
 function latest(samples: MatchSnapshot[], playerId: number): PlayerSnapshot | undefined {
@@ -100,7 +106,7 @@ function chart(series: { label: string; color: string; values: number[] }[], tim
 
 function table(rows: { label: string; values: string[] }[], players: PlayerSnapshot[]): string {
   return `<table class="ed-stats-table"><thead><tr><th></th>${players
-    .map((p) => `<th style="--player-color:${p.colorHex}">${esc(p.name)}<small>${esc(p.civ)}</small></th>`)
+    .map((p) => `<th style="--player-color:${p.colorHex}">${esc(p.name)}<small>${esc(civLabel(p.civ))}</small></th>`)
     .join('')}</tr></thead><tbody>${rows
     .map((row) => `<tr><th>${esc(row.label)}</th>${row.values.map((value) => `<td>${value}</td>`).join('')}</tr>`)
     .join('')}</tbody></table>`;
@@ -130,7 +136,7 @@ function summary(samples: MatchSnapshot[], players: PlayerSnapshot[], combat = t
     .map(
       (p) => `<div class="ed-stats-card">
         <b style="--player-color:${p.colorHex}">${esc(p.name)}</b>
-        <span>${esc(p.civ)} · ${esc(ERA_DEFS[p.era]?.name ?? '—')}</span>
+        <span>${esc(civLabel(p.civ))} · ${esc(ERA_DEFS[p.era]?.name ?? '—')}</span>
         ${
           combat
             ? `<strong>${p.kills}</strong><span>${t('hud.stats.killsShort', { lost: p.lost })}</span>`

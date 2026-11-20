@@ -66,6 +66,16 @@ export function portraitSvg(cmd: CommanderDef, size = 64): string {
     ? `<path d="M19 30 q0 -18 13 -18 t13 18 v12 q-4 -7 -13 -7 t-13 7 z" fill="${HUMAN_HAIR}" opacity="0.95" />`
     : `<path d="M20 24 q2 -11 12 -11 t12 11 q-6 -4 -12 -4 t-12 4 z" fill="${HUMAN_HAIR}" opacity="0.9" />`;
   const shawl = female ? `<path d="M8 62 q3 -21 24 -21 t24 21 z" fill="${accent}" opacity="0.3" />` : '';
+  const headwear = portraitHeadwear(cmd, accent, c.secondary);
+  const beard = cmd.beard ? `<path d="M24 28 q8 9 16 0 q-1 9 -8 9 t-8 -9 z" fill="${HUMAN_HAIR}" opacity="0.9" />` : '';
+  const uniform =
+    cmd.uniform === 'military'
+      ? `<path d="M18 62 q0 -8 14 -8 t14 8 z" fill="${c.secondary}" opacity="0.95" />
+         <rect x="17" y="52" width="5" height="2" rx="1" fill="${accent}" />
+         <rect x="42" y="52" width="5" height="2" rx="1" fill="${accent}" />`
+      : cmd.uniform === 'cloth'
+        ? `<path d="M16 62 q2 -12 16 -12 t16 12 z" fill="${accent}" opacity="0.35" />`
+        : '';
   return `<svg class="ed-portrait" data-gender="${cmd.gender}" width="${size}" height="${size}" viewBox="0 0 ${PORTRAIT_VIEW} ${PORTRAIT_VIEW}" role="img" aria-label="${label}">
     <defs>
       <clipPath id="${clip}"><polygon points="32,2 60,17 60,47 32,62 4,47 4,17" /></clipPath>
@@ -81,9 +91,35 @@ export function portraitSvg(cmd: CommanderDef, size = 64): string {
       <path d="M12 62 q4 -18 20 -18 t20 18 z" fill="${c.secondary}" opacity="0.92" />
       <path d="M12 62 q4 -18 20 -18 t20 18 z" fill="#000" opacity="0.12" />
       ${shawl}
+      ${uniform}
+      ${beard}
+      ${headwear}
     </g>
     <polygon points="32,2 60,17 60,47 32,62 4,47 4,17" fill="none" stroke="${accent}" stroke-width="1.8" opacity="0.9" />
-    <text x="32" y="57" text-anchor="middle" font-family="Georgia, serif" font-size="10" font-weight="700" fill="${c.secondary}" opacity="0.95">${initialsText}</text>
+    <text x="32" y="57" text-anchor="middle" font-family="Georgia, serif" font-size="8" font-weight="700" fill="${c.secondary}" opacity="0.8">${initialsText}</text>
     ${emblem(getCiv(cmd.civ).visual.emblem, 52, 12, c.secondary)}
   </svg>`;
+}
+
+/** Presentation-only headwear silhouettes; none of these claim a documented likeness. */
+function portraitHeadwear(cmd: CommanderDef, accent: string, secondary: string): string {
+  const kind = cmd.headwear ?? (cmd.headdress ? 'headdress' : undefined);
+  switch (kind) {
+    case 'bicorne':
+      return `<path d="M13 20 q19 -11 38 0 q-7 6 -19 6 t-19 -6 z" fill="${secondary}" stroke="${accent}" stroke-width="1.1" />`;
+    case 'morion':
+      return `<path d="M17 23 q15 -15 30 0 v3 h-30 z" fill="${secondary}" stroke="${accent}" stroke-width="1" />
+        <path d="M29 10 q3 -5 6 0 v10 h-6 z" fill="${accent}" opacity="0.8" />`;
+    case 'helmet':
+      return `<path d="M17 24 q15 -13 30 0 v3 h-30 z" fill="${secondary}" stroke="${accent}" stroke-width="1" />
+        <rect x="15" y="25" width="34" height="2.4" rx="1" fill="${accent}" />`;
+    case 'hat':
+      return `<path d="M11 22 h42 v2.6 h-42 z" fill="${secondary}" stroke="${accent}" stroke-width="0.8" />
+        <path d="M21 22 q11 -11 22 0 z" fill="${secondary}" stroke="${accent}" stroke-width="0.8" />`;
+    case 'headdress':
+      return `<path d="M19 16 q13 -9 26 0 v2.5 h-26 z" fill="${accent}" opacity="0.85" />
+        <path d="M22 16 l-3 -8 l5 3 l3 -7 l3 7 l5 -3 l-3 8 z" fill="${accent}" opacity="0.7" />`;
+    default:
+      return '';
+  }
 }

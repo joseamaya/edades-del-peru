@@ -11,6 +11,7 @@ import {
   TriggerEffect,
   MissionPoint,
   MissionGoal,
+  seatStartsWithBase,
 } from './types';
 import type { HeritageBuildingId } from '../model/defs/heritage';
 import { BuildingKind, OrderKind, Resources } from '../core/types';
@@ -417,8 +418,9 @@ export class Mission {
 
   private checkBaseLost(): void {
     if (this.game.hasBuildings(0)) return;
-    // A party that starts with no base (Tambotoco) is lost only when no one of it is left.
-    if (this.def.start.base === false && [...this.game.units.values()].some((u) => u.owner === 0 && !u.dead)) return;
+    // A party that starts with no base (Tambotoco, Tarapacá) is lost only when no one of it is left.
+    if (!seatStartsWithBase(this.def.start, 0) && [...this.game.units.values()].some((u) => u.owner === 0 && !u.dead))
+      return;
     this.defeat();
   }
 
@@ -476,19 +478,22 @@ export class Mission {
 
   private applyEffect(fx: TriggerEffect): void {
     if (fx.type === 'wave' || fx.type === 'reinforce') {
-      const p = this.resolvePoint(fx.pos ?? { dx: 0, dz: 0, ref: 'player' });
+      // `pos` is the wave's objective/position; `spawn` (when authored) is where it enters the map.
+      // Reinforcements keep spawning at `pos`, next to the unit they join.
+      const origin = this.resolvePoint(fx.type === 'wave' ? (fx.spawn ?? fx.pos) : fx.pos);
+      const position = this.resolvePoint(fx.pos);
       for (const u of fx.units) {
         for (let i = 0; i < u.count; i++) {
           const jitter = (this.game.rng.float() - 0.5) * (fx.radius ?? 6) * 2;
           const k = (this.game.rng.float() - 0.5) * (fx.radius ?? 6) * 2;
-          const unit = this.game.spawnScriptedUnit(u.kind, fx.owner, p.x + jitter, p.z + k);
+          const unit = this.game.spawnScriptedUnit(u.kind, fx.owner, origin.x + jitter, origin.z + k);
           if (fx.owner === 1) {
-            // enemy waves attack a target: an explicit point, the player base, or they hold their spawn
+            // enemy waves attack a target: an explicit point, the objective position, or the player base
             const t =
               fx.type === 'wave' && fx.target
                 ? this.resolvePoint(fx.target)
                 : fx.objective === 'position'
-                  ? p
+                  ? position
                   : this.game.playerCenter(0);
             unit.issueOrder({ kind: OrderKind.ATTACK_MOVE, target: { x: t.x, z: t.z } });
           }

@@ -6,6 +6,7 @@ export type TerrainPaletteId =
   | 'north_coast'
   | 'central_coast'
   | 'south_coast'
+  | 'atacama'
   | 'andean_valley'
   | 'high_andes'
   | 'cusco_valley'
@@ -118,6 +119,19 @@ export const TERRAIN_PALETTES: Record<TerrainPaletteId, TerrainPalette> = {
     },
     bands: { valley: '#7a8a4a', slope: '#b09868', loma: '#c0a870', summit: '#d0c8b8' },
     textureMix: 0.82,
+  },
+  // Atacama quebrada (Tarapacá): ochre gravel, no green valley band and a dusty summit. Mission-scoped
+  // through tarapaca_site so the shared south-coast palette keeps its Paracas/Nazca look.
+  atacama: {
+    materials: {
+      grass: '#e8c890',
+      dirt: '#d8a878',
+      sand: '#e8c898',
+      rock: '#c8a888',
+      snow: '#ffffff',
+    },
+    bands: { valley: '#c09060', slope: '#a87850', loma: '#c8a070', summit: '#d8c8b0' },
+    textureMix: 0.86,
   },
   andean_valley: {
     materials: {

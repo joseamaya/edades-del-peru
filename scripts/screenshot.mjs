@@ -7,7 +7,8 @@ import { launchChromium, withViteServer, reviewDir, cliArg } from './lib.mjs';
  * Usage: node scripts/screenshot.mjs [name] [--url=...] [--wait=ms] [--seed=...] [--click] [--site] [--height=N]
  * `--click` presses the first `.ed-primary` button (the mission briefing's start) before the wait.
  * `--site` flies the camera over the mission's authored site anchor (useful for site-view evidence),
- * `--height=N` overrides the camera zoom of that framing (default 78, the map-wide isometric limit) and
+ * `--height=N` overrides the camera zoom of that framing (default 78, the map-wide isometric limit),
+ * `--target=x,z` flies to an explicit world point (e.g. `--target=160,120` for a mission landmark) and
  * `--no-hud` hides the DOM HUD so a capture shows the terrain and the site alone.
  * `--no-labels` also hides the in-world place names, so a blind-test sheet cannot give the mission away.
  */
@@ -19,6 +20,7 @@ const siteView = process.argv.includes('--site');
 const noHud = process.argv.includes('--no-hud');
 const noLabels = process.argv.includes('--no-labels');
 const siteHeight = Number.parseFloat(cliArg('height', '78'));
+const targetArg = cliArg('target', '');
 const seed = parseInt(cliArg('seed', '12345'), 10);
 const numShots = parseInt(cliArg('shots', '1'), 10);
 
@@ -75,6 +77,27 @@ async function main() {
       )
       .catch((e) => errors.push('SITE-VIEW: ' + e.message));
     await page.waitForTimeout(2500);
+  }
+
+  if (targetArg) {
+    const [tx, tz] = targetArg.split(',').map(Number);
+    if (Number.isFinite(tx) && Number.isFinite(tz)) {
+      await page
+        .evaluate(
+          ([x, z, height]) => {
+            const g = window.game;
+            if (!g) return;
+            g.camera.follow(null);
+            g.camera.moveTo(x, z, true);
+            g.camera.setHeight(height);
+          },
+          [tx, tz, siteHeight],
+        )
+        .catch((e) => errors.push('TARGET-VIEW: ' + e.message));
+      await page.waitForTimeout(1500);
+    } else {
+      errors.push(`TARGET-VIEW: invalid target ${targetArg}`);
+    }
   }
 
   const files = [];
