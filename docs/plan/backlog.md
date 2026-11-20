@@ -1,6 +1,6 @@
 # Development backlog
 
-**Status:** living · **Last updated:** 2026-11-19
+**Status:** living · **Last updated:** 2026-11-20
 
 A short, ordered queue for the current roadmap. This is not a second issue tracker: when an item has a
 GitHub issue or PR, link it here instead of copying the discussion. The live mission status is in
@@ -19,6 +19,11 @@ GitHub issue or PR, link it here instead of copying the discussion. The live mis
 | B15 | Close the Independencia arc art and performance | `m_lima_1821` and `m_real_felipe` reuse the Lima and Arica kits | `bench_scene.mjs` rows are in `yarn bench:check`; a recorded human art review is still queued | Bench done (2026-11-19); art queued |
 | B16 | Close the República arc art and performance | `m_tarapaca`, `m_miraflores` and `m_brena` reuse the Arica/Lima/Ayacucho kits | `bench_scene.mjs` rows for all three are in `yarn bench:check`; a recorded human art review is still queued | Bench done (2026-11-19); art queued |
 | B17 | Close the Virreinato arc art and performance | `m_cusco_1536` and `m_vilcabamba` reuse the Cusco/Chanca kits | `bench_scene.mjs` rows for both are in `yarn bench:check`; a recorded human art review is still queued | Bench done (2026-11-19); art queued |
+| B18 | 0.2.1 P0 asset corrections | The 0.2.0 asset audit found glass/LED in the Republic, concrete/radar in the Viceroyalty and the 1780 rebel outfit in 1536–1572 | The era models and the Inca outfit are remapped and covered by a unit test; captures show no glass, LED, radar or musket in the wrong period (`./0.2.1-asset-corrections.md` §3) | Queued |
+| B19 | 0.2.1 P1 site identity and the colonial-andean profile | Miraflores, Cusco/Sacsayhuamán, Real Felipe, Tarapacá and Vilcabamba reuse another site, and the Inca of 1536–1572 has no Andean architecture | Each site is distinct or explicitly relabelled; the Inca keeps a fieldstone/thatch profile; captures attached (`./0.2.1-asset-corrections.md` §4) | Queued |
+| B20 | 0.2.1 P1 labels and headwear | Yachaywasi/Pucará are universal and the headwear does not change with the era | Labels per culture/era; morion/bicorn/kepi by period; captures attached (`./0.2.1-asset-corrections.md` §4) | Queued |
+| B21 | Verify the unverified assets | The audit could not inspect the .blend sources or the exact plans of five sites | The §10 list is closed or explicitly accepted as unknown (`./0.2.1-asset-corrections.md` §5) | Queued |
+| B22 | Asset polish P2/P3 | 12 P2 and 9 P3 remain (blockout detail, shared Andean kit, props, friezes) | Scheduled only after 0.2.1; no release gate | Queued |
 
 ## Closed this cycle
 

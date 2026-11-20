@@ -1,6 +1,6 @@
 # Development roadmap
 
-**Status:** living · **Last updated:** 2026-11-19
+**Status:** living · **Last updated:** 2026-11-20
 
 This is the engineering roadmap, not the content proposal. The live per-mission status is
 [`../design/campaign-quality-bar.md`](../design/campaign-quality-bar.md); the future campaign structure is
@@ -23,6 +23,8 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
   validation set) and the pilot closed with the 2026-11-17 approval; E7 was delivered on 2026-11-17 (baked hero proportions, scoped terrain macro, Inticancha/shrine detail; the 3X recording wins with the optional goals missed), with unique Ayar outfits/portraits, a hand-sculpted body, an andes GLB and new fauna as future work
   ([`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md)).
 - **Open release work:** human art review, a site-specific real-GPU performance pass and the itch package.
+- **Asset audit:** the 0.2.0 asset audit closed with three P0 (late-era architecture and the Inca outfit of
+  1536–1572). They are scheduled for 0.2.1 in [`./0.2.1-asset-corrections.md`](./0.2.1-asset-corrections.md).
 
 The audit is the authority. If this summary and the quality bar disagree, the quality bar wins.
 
@@ -36,6 +38,7 @@ The audit is the authority. If this summary and the quality bar disagree, the qu
 | **D2b · Art-direction pilot**        | Tambotoco becomes the stylized-realism reference: light/shadows, palette, architecture, highland vegetation, hero variant, presentation | **Done (2026-11-17):** E0–E6 of [`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md) close and E7 delivered (baked hero proportions, scoped terrain macro, Inticancha/shrine detail, 3 × 3 E7 set and the 3X recording); caps 500k/280 and 660k/360; `dist` 24.63/25 MB |
 | **D3 · Real-GPU performance**        | The remaining model-mission site views (m3–m9, m6b, La Junta) and late views                                                 | **Done (2026-11-17):** 17 site views measured at 1280×800 and 1600×900 on the Intel iGPU, all hardware; 28–38 FPS high at 1600×900. Decision in [`../development/site-view-performance.md`](../development/site-view-performance.md); B13 schedules the m6b/m8 late-view optimization |
 | **D4 · Release packaging**           | itch build, Pages artifact, publish checklist                                                                                | The checklist is green on a build that matches the tagged commit                                                                                           |
+| **D5 · 0.2.1 asset corrections**     | The three P0 and the P1 site/label corrections from the 0.2.0 asset audit                                                     | P0 mapping and outfit tests green, captures attached; the cheap P1 closed; site art either closed or explicitly moved to 0.2.2                              |
 
 ## D1 · Closed (2026-11-14)
 
@@ -88,6 +91,18 @@ The evidence and the remaining gates are in [`../release/0.2.0-readiness-audit.m
 - The seven 2026-11-18 missions have a green automated no-cheat path
   (`tests/e2e/release-playtest.spec.ts`); a human pass is the first post-release validation and is declared
   as a known limitation in the notes.
+
+## D5 · 0.2.1 asset corrections
+
+The 0.2.0 asset audit ([`../release/0.2.0-asset-historical-audit.md`](../release/0.2.0-asset-historical-audit.md))
+found three P0: glass/LED architecture in the Republican era, concrete/radar in the Viceroyalty, and the 1780
+rebel outfit on the Inca of 1536–1572. The remediation is
+[`./0.2.1-asset-corrections.md`](./0.2.1-asset-corrections.md): remap the two late-era model families, make
+the Inca outfit mission-aware, add a regression test, then close the cheap P1 (Miraflores, labels, headwear)
+before the site art. No new missions and no save/URL changes.
+
+Exit: the P0 test and the four era captures are green; the cheap P1 is closed; each site either has its own
+identity or is explicitly relabelled; the release notes say what remains.
 
 ## Risks
 

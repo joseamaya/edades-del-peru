@@ -79,6 +79,7 @@ the historical dossiers. The ADR records themselves are **Accepted** and immutab
 | [`plan/ROADMAP.md`](./plan/ROADMAP.md) | Current milestones, work order, risks and non-goals | Living |
 | [`plan/backlog.md`](./plan/backlog.md) | Ordered work queue and its definition of done | Living |
 | [`plan/geographic-identity-roadmap.md`](./plan/geographic-identity-roadmap.md) | Geographic-identity pilots, phases, dependencies, budgets and definition of done | Approved |
+| [`plan/0.2.1-asset-corrections.md`](./plan/0.2.1-asset-corrections.md) | The 0.2.1 plan for the three P0 and the P1 site/label corrections from the 0.2.0 asset audit | Approved |
 
 The index lists each ADR record (0001–0007 today) and its status. The records are immutable; only the index
 and new records change.
