@@ -14,6 +14,7 @@ import {
 } from '../src/model/defs/profiles';
 import {
   archProfileFor,
+  isColonialAndeanProfile,
   type WallMaterial,
   type RoofMaterial,
   type FoundationKind,
@@ -254,11 +255,19 @@ describe('historical architecture profiles', () => {
     expect(archProfileFor(CivId.REPUBLIC, Era.REPUBLIC).monumentalTiers).toBe(1);
   });
 
-  it('an Andean civilization played in the Viceroyalty adopts the colonial look', () => {
-    const p = archProfileFor(CivId.INCA, Era.VICEROYALTY);
-    expect(p.style).toBe('colonial');
-    expect(p.wall).toBe('brick');
-    expect(p.foundation).toBe('plinth');
+  it('keeps the Andean kit under Viceroyalty rule and gives the colonial look to non-Andean civs', () => {
+    const inca = archProfileFor(CivId.INCA, Era.VICEROYALTY);
+    expect(isColonialAndeanProfile(inca)).toBe(true);
+    expect(inca.wall).toBe('fieldstone');
+    expect(inca.roof).toBe('thatch');
+    expect(inca.foundation).toBe('terrace');
+    expect(archProfileFor(CivId.INCA, Era.REPUBLIC).style).toBe('republican');
+
+    const realistas = archProfileFor(CivId.REALISTAS, Era.VICEROYALTY);
+    expect(isColonialAndeanProfile(realistas)).toBe(false);
+    expect(realistas.style).toBe('colonial');
+    expect(realistas.wall).toBe('brick');
+    expect(realistas.foundation).toBe('plinth');
   });
 });
 

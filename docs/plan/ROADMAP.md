@@ -38,7 +38,7 @@ The audit is the authority. If this summary and the quality bar disagree, the qu
 | **D2b · Art-direction pilot**        | Tambotoco becomes the stylized-realism reference: light/shadows, palette, architecture, highland vegetation, hero variant, presentation | **Done (2026-11-17):** E0–E6 of [`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md) close and E7 delivered (baked hero proportions, scoped terrain macro, Inticancha/shrine detail, 3 × 3 E7 set and the 3X recording); caps 500k/280 and 660k/360; `dist` 24.63/25 MB |
 | **D3 · Real-GPU performance**        | The remaining model-mission site views (m3–m9, m6b, La Junta) and late views                                                 | **Done (2026-11-17):** 17 site views measured at 1280×800 and 1600×900 on the Intel iGPU, all hardware; 28–38 FPS high at 1600×900. Decision in [`../development/site-view-performance.md`](../development/site-view-performance.md); B13 schedules the m6b/m8 late-view optimization |
 | **D4 · Release packaging**           | itch build, Pages artifact, publish checklist                                                                                | The checklist is green on a build that matches the tagged commit                                                                                           |
-| **D5 · 0.2.1 asset corrections**     | The three P0 and the P1 site/label corrections from the 0.2.0 asset audit                                                     | P0 mapping and outfit tests green, captures attached; the cheap P1 closed; site art either closed or explicitly moved to 0.2.2                              |
+| **D5 · 0.2.1 asset corrections**     | The three P0 and the P1 site/label corrections from the 0.2.0 asset audit                                                     | **Done (2026-11-20):** P0 mapping and outfit tests green, P1 labels and site art closed with captures; only the realistas era split (P1-9) moves to 0.2.2     |
 
 ## D1 · Closed (2026-11-14)
 
@@ -101,8 +101,9 @@ rebel outfit on the Inca of 1536–1572. The remediation is
 the Inca outfit mission-aware, add a regression test, then close the cheap P1 (Miraflores, labels, headwear)
 before the site art. No new missions and no save/URL changes.
 
-Exit: the P0 test and the four era captures are green; the cheap P1 is closed; each site either has its own
-identity or is explicitly relabelled; the release notes say what remains.
+Exit (2026-11-20): the P0 test and the four era captures are green; the P1 labels, site art and the
+colonial-andean profile are closed with captures; the only open P1 is the realistas era split, moved to
+0.2.2.
 
 ## Risks
 

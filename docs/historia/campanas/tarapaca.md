@@ -34,7 +34,7 @@
 | Captura de cañones | Documentado | La artillería chilena quedó en el campo; se representa como refuerzo tras tomar las alturas. |
 | Victoria táctica y retirada a Arica | Documentado | La provincia se pierde; la retirada por el desierto es parte del desenlace. |
 | Abusos contra heridos | Debatido | Denuncias del bando peruano; se narran sin escenificarlos. |
-| Pueblo y quebrada | Abstracción | El `arica_site` costero se reutiliza como quebrada etiquetada; no es un levantamiento topográfico. |
+| Pueblo y quebrada | Abstracción | El sitio se dibuja como caserío de adobe en la quebrada; no es un levantamiento topográfico ni una planta del pueblo real. |
 
 ## Fuentes
 

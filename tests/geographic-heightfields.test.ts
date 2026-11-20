@@ -191,6 +191,9 @@ describe('mission-scoped heightfields', () => {
       const site = AUTHORED_SITES[mission.layout!.site!.id]!;
       const expected = mission.layout!.site!.y!;
       expect(sampleAuthoredHeight(override, site.anchor.x, site.anchor.z), id).toBeCloseTo(expected, 2);
+      // A site whose GLB is replaced by procedural landmarks grounds its buildings with foundations
+      // (`minGround`/`padHeight`); the model-footprint ring is a contract of the authored GLB, not loaded.
+      if (site.hideModel) continue;
       // The flat pad must clear the largest site model footprint (half-diagonal ~11 m).
       for (const [dx, dz] of RING) {
         expect(sampleAuthoredHeight(override, site.anchor.x + dx, site.anchor.z + dz), `${id} ${dx},${dz}`).toBeCloseTo(

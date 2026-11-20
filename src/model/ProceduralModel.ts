@@ -6,7 +6,14 @@ import { ModelSpec } from './defs/units';
 import { CivId, Era } from '../core/types';
 import { ERA_DEFS } from './defs/eras';
 import { HUMAN_HAIR, HUMAN_SKIN, type PersonGender } from './defs/people';
-import type { HistoricalArchitectureProfile, SilhouetteMotif, WallMaterial, RoofMaterial } from './defs/architecture';
+import {
+  isColonialAndeanProfile,
+  usesAndeanArchitecture,
+  type HistoricalArchitectureProfile,
+  type SilhouetteMotif,
+  type WallMaterial,
+  type RoofMaterial,
+} from './defs/architecture';
 import type { LandmarkId } from './defs/landmarks';
 import type { CaralCityPlan } from './defs/setpieces';
 import { mixHex, rotateXZ } from '../util/math';
@@ -377,9 +384,9 @@ class Builder {
   get emblem(): EmblemId {
     return this.civ.visual.emblem;
   }
-  /** True for pre-Hispanic Andean styles in a pre-1532 era (they use Andean architecture). */
+  /** True for Andean architecture: pre-Hispanic styles and the post-1532 colonial-andean profile. */
   get isAndean(): boolean {
-    return this.ctx.era <= Era.TAHUANTINSUYO && this.style !== 'colonial' && this.style !== 'republican';
+    return usesAndeanArchitecture(this.ctx.arch, this.ctx.era, this.style);
   }
   /** Build context (era and civilization). */
   get context(): BuildContext {
@@ -1432,6 +1439,8 @@ function andeanWall(b: Builder): string {
   if (b.civId === CivId.CARAL && b.context.caralSetpiece) return mixHex(p, '#d8c8a8', 0.86);
   // Killke and the valley ayllus share the ayllu kit's warm fieldstone/plaster language.
   if (b.civId === CivId.INCA_KILLKE || b.civId === CivId.AYLLUS) return mixHex(p, '#d2c2a6', 0.65);
+  // The post-1532 Inca keep fieldstone under a lighter lime/earth render.
+  if (isColonialAndeanProfile(b.arch)) return mixHex(p, '#d8c8a8', 0.6);
   switch (b.arch.wall) {
     case 'megalithic':
       return mixHex(p, '#b4aca0', 0.78);
@@ -1462,6 +1471,8 @@ const ROOF_TEX: Record<RoofMaterial, TexKind> = {
 };
 
 function andeanTex(b: Builder): TexKind {
+  // The post-1532 Inca keep fieldstone under a lighter lime/earth render.
+  if (isColonialAndeanProfile(b.arch)) return 'plaster';
   // Chavín's carved stone reads better with the lighter procedural stone map
   // than with the near-black megalith AI texture. Caral uses the same light
   // stone for its plastered platforms and houses.
@@ -1580,6 +1591,14 @@ function andeanThatchRoof(b: Builder, w: number, y: number): void {
   b.box(w * 1.18, w * 0.1, w * 0.68, thatch, { y, z: -w * 0.26, rx: -0.6, ...o });
   b.box(w * 1.2, w * 0.1, w * 0.2, ridge, { y: y + w * 0.2, ...o });
   b.box(w * 1.19, w * 0.05, 0.07, mixHex(thatch, '#5a4018', 0.35), { y: y + w * 0.28 });
+  // Colonial-era partial tiling: a short tile band on one slope and the ridge, the documented
+  // hybrid of thatch with reused Spanish tile (docs/historia/arquitectura.md).
+  if (isColonialAndeanProfile(b.arch)) {
+    const tile = mixHex('#b0603c', b.pal.primary, 0.2);
+    // Sit the tile patch on the front slope and the ridge, not inside the thatch.
+    b.box(w * 0.62, 0.06, w * 0.36, tile, { x: w * 0.18, y: y + w * 0.06, z: w * 0.24, rx: 0.6, tex: 'roof' });
+    b.box(w * 0.46, 0.07, w * 0.18, tile, { y: y + w * 0.27, tex: 'roof' });
+  }
 }
 
 /** Recessed wall niches (Andean masonry / altiplano). */

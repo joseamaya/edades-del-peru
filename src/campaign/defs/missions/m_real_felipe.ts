@@ -51,13 +51,14 @@ export const mRealFelipe: MissionDef = {
     },
     site: {
       id: 'real_felipe_site',
-      // Same arica model and pad as m9_guerra_pacifico and m_tarapaca: y 5 left it floating a metre.
+      // The Arica battery GLB is not loaded: the mission draws a minimal bastioned trace instead.
       y: 4,
       heightField: CALLAO_HEIGHTFIELD,
       focus: REAL_FELIPE,
       keepout: [{ x: REAL_FELIPE.x, z: REAL_FELIPE.z, rx: 0.075, rz: 0.075 }],
       buildKeepout: [{ x: REAL_FELIPE.x, z: REAL_FELIPE.z, rx: 0.065, rz: 0.065 }],
     },
+    siteLandmarks: [{ kind: 'real-felipe', x: REAL_FELIPE.x, z: REAL_FELIPE.z }],
     roads: [
       {
         from: { dx: REAL_FELIPE_CAMP.x * 256, dz: REAL_FELIPE_CAMP.z * 256 },

@@ -33,7 +33,8 @@ const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: stri
   colonial_site: { lod0: colonialLod0Url, lod1: colonialLod1Url },
   independence_site: { lod0: independenceLod0Url, lod1: independenceLod1Url },
   arica_site: { lod0: aricaLod0Url, lod1: aricaLod1Url },
-  // Real Felipe (1824–1826) reuses the Arica coastal-fort composition as a labelled abstraction.
+  // Real Felipe and Tarapacá keep a registry fallback; their missions set `hideModel` and draw
+  // procedural landmarks instead (src/rendering/SiteLandmarks.ts).
   real_felipe_site: { lod0: aricaLod0Url, lod1: aricaLod1Url },
   tarapaca_site: { lod0: aricaLod0Url, lod1: aricaLod1Url },
   brena_site: { lod0: independenceLod0Url, lod1: independenceLod1Url },
@@ -43,6 +44,7 @@ const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: stri
   // Lima (1535) reuses the colonial plaza/church on its own coast transect.
   lima_site: { lod0: colonialLod0Url, lod1: colonialLod1Url },
   miraflores_site: { lod0: colonialLod0Url, lod1: colonialLod1Url },
+  // Vilcabamba sets `hideModel` and draws its own low refuge; the Chanca GLB stays as a fallback.
   vilcabamba_site: { lod0: chancaLod0Url, lod1: chancaLod1Url },
 };
 

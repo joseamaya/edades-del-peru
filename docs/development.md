@@ -117,8 +117,8 @@ Definition of Done and the building audit see
   resources/atmosphere/landmark), with `resolveMapProfile({ period, civ, mapType, region? })` and
   `resolveWorldProfile(...)` (map + architecture) and `profileForMapType`. `src/model/defs/architecture.ts`
   defines `HistoricalArchitectureProfile` (wall/roof/foundation/ornament) via `archProfileFor(civ, period)`,
-  extending the existing `CivVisual`/`ArchStyle` layer (after 1532 the era governs the look, as in
-  `Builder.isAndean`). `src/model/defs/landmarks.ts` holds the visual-only `LandmarkId` registry with sources
+  extending the existing `CivVisual`/`ArchStyle` layer (after 1532 the era governs the look, except the
+  `colonial-andean` profile the Inca and valley ayllus keep; `usesAndeanArchitecture` is the single gate). `src/model/defs/landmarks.ts` holds the visual-only `LandmarkId` registry with sources
   and status (`documented`/`plausible`/`abstraction`); `landmarkForCiv(civ, period)` only applies inside the
   landmark's own period (no anachronistic landmark). The region drives the fine terrain identity; `mapType` is
   the coarse playable family (matches `regionDefaultMap(region)`). These are pure data + resolvers; the
@@ -145,6 +145,15 @@ Definition of Done and the building audit see
   Lima 1821, Miraflores, Callao, Tarapacá, Vilcabamba and Mantaro
   (`scripts/build_geographic_heightmaps.py`). `cusco_inca_site` has no field of its own: both missions that use
   it supply one, which pays for the new data inside the `dist` budget.
+- **Mission-scoped site landmarks**: `MissionLayout.siteLandmarks`
+  (`src/model/defs/siteLandmarks.ts`) draws procedural landmark compositions for the sites whose bundled GLB is a
+  labelled abstraction from another place: Cusco's plaza/ushnu and Sacsayhuamán, the Real Felipe bastions, the
+  Tarapacá village and the Vilcabamba refuge. `SiteLandmarks` merges geometry per material and lives in its own
+  scene group so disposing a match never touches the shared generated PBR textures. `MissionSite.hideModel`
+  drops the bundled GLB per mission (Cusco 1536) while `AuthoredSiteDef.hideModel` does it for a site used by
+  one mission (Real Felipe, Tarapacá, Vilcabamba); both are presentation-only. The Real Felipe trace also
+  registers its curtain/bastion blockers with the sally gates open; objectives, saves and the other sites'
+  collision are unchanged. Guarded by `tests/site-landmarks.test.ts`.
 - **Palettized ground**: the model-mission pattern wants painted ground at ~2 m per point, and a 128 x 128 RGBA
   grid is 64 KB, so per-mission grids store a 4-bit index per cell into a 16-entry palette
   (`src/model/defs/groundCodec.ts`) and decode to the RGBA weights `sampleAuthoredGround` expects. The palette

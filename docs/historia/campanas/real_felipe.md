@@ -37,7 +37,7 @@
 | Capitulación del 22–23 de enero de 1826 | Documentado | Partes y bibliografía; las fechas exactas varían según la fuente. |
 | Rodil sale con honores y dos banderas | Documentado | Bibliografía. |
 | «El heroísmo no es digno de castigo» | Tradición | Frase atribuida a Bolívar en la literatura; se cita como tradición, no como documento. |
-| Fortaleza del Real Felipe | Documentado | La fortaleza existe; su representación en el juego reutiliza el kit costero de Arica como abstracción. |
+| Fortaleza del Real Felipe | Documentado | La fortaleza existe; el juego dibuja una traza abaluartada mínima (cuatro bastiones, foso y cortinas), no una planta exacta. |
 | Crisis civil y muertes | Documentado | Se narra en el epílogo y el Códice; no se escenifica como mecánica de recompensa. |
 
 ## Fuentes
