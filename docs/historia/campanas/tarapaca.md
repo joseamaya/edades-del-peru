@@ -2,7 +2,7 @@
 
 - **Periodo**: República (P8).
 - **Fechas clave**: 27 de noviembre de 1879.
-- **Lugar**: Tarapacá, quebrada de San Lorenzo, sur del Perú (hoy norte de Chile).
+- **Lugar**: Tarapacá y la quebrada de Tarapacá (aldea de San Lorenzo), sur del Perú (hoy norte de Chile).
 - **Bandos**: **Ejército del Perú** vs **Ejército de Chile**.
 - **Comandantes**:
   - Perú: general **Juan Buendía**, **Belisario Suárez** (Estado Mayor), coroneles **Andrés A. Cáceres**,
@@ -10,7 +10,7 @@
   - Chile: coronel **Luis Arteaga**, **José Francisco Vergara**, teniente coronel **Eleuterio Ramírez**
     (muerto en la acción).
 - **Contexto histórico**: tras la campaña naval, el ejército peruano se repliega en Tarapacá. El 27 de
-  noviembre de 1879, tres columnas chilenas atacan el pueblo y las alturas de la quebrada de San Lorenzo.
+  noviembre de 1879, tres columnas chilenas atacan el pueblo y las alturas de la quebrada de Tarapacá.
   La resistencia peruana, sin caballería ni artillería al inicio, recibe refuerzos desde Pachica y captura
   piezas chilenas.
 - **Hitos**: ataque escalonado de las columnas chilenas; defensa del pueblo; refuerzos de Pachica;

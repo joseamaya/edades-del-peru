@@ -25,6 +25,7 @@ export const mVilcabamba: MissionDef = {
     'La corte y parte de los nobles escapan hacia el bajo Urubamba. Vilcabamba queda en ruinas y Túpac Amaru I es capturado; el epílogo cuenta su ejecución y el fin del Estado neoinca.',
   defeat:
     'La defensa de Huayna Pucará se quiebra y la corte no logra salir. La expedición de Toledo ocupa Vilcabamba y captura a Túpac Amaru I.',
+  outcome: 'retirada',
   period: HistoricalPeriod.VICEROYALTY,
   periodNote: 'Campaña de Vilcabamba · 1572',
   narrator: 'Vilcabamba',
@@ -276,7 +277,7 @@ export const mVilcabamba: MissionDef = {
           type: 'dialogue',
           speaker: 'Túpac Amaru I',
           duration: 9,
-          text: '—La corte está a salvo. Lo que venga después, la memoria de Vilcabamba no se apaga.',
+          text: '—Parte de la corte ha escapado. Lo que venga después, la memoria de Vilcabamba no se apaga.',
         },
       ],
     },

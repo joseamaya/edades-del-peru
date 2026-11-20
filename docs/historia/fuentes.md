@@ -47,6 +47,7 @@ oficiales (Ministerio de Cultura, UNESCO, Marina de Guerra del Perú) y enciclop
 - Wikipedia: [Intermedio Tardío](https://es.wikipedia.org/wiki/Intermedio_Tard%C3%ADo), [Cultura chanca](https://es.wikipedia.org/wiki/Cultura_chanca), [Cultura chincha](https://es.wikipedia.org/wiki/Cultura_chincha), [Cultura chimú](https://es.wikipedia.org/wiki/Cultura_chim%C3%BA), [Reinos aimaras](https://es.wikipedia.org/wiki/Reinos_aimaras), [Lupaca](https://es.wikipedia.org/wiki/Lupaca), [Huancas](https://es.wikipedia.org/wiki/Huancas).
 - Rostworowski, M. *Historia del Tahuantinsuyu* (comercio chincha, balsas y señoríos del Collao).
 - Dalen Luna, P. *La problemática chanka* (análisis sociopolítico).
+- Cieza de León, P. *Crónica del Perú* y «Discurso de la descendencia» (1542), para la guerra chimú-inca.
 
 ## Inca / Tahuantinsuyo
 
@@ -63,6 +64,11 @@ oficiales (Ministerio de Cultura, UNESCO, Marina de Guerra del Perú) y enciclop
 
 ## Independencia
 
+- O'Phelan Godoy, S. (2014). *La independencia del Perú*.
+- Anna, T. (1979). *The Fall of the Royal Government in Peru*.
+- Paz Soldán, M. F. (1868). *Historia del Perú independiente*.
+- García Camba, A. (1846). *Memorias para la historia de las armas españolas en el Perú*.
+- Cochrane, T. (1859). *Narrative of Services in the Liberation of Chili, Peru and Brazil*.
 - Wikipedia: [Independencia del Perú](https://es.wikipedia.org/wiki/Independencia_del_Per%C3%BA).
 - Basadre, J. *Historia de la República del Perú*.
 

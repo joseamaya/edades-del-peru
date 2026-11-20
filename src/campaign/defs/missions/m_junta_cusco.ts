@@ -21,6 +21,7 @@ export const mJuntaCusco: MissionDef = {
     'La resistencia en Umachiri gana el tiempo que la Junta necesita para retirarse del campo. La historia documentada sigue su curso: la rebelión será derrotada, Pumacahua ejecutado en Sicuani y Melgar fusilado.',
   defeat:
     'La Junta se deshace en Umachiri. La represión realista alcanza a sus líderes y el Cusco vuelve al control virreinal.',
+  outcome: 'retirada',
   period: HistoricalPeriod.INDEPENDENCE,
   periodNote: 'La misión se sitúa en 1814–1815',
   narrator: 'Junta del Cusco',
@@ -262,7 +263,7 @@ export const mJuntaCusco: MissionDef = {
       effects: [
         {
           type: 'act',
-          kicker: 'Acto II · 10 de noviembre de 1814',
+          kicker: 'Acto II · 9–10 de noviembre de 1814',
           title: 'La Apacheta',
           image: 'media/junta/intro-apacheta.webp',
           text: 'La columna de Pumacahua marcha sobre Arequipa. En La Apacheta derrota a la vanguardia de Picoaga; la ciudad se rinde, pero el ejército de Ramírez ya baja del Alto Perú.',

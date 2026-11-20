@@ -134,7 +134,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     id: 'tupac_amaru',
     name: 'Túpac Amaru II',
     role: 'Rebelión · Cusco',
-    civ: CivId.PATRIOTAS,
+    civ: CivId.INCA,
     status: 'documented',
     source: 'docs/historia/campanas/tupac_amaru.md',
   },

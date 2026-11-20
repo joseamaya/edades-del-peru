@@ -62,7 +62,7 @@ export const CAMPAIGNS: CampaignDef[] = [
     description:
       'Del valle del Cusco al imperio más extenso de América: la leyenda de origen, la defensa frente a los chancas, la guerra chimú y la guerra entre Huáscar y Atahualpa.',
     summary:
-      'Según la leyenda, los hermanos Ayar salieron de Pacaritambo y tomaron el valle del Cusco. En 1438 el Cusco resiste a la confederación chanca; en el siglo XV el Inca lleva la guerra al reino chimú; y en 1529–1532 la guerra civil entre Huáscar y Atahualpa deja al Tahuantinsuyo dividido antes de la conquista.',
+      'Según la leyenda, los hermanos Ayar salieron de Pacaritambo y tomaron el valle del Cusco. En 1438 el Cusco resiste a la confederación chanca; en el siglo XV el Inca lleva la guerra al reino chimú; y en 1529–1532 la guerra civil entre Huáscar y Atahualpa deja al Tahuantinsuyo debilitado antes de la conquista.',
     releasedMissionIds: ['m_tambotoco', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil'],
     status: 'available',
     era: 'Leyenda — 1532',
@@ -79,7 +79,7 @@ export const CAMPAIGNS: CampaignDef[] = [
       'Lima se funda junto al Rímac y resiste el cerco de Quizu Yupanqui. Manco Inca cerca el Cusco y combate en Sacsayhuamán; la resistencia inca sobrevive en Vilcabamba hasta 1572. Dos siglos y medio después, la rebelión de Túpac Amaru II desafía al Virreinato.',
     releasedMissionIds: ['m_lima', 'm_cusco_1536', 'm_vilcabamba', 'm7_tupac_amaru'],
     status: 'available',
-    era: '1535 — 1781',
+    era: '1532 — 1781',
     accent: '#9d7a4c',
     prologue: VIRREINATO_PROLOGUE,
     path: ['m_lima', 'm_cusco_1536', 'm_vilcabamba', 'm7_tupac_amaru'],

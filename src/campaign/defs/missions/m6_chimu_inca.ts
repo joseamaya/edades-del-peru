@@ -51,6 +51,11 @@ export const m6ChimuInca: MissionDef = {
   unitSpeedScale: 0.75,
   region: 'north_coast',
   layout: {
+    labels: [
+      { text: 'Chan Chan', x: 0.744, z: 0.339, kind: 'settlement' },
+      { text: 'Paramonga', x: 0.674, z: 0.339, kind: 'region' },
+      { text: 'Canal de Chan Chan', x: 0.5, z: 0.5, kind: 'water' },
+    ],
     base: { x: 0.35, z: 0.62 },
     enemyBase: { x: 0.814, z: 0.339 },
     site: {

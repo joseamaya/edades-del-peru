@@ -114,9 +114,10 @@ describe('Caral player texts match the dossier', () => {
 
   it('unifies the pyramid name, the canal sector and the assembly abstraction', () => {
     expect(CARAL.victory).toContain('Pirámide Mayor');
-    expect(CARAL.objectives.find((objective) => objective.id === 'obj_asamblea')?.title).toContain(
-      'abstracción jugable',
+    expect(CARAL.objectives.find((objective) => objective.id === 'obj_asamblea')?.title).toBe(
+      'Convoca una asamblea comunal en la Plaza Central',
     );
+    expect(EDUCATIONAL.m1_caral?.context).toContain('abstracción de juego');
     expect(HERITAGE_BUILDINGS.caral_pyramid_mayor.name).toBe('Pirámide Mayor y Plaza Central');
     expect(HERITAGE_BUILDINGS.caral_canal.sector).toBe('Valle de Supe');
   });

@@ -19,12 +19,13 @@ export const mBrena: MissionDef = {
   title: 'El brujo de los Andes',
   subtitle: 'Sierra central · 1882–1883',
   history:
-    'Tras la caída de Lima, Andrés A. Cáceres organiza la resistencia en la sierra central. La campaña de la Breña combina guerrillas, comunidades campesinas, emboscadas y galgas contra las columnas chilenas. Evita las batallas campales hasta que Huamachuco impone la última.\n' +
+    'Tras la caída de Lima, Andrés A. Cáceres organiza la resistencia en la sierra central. La campaña de la Breña combina guerrillas, comunidades campesinas, emboscadas y galgas contra las columnas chilenas. Combina la guerra de guerrillas con batallas campales cuando no puede evitarlas; en Huamachuco la munición se agota y la batalla se pierde.\n' +
     'La resistencia culmina en Huamachuco (10 de julio de 1883): la munición se agota y la batalla se pierde, pero Cáceres escapa a Ayacucho. El Tratado de Ancón cierra la guerra ese mismo año.',
   victory:
     'Cáceres y parte de la fuerza escapan de Huamachuco. La campaña no gana la guerra, pero sostiene la resistencia hasta el Tratado de Ancón y deja una memoria de guerrilla campesina. La represión y los fusilamientos de Huamachuco se recuerdan sin convertirlos en espectáculo.',
   defeat:
     'La red de comunidades se deshace y Cáceres cae antes de la retirada. La resistencia de la Breña termina sin jefe y sin capacidad de prolongar la guerra.',
+  outcome: 'retirada',
   period: HistoricalPeriod.REPUBLIC,
   periodNote: 'Campaña de la Breña · 1882–1883',
   narrator: 'Campaña de la Breña',

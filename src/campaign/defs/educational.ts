@@ -38,7 +38,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'En el valle de Supe, a 182 km al norte de Lima y a 23 km del litoral, Caral fue una de las ciudades ' +
       'más antiguas de América. Se formó con una economía pesquero-agraria complementaria —pesca con redes de algodón en ' +
       'Áspero y agricultura en el valle—, canales de riego y una ideología religiosa que cohesionaba a una ' +
-      'población estimada en miles de personas. Funcionó casi un milenio (3000–1800 a.C.).',
+      'población estimada en miles de personas. Funcionó casi un milenio (3000–1800 a.C.). La asamblea comunal ' +
+      'de la misión es una abstracción de juego: no hay actas ni registros de sus decisiones.',
     didYouKnow:
       'En Caral se halló en 2005 un conjunto de cuerdas de algodón enrolladas en varillas, descrito como un posible quipu, mucho anterior al Tahuantinsuyo.',
     epilogue:
@@ -58,8 +59,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
     context:
       'Chavín de Huántar, a 3180 msnm en el Callejón de Conchucos (Áncash), fue el gran centro ceremonial y ' +
       'de peregrinaje de los Andes. Su oráculo atraía ofrendas de lejos y su arte se difundió por buena parte ' +
-      'de los Andes centrales. Fue una sociedad teocrática liderada por una casta sacerdotal; no se conocen ' +
-      'nombres de gobernantes.',
+      'de los Andes centrales. La interpretación tradicional la describe como una sociedad teocrática liderada ' +
+      'por una casta sacerdotal, un modelo que la investigación reciente matiza; no se conocen nombres de ' +
+      'gobernantes. El juego representa las ofrendas con plata; las fuentes citan conchas, obsidiana y metales.',
     didYouKnow:
       'No hay guerra directa documentada entre Chavín y Paracas: su emparejamiento en el juego es de coetaneidad. La cronología de las fases del templo sigue siendo debatida por los arqueólogos.',
     epilogue:
@@ -173,7 +175,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'Hacia 1470, al mando del auqui Túpac Yupanqui, los incas avanzaron sobre el Reino Chimú de Minchancaman ' +
       'por Paramonga, Huarmey y el valle del Santa. Secaron el canal que abastecía de agua a Chan Chan; la ' +
       'ciudad, en pleno desierto, capituló. Minchancaman fue llevado preso al Cusco y su territorio se repartió ' +
-      'en huamanis.',
+      'en huamanis. El asalto a Chan Chan es una variante opcional del juego; la ciudad capituló sin ser tomada ' +
+      'por asalto.',
     didYouKnow: 'El arma decisiva no fue la espada sino el agua: cortar el canal doblegó a Chan Chan.',
     epilogue:
       'Chan Chan capituló; Minchancaman fue llevado preso al Cusco y el territorio chimú se repartió en ' +
@@ -186,17 +189,18 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   m6b_guerra_civil: {
     briefing:
       'Sierra andina, 1529–1532. Tras la muerte de Huayna Cápac, Huáscar y Atahualpa se disputan el trono. ' +
-      'Avanza con el ejército de Atahualpa hacia Quipaipan, derrota a Huáscar y mantén con vida a Atahualpa. Ambos ' +
-      'ejércitos alistan al Guerrero Inca.',
+      'Avanza con el ejército de Atahualpa hacia Quipaipan; en el campo manda su general Quizquiz. Derrota a ' +
+      'Huáscar y mantén con vida a Quizquiz. Ambos ejércitos alistan al Guerrero Inca.',
     context:
       'La guerra civil inca enfrentó a los partidarios de Huáscar, en el Cusco, con los de Atahualpa, en Quito. ' +
       'Las campañas de Chillopampa, Mullihambato y Chimborazo precedieron a Quipaipan (1532), donde el ejército ' +
-      'de Atahualpa venció y capturó a Huáscar. La división facilitó la conquista española, que comenzó con la ' +
+      'de Atahualpa, mandado por sus generales Quizquiz y Chalcuchimac, venció y capturó a Huáscar. Atahualpa ' +
+      'dirigía la campaña desde la retaguardia. La división facilitó la conquista española, que comenzó con la ' +
       'captura de Atahualpa en Cajamarca ese mismo año.',
     didYouKnow:
       'La guerra civil terminó con la captura de Huáscar, pero Atahualpa fue capturado por los españoles en Cajamarca en 1532.',
     epilogue:
-      'Atahualpa ganó la guerra civil, pero el Tahuantinsuyo quedó dividido y debilitado. Poco después, los ' +
+      'Atahualpa ganó la guerra civil, pero el Tahuantinsuyo quedó debilitado y en disputa. Poco después, los ' +
       'españoles capturaron a Atahualpa en Cajamarca. La guerra civil no fue una guerra contra España: fue una ' +
       'disputa dinástica inca.',
     sources: [
@@ -213,7 +217,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'Pizarro fundó Lima el 18 de enero de 1535, con aliados andinos y sobre un valle ya habitado. En agosto de ' +
       '1536, Manco Inca envió a Quizu Yupanqui contra la ciudad; sus columnas destruyeron los socorros que Pizarro ' +
       'mandaba al Cusco. El asalto fracasó en el llano, terreno favorable a la caballería, y Quizu murió. La ' +
-      'victoria no terminó la guerra: el Cusco seguía cercado. Las cifras del ejército inca son discutidas.',
+      'victoria no terminó la guerra: el Cusco seguía cercado. Las cifras del ejército inca son discutidas. ' +
+      'El asalto al campamento de Quizu es una variante de juego; las fuentes sitúan su muerte en el llano.',
     didYouKnow:
       'Lima no se fundó en un valle vacío: ocupó tierras del curacazgo de Lima y se sostuvo con aliados andinos, un punto que las crónicas tienden a minimizar.',
     epilogue:
@@ -242,9 +247,10 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'Túpac Amaru II decretó la abolición de la esclavitud el 16 de noviembre de 1780. Mateo Pumacahua, que ' +
       'combatió contra él en 1780, encabezaría la rebelión del Cusco en 1814.',
     epilogue:
-      'Sangarará fue una victoria, pero el cerco del Cusco fracasó. Túpac Amaru II y Micaela Bastidas fueron ' +
-      'capturados y ejecutados en el Cusco el 18 de mayo de 1781; la rebelión continuó hasta 1783. El Virreinato ' +
-      'abolió el reparto y los corregimientos, y la Gran Rebelión quedó como antecedente central de la independencia.',
+      'Sangarará fue una victoria sangrienta: la columna se refugió en la iglesia y la violencia alcanzó a ' +
+      'civiles. El cerco del Cusco, en cambio, fracasó. Túpac Amaru II y Micaela Bastidas fueron capturados y ' +
+      'ejecutados en el Cusco el 18 de mayo de 1781; la rebelión continuó hasta 1783. El Virreinato abolió el ' +
+      'reparto y los corregimientos, y la Gran Rebelión quedó como antecedente central de la independencia.',
     sources: [
       { text: "O'Phelan Godoy, S. (2021). La gran rebelión de Túpac Amaru II y la temprana independencia del Perú." },
       { text: 'Serulnikov, S. (2010). Revolution in the Andes: The Age of Túpac Amaru.' },
@@ -261,7 +267,7 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
     context:
       'La revolución del Cusco de 1814 nació del conflicto entre el cabildo constitucional de Cádiz y la Real ' +
       'Audiencia. La Junta, presidida por José Angulo y con Mateo García Pumacahua como jefe militar, envió ' +
-      'expediciones a Puno, La Paz, Huamanga y Arequipa. Pumacahua venció en La Apacheta (10 de noviembre de 1814) ' +
+      'expediciones a Puno, La Paz, Huamanga y Arequipa. Pumacahua venció en La Apacheta (9–10 de noviembre de 1814; las fuentes discrepan) ' +
       'y ocupó Arequipa, pero la división de Juan Ramírez Orozco, veterana del Alto Perú, derrotó a los rebeldes ' +
       'en Umachiri (11 de marzo de 1815). La historiografía debate si el movimiento fue separatista o autonomista ' +
       'dentro de la monarquía; sus líderes fueron ejecutados y Mariano Melgar, fusilado.',
@@ -348,8 +354,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   },
   m_tarapaca: {
     briefing:
-      'Tarapacá, 27 de noviembre de 1879. Tras la campaña naval, el ejército peruano resiste en la quebrada ' +
-      'de San Lorenzo. Sin caballería ni artillería, la defensa depende de la infantería y de los refuerzos de Pachica.',
+      'Tarapacá, 27 de noviembre de 1879. El general Juan Buendía manda el ejército peruano; Cáceres dirige un ' +
+      'sector de la quebrada de Tarapacá. Sin caballería ni artillería al inicio, la defensa depende de la ' +
+      'infantería y de los refuerzos de Pachica.',
     context:
       'La batalla de Tarapacá fue una victoria táctica peruana en la Guerra del Pacífico. El general Juan Buendía ' +
       'mandaba unas fuerzas sin caballería ni artillería; las columnas chilenas atacaron de forma escalonada. ' +
@@ -467,12 +474,13 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'Arica, 7 de junio de 1880. Tras Angamos, la Guerra del Pacífico continúa en tierra. La guarnición ' +
       'peruana, al mando de Francisco Bolognesi, defiende el puerto del asalto chileno; la plaza cae ese día.',
     context:
-      'En la Guerra del Pacífico (1879–1883), por el salitre de Antofagasta, el Perú y Bolivia se enfrentaron a ' +
+      'En la Guerra del Pacífico (1879–1883), por el salitre y el guano, el Perú y Bolivia se enfrentaron a ' +
       'Chile. Al mando del monitor Huáscar, el almirante Miguel Grau contuvo con audaces correrías a una escuadra ' +
-      'superior hasta caer en Angamos (8 de octubre de 1879). En Arica, el parlamento de Juan de la Cruz Salvo ' +
-      'exigió la rendición el 5 de junio de 1880; Bolognesi y sus jefes la rechazaron. El ingeniero Teodoro ' +
-      'Elmore minó los accesos y la guarnición defendió la batería y el cuartel. El asalto chileno del 7 de ' +
-      'junio tomó la plaza: Bolognesi murió en la defensa y el monitor Manco Cápac fue inutilizado.',
+      'superior hasta caer en Angamos (8 de octubre de 1879). La derrota aliada en Tacna (26 de mayo de 1880) dejó ' +
+      'Arica aislada. En Arica, el parlamento de Juan de la Cruz Salvo exigió la rendición el 5 de junio de 1880; ' +
+      'Bolognesi y sus jefes la rechazaron. El ingeniero Teodoro Elmore minó los accesos y la guarnición defendió ' +
+      'la batería y el cuartel. El asalto chileno del 7 de junio tomó la plaza: Bolognesi murió en la defensa y el ' +
+      'monitor Manco Cápac fue inutilizado.',
     didYouKnow:
       'La frase «hasta quemar el último cartucho» la recoge Vicuña Mackenna (1881); el ingeniero Teodoro Elmore ' +
       'minó los accesos a la plaza antes del asalto.',

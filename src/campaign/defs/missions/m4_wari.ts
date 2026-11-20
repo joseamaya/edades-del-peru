@@ -12,7 +12,7 @@ export const m4Wari: MissionDef = {
   title: 'El Horizonte Medio',
   subtitle: 'Horizonte Medio · c. 600–1000 d.C.',
   history:
-    'Wari, desde Ayacucho, construye el primer imperio andino: ciudades planificadas, caminos y una religión estatal. Al sur, Tiahuanaco domina el altiplano.\n' +
+    'Wari, desde Ayacucho, construye el primer estado expansivo de los Andes: ciudades planificadas, caminos y una religión estatal. Al sur, Tiahuanaco domina el altiplano.\n' +
     'No hay una guerra única documentada: tu arma es la red de centros y caminos. Extiéndela y asegura los andenes frente a la influencia rival.',
   victory: 'Wari consolida su esfera de influencia. El Horizonte Medio unifica buena parte de los Andes centrales.',
   defeat: 'La expansión wari se detiene y sus centros provinciales se pierden.',
@@ -24,7 +24,7 @@ export const m4Wari: MissionDef = {
     {
       kicker: 'AYACUCHO · c. 600–1000 d.C.',
       title: 'El Horizonte Medio',
-      text: 'Wari construye el primer imperio andino: ciudades planificadas, caminos y una religión estatal. No hay una guerra única documentada: su arma es la red de centros y andenes.',
+      text: 'Wari construye el primer estado expansivo de los Andes: ciudades planificadas, caminos y una religión estatal. No hay una guerra única documentada: su arma es la red de centros y andenes.',
       seconds: 9,
       source: 'docs/historia/campanas/wari_tiahuanaco.md',
       image: 'media/wari/intro-ayacucho.webp',
@@ -40,7 +40,7 @@ export const m4Wari: MissionDef = {
     {
       kicker: 'LA FRONTERA ALTA',
       title: 'Dos estados coetáneos',
-      text: 'Tiahuanaco comparte el culto del dios de los báculos y compite por influencia, no por ejércitos. La frontera se mide en presencia, caminos y andenes.',
+      text: 'Tiahuanaco comparte el culto del dios de los báculos y compite por influencia; no hay una guerra única documentada. La frontera se mide en presencia, caminos y andenes.',
       seconds: 10,
       source: 'docs/historia/campanas/wari_tiahuanaco.md',
       image: 'media/wari/intro-frontera.webp',
@@ -54,6 +54,11 @@ export const m4Wari: MissionDef = {
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
   unitSpeedScale: 0.75,
   layout: {
+    labels: [
+      { text: 'Ayacucho', x: 0.3, z: 0.66, kind: 'settlement' },
+      { text: 'Complejo Wari', x: 0.56, z: 0.45, kind: 'settlement' },
+      { text: 'Frontera alta', x: 0.72, z: 0.35, kind: 'region' },
+    ],
     base: { x: 0.3, z: 0.66 },
     site: {
       id: 'wari_site',
@@ -102,6 +107,7 @@ export const m4Wari: MissionDef = {
     BuildingKind.MARKET,
     BuildingKind.BARRACKS,
   ],
+  buildingNames: { [BuildingKind.MARKET]: 'Centro administrativo wari' },
   objectives: [
     {
       id: 'obj_suministros',
@@ -218,7 +224,7 @@ export const m4Wari: MissionDef = {
       effects: [
         {
           type: 'dialogue',
-          text: 'En el altiplano, Tiahuanaco difunde el mismo culto del dios de los báculos: dos estados coetáneos que compiten por influencia, no por ejércitos.',
+          text: 'En el altiplano, Tiahuanaco difunde el mismo culto del dios de los báculos: dos estados coetáneos que compiten por influencia, sin una guerra única documentada.',
         },
       ],
     },

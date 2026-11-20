@@ -5,7 +5,7 @@ import { MOCHE_MAP_SIZE, mocheLength } from '../../../model/defs/mocheSite';
 export const m3MocheRecuay: MissionDef = {
   id: 'm3_moche_recuay',
   title: 'La Frontera de los Valles',
-  subtitle: 'Intermedio Temprano · c. 300–600 d.C.',
+  subtitle: 'Intermedio Temprano · c. 300–800 d.C.',
   history:
     'Los señores de Moche dominan los valles de Chicama, Moche y Virú. Desde el Callejón de Huaylas, los Recuay presionan la frontera.\n' +
     'Asegura los valles y sus canales, defiende las huacas y sostén el intercambio de élite con la sierra.',
@@ -15,7 +15,7 @@ export const m3MocheRecuay: MissionDef = {
   period: HistoricalPeriod.EARLY_INTERMEDIATE,
   tutorial: true,
   modelMission: true,
-  narrator: 'Voz del valle',
+  narrator: 'Voz de los valles moche',
   intro: [
     {
       kicker: 'VALLE DE MOCHE · c. 300–600 d.C.',
@@ -50,6 +50,11 @@ export const m3MocheRecuay: MissionDef = {
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
   unitSpeedScale: 0.75,
   layout: {
+    labels: [
+      { text: 'Valle de Moche', x: 0.3, z: 0.66, kind: 'settlement' },
+      { text: 'Huacas del Sol y de la Luna', x: 0.62, z: 0.38, kind: 'region' },
+      { text: 'Sierra recuay', x: 0.78, z: 0.28, kind: 'region' },
+    ],
     base: { x: 0.3, z: 0.66 },
     site: {
       id: 'moche_site',
@@ -71,7 +76,7 @@ export const m3MocheRecuay: MissionDef = {
       flats: [
         { name: 'Valles de Moche y Chicama', x: 0.3, z: 0.66, rx: 0.18, rz: 0.14 },
         { name: 'Huacas de Moche', x: 0.62, z: 0.38, rx: 0.2, rz: 0.17 },
-        { name: 'Callejón de Huaylas', x: 0.72, z: 0.3, rx: 0.1, rz: 0.08 },
+        { name: 'Sierra recuay', x: 0.72, z: 0.3, rx: 0.1, rz: 0.08 },
       ],
     },
     decor: { model: 'recuay_pashash', at: 'enemy', dx: mocheLength(10), dz: 0, scale: 1.05 },

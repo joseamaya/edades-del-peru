@@ -10,9 +10,9 @@ export const m6bGuerraCivil: MissionDef = {
   subtitle: 'Cusco–Quito · 1529–1532',
   history:
     'Tras la muerte de Huayna Cápac, el Tahuantinsuyo se divide entre Huáscar, en el Cusco, y Atahualpa, en Quito. La guerra civil enfrenta a los ejércitos incas por el trono.\n' +
-    'Avanza hacia Quipaipan, derrota al ejército de Huáscar y mantén con vida a Atahualpa.',
+    'Avanza hacia Quipaipan, derrota al ejército de Huáscar y mantén con vida a Quizquiz.',
   victory:
-    'El ejército de Atahualpa vence en Quipaipan y captura a Huáscar. La guerra civil deja al Tahuantinsuyo dividido justo antes de la llegada española.',
+    'El ejército de Atahualpa vence en Quipaipan y captura a Huáscar. La guerra civil deja al Tahuantinsuyo debilitado justo antes de la llegada española.',
   defeat: 'El ejército de Huáscar resiste y el trono del Tahuantinsuyo queda en disputa.',
   period: HistoricalPeriod.LATE_HORIZON,
   tutorial: true,
@@ -38,7 +38,7 @@ export const m6bGuerraCivil: MissionDef = {
     {
       kicker: 'LA CAPTURA',
       title: 'El trono y Cajamarca',
-      text: 'Huáscar es capturado en Quipaipan. Atahualpa gana la guerra, pero los españoles lo capturan en Cajamarca en 1532: el imperio queda dividido justo antes de la conquista.',
+      text: 'Huáscar es capturado en Quipaipan. Atahualpa gana la guerra, pero los españoles lo capturan en Cajamarca en 1532: el imperio queda debilitado justo antes de la conquista.',
       seconds: 10,
       source: 'docs/historia/campanas/guerra_civil_inca.md',
       image: 'media/cusco-inca/intro-captura.webp',
@@ -48,7 +48,7 @@ export const m6bGuerraCivil: MissionDef = {
   playerCiv: CivId.INCA,
   enemyCiv: CivId.INCA,
   playerName: 'Ejército de Atahualpa',
-  enemyName: 'Huáscar de Cusco',
+  enemyName: 'Ejército de Huáscar',
   playerColor: '#c8a040',
   enemyColor: '#b03028',
   map: { seed: 1532, type: 'andes', size: CUSCO_INCA_MAP_SIZE },
@@ -56,6 +56,11 @@ export const m6bGuerraCivil: MissionDef = {
   unitSpeedScale: 0.75,
   region: 'high_andes',
   layout: {
+    labels: [
+      { text: 'Quipaipan', x: 0.65, z: 0.68, kind: 'region' },
+      { text: 'Cusco', x: 0.71, z: 0.68, kind: 'settlement' },
+      { text: 'Ruta de Quito', x: 0.35, z: 0.3, kind: 'region' },
+    ],
     base: { x: 0.35, z: 0.3 },
     enemyBase: { x: 0.71, z: 0.68 },
     site: {
@@ -84,7 +89,7 @@ export const m6bGuerraCivil: MissionDef = {
       { kind: BuildingKind.FORTRESS, dx: cuscoIncaLength(8), dz: -cuscoIncaLength(6) },
     ],
     units: [
-      { kind: UnitKind.SOLDIER, dx: cuscoIncaLength(8), dz: -cuscoIncaLength(4), count: 1, tag: 'atahualpa' },
+      { kind: UnitKind.SOLDIER, dx: cuscoIncaLength(8), dz: -cuscoIncaLength(4), count: 1, tag: 'quizquiz' },
       { kind: UnitKind.SOLDIER, dx: cuscoIncaLength(10), dz: cuscoIncaLength(4), count: 12 },
       { kind: UnitKind.MUSKETEER, dx: cuscoIncaLength(6), dz: cuscoIncaLength(10), count: 6 },
       { kind: UnitKind.SCOUT, dx: cuscoIncaLength(4), dz: -cuscoIncaLength(8), count: 2 },
@@ -124,7 +129,7 @@ export const m6bGuerraCivil: MissionDef = {
       requires: 'obj_quipaipan',
       title: 'Captura a Huáscar en Quipaipan',
     },
-    { id: 'obj_atahualpa', kind: 'protect', entityTag: 'atahualpa', title: 'Mantén con vida a Atahualpa' },
+    { id: 'obj_quizquiz', kind: 'protect', entityTag: 'quizquiz', title: 'Mantén con vida a Quizquiz' },
   ],
   triggers: [
     {

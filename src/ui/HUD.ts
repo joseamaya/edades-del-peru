@@ -1362,7 +1362,15 @@ export class HUD {
     if (victory && mis?.epilogueImage) {
       ov.style.background = `linear-gradient(180deg, rgba(6,8,12,.55), rgba(6,8,12,.86)), url("${publicAsset(mis.epilogueImage)}") center / cover`;
     }
-    const title = victory ? t('hud.victory.title') : t('hud.victory.defeat');
+    const title = victory
+      ? mis?.outcome === 'resistencia'
+        ? t('hud.victory.resistencia')
+        : mis?.outcome === 'retirada'
+          ? t('hud.victory.retirada')
+          : mis?.outcome === 'derrota'
+            ? t('hud.victory.derrota')
+            : t('hud.victory.title')
+      : t('hud.victory.defeat');
     const sub =
       winText && loseText ? (victory ? winText : loseText) : victory ? t('hud.victory.win') : t('hud.victory.lose');
     const epilogue =
@@ -1387,9 +1395,11 @@ export class HUD {
     const peaceful = mis?.enemy.active === false;
     const commonStats = `${t('hud.victory.created', { count: p?.stats.created ?? 0 })}<br>
          ${t('hud.victory.period', { period: getPeriod(this.game.settings.period).name })}`;
-    const stats = peaceful
-      ? `${t('hud.victory.heritage', { count: this.game.getVisitedHeritage().length })}<br>${commonStats}`
-      : `${t('hud.victory.kills', { count: p?.kills ?? 0 })}<br>${commonStats}`;
+    const stats = mis?.outcome
+      ? commonStats
+      : peaceful
+        ? `${t('hud.victory.heritage', { count: this.game.getVisitedHeritage().length })}<br>${commonStats}`
+        : `${t('hud.victory.kills', { count: p?.kills ?? 0 })}<br>${commonStats}`;
     if (victory && mis) this.saveCampaignProgress(mis.id);
     const next = victory ? nextReleasedMission(mis?.id ?? '') : undefined;
     const chapterEnd = victory && campaign && campaign.releasedMissionIds.includes(mis?.id ?? '') && !next;
@@ -2868,7 +2878,7 @@ export class HUD {
       facts: [
         {
           label: t('hud.menu.briefing.factPeriod'),
-          value: `${period.name} · ${period.dates}${mis.periodNote ? ` · ${mis.periodNote}` : ''}`,
+          value: `${period.name}${mis.periodNote ? ` · ${mis.periodNote}` : ` · ${period.dates}`}`,
         },
         { label: t('hud.menu.briefing.factMap'), value: MAP_LABEL[mis.map.type] },
         { label: t('hud.menu.briefing.factSides'), value: sides },
@@ -3228,7 +3238,8 @@ export class HUD {
       );
       this.popEl.querySelector('span')!.textContent = `${p.populationUsed}/${p.populationCap}`;
       const period = getPeriod(this.game.settings.period);
-      this.eraEl.querySelector('span:last-child')!.textContent = `${period.name} · ${period.dates}`;
+      const hasNote = !!this.game.mission?.def.periodNote;
+      this.eraEl.querySelector('span:last-child')!.textContent = `${period.name}${hasNote ? '' : ` · ${period.dates}`}`;
       this.eraDot.style.background = `#${ERA_COLORS[p.era].toString(16).padStart(6, '0')}`;
     }
     if (this.updateAcc > 0.15) {
