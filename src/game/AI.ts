@@ -43,6 +43,8 @@ const SIEGE_SELF_DEFENSE = 0.5;
 const MELEE_REACH = 8;
 /** Maximum distance a soldier will switch to the focus target. */
 const FOCUS_LEASH = 18;
+/** An authored (scripted) enemy presses a seen enemy within this radius instead of idling. */
+const SCRIPTED_PURSUIT = 20;
 /** Seconds the AI remembers an enemy unit after losing sight of it. */
 const MEMORY_TTL = 12;
 /** Sight padding over `stats.los` (matches the player's fog reveal). */
@@ -592,6 +594,15 @@ export class AI {
         if (this.mult.aggression > 0.6) s.issueOrder({ kind: OrderKind.ATTACK, entityId: inFocus.id }, true);
         continue;
       }
+      // A scripted enemy has no strategic attacks (`attacks: false`): its authored waves still have
+      // to press the objective instead of freezing at the edge of the firing envelope.
+      if (!this.attacks) {
+        const target = this.findNearestScriptedTarget(s, SCRIPTED_PURSUIT);
+        if (target) {
+          s.issueOrder({ kind: OrderKind.ATTACK, entityId: target.id }, true);
+          continue;
+        }
+      }
       // no unit in range: raid an enemy worker, press a nearby building, else mop up
       const raid = this.profile.raidEconomy ? this.findEnemyWorkerInRange(s, RAID_RADIUS) : null;
       if (raid) {
@@ -811,6 +822,21 @@ export class AI {
       if (u.id === excludeId) continue;
       const d = distance2D(s.pos.x, s.pos.z, u.pos.x, u.pos.z);
       if (d < range && d < bestD && this.canAttackEntity(s, u)) {
+        bestD = d;
+        best = u;
+      }
+    }
+    return best;
+  }
+
+  /** Nearest reachable enemy within `radius`; an authored wave presses it instead of idling. */
+  private findNearestScriptedTarget(s: Unit, radius: number): Unit | null {
+    let best: Unit | null = null;
+    let bestD = radius;
+    for (const u of this.game.units.values()) {
+      if (!isSoldier(u) || !this.isEnemyUnit(u) || !this.canAttackEntity(s, u)) continue;
+      const d = distance2D(s.pos.x, s.pos.z, u.pos.x, u.pos.z);
+      if (d < bestD) {
         bestD = d;
         best = u;
       }

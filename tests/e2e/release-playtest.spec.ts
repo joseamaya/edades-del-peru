@@ -45,8 +45,10 @@ async function playMission(page: Page, missionId: string): Promise<PlaytestResul
     const MAP_MIDPOINT = 128;
     const SAFE_INSET = 30;
     const SAFE_FAR = MAP_MIDPOINT * 2 - SAFE_INSET;
-    // Cáceres fights with the army in the Breña; San Martín is too exposed at Callao.
-    const PROTECT_FOLLOWS_ARMY = new Set(['m_brena']);
+    // Protected commanders stay where the mission places them instead of being moved to the far
+    // corner: Cáceres at the village rear in Tarapacá, and at the Breña camp (he is excluded from the
+    // assault by `front()`, and the final retreat brings him back into the march).
+    const PROTECT_FOLLOWS_ARMY = new Set(['m_tarapaca', 'm_brena']);
 
     const point = (p: any) => g.resolveMissionPoint(p);
     const workers = () =>
@@ -134,12 +136,13 @@ async function playMission(page: Page, missionId: string): Promise<PlaytestResul
           }
           run(3);
         } else if (o.kind === 'hold') {
-          // Hold objectives need boots inside the radius; Tarapacá's defensive line holds with `move`
-          // while the other missions keep the established attack-move probe.
-          order(front(), o.pos, id === 'm_tarapaca' ? 'move' : 'attack_move');
+          // Hold objectives need boots inside the radius; attack-move clears the wave on the way in.
+          order(front(), o.pos, 'attack_move');
           run(25);
         } else if (o.kind === 'reach') {
-          order(all(), o.pos, 'attack_move');
+          // The protected commander does not lead the assault in Tarapacá: he is the objective, not a
+          // free casualty, and the real player keeps him behind the line.
+          order(id === 'm_tarapaca' ? front() : all(), o.pos, 'attack_move');
           run(25);
         } else {
           run(5);

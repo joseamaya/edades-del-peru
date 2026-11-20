@@ -171,6 +171,17 @@ const BLOCKED_GOAL_ARRIVAL_DIST = 12;
 const LEASH_MIN_RADIUS = 6;
 /** Distance from the leash origin at which a defensive unit stops returning. */
 const LEASH_RETURN_DIST = 1.5;
+/**
+ * A ranged unit fires at up to this much past its nominal reach. Acquisition uses the same slack, so a
+ * defender never watches a shooter park just outside the radius it uses to look for enemies.
+ */
+const ATTACK_STOP_SLACK = 1.15;
+/** Extra reach on top of the firing envelope, so an attacker parked at the edge is still acquired. */
+const ACQUIRE_MARGIN = 4;
+/** A unit answers the attacker that just hit it from further out, then returns to its post. */
+const RETALIATION_RADIUS = 6;
+/** Seconds a unit keeps its attacker in mind when it has no other order. */
+const RETALIATION_MEMORY = 6;
 /** Re-path cadence while walking back to the defensive anchor. */
 const LEASH_REPATH = 0.6;
 /** Extra build reach so large buildings remain constructible from their approach cell. */
@@ -236,6 +247,9 @@ export class Unit {
   combatStance: CombatStance = 'agresivo';
   /** Anchor a defensive unit returns to after a short pursuit. */
   leashOrigin: { x: number; z: number } | null = null;
+  /** Last unit that damaged this one; a defensive unit returns fire even from outside its leash. */
+  private retaliationId: number | null = null;
+  private retaliationTimer = 0;
   /** Group move speed cap (the slowest member), cleared by any non-move order. */
   moveSpeedLimit: number | null = null;
   buildEfficiency = 1;
@@ -506,6 +520,7 @@ export class Unit {
     this.noDropsiteTimer = 0;
     this.blockedNotified = false;
     this.resetApproachState();
+    this.clearRetaliation();
     if (this.combatStance === 'defensivo') this.leashOrigin = { x: this.pos.x, z: this.pos.z };
   }
 
@@ -558,7 +573,9 @@ export class Unit {
       case OrderKind.ATTACK_MOVE: {
         const goal = this.resolveMoveGoal(order.target!);
         order.target = goal;
-        if (this.combatStance === 'defensivo') this.leashOrigin = { ...goal };
+        // An attack-move is an advance, not a post: keep the old leash from cancelling the fight next
+        // to the squad. The unit sets a new anchor when the march is done.
+        if (this.combatStance === 'defensivo') this.leashOrigin = null;
         this.setPath(goal.x, goal.z);
         break;
       }
@@ -707,11 +724,58 @@ export class Unit {
 
   setCombatStance(stance: CombatStance): void {
     this.combatStance = stance;
+    this.clearRetaliation();
     if (stance === 'defensivo') this.leashOrigin = { x: this.pos.x, z: this.pos.z };
   }
 
   private leashRadius(): number {
     return Math.max(this.stats.range, LEASH_MIN_RADIUS);
+  }
+
+  /** Nominal reach of this unit's weapon; melee uses the shared edge range. */
+  private nominalRange(): number {
+    return this.stats.range > 0 ? this.stats.range : MELEE_ATTACK_RANGE;
+  }
+
+  /**
+   * Reach used to acquire and chase. Ranged units fire up to `(nominal + target radius) × slack`; the
+   * margin is wider than any target radius, so a shooter is never outside the look radius. Melee keeps
+   * its sight-based pick (`los + 1`), the pre-existing behaviour.
+   */
+  private attackEnvelope(): number {
+    if (this.stats.range === 0) return Math.max(MELEE_ATTACK_RANGE + 1, this.stats.los + 1);
+    return this.nominalRange() * ATTACK_STOP_SLACK + ACQUIRE_MARGIN;
+  }
+
+  /** Living enemy that damaged this unit recently; cleared once it dies or the memory lapses. */
+  private retaliationTarget(): Unit | null {
+    if (this.retaliationTimer <= 0 || this.retaliationId === null) return null;
+    const target = this.ctx?.entitiesById?.get(this.retaliationId) as Unit | undefined;
+    if (!target || target.dead) {
+      this.clearRetaliation();
+      return null;
+    }
+    return target;
+  }
+
+  private clearRetaliation(): void {
+    this.retaliationId = null;
+    this.retaliationTimer = 0;
+  }
+
+  /** True when `unit` is the attacker this unit is currently answering. */
+  private isRetaliationTarget(unit: { id: number }): boolean {
+    return this.retaliationId === unit.id && this.retaliationTimer > 0;
+  }
+
+  /** The recent attacker when it is still inside the bounded response radius. */
+  private retaliationInRange(): Unit | null {
+    const target = this.retaliationTarget();
+    if (!target) return null;
+    const d = distance2D(this.pos.x, this.pos.z, target.pos.x, target.pos.z);
+    if (d <= this.attackEnvelope() + RETALIATION_RADIUS) return target;
+    this.clearRetaliation();
+    return null;
   }
 
   private withinLeash(x: number, z: number): boolean {
@@ -737,11 +801,17 @@ export class Unit {
   /** Nearest enemy inside the defensive leash and the unit's acquisition range. */
   private defensiveTarget(): Unit | null {
     const origin = this.leashOrigin ?? { x: this.pos.x, z: this.pos.z };
-    const acquire = this.stats.range > 0 ? this.stats.range + 1 : this.stats.los + 1;
-    const candidates = this.ctx?.enemiesNear?.(origin.x, origin.z, this.leashRadius(), this.owner) ?? [];
+    const envelope = this.attackEnvelope();
+    const responder = this.retaliationTarget();
+    if (responder) {
+      const fromOrigin = distance2D(origin.x, origin.z, responder.pos.x, responder.pos.z);
+      if (fromOrigin <= envelope + RETALIATION_RADIUS) return responder;
+    }
+    const candidates =
+      this.ctx?.enemiesNear?.(origin.x, origin.z, Math.max(this.leashRadius(), envelope), this.owner) ?? [];
     return (
       candidates
-        .filter((u) => distance2D(this.pos.x, this.pos.z, u.pos.x, u.pos.z) <= acquire)
+        .filter((u) => distance2D(this.pos.x, this.pos.z, u.pos.x, u.pos.z) <= envelope)
         .sort(
           (a, b) =>
             distance2D(this.pos.x, this.pos.z, a.pos.x, a.pos.z) - distance2D(this.pos.x, this.pos.z, b.pos.x, b.pos.z),
@@ -759,8 +829,14 @@ export class Unit {
     return (k === OrderKind.GATHER || k === OrderKind.BUILD) && this.walkCycle <= 0.01;
   }
 
-  takeDamage(dmg: number, _fromId?: number): void {
+  takeDamage(dmg: number, fromId?: number): void {
     if (this.dead) return;
+    // Fire is answered: remember the shooter so an idle defensive unit can return fire from just
+    // outside its leash instead of watching its squad die without reacting.
+    if (fromId !== undefined && fromId !== this.id) {
+      this.retaliationId = fromId;
+      this.retaliationTimer = RETALIATION_MEMORY;
+    }
     this.hp -= dmg;
     if (this.hp <= 0) {
       this.die();
@@ -803,6 +879,7 @@ export class Unit {
     if (this.garrisonedIn !== null) return;
 
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
+    this.retaliationTimer = Math.max(0, this.retaliationTimer - dt);
     this.repathTimer -= dt;
 
     const order = this.orderQueue[0];
@@ -839,8 +916,13 @@ export class Unit {
       return;
     }
     if (this.attackCooldown <= 0) {
-      const range = this.stats.range > 0 ? this.stats.range + 1 : this.stats.los + 1;
-      const enemy = this.ctx?.enemiesNear ? this.ctx.enemiesNear(this.pos.x, this.pos.z, range, this.owner)[0] : null;
+      // An idle aggressive unit keeps its historic pick (ranged reach + 1, melee sight + 1), but a
+      // unit that was just shot answers the shooter even from beyond that pick.
+      const range = this.stats.range > 0 ? this.nominalRange() + 1 : this.stats.los + 1;
+      const responder = this.retaliationInRange();
+      const enemy =
+        responder ??
+        (this.ctx?.enemiesNear ? this.ctx.enemiesNear(this.pos.x, this.pos.z, range, this.owner)[0] : null);
       if (enemy) {
         this.issueOrder({ kind: OrderKind.ATTACK, entityId: enemy.id }, true);
         this.updateAttack(this.orderQueue[0], dt, time);
@@ -1090,8 +1172,11 @@ export class Unit {
   }
 
   private updateAttackMove(order: Order, dt: number, time: number): void {
-    // look for enemies along the path
-    const enemies = this.ctx.unitsNear(this.pos.x, this.pos.z, this.stats.range + 3);
+    // Look for enemies along the path. Attack-move keeps its historic engagement distance (nominal
+    // range + 2 m) so it still reaches its destination; the wider acquisition envelope belongs to
+    // idle/defensive fire, not to a march.
+    const engage = this.nominalRange() + 2;
+    const enemies = this.ctx.unitsNear(this.pos.x, this.pos.z, engage + 2);
     let best: Unit | null = null;
     let bestD = Infinity;
     for (const e of enemies) {
@@ -1103,13 +1188,17 @@ export class Unit {
         best = e;
       }
     }
-    if (best && bestD < this.stats.range + 2) {
+    if (best && bestD < engage) {
       // engage combat without destroying the attack-move order
       this.targetEntityId = best.id;
       this.attackingTarget = true;
       this.updateAttack({ kind: OrderKind.ATTACK, entityId: best.id }, dt, time);
     } else if (this.isPathDone()) {
       this.attackingTarget = false;
+      // The advance has arrived: from here the unit holds this ground as its defensive post.
+      if (this.combatStance === 'defensivo' && !this.leashOrigin) {
+        this.leashOrigin = { x: this.pos.x, z: this.pos.z };
+      }
       // same no-freeze guarantee as a plain move when the route came back empty
       this.updateMove(order, dt);
     }
@@ -1135,17 +1224,26 @@ export class Unit {
       return;
     }
     if (this.combatStance === 'defensivo' && !this.withinLeash(target.pos.x, target.pos.z)) {
-      const am = this.orderQueue[0];
-      if (am?.kind === OrderKind.ATTACK_MOVE && am.target) {
-        // an out-of-leash target must not cancel the attack-move march
-        this.attackingTarget = false;
-        this.targetEntityId = null;
-        this.setPath(am.target.x, am.target.z);
-      } else {
-        this.finishOrder();
-        this.returnToLeash();
+      const origin = this.leashOrigin ?? { x: this.pos.x, z: this.pos.z };
+      const fromOrigin = distance2D(origin.x, origin.z, target.pos.x, target.pos.z);
+      const responding = this.isRetaliationTarget(target) && fromOrigin <= this.attackEnvelope() + RETALIATION_RADIUS;
+      // A target the unit can already be shot from is a legitimate engagement even when it stands
+      // past the leash: fire, then walk back. Anything farther cancels the order and returns home.
+      const inEnvelope = fromOrigin <= this.attackEnvelope();
+      if (!responding && !inEnvelope) {
+        const am = this.orderQueue[0];
+        if (am?.kind === OrderKind.ATTACK_MOVE && am.target) {
+          // an out-of-leash target must not cancel the attack-move march
+          this.attackingTarget = false;
+          this.targetEntityId = null;
+          this.setPath(am.target.x, am.target.z);
+        } else {
+          this.finishOrder();
+          this.returnToLeash();
+        }
+        return;
       }
-      return;
+      if (responding) this.retaliationTimer = RETALIATION_MEMORY;
     }
     const tpos = target.pos;
     const dx = tpos.x - this.pos.x;
@@ -1157,7 +1255,7 @@ export class Unit {
       target.radius +
       (building ? BUILDING_ATTACK_PAD : 0);
 
-    if (dist > range * 1.15) {
+    if (dist > range * ATTACK_STOP_SLACK) {
       // chase (with a direct-approach fallback if there is no path)
       if (this.repathTimer <= 0 && !building) {
         this.setPath(tpos.x, tpos.z);

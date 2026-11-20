@@ -148,7 +148,7 @@ Definition of Done and the building audit see
 - **Mission-scoped site landmarks**: `MissionLayout.siteLandmarks`
   (`src/model/defs/siteLandmarks.ts`) draws procedural landmark compositions for the sites whose bundled GLB is a
   labelled abstraction from another place: Cusco's plaza/ushnu and Sacsayhuamán, the Real Felipe bastions, the
-  Tarapacá village and heights and the Vilcabamba refuge. `SiteLandmarks` merges geometry per material and lives in its own
+  Tarapacá village, heights and Pachica hamlet, and the Vilcabamba refuge. `SiteLandmarks` merges geometry per material and lives in its own
   scene group so disposing a match never touches the shared generated PBR textures. `MissionSite.hideModel`
   drops the bundled GLB per mission (Cusco 1536) while `AuthoredSiteDef.hideModel` does it for a site used by
   one mission (Real Felipe, Tarapacá, Vilcabamba); both are presentation-only. The Real Felipe trace also
@@ -442,13 +442,31 @@ Definition of Done and the building audit see
   party keeps only its authored roster. `MissionDef.enemy.economy: false` / `attacks: false` turn the AI into
   a scripted opponent (micro and defense only), and `wave.spawn` separates an enemy wave's entry point from
   the `pos` it attacks or holds. Tarapacá is the reference battle: both seats are base-less, it has no
-  economy, and its three columns enter from the map edges.
+  economy, and its three columns enter from the map edges. A scripted (`attacks: false`) enemy presses any
+  reachable enemy within 20 m after its authored attack-move ends (`SCRIPTED_PURSUIT` in `AI.microCombat`);
+  without it the wave freezes at the edge of its firing envelope. `MissionDef.commanderRoles` overrides a
+  commander's role line for one mission (Cáceres is `Perú · Tarapacá`, not only La Breña), and
+  `ObjectiveDef.clearEnemies` keeps a `reach`/`hold` active while a hostile unit stands inside the radius
+  (`clearRadius` widens that check).
+- **Combat engagement**: a defensive unit's acquisition and fire share one envelope (`src/entities/Unit.ts`):
+  `nominal range × 1.15` (the same slack `updateAttack` uses to fire) plus a 4 m margin, against the old
+  `range + 1` acquisition. This is what lets a defensive line answer a rifleman parked at 16 m instead of
+  dying without returning fire. An aggressive idle unit keeps its `range + 1` pick, but `takeDamage`
+  remembers the shooter for 6 s and any unit returns fire from a bounded response radius even outside its
+  defensive leash, then walks back to its post. An `attack_move` still engages at `nominal range + 2` so a
+  march reaches its destination, and a defensive anchor is set when the march arrives instead of at the
+  order's start. Guarded by `tests/combat-engagement.test.ts`, `tests/tarapaca-battle.test.ts` and the
+  Tarapacá real-order specs.
+- **Zero-resource battles**: `MapOverrides.resources` with every weight at 0 now means _no nodes_.
+  `WorldViewDecor.pickResourceKind` returns `null` instead of falling back to `'tree'`, and `scatter: 0`
+  skips the scatter pass; before this an all-zero profile planted ~65 lush trees on Tarapacá.
 - **UI/inputs in `src/core/Game.ts` and `src/ui/HUD.ts`**: left click selects / drag = box-select (rectangle
   `#ed-selbox`) · right click = order (**right button no longer pans**; panning is by screen edges, WASD/arrows,
   middle-mouse drag, or dragging the **bottom-left minimap**). Minimap: drag = move viewport, right click = order
   (`Game.commandMoveToWorld`). The minimap is **north-up** (`-z` is north, `+x` is east) and draws a fixed
   `N/E/S/W` compass; the camera footprint is a rotated quad from `getGroundQuad()` so it stays truthful when the
-  camera yaw changes. Optional camera rotation with Z/X (`settings.rotateCamera`, off = fixed camera).
+  camera yaw changes. Its ground bands come from the mission's `TERRAIN_PALETTES` palette
+  (`src/ui/minimapPalette.ts`), so a desert map is ochre instead of the old hard-coded green. Optional camera rotation with Z/X (`settings.rotateCamera`, off = fixed camera).
   Control groups (Ctrl/Alt+1-9 assign, 1-9 recall, Shift+1-9 add). Hover tooltip (`computeHover`) and
   **contextual cursor** (`hoverAction`). Damage icons/numbers (`src/ui/DamageNumbers.ts`), clickable alerts that
   pulse on the minimap (`pushAlert` + `alert` event), and order markers (`src/entities/OrderMarker.ts`). Named

@@ -3,8 +3,16 @@ import { setAutoStart } from '../src/core/Game';
 import { UnitKind } from '../src/core/types';
 import { headlessMission } from './headless';
 
+function hpOf(game: ReturnType<typeof headlessMission>, owner: number): number {
+  let total = 0;
+  for (const unit of game.units.values()) {
+    if (unit.owner === owner && !unit.dead) total += unit.hp;
+  }
+  return total;
+}
+
 describe('Tarapacá battle simulation', () => {
-  it('starts as a bare army, receives the first column and holds the village', () => {
+  it('starts as a bare army and answers the first column instead of dying for free', () => {
     const game = headlessMission('m_tarapaca');
     try {
       const playerUnits = [...game.units.values()].filter((u) => u.owner === 0 && !u.dead);
@@ -14,14 +22,9 @@ describe('Tarapacá battle simulation', () => {
       expect(game.players[0].resources).toEqual({ food: 0, wood: 0, silver: 0, stone: 0 });
       expect(game.playerCenter(0).x).toBeCloseTo(96, 1);
       expect(game.playerCenter(0).z).toBeCloseTo(168, 1);
-
-      // The protect objective is a player responsibility: park Cáceres behind the line so this test
-      // exercises the village hold and the scripted columns, not an idle commander death.
-      const caceres = [...game.units.values()].find((u) => u.owner === 0 && u.tag === 'caceres');
-      if (caceres) {
-        caceres.pos.set(70, game.terrain.getHeight(70, 190), 190);
-        caceres.orderQueue.length = 0;
-      }
+      // Cáceres commands from the rear of the village, not from the first volley's line.
+      const caceresStart = [...game.units.values()].find((u) => u.tag === 'caceres')!;
+      expect(caceresStart.pos.z, 'Cáceres must start behind the line').toBeGreaterThan(185);
 
       let t = 0;
       const run = (seconds: number): void => {
@@ -32,18 +35,38 @@ describe('Tarapacá battle simulation', () => {
         }
       };
 
-      run(3.3);
+      // The first column enters after the briefing window; measure the exchange once it is on the field.
+      run(25);
       const firstColumn = [...game.units.values()].filter((u) => u.owner === 1 && !u.dead);
-      expect(firstColumn.length).toBeGreaterThanOrEqual(7);
+      expect(firstColumn.length).toBeGreaterThanOrEqual(5);
       const closest = Math.min(...firstColumn.map((u) => Math.hypot(u.pos.x - 96, u.pos.z - 168)));
       expect(closest, 'the first column does not spawn on the village').toBeGreaterThan(30);
 
-      run(100);
-      expect(game.mission!.getObjectiveState('a1_pueblo')).toBe('completed');
-      expect(game.mission!.getObjectiveState('a2_alturas')).toBe('activo');
-      expect(game.mission!.getObjectiveState('a2_pachica')).not.toBe('completed');
+      const playerHp = hpOf(game, 0);
+      const column = firstColumn.map((u) => u.id);
+      const columnHp = firstColumn.reduce((sum, u) => sum + u.hp, 0);
+      run(45);
+      const columnHpAfter = column.reduce((sum, id) => {
+        const unit = game.units.get(id);
+        return sum + (unit && !unit.dead ? unit.hp : 0);
+      }, 0);
+
+      expect(game.mission!.ended, 'the village fell to the first column without a fight').toBe(false);
+      expect([...game.units.values()].some((u) => u.tag === 'caceres' && !u.dead)).toBe(true);
+      expect(hpOf(game, 0), 'the defenders should take casualties in the exchange').toBeLessThan(playerHp);
+      expect(columnHpAfter, 'the defenders never returned fire').toBeLessThan(columnHp);
       expect(game.buildings.size, 'the AI never raises a town').toBe(0);
-      expect(game.mission!.ended).toBe(false);
+    } finally {
+      game.destroy();
+      setAutoStart(true);
+    }
+  });
+
+  it('has no harvestable nodes on a one-day battle map', () => {
+    const game = headlessMission('m_tarapaca');
+    try {
+      expect(game.mapProfile.resources.scatter).toBe(0);
+      expect(game.resourceNodes.size, 'the quebrada must not grow a resource ring').toBe(0);
     } finally {
       game.destroy();
       setAutoStart(true);

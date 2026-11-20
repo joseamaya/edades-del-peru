@@ -221,7 +221,7 @@ export const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'alturas',
-        text: 'Reconquista las alturas de la quebrada. Sin caballería ni artillería, la infantería debe ganar el terreno a pie.',
+        text: 'Desaloja a la columna chilena de las alturas y ocúpalas: llegar con el enemigo dentro del radio no cuenta como reconquista.',
         check: { type: 'objectiveCompleted', objectiveId: 'a2_alturas' },
       },
       {

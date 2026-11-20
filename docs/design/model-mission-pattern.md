@@ -114,8 +114,19 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
 - `enemy.economy: false` skips worker management, construction, training, research and era advance;
   `enemy.attacks: false` keeps combat micro and defense but leaves the offensive to authored waves.
   Wire the mission's `enemy.difficulty`/`aggression` — they are not the menu difficulty.
+- A scripted enemy (`attacks: false`) presses any reachable enemy within 20 m once its authored
+  attack-move ends. Without this the wave stops at the edge of its firing envelope and the battle freezes;
+  `tests/tarapaca-battle.test.ts` and the release playtest guard it.
 - Give every enemy wave a `spawn` (entry point) and a `target`/`pos` (objective); `pos` alone is the legacy
   "spawn here" contract and must not sit inside the player's hold radius. Guard the distance in a test.
+  The target must also be walkable: a column ordered into a blocked village footprint stops outside both
+  firing envelopes. Tarapacá walks to a plaza edge point, not the exact centre.
+- A reconquest is `reach` + `clearEnemies`: the objective stays active while a hostile unit stands inside
+  the radius (`clearRadius` widens the check beyond the reach radius so a defender cannot step off and
+  back). Arriving on a crest still held by ten men is not taking it.
+- The player's defensive line needs an engagement envelope that matches enemy fire: acquisition uses the
+  same `range × 1.15` firing slack plus a margin, and a unit that is shot returns fire from a bounded
+  radius. Do not tune a mission around a mismatch of 13.2 m acquisition vs 16 m enemy fire.
 - If the mission has a build objective (Lima's cabildo, the Junta's barracks), keep a small founding crew
   and the specific building; do not restore the generic town. Tarapacá has no build objective, so it can
   be a true zero-economy battle.
@@ -196,20 +207,20 @@ never gates the rest of the tutorial.
 
 ## 11. Checklist
 
-| Area        | Done when                                                                                         |
-| ----------- | ------------------------------------------------------------------------------------------------- |
-| Dossier     | `docs/historia/campanas/<mission>.md` lists sources and a certainty table for every element shown |
-| Design doc  | `docs/design/<mission>-model-mission.md` with acts, geography, open items (copy Caral's layout)   |
-| Acts        | Hidden objectives per act, chapter cards, optional goals, documented ending                       |
-| Narrator    | `narrator` set; no invented names or titles                                                       |
+| Area        | Done when                                                                                              |
+| ----------- | ------------------------------------------------------------------------------------------------------ |
+| Dossier     | `docs/historia/campanas/<mission>.md` lists sources and a certainty table for every element shown      |
+| Design doc  | `docs/design/<mission>-model-mission.md` with acts, geography, open items (copy Caral's layout)        |
+| Acts        | Hidden objectives per act, chapter cards, optional goals, documented ending                            |
+| Narrator    | `narrator` set; no invented names or titles                                                            |
 | Map         | 256 m, painted ground every 2 m, worker crossing 130–160 s, transect script, fords, region flora/fauna |
-| Site        | Phased kit pieces, phase effect, monuments appear and block by phase, living details              |
-| Economy     | `allowedBuildings`, `allowedUnits`, period techs only, the mission's own mechanic                 |
-| Intro       | Three narrated beats with captured images; chapter-card and epilogue images                       |
-| Briefing    | `MISSION_ART` registered; facts, objectives and sources read well                                 |
-| Tutorial    | Step list for the new actions, non-blocking                                                       |
-| Cast        | Story characters tagged as units, named in the world and in the briefing; losses staged            |
-| Art         | Manifests with `confidence`, human review recorded, PROVENANCE updated                            |
-| Performance | Opening (and late) view in `bench_scene.mjs`, budgets pass, dist under 25 MB                      |
-| Tests       | Data, E2E and playtest; `verify:fast` and the mission's E2E green                                 |
-| Quality bar | Its gold-master table in `campaign-quality-bar.md` filled with evidence                           |
+| Site        | Phased kit pieces, phase effect, monuments appear and block by phase, living details                   |
+| Economy     | `allowedBuildings`, `allowedUnits`, period techs only, the mission's own mechanic                      |
+| Intro       | Three narrated beats with captured images; chapter-card and epilogue images                            |
+| Briefing    | `MISSION_ART` registered; facts, objectives and sources read well                                      |
+| Tutorial    | Step list for the new actions, non-blocking                                                            |
+| Cast        | Story characters tagged as units, named in the world and in the briefing; losses staged                |
+| Art         | Manifests with `confidence`, human review recorded, PROVENANCE updated                                 |
+| Performance | Opening (and late) view in `bench_scene.mjs`, budgets pass, dist under 25 MB                           |
+| Tests       | Data, E2E and playtest; `verify:fast` and the mission's E2E green                                      |
+| Quality bar | Its gold-master table in `campaign-quality-bar.md` filled with evidence                                |

@@ -154,14 +154,34 @@ export class Mission {
     return state && (!o.pos || this.reached(o));
   }
 
+  /** Resolved world point of a position-scoped objective. */
+  private objectivePoint(o: ObjectiveDef): { x: number; z: number } | null {
+    return o.pos ? this.resolvePoint(o.pos) : null;
+  }
+
   /** A `reach` objective with no tag accepts any living player unit. */
   private reached(o: ObjectiveDef): boolean {
-    if (!o.pos) return false;
-    const tp = this.resolvePoint(o.pos);
+    const tp = this.objectivePoint(o);
+    if (!tp) return false;
     const pts = o.entityTag
       ? this.byTag(o.entityTag).filter((e) => !e.dead && 'owner' in e && (e as Unit).owner === 0)
       : [...this.game.units.values()].filter((u) => u.owner === 0 && !u.dead);
     return pts.some((e) => distance2D(e.pos.x, e.pos.z, tp.x, tp.z) < (o.radius ?? 6));
+  }
+
+  /** Hostile units standing inside an objective's radius (a contested reconquest is not taken). */
+  private enemiesInside(o: ObjectiveDef): number {
+    const tp = this.objectivePoint(o);
+    if (!tp) return 0;
+    const radius = o.clearRadius ?? o.radius ?? 6;
+    const team = this.game.players[0]?.team;
+    let enemies = 0;
+    for (const u of this.game.units.values()) {
+      if (u.dead || u.owner === 0) continue;
+      if (team !== undefined && this.game.players[u.owner]?.team === team) continue;
+      if (distance2D(u.pos.x, u.pos.z, tp.x, tp.z) < radius) enemies++;
+    }
+    return enemies;
   }
 
   private spawned(tag: string): boolean {
@@ -233,10 +253,11 @@ export class Mission {
         }
       }
       const held = crew >= (o.minUnits ?? 1);
+      const contested = o.clearEnemies === true && this.enemiesInside(o) > 0;
       const current = this.holdTimers.get(o.id) ?? 0;
-      if (!held) {
+      if (!held || contested) {
         // A work turn that already paid its upkeep keeps its progress while the crew steps away; only
-        // objectives without an upkeep restart from zero.
+        // objectives without an upkeep restart from zero. Contested ground is never held.
         if (!o.consume) this.holdTimers.set(o.id, 0);
         this.stalledHolds.delete(o.id);
         continue;
@@ -341,7 +362,8 @@ export class Mission {
         return this.timer - (this.activatedAt.get(o.id) ?? 0) >= (o.time ?? 0) ? 'win' : 'ok';
       case 'reach': {
         if (!o.pos) return 'ok';
-        return this.reached(o) ? 'win' : 'ok';
+        if (!this.reached(o)) return 'ok';
+        return o.clearEnemies && this.enemiesInside(o) > 0 ? 'ok' : 'win';
       }
       case 'hold':
         return (this.holdTimers.get(o.id) ?? 0) >= (o.time ?? 0) ? 'win' : 'ok';
