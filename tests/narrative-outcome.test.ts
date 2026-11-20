@@ -17,7 +17,7 @@ describe('documented endings', () => {
   });
 
   it('has the labels the result screen uses', () => {
-    expect(es['hud.victory.resistencia']).toBe('RESISTENCIA CUMPLIDA');
-    expect(es['hud.victory.retirada']).toBe('RETIRADA CUMPLIDA');
+    expect(es['hud.victory.resistance']).toBe('RESISTENCIA CUMPLIDA');
+    expect(es['hud.victory.retreat']).toBe('RETIRADA CUMPLIDA');
   });
 });

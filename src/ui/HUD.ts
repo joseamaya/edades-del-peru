@@ -1364,9 +1364,9 @@ export class HUD {
     }
     const outcomeTitle =
       victory && mis?.outcome === 'resistencia'
-        ? t('hud.victory.resistencia')
+        ? t('hud.victory.resistance')
         : victory && mis?.outcome === 'retirada'
-          ? t('hud.victory.retirada')
+          ? t('hud.victory.retreat')
           : null;
     const title = outcomeTitle ?? (victory ? t('hud.victory.title') : t('hud.victory.defeat'));
     const sub =

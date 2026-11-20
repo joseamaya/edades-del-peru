@@ -100,8 +100,8 @@ export const es = {
 
   'hud.victory.title': 'VICTORIA',
   'hud.victory.defeat': 'DERROTA',
-  'hud.victory.resistencia': 'RESISTENCIA CUMPLIDA',
-  'hud.victory.retirada': 'RETIRADA CUMPLIDA',
+  'hud.victory.resistance': 'RESISTENCIA CUMPLIDA',
+  'hud.victory.retreat': 'RETIRADA CUMPLIDA',
   'hud.victory.win': 'La partida termina con la victoria.',
   'hud.victory.lose': 'Tu civilización ha caído ante el avance enemigo.',
   'hud.victory.epilogue': 'Epílogo.',
