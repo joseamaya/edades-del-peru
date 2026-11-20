@@ -6,6 +6,7 @@ const ROOT = process.cwd();
 const DIST = path.join(ROOT, 'dist');
 const TOTAL_LIMIT = 25 * 1024 * 1024;
 const ENTRY_GZIP_LIMIT = 600 * 1024;
+const REQUIRED_ROOT_FILES = ['LICENSE', 'ATTRIBUTION.md'];
 
 function walk(dir) {
   const files = [];
@@ -38,6 +39,20 @@ if (!fs.existsSync(entryPath)) {
   process.exit(1);
 }
 const entryGzip = zlib.gzipSync(fs.readFileSync(entryPath), { level: 9 }).length;
+// The landing page defers the game bundle: index-*.js is a small loader that imports boot-*.js and
+// three-*.js. Enforce the 600 KB loader budget, and report the real first-play payload separately so
+// the release record shows what the player actually downloads.
+const entrySource = fs.readFileSync(entryPath, 'utf8');
+const firstPlayFiles = new Set([entryPath]);
+for (const match of entrySource.matchAll(/["'`](\.\/[^"'`]+\.js)["'`]/g)) {
+  const dep = path.join(path.dirname(entryPath), match[1]);
+  if (fs.existsSync(dep)) firstPlayFiles.add(dep);
+  else console.warn(`  referenced chunk missing from dist: ${match[1]}`);
+}
+const firstPlayGzip = [...firstPlayFiles].reduce(
+  (sum, file) => sum + zlib.gzipSync(fs.readFileSync(file), { level: 9 }).length,
+  0,
+);
 
 const mb = (bytes) => (bytes / 1024 / 1024).toFixed(2);
 const kb = (bytes) => (bytes / 1024).toFixed(0);
@@ -49,10 +64,20 @@ if (total > TOTAL_LIMIT) {
   failed = true;
 }
 
-console.log(`entry ${entry}: ${kb(entryGzip)} KB gzip (limit ${kb(ENTRY_GZIP_LIMIT)} KB)`);
+console.log(`loader ${entry}: ${kb(entryGzip)} KB gzip (limit ${kb(ENTRY_GZIP_LIMIT)} KB)`);
 if (entryGzip > ENTRY_GZIP_LIMIT) {
   console.error(`  over budget by ${kb(entryGzip - ENTRY_GZIP_LIMIT)} KB`);
   failed = true;
+}
+console.log(
+  `first play payload (loader + ${firstPlayFiles.size - 1} chunks): ${mb(firstPlayGzip)} MB gzip (informational)`,
+);
+
+for (const required of REQUIRED_ROOT_FILES) {
+  if (!fs.existsSync(path.join(DIST, required))) {
+    console.error(`missing ${required} in dist/ (the build must ship licence and attribution)`);
+    failed = true;
+  }
 }
 
 process.exit(failed ? 1 : 0);

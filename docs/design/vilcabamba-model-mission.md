@@ -46,4 +46,6 @@ The Inca's capture and execution are narrated in the epilogue; no counterfactual
 - Completable: `tests/e2e/campaign-completable.spec.ts`.
 - Real commands: `tests/e2e/vilcabamba.spec.ts` moves five units onto Huayna Pucará.
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts`.
-- Open: human no-cheat playtest, art review and a performance row.
+- Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in
+  `yarn bench:check`.
+- Open: human no-cheat playtest and art review.

@@ -1,6 +1,6 @@
 # Development roadmap
 
-**Status:** living · **Last updated:** 2026-11-17
+**Status:** living · **Last updated:** 2026-11-19
 
 This is the engineering roadmap, not the content proposal. The live per-mission status is
 [`../design/campaign-quality-bar.md`](../design/campaign-quality-bar.md); the future campaign structure is
@@ -8,7 +8,7 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
 
 ## Where we are
 
-- **Release:** `0.1.0`, campaign-only, five campaigns and twenty missions. Launch catalogue: four missions
+- **Release:** `0.2.0`, campaign-only, five campaigns and twenty missions. Launch catalogue: four missions
   per campaign (20 playable + 0 in development); the other thirteen approved missions are reserved for an
   expansion.
 - **Gold master:** Caral (`m1_caral`) meets every gate of the campaign quality bar.
@@ -55,7 +55,7 @@ evidence. No model-mission rebuild remains.
    current build. **Done (2026-11-17):** the current site views are in
    `docs/media/site-review-2026-11-17.webp` (human review still pending). Lima 1821, Real Felipe, Tarapacá, Miraflores, Breña, Cusco 1536 and Vilcabamba have current captures in
    `public/media/{lima-1821,real-felipe,tarapaca,miraflores,brena,cusco-1536,vilcabamba}/`; their human art
-   review and bench rows remain (B15–B17).
+   review remains (B15–B17). Their bench rows are now in `yarn bench:check` (2026-11-19).
 
 The release-candidate document is an **archived snapshot** from 2026-10-30. Use its checklist as a template,
 but record today's counts and hashes in a new status document or PR, not by editing the snapshot.
@@ -65,19 +65,29 @@ but record today's counts and hashes in a new status document or PR, not by edit
 The pass is recorded in [`../development/site-view-performance.md`](../development/site-view-performance.md):
 17 site views (m3–m9, m6b and La Junta) at 1280×800 and 1600×900 on the Intel RPL-S iGPU, all rows on
 hardware. The shipped high preset runs **28–38 FPS** at 1600×900 and **32–48 FPS** at 1280×800; the low
-fallback is 46–50 FPS on the three tightest late views.
+fallback is 46–50 FPS on the three tightest late views. The seven missions added on 2026-11-18 are not in
+this pass; they have SwiftShader rows and are a **known limitation** of the 0.2.0 release, not a measured
+28–38 FPS claim.
 
 Decision: accept the measured high-quality frame times, keep the SwiftShader structural caps unchanged,
 and schedule the m6b/m8 late-view optimization as **B13**. Re-run `yarn bench:site-views` before D4.
-`yarn bench:check` remains the SwiftShader ratchet; the pre-existing m8 row is still red.
+`yarn bench:check` remains the SwiftShader ratchet. The m8 opening measures ~618–620k triangles against
+its 625k cap, so the row is green but within ~1 %; do not add scene weight to m8, m6b or Tambotoco without
+re-measuring. `m_cusco_1536` and `m_brena` were added to the command in the 0.2.0 closeout.
 
-## D4 · Release
+## D4 · Release 0.2.0 (closeout)
+
+The evidence and the remaining gates are in [`../release/0.2.0-readiness-audit.md`](../release/0.2.0-readiness-audit.md).
 
 - Build the Pages artifact and the itch package from the same commit.
 - Re-run `yarn verify:fast`, the required E2E tier, `yarn art:validate` and `yarn dist:check`.
 - Check the campaign menu shows four entries per campaign and that no planned entry is playable.
 - Attach the current captures and the performance numbers.
-- Tag the release and update the version. Keep `localStorage` keys and mission ids stable.
+- Tag `v0.2.0` and keep `v0.1.0` as the earlier nine-mission demo. Keep `localStorage` keys and mission ids
+  stable.
+- The seven 2026-11-18 missions have a green automated no-cheat path
+  (`tests/e2e/release-playtest.spec.ts`); a human pass is the first post-release validation and is declared
+  as a known limitation in the notes.
 
 ## Risks
 

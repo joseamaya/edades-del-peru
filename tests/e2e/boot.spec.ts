@@ -54,6 +54,22 @@ test('shows the main menu with a direct menu link', async ({ page }) => {
   await expect(page.getByRole('button', { name: /Cómo jugar/ })).toBeVisible();
 });
 
+test('the main menu shows the licences and the CC BY attribution', async ({ page }) => {
+  await page.goto('/?menu=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.getByRole('button', { name: /Créditos/ }).click();
+  const panel = page.locator('.ed-panel', { hasText: 'CRÉDITOS' });
+  await expect(panel).toBeVisible();
+  await expect(panel).toContainText('MIT');
+  await expect(panel).toContainText('CC BY 4.0');
+  await expect(panel).toContainText('Quaternius');
+  await expect(panel.getByRole('link', { name: /atribución completa/ })).toHaveAttribute('href', /ATTRIBUTION\.md$/);
+  await panel.getByRole('button', { name: /Volver/ }).click();
+  await expect(page.locator('.ed-menu-shell')).toBeVisible();
+});
+
 test('selects a unit on click', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {

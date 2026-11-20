@@ -84,7 +84,16 @@ views into ~46–50 FPS views, so the governor's fallback is doing its job.
    and material consolidation. Re-measure with `yarn bench:site-views` before and after.
 4. Re-run the pass before release packaging (D4) and after any late-view art change.
 
-## Known unrelated failure
+## Tight rows and scope
 
-`yarn bench:check` still fails the SwiftShader `m8_independencia` row (626,265 > 625,000). That budget
-was already red before this pass and is not caused by the hardware-high numbers above.
+The 2026-11-19 closeout re-ran the two tightest SwiftShader rows on `main`:
+
+- `m8_independencia` opening: **618,602 / 597** against **625,000 / 660**. The row is green, but the
+  margin is ~1 %; an earlier run measured 626,265 and the vegetation mix varies a few thousand triangles
+  between runs. Do not add scene weight to m8 without re-measuring.
+- `m6b_guerra_civil` late: **1,015,103 / 672** against **1,025,000 / 715** (~1 % margin).
+
+This document's 17 rows cover m3–m9, m6b and La Junta. The seven missions added on 2026-11-18
+(`m_cusco_1536`, `m_vilcabamba`, `m_lima_1821`, `m_real_felipe`, `m_tarapaca`, `m_miraflores`, `m_brena`)
+have SwiftShader rows in `bench_scene.mjs` / `yarn bench:check` but **no real-GPU frame time** yet; the
+0.2.0 release records that as a known limitation, not as a measured 28–38 FPS claim.
