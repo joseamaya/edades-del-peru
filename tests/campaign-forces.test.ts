@@ -27,7 +27,6 @@ describe('campaign force contract', () => {
     const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
     // Its dossier says the enemy runs no economy; the pressure is the authored bombardment and assault.
     expect(m9.enemy.economy).toBe(false);
-    expect(m9.enemy.attacks).toBe(false);
   });
 
   it('lets a scripted battle disable both seats and skip the opening resource ring', () => {

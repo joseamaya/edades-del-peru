@@ -70,8 +70,6 @@ export const m9GuerraPacifico: MissionDef = {
   unitSpeedScale: 0.75,
   startingResources: { food: 1500, wood: 800, silver: 1500, stone: 1200 },
   start: {
-    // The Chilean camp is a staging area for the authored waves, not a town: no generic centre or crew.
-    enemyBase: false,
     buildings: [{ kind: BuildingKind.FORTRESS, dx: -aricaLength(10), dz: -aricaLength(6), tag: 'puerto' }],
     units: [
       { kind: UnitKind.WORKER, dx: aricaLength(4), dz: aricaLength(6), count: 3 },
@@ -81,7 +79,7 @@ export const m9GuerraPacifico: MissionDef = {
       { kind: UnitKind.SOLDIER, dx: aricaLength(8), dz: 0, count: 4 },
     ],
   },
-  enemy: { active: true, difficulty: 'normal', aggression: 0.35, economy: false, attacks: false },
+  enemy: { active: true, difficulty: 'normal', aggression: 0.35, economy: false },
   tutorial: true,
   modelMission: true,
   intro: [
