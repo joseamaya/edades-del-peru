@@ -46,15 +46,22 @@ test('m_tarapaca answers the first column and holds the village with real orders
     run(25);
     const column = ([...g.units.values()] as any[]).filter((u) => u.owner === 1 && !u.dead).map((u) => u.id);
     const columnHp = column.reduce((sum, id) => sum + (g.units.get(id)?.hp ?? 0), 0);
-    const playerHp = hp(0);
+    // Measure the same defenders: the Pachica column joins later, and adding its hit points would hide
+    // the damage the first volley did.
+    const defenders = ([...g.units.values()] as any[]).filter((u) => u.owner === 0 && !u.dead).map((u) => u.id);
+    const playerHp = defenders.reduce((sum, id) => sum + (g.units.get(id)?.hp ?? 0), 0);
     run(45);
     const columnAfter = column.reduce((sum, id) => sum + (g.units.get(id)?.dead ? 0 : (g.units.get(id)?.hp ?? 0)), 0);
+    const playerAfter = defenders.reduce(
+      (sum, id) => sum + (g.units.get(id)?.dead ? 0 : (g.units.get(id)?.hp ?? 0)),
+      0,
+    );
 
     return {
       ended: g.mission.ended as boolean,
       caceres: ([...g.units.values()] as any[]).some((u) => u.tag === 'caceres' && !u.dead),
       playerHp,
-      playerAfter: hp(0),
+      playerAfter,
       columnHp,
       columnAfter,
       units: ([...g.units.values()] as any[]).filter((u) => u.owner === 0 && !u.dead).length,

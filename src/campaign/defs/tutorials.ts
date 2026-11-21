@@ -226,7 +226,7 @@ export const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'caceres',
-        text: 'Cáceres debe seguir con vida: su experiencia será necesaria en Arica y en la Breña.',
+        text: 'Cáceres manda desde la retaguardia y debe seguir con vida: no lo lleves con el asalto, su experiencia será necesaria en Arica y en la Breña.',
         check: { type: 'elapsed', seconds: 12 },
       },
       {

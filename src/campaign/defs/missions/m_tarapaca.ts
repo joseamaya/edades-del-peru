@@ -170,7 +170,11 @@ export const mTarapaca: MissionDef = {
   allowedBuildings: [],
   buildingNames: { [BuildingKind.FORTRESS]: 'Fortín' },
   unitNames: { [UnitKind.REPUBLICA_DEFENSOR]: 'Defensor de Tarapacá' },
-  commanderNotes: { buendia: 'Mando general · no en el campo' },
+  // He commands from the rear: the mission is lost if he falls, and the assault is no place for him.
+  commanderNotes: {
+    buendia: 'Mando general · no en el campo',
+    caceres: 'Manda desde la retaguardia; si cae, la misión se pierde.',
+  },
   commanderRoles: { caceres: 'Perú · Tarapacá' },
   objectives: [
     {
