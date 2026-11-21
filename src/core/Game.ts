@@ -1180,8 +1180,8 @@ export class Game {
       this.camera.setHeight(INTRO_CAMERA.fromHeight);
     }
     // The flight lands on the army, not on a landmark or the enemy side of the map.
-    const height = this.siteDef?.cameraHeight ?? INTRO_CAMERA.toZoom;
-    this.camera.flyTo(c.x, c.z, height, INTRO_CAMERA.seconds);
+    const framing = this.world.seatFraming(c.x, c.z);
+    this.camera.flyTo(framing.x, framing.z, framing.height ?? INTRO_CAMERA.toZoom, INTRO_CAMERA.seconds);
   }
 
   private siteBlocksConstruction(x: number, z: number, pad: number): boolean {

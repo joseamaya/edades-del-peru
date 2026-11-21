@@ -499,31 +499,28 @@ export class WorldViewDecor {
   }
 
   /**
-   * Frame the army once the briefing closes. The authored opening still wins when the army stands at it (Caral's
-   * Huaca de los Ídolos, Tambotoco's cave); otherwise the frame follows the troops instead of a landmark or the
-   * enemy's half of the map.
+   * Where the camera settles on the army: the authored opening still wins when the army stands at it (Caral's
+   * Huaca de los Ídolos, Tambotoco's cave), otherwise the troops frame the shot instead of a landmark or the
+   * enemy's half of the map. `height` mirrors `missionFraming`, so a site-biased composition keeps its lift.
    */
-  frameSeat(x: number, z: number): void {
+  seatFraming(x: number, z: number): { x: number; z: number; height?: number } {
+    const site = this.game.siteDef;
     const opening = this.game.missionLayout?.opening;
-    let focus = { x, z };
-    let atOpening = false;
     if (opening) {
       const size = this.game.settings.mapSize;
       const ox = opening.x * size;
       const oz = opening.z * size;
-      if (distance2D(ox, oz, x, z) <= OPENING_HOLD_RADIUS) {
-        focus = { x: ox, z: oz };
-        atOpening = true;
-      }
+      if (distance2D(ox, oz, x, z) <= OPENING_HOLD_RADIUS) return { x: ox, z: oz, height: site?.cameraHeight };
     }
-    this.game.camera.moveTo(focus.x, focus.z, true);
-    const base = this.game.siteDef?.cameraHeight;
-    if (base) {
-      // An opening keeps the authored height; following the army keeps the extra height of a site-biased
-      // composition, so the shipped framing does not change.
-      const lift = !atOpening && this.game.siteDef?.framing === 'site-biased' ? 10 : 0;
-      this.game.camera.setHeight(base + lift);
-    }
+    const lift = site?.framing === 'site-biased' && site.cameraHeight !== undefined ? 10 : 0;
+    return { x, z, height: site?.cameraHeight === undefined ? undefined : site.cameraHeight + lift };
+  }
+
+  /** Frame the army once the briefing closes (the settled view, not the intro's hold point). */
+  frameSeat(x: number, z: number): void {
+    const framing = this.seatFraming(x, z);
+    this.game.camera.moveTo(framing.x, framing.z, true);
+    if (framing.height) this.game.camera.setHeight(framing.height);
   }
 
   spawnLandmark(): void {

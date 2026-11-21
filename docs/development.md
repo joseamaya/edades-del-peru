@@ -555,10 +555,11 @@ Definition of Done and the building audit see
   (`node scripts/capture_camera_pan.mjs --tag=after` on this branch; copy the script into a worktree at
   `origin/main` and run `--tag=before` there).
 - **Campaign intro (visual only)**: `Mission.start` calls `Game.playIntro()` from the briefing's onStart
-  callback, which frames an overview and runs `RTSCamera.flyTo(x, z, zoom, seconds)` down to the player base;
-  for the authored Caral site it settles at `CARAL_SITE_CAMERA.height` so the valley, base and city share the opening.
-  Skipped with `?intro=0` (and under `?noloop=1`, since tests drive fixed steps). `layout.opening` overrides the
-  normalized opening focus without moving the base; m1 uses it to frame the Huaca de los Ídolos beside Áspero.
+  callback, which frames an overview and runs `RTSCamera.flyTo(x, z, zoom, seconds)` down to the player's army
+  (`Game.seatFocus`); for the authored Caral site it settles at `CARAL_SITE_CAMERA.height` so the valley, base and
+  city share the opening. Skipped with `?intro=0` (and under `?noloop=1`, since tests drive fixed steps).
+  `layout.opening` is the cinematic hold point (`siteDef.openingHeight`) and still wins the settled frame when the
+  army stands within 20 m of it, so m1 keeps the Huaca de los Ídolos beside Áspero; it never moves the base.
 - **Site discoveries**: `layout.discoveries` names heritage sites that clear the fog in a growing radius (1.2 s)
   and announce themselves with a toast and a minimap ping (`src/game/Discoveries.ts`). `initial` sites reveal at
   mission start (visible objectives); the rest trigger on the first vision contact. They wait for the intro/card,
