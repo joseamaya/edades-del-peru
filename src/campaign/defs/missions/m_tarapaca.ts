@@ -132,30 +132,90 @@ export const mTarapaca: MissionDef = {
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/tarapaca/intro-epilogo.webp',
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map
+  // uses the battle's own geometry (the columns' entry points and objectives), so what the player sees
+  // here is what the mission will throw at them. It does not tell the outcome: the epilogue does.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'TARAPACÁ · 27 DE NOVIEMBRE DE 1879',
+      kicker: 'Tarapacá · 27 de noviembre de 1879',
       title: 'La quebrada',
-      text: 'Tras la campaña naval, el ejército peruano se repliega en Tarapacá. Sin caballería ni artillería, la defensa se apoya en el pueblo y en las alturas de la quebrada.',
-      seconds: 9,
+      text: 'Tras perder el mar, el ejército peruano se repliega por el desierto hasta Tarapacá. Sin caballería ni artillería, la defensa se apoya en el pueblo y en las alturas de la quebrada.',
+      seconds: 11,
       source: 'docs/historia/campanas/tarapaca.md',
-      image: 'media/tarapaca/intro-quebrada.webp',
+      image: 'media/tarapaca/cine-quebrada.webp',
+      motion: 'push',
     },
     {
-      kicker: 'TRES COLUMNAS · 27 DE NOVIEMBRE',
-      title: 'El ataque escalonado',
-      text: 'Las columnas chilenas llegan de forma escalonada y toman las alturas. La resistencia peruana recibe refuerzos desde Pachica y pelea por recuperar el terreno.',
-      seconds: 9,
+      kicker: 'El plan chileno',
+      title: 'Tres columnas',
+      text: 'Las columnas chilenas avanzan de forma escalonada: la primera sobre el pueblo, las otras dos sobre las alturas. Desde Pachica pueden llegar refuerzos.',
+      seconds: 12,
       source: 'docs/historia/campanas/tarapaca.md',
-      image: 'media/tarapaca/intro-alturas.webp',
+      map: {
+        // The theatre, without the raised rim at the map edges.
+        view: { x: 30, z: 20, size: 200 },
+        marks: [
+          { x: TARAPACA_VILLAGE.x, z: TARAPACA_VILLAGE.z - 9, label: 'Tarapacá', side: 'place' },
+          { x: TARAPACA_HEIGHTS.x, z: TARAPACA_HEIGHTS.z - 9, label: 'Alturas', side: 'place' },
+          { x: TARAPACA_PACHICA.x + 4, z: TARAPACA_PACHICA.z - 7, label: 'Pachica', side: 'place' },
+          { x: TARAPACA_ARICA.x, z: TARAPACA_ARICA.z + 6, label: 'Camino a Arica', side: 'place' },
+          { x: TARAPACA_VILLAGE.x - 4, z: TARAPACA_VILLAGE.z + 8, label: 'Perú', side: 'player', delay: 0.6 },
+        ],
+        routes: [
+          {
+            side: 'enemy',
+            label: '1.ª columna',
+            points: [
+              { x: TARAPACA_COLUMN_EAST.x + 14, z: TARAPACA_COLUMN_EAST.z + 4 },
+              { x: TARAPACA_COLUMN_EAST.x, z: TARAPACA_COLUMN_EAST.z },
+              { x: TARAPACA_VILLAGE_EDGE.x + 6, z: TARAPACA_VILLAGE_EDGE.z },
+            ],
+            delay: 1.4,
+          },
+          {
+            side: 'enemy',
+            label: '2.ª columna',
+            points: [
+              { x: TARAPACA_COLUMN_NORTH.x, z: TARAPACA_COLUMN_NORTH.z },
+              { x: 186, z: 88 },
+              { x: TARAPACA_HEIGHTS.x + 6, z: TARAPACA_HEIGHTS.z - 6 },
+            ],
+            delay: 3.4,
+          },
+          {
+            side: 'enemy',
+            label: '3.ª columna',
+            points: [
+              // Its entry point sits on the map edge: the arrow starts just inside the crop.
+              { x: TARAPACA_COLUMN_SOUTH.x - 4, z: TARAPACA_COLUMN_SOUTH.z - 14 },
+              { x: 196, z: 176 },
+              { x: TARAPACA_HEIGHTS.x + 8, z: TARAPACA_HEIGHTS.z + 8 },
+            ],
+            delay: 5.4,
+          },
+          {
+            side: 'player',
+            label: 'Refuerzos',
+            dashed: true,
+            points: [
+              { x: TARAPACA_PACHICA.x - 4, z: TARAPACA_PACHICA.z + 6 },
+              { x: 150, z: 186 },
+              { x: TARAPACA_VILLAGE.x + 8, z: TARAPACA_VILLAGE.z + 6 },
+            ],
+            delay: 7.4,
+          },
+        ],
+      },
     },
     {
-      kicker: 'VICTORIA TÁCTICA · 1879',
-      title: 'La retirada',
-      text: 'El Perú captura cañones y conserva el campo, pero la provincia se pierde. El ejército inicia la retirada por el desierto hacia Arica.',
-      seconds: 10,
+      kicker: 'Tu mando',
+      title: 'Sostén el pueblo',
+      text: 'Cáceres manda su sector a pie. Aguanta la primera columna en el pueblo, reconquista las alturas y mantén al ejército con vida: el camino a Arica es la única salida.',
+      seconds: 11,
       source: 'docs/historia/campanas/tarapaca.md',
-      image: 'media/tarapaca/intro-retirada.webp',
+      image: 'media/tarapaca/cine-linea.webp',
+      motion: 'pan-right',
     },
   ],
   allowedUnits: [
