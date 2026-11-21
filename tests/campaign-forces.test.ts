@@ -23,6 +23,22 @@ describe('campaign force contract', () => {
     }
   });
 
+  it('centres the opening camera on the army, not on the base or a landmark', () => {
+    const game = headlessMission('m_real_felipe');
+    try {
+      const focus = game.seatFocus(0);
+      const base = game.playerCenter(0);
+      // The siege camp's units stand away from the centre building; the frame must follow them.
+      expect(Math.hypot(focus.x - base.x, focus.z - base.z)).toBeGreaterThan(3);
+      const units = [...game.units.values()].filter((u) => u.owner === 0 && !u.dead);
+      const mean = units.reduce((sum, u) => sum + u.pos.x, 0) / units.length;
+      expect(focus.x).toBeCloseTo(mean, 5);
+    } finally {
+      game.destroy();
+      setAutoStart(true);
+    }
+  });
+
   it('keeps a documented scripted defence without an enemy economy', () => {
     const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
     // Its dossier says the enemy runs no economy; the pressure is the authored bombardment and assault.

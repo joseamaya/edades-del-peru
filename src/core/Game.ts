@@ -1013,6 +1013,24 @@ export class Game {
     return seatStartsWithBase(this.missionDef?.start, owner === 0 ? 0 : 1);
   }
 
+  /**
+   * Centroid of a seat's living units: the army, not the centre building, is what the opening camera has to
+   * show. Lima and the Real Felipe place their troops well away from the centre, which left them in a corner
+   * under the dialogue box.
+   */
+  seatFocus(owner: number): { x: number; z: number } {
+    let x = 0;
+    let z = 0;
+    let n = 0;
+    for (const u of this.units.values()) {
+      if (u.owner !== owner || u.dead) continue;
+      x += u.pos.x;
+      z += u.pos.z;
+      n++;
+    }
+    return n > 0 ? { x: x / n, z: z / n } : this.playerCenter(owner);
+  }
+
   /** Whether a seat receives the generic four workers + scout; defaults to its own base flag. */
   openingUnitsFor(owner: number): boolean {
     const start = this.missionDef?.start;
@@ -1107,7 +1125,7 @@ export class Game {
 
   reframeMissionOpening(): void {
     if (!this.missionLayout?.site && !this.missionLayout?.opening) return;
-    const c = this.playerCenter(0);
+    const c = this.seatFocus(0);
     const opening = this.missionLayout?.opening;
     if (this.introEnabled && opening && this.siteDef?.openingHeight) {
       // The title card and the opening flight hold the cave, not the camp: the legend starts there.
@@ -1117,7 +1135,7 @@ export class Game {
       this.camera.setHeight(this.siteDef.openingHeight);
       return;
     }
-    this.world.frameAuthoredSite(c.x, c.z);
+    this.world.frameAuthoredSite(c.x, c.z, true);
   }
 
   /** True while the opening flight or the chapter title card is holding the mission clock. */
@@ -1140,7 +1158,7 @@ export class Game {
   /** Campaign intro: a short overview flight down to the player's base. */
   playIntro(): void {
     if (!this.introEnabled) return;
-    const c = this.playerCenter(0);
+    const c = this.seatFocus(0);
     const opening = this.missionLayout?.opening;
     if (opening && this.siteDef?.openingHeight) {
       // The legend starts in the cave: hold it, then fly down to the camp.
@@ -1158,8 +1176,9 @@ export class Game {
       this.camera.moveTo(c.x + INTRO_CAMERA.offset, c.z + INTRO_CAMERA.offset, true);
       this.camera.setHeight(INTRO_CAMERA.fromHeight);
     }
-    const framing = this.world.missionFraming(c.x, c.z);
-    this.camera.flyTo(framing.x, framing.z, framing.height ?? INTRO_CAMERA.toZoom, INTRO_CAMERA.seconds);
+    // The flight lands on the army, not on a landmark or the enemy side of the map.
+    const height = this.siteDef?.cameraHeight ?? INTRO_CAMERA.toZoom;
+    this.camera.flyTo(c.x, c.z, height, INTRO_CAMERA.seconds);
   }
 
   private siteBlocksConstruction(x: number, z: number, pad: number): boolean {

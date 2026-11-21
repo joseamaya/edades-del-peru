@@ -440,6 +440,11 @@ Definition of Done and the building audit see
   presses nearby buildings, raids workers (on `hard`+), and, when the enemy has **no soldiers left**, marches on
   the base so a won match doesn't stall on leftover buildings. Training is chronology-guarded (`unitMinPeriod` in
   `Building.queueUnit`, the AI candidate filter and the HUD).
+- **Opening camera**: the settled frame after a briefing is the centroid of the player's living units
+  (`Game.seatFocus`), not the centre building and not an authored `layout.opening` — those are held for the
+  intro flight, and only frame the settled camera when the army is within 24 m of them (`OPENING_HOLD_RADIUS`).
+  Lima, Lima 1821, the Real Felipe and Cusco 1536 used to open with the troops in a corner under the dialogue
+  box. Guarded by the captures in `docs/design/` and `tests/campaign-forces.test.ts`.
 - **Campaign force contract**: `MissionDef.start.playerBase`/`enemyBase` remove the generic centre/houses per
   seat, and `openingUnits` (default: the seat's base flag) gates the four workers + scout, so a base-less
   party keeps only its authored roster. `MissionDef.enemy.economy: false` / `attacks: false` turn the AI into
