@@ -246,7 +246,7 @@ def cusco1536(x: float, z: float) -> float:
     shoulder = 1.0 - smooth(0.0, 0.42, math.hypot((x - 158.0) / 22.0, (z - 141.0) / 8.0))
     h = h * (1.0 - ridge) + (7.3 + 0.9 * math.sin(x * 0.12)) * ridge
     h = h * (1.0 - shoulder * 0.35) + 7.6 * shoulder * 0.35
-    # Retreat corridor: the road south-west to Ollantaytambo stays low and open.
+    # Retreat corridor: the road north-west to Ollantaytambo stays low and open.
     retreat = math.exp(-((x - 77.0) / 22.0) ** 2) * smooth(150.0, 186.0, z)
     h = h * (1.0 - retreat) + 4.6 * retreat
     h += smooth(236.0, 256.0, x) * 9.0 + smooth(240.0, 256.0, z) * 7.0

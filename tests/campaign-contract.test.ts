@@ -250,6 +250,23 @@ describe('campaign mission contract', () => {
     }
   });
 
+  it('keeps the Miraflores opening on the camp and the Cusco retreat north-west', () => {
+    const miraflores = MISSIONS.find((m) => m.id === 'm_miraflores')!;
+    const camp = miraflores.layout!.base!;
+    const opening = miraflores.layout!.opening!;
+    expect(
+      Math.hypot((opening.x - camp.x) * 256, (opening.z - camp.z) * 256),
+      'the Miraflores opening stopped framing the camp',
+    ).toBeLessThan(10);
+
+    const cusco = MISSIONS.find((m) => m.id === 'm_cusco_1536')!;
+    const city = cusco.layout!.labels!.find((l) => l.text === 'Cusco')!;
+    const retreat = cusco.objectives!.find((o) => o.id === 'a3_retirada')!.pos!;
+    // Ollantaytambo is north-west of Cusco: north is -z, so both coordinates must be smaller.
+    expect(retreat.dx).toBeLessThan(city.x * 256);
+    expect(retreat.dz).toBeLessThan(city.z * 256);
+  });
+
   it('does not finish the Tupac Amaru supply hold while the player does nothing', () => {
     // The goal lasts 20 s and used to sit on the start position: it completed without an order.
     const game = headlessMission('m7_tupac_amaru');

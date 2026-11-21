@@ -11,6 +11,8 @@ const MIRAFLORES_REDOUBT_1 = { x: 72, z: 190 } as const;
 const MIRAFLORES_REDOUBT_2 = { x: 112, z: 190 } as const;
 const MIRAFLORES_REDOUBT_3 = { x: 152, z: 190 } as const;
 const MIRAFLORES_RETREAT = { x: 230, z: 150 } as const;
+// The camp plus its front rank: the settled camera frames the reservists, not the redoubts 30 m south.
+const MIRAFLORES_OPENING = { x: MIRAFLORES_CAMP.x, z: MIRAFLORES_CAMP.z + 3 } as const;
 
 export const mMiraflores: MissionDef = {
   id: 'm_miraflores',
@@ -43,7 +45,8 @@ export const mMiraflores: MissionDef = {
       { text: 'Camino a la sierra', x: MIRAFLORES_RETREAT.x / 256, z: MIRAFLORES_RETREAT.z / 256, kind: 'region' },
     ],
     base: { x: MIRAFLORES_CAMP.x / 256, z: MIRAFLORES_CAMP.z / 256 },
-    opening: { x: 112 / 256, z: 176 / 256 },
+    // The camp and its front rank, not the redoubts 30 m south.
+    opening: { x: MIRAFLORES_OPENING.x / 256, z: MIRAFLORES_OPENING.z / 256 },
     enemyBase: { x: MIRAFLORES_ENEMY.x / 256, z: MIRAFLORES_ENEMY.z / 256 },
     // The redoubts are the player's forts at the objective nodes (reductos 1-3); the old Arica
     // battery decor has been removed because it was a coastal battery from another battle.
@@ -62,7 +65,11 @@ export const mMiraflores: MissionDef = {
       phase: 'ciudad',
       // The site camera frames the redoubt line; the Lima colonial kit stays as the city backdrop north.
       focus: { x: MIRAFLORES_REDOUBT_2.x / 256, z: MIRAFLORES_REDOUBT_2.z / 256 },
-      keepout: [{ x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256, rx: 0.06, rz: 0.05 }],
+      keepout: [
+        { x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256, rx: 0.06, rz: 0.05 },
+        // Clear of resources around the camp so no grove grows over the opening frame.
+        { x: MIRAFLORES_CAMP.x / 256, z: MIRAFLORES_CAMP.z / 256, rx: 0.09, rz: 0.08 },
+      ],
       buildKeepout: [{ x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256, rx: 0.04, rz: 0.04 }],
     },
     roads: [
