@@ -1,4 +1,7 @@
-/** Escape text for insertion into HTML or SVG markup. */
+/** Escape text for insertion into HTML, SVG or an attribute (quotes and apostrophes included). */
 export function escapeHtml(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return value.replace(/[&<>"']/g, (char) => {
+    const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    return map[char] ?? char;
+  });
 }

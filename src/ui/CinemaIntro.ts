@@ -9,7 +9,7 @@ export interface CinemaIntroOptions {
   series: string;
   /** Label of the button on the last beat. */
   finalLabel: string;
-  /** Mission terrain, for map beats; without it a map beat falls back to its image. */
+  /** Mission terrain, for map beats; without it a map beat falls back to its image (or an empty stage). */
   terrain?: CinemaMapTerrain;
   onDone: () => void;
 }
@@ -67,7 +67,7 @@ const CSS = `
 .ed-cine-map { position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s ease; display: grid;
   place-items: center; background: radial-gradient(ellipse at center, #2a2015 0%, #0b0806 75%); }
 .ed-cine-map.on { opacity: 1; }
-.ed-cine-map-sheet { position: relative; width: min(58vh, 60vw); aspect-ratio: 1; margin-top: -17vh;
+.ed-cine-map-sheet { position: relative; width: min(56vh, 58vw); aspect-ratio: 1; margin-top: -21vh;
   box-shadow: 0 30px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(80,58,30,.6); transform: rotate(-.6deg);
   animation: cine-push var(--d) linear forwards; }
 .ed-cine-map-sheet canvas, .ed-cine-map-sheet svg { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -83,6 +83,7 @@ const CSS = `
 @media (prefers-reduced-motion: reduce) {
   .ed-cine-layer, .ed-cine-map-sheet { animation: none !important; }
   .cine-map-draw { animation-duration: .01s !important; }
+  .cine-map-mark, .cine-map-route-label, .cine-map-head { animation: none !important; opacity: 1; }
 }
 @media (max-width: 720px) {
   .ed-cine-bar { height: 6vh; }
@@ -111,6 +112,10 @@ export class CinemaIntro {
   private index = -1;
   private timer: number | null = null;
   private finished = false;
+  /** Layer-removal timers, so a skip does not leave them behind. */
+  private readonly removers: number[] = [];
+  /** Map beats are painted once, before the film starts: painting 360² samples mid-beat opens on black. */
+  private readonly maps = new Map<number, { canvas: HTMLCanvasElement; svg: string }>();
 
   constructor(parent: HTMLElement, options: CinemaIntroOptions) {
     ensureStyle();
@@ -135,6 +140,15 @@ export class CinemaIntro {
       </div>`;
     this.root.querySelector('.ed-cine-series')!.textContent = options.series;
     this.stage = this.root.querySelector('.ed-cine-stage')!;
+    if (options.terrain) {
+      options.beats.forEach((beat, index) => {
+        if (!beat.map) return;
+        const view = beat.map.view ?? fullView(options.terrain!.size);
+        const canvas = document.createElement('canvas');
+        paintCampaignMap(canvas, options.terrain!, view);
+        this.maps.set(index, { canvas, svg: campaignMapSvg(beat.map, view) });
+      });
+    }
     this.root.querySelector('.skip')!.addEventListener('click', (e) => {
       e.stopPropagation();
       this.finish();
@@ -155,6 +169,15 @@ export class CinemaIntro {
     // stop instead of opening the briefing over whatever replaced it.
     if (!this.root.isConnected) {
       this.dispose();
+      return;
+    }
+    // A letterboxed film keeps the keyboard inside it: Tab cycles the two buttons.
+    if (event.key === 'Tab') {
+      const buttons = [...this.root.querySelectorAll<HTMLButtonElement>('.ed-cine-actions button')];
+      const current = buttons.indexOf(document.activeElement as HTMLButtonElement);
+      const next = buttons[(current + (event.shiftKey ? -1 : 1) + buttons.length) % buttons.length];
+      event.preventDefault();
+      next?.focus();
       return;
     }
     // A focused button activates itself (Space fires its click on key-up): handling the key here as
@@ -184,12 +207,13 @@ export class CinemaIntro {
   private show(beat: CinematicBeat): void {
     const seconds = beat.seconds ?? DEFAULT_SECONDS;
     const duration = `${seconds + 1.5}s`;
-    const layer = beat.map && this.options.terrain ? this.mapLayer(beat, duration) : this.imageLayer(beat, duration);
+    const layer =
+      beat.map && this.options.terrain ? this.mapLayer(this.index, duration) : this.imageLayer(beat, duration);
     // Cross-fade: the new layer fades in over the old one, which leaves once the fade is done.
     const previous = [...this.stage.children];
     this.stage.appendChild(layer);
     requestAnimationFrame(() => layer.classList.add('on'));
-    window.setTimeout(() => previous.forEach((el) => el.remove()), 1400);
+    this.removers.push(window.setTimeout(() => previous.forEach((el) => el.remove()), 1400));
 
     this.root.querySelector('.ed-cine-kicker')!.textContent = beat.kicker ?? '';
     this.root.querySelector('.ed-cine-title')!.textContent = beat.title;
@@ -231,18 +255,17 @@ export class CinemaIntro {
     return layer;
   }
 
-  private mapLayer(beat: CinematicBeat, duration: string): HTMLElement {
-    const terrain = this.options.terrain!;
+  private mapLayer(index: number, duration: string): HTMLElement {
     const layer = document.createElement('div');
     layer.className = 'ed-cine-map';
     const sheet = document.createElement('div');
     sheet.className = 'ed-cine-map-sheet';
     sheet.style.setProperty('--d', duration);
-    const canvas = document.createElement('canvas');
-    const view = beat.map!.view ?? fullView(terrain.size);
-    paintCampaignMap(canvas, terrain, view);
-    sheet.appendChild(canvas);
-    sheet.insertAdjacentHTML('beforeend', campaignMapSvg(beat.map!, view));
+    const pre = this.maps.get(index);
+    if (pre) {
+      sheet.appendChild(pre.canvas);
+      sheet.insertAdjacentHTML('beforeend', pre.svg);
+    }
     layer.appendChild(sheet);
     return layer;
   }
@@ -259,6 +282,8 @@ export class CinemaIntro {
     this.finished = true;
     if (this.timer !== null) window.clearTimeout(this.timer);
     this.timer = null;
+    for (const remover of this.removers) window.clearTimeout(remover);
+    this.removers.length = 0;
     window.removeEventListener('keydown', this.onKeyDown);
   }
 }

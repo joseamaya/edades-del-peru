@@ -801,6 +801,19 @@ slot is absent (offline / without assets).
 - **Review**: no human art-review gate applies to in-engine captures; the reused `arica_site`,
   `colonial_site` and `independence_site` GLBs keep their own review status (#343).
 
+### Tarapacá cinema-intro stills (in-engine recreations)
+
+- **Location**: `public/media/tarapaca/cine-{quebrada,linea}.webp` (1920x1080, WebP).
+- **Source**: captured from the game itself by `scripts/capture_tarapaca_cinema.mjs`, with staged troops and
+  the world labels hidden. Regenerate with `node scripts/capture_tarapaca_cinema.mjs [--only=cine-linea]
+  [--gpu]` after art changes.
+- **Runtime**: `m_tarapaca`'s letterboxed intro (`introStyle: 'cinema'`), first and third beats; the middle
+  beat is the campaign map painted from the live mission terrain by `src/ui/cinemaMap.ts`.
+- **Content**: project-owned game renders of the Tarapacá quebrada and the Peruvian line. They are
+  recreations of the game's own scenes, never historical photographs.
+- **Review**: no human art-review gate applies to in-engine captures; the reused site GLBs keep their own
+  review status (#343).
+
 ### Cusco 1536 and Vilcabamba intro/epilogue images (in-engine recreations)
 
 - **Location**: `public/media/{cusco-1536,vilcabamba}/intro-*.webp` (640×360, WebP q28).

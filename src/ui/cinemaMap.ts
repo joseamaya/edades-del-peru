@@ -42,6 +42,8 @@ export function paintCampaignMap(
   const waterLevel = terrain.waterLevel;
   let min = Infinity;
   let max = -Infinity;
+  // `pixels` is fixed at 360 for the pilot: ~50 ms per map (sampling, two blurs and shading). The intro
+  // paints each map once when it opens, so a future multi-map film should budget for that or lower this.
   for (let j = 0; j < pixels; j++) {
     for (let i = 0; i < pixels; i++) {
       const h = terrain.heightAt(view.x + (i + 0.5) * step, view.z + (j + 0.5) * step);
@@ -96,31 +98,19 @@ export function paintCampaignMap(
   ctx.putImageData(image, 0, 0);
 }
 
-/** In-place separable box blur of a square height grid. */
+/** In-place separable box blur of a square height grid, with the edge samples clamped to the border. */
 function smooth(grid: Float32Array, n: number, radius: number): void {
   const tmp = new Float32Array(grid.length);
   const pass = (src: Float32Array, dst: Float32Array, horizontal: boolean) => {
     for (let a = 0; a < n; a++) {
-      let sum = 0;
-      let count = 0;
-      const at = (b: number) => (horizontal ? src[a * n + b]! : src[b * n + a]!);
-      for (let b = 0; b <= Math.min(n - 1, radius); b++) {
-        sum += at(b);
-        count++;
-      }
       for (let b = 0; b < n; b++) {
-        if (horizontal) dst[a * n + b] = sum / count;
-        else dst[b * n + a] = sum / count;
-        const add = b + radius + 1;
-        const drop = b - radius;
-        if (add < n) {
-          sum += at(add);
-          count++;
+        let sum = 0;
+        for (let k = -radius; k <= radius; k++) {
+          const c = Math.min(n - 1, Math.max(0, b + k));
+          sum += horizontal ? src[a * n + c]! : src[c * n + a]!;
         }
-        if (drop >= 0) {
-          sum -= at(drop);
-          count--;
-        }
+        if (horizontal) dst[a * n + b] = sum / (radius * 2 + 1);
+        else dst[b * n + a] = sum / (radius * 2 + 1);
       }
     }
   };
@@ -154,14 +144,14 @@ function routeLabel(route: CinematicMapRoute, size: number, delay: number, draw:
     style="animation-delay:${(delay + draw * 0.3).toFixed(2)}s">${escapeHtml(route.label)}</text>`;
 }
 
-/**
- * SVG overlay for the animated map, in world units (its viewBox is the cropped view, so marks keep their
- * world coordinates). Arrows draw themselves with
- * a stroke-dash animation; marks fade in after their delay. Timing lives in inline CSS so the player only
- * has to insert the markup.
- */
 /** Each map gets its own id prefix: two maps can share the DOM while they cross-fade. */
 let mapSerial = 0;
+
+/**
+ * SVG overlay for the animated map, in world units (its viewBox is the cropped view, so marks keep their
+ * world coordinates). Arrows draw themselves with a stroke-dash animation; marks fade in after their delay.
+ * Timing lives in inline CSS so the player only has to insert the markup.
+ */
 
 export function campaignMapSvg(map: CinematicMap, view: CinematicMapView): string {
   const prefix = `cine-map-${++mapSerial}`;
