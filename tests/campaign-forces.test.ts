@@ -113,7 +113,9 @@ describe('campaign force contract', () => {
 
   it('keeps a scripted garrison at its post', () => {
     // `reinforce` defaults to an attack-move on the player's camp (a relief column); a garrison has to say
-    // `objective: 'position'`, or it walks off and leaves the city it was meant to hold.
+    // `objective: 'position'`, or it walks off and leaves the city it was meant to hold. Headless has no
+    // site geometry, so this pins the order; the authored post and its clearance are exercised by the
+    // canal/surrender spec and the real-order playtest.
     for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']) {
       const game = headlessMission(id);
       try {

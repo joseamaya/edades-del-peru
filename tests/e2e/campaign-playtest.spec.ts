@@ -602,7 +602,9 @@ test('plays m6 by advancing and cutting the canal with real orders', async ({ pa
     let t = 0;
     const advance = m.getObjectiveAnchor('obj_avanzar') ?? { x: enemy.pos.x - 18, z: enemy.pos.z };
     order(advance.x, advance.z);
-    for (let i = 0; i < Math.ceil(180 / dt) && !m.ended; i++) {
+    // Stop at the objective, not after a fixed window: a 300 s stroll let the 260 s counterattack raze
+    // the empty camp while the army stood at Chan Chan.
+    for (let i = 0; i < Math.ceil(180 / dt) && !m.ended && m.getObjectiveState('obj_avanzar') !== 'completed'; i++) {
       if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       g.update(dt, t);
       t += dt;
@@ -613,6 +615,11 @@ test('plays m6 by advancing and cutting the canal with real orders', async ({ pa
       if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       g.update(dt, t);
       t += dt;
+      // Reaching the canal is enough to open its field card; do not spend the whole window there.
+      const nearCanal = [...g.units.values()].filter(
+        (u: any) => u.owner === 0 && !u.dead && Math.hypot(u.pos.x - canal!.x, u.pos.z - canal!.z) < 12,
+      ).length;
+      if (nearCanal >= 4) break;
     }
     // Reaching the canal only activates the gate: the player must close it through its field card.
     const atCanal = m.getObjectiveState('obj_canal') as string;

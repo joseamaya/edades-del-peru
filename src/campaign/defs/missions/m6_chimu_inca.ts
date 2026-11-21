@@ -161,8 +161,8 @@ export const m6ChimuInca: MissionDef = {
   ],
   triggers: [
     {
-      // A token watch holds the city gate, ~25 m from the surrender anchor: the capital is not empty, and
-      // the optional "take Chan Chan if it resists" is a fight without breaking the surrender circle.
+      // A token watch stands in the city, ~31 m from the surrender anchor: the capital is not empty, and
+      // the optional "take Chan Chan if it resists" is a fight without breaking the 24 m surrender circle.
       id: 't_guarnicion',
       condition: { type: 'time', seconds: 0.5 },
       effects: [
@@ -173,7 +173,7 @@ export const m6ChimuInca: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 2 },
             { kind: UnitKind.MUSKETEER, count: 2 },
           ],
-          pos: { ref: 'site', dx: chimuLength(18), dz: chimuLength(6) },
+          pos: { ref: 'site', dx: chimuLength(22), dz: chimuLength(8) },
           radius: chimuLength(2),
           objective: 'position',
         },
