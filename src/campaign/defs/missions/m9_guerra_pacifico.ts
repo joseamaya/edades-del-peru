@@ -79,7 +79,9 @@ export const m9GuerraPacifico: MissionDef = {
       { kind: UnitKind.SOLDIER, dx: aricaLength(8), dz: 0, count: 4 },
     ],
   },
-  enemy: { active: true, difficulty: 'normal', aggression: 0.35 },
+  // The dossier says the enemy runs no economy: the bombardment and the assault are authored waves, and the
+  // AI only keeps its micro and its defence.
+  enemy: { active: true, difficulty: 'normal', aggression: 0.35, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
   intro: [

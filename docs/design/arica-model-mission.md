@@ -53,8 +53,9 @@ recorded here and in the quality bar. The Morro is not invented as a new mesh.
   cavalry (the 1880 garrison fought on foot in the scenario).
 - The player base is the port terrace; the soldiers start around the cuartel and the fort.
 - The royalist pressure is scripted: the bombardment wave, the sortie and the final assault.
-  The enemy does not run an economy in this mission; the waves are labelled as an abstraction in the
-  dossier.
+  The enemy does not run an economy in this mission, and the definition says so: `enemy.economy: false` and
+  `enemy.attacks: false`. The AI keeps its micro and its defence; the bombardment, the sortie and the assault
+  are authored waves, which is what the dossier describes as an abstraction.
 - The bombardment and the assault are `hold` objectives on two named lines north of the port terrace
   (`ARICA_CUARTEL_LINE`, `ARICA_LAST_LINE`), not on the player's start: anchored on the terrace they
   completed after 60 s and 120 s with no order. The bombardment wave carries one Chilean gun — the artillery
