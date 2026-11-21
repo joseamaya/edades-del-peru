@@ -24,6 +24,9 @@ describe('Tarapacá battle contract', () => {
     expect(mTarapaca.start.units?.some((u) => u.tag === 'caceres')).toBe(true);
     expect(mTarapaca.unitNames?.[UnitKind.REPUBLICA_DEFENSOR]).toBe('Defensor de Tarapacá');
     expect(mTarapaca.commanderNotes?.buendia).toContain('no en el campo');
+    // His card must say he stays in the rear: sending him with the assault is how the mission is lost.
+    expect(mTarapaca.commanderNotes?.caceres).toMatch(/retaguardia/i);
+    expect(mTarapaca.commanderNotes?.caceres).toMatch(/no lo lleves al asalto/i);
     // The commander card must not label Cáceres with the other campaign while he fights here.
     expect(mTarapaca.commanderRoles?.caceres).toBe('Perú · Tarapacá');
     const act = mTarapaca.triggers.find((t) => t.id === 't_pueblo')?.effects.find((e) => e.type === 'act');

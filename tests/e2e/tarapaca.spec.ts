@@ -30,8 +30,6 @@ test('m_tarapaca answers the first column and holds the village with real orders
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
-    const hp = (owner: number): number =>
-      ([...g.units.values()] as any[]).filter((u) => u.owner === owner && !u.dead).reduce((sum, u) => sum + u.hp, 0);
     const dt = 1 / 60;
     let t = 0;
     const run = (seconds: number): void => {
@@ -44,17 +42,23 @@ test('m_tarapaca answers the first column and holds the village with real orders
 
     // No orders: stand the line. The first column must trade fire instead of destroying it for free.
     run(25);
+    const sumHp = (ids: number[]): number =>
+      ids.reduce((sum, id) => sum + (g.units.get(id)?.dead ? 0 : (g.units.get(id)?.hp ?? 0)), 0);
     const column = ([...g.units.values()] as any[]).filter((u) => u.owner === 1 && !u.dead).map((u) => u.id);
-    const columnHp = column.reduce((sum, id) => sum + (g.units.get(id)?.hp ?? 0), 0);
-    const playerHp = hp(0);
+    const columnHp = sumHp(column);
+    // Measure the same defenders: the Pachica column joins later, and adding its hit points would hide
+    // the damage the first volley did.
+    const defenders = ([...g.units.values()] as any[]).filter((u) => u.owner === 0 && !u.dead).map((u) => u.id);
+    const playerHp = sumHp(defenders);
     run(45);
-    const columnAfter = column.reduce((sum, id) => sum + (g.units.get(id)?.dead ? 0 : (g.units.get(id)?.hp ?? 0)), 0);
+    const columnAfter = sumHp(column);
+    const playerAfter = sumHp(defenders);
 
     return {
       ended: g.mission.ended as boolean,
       caceres: ([...g.units.values()] as any[]).some((u) => u.tag === 'caceres' && !u.dead),
       playerHp,
-      playerAfter: hp(0),
+      playerAfter,
       columnHp,
       columnAfter,
       units: ([...g.units.values()] as any[]).filter((u) => u.owner === 0 && !u.dead).length,
