@@ -82,13 +82,25 @@ export const m9GuerraPacifico: MissionDef = {
   unitSpeedScale: 0.75,
   startingResources: { food: 1500, wood: 800, silver: 1500, stone: 1200 },
   start: {
+    // The Chilean camp is the staging area of the authored waves, not a settlement: no centre, houses or
+    // crew for the enemy seat (the AI keeps its combat micro and defence).
+    enemyBase: false,
     buildings: [{ kind: BuildingKind.FORTRESS, dx: -aricaLength(10), dz: -aricaLength(6), tag: 'puerto' }],
     units: [
       { kind: UnitKind.WORKER, dx: aricaLength(4), dz: aricaLength(6), count: 3 },
-      { kind: UnitKind.RIFLEMAN, dx: aricaLength(6), dz: aricaLength(2), count: 1, tag: 'bolognesi' },
-      { kind: UnitKind.RIFLEMAN, dx: aricaLength(4), dz: aricaLength(8), count: 4 },
-      { kind: UnitKind.REPUBLICA_DEFENSOR, dx: aricaLength(2), dz: aricaLength(6), count: 2 },
-      { kind: UnitKind.SOLDIER, dx: aricaLength(8), dz: 0, count: 4 },
+      {
+        kind: UnitKind.RIFLEMAN,
+        dx: aricaLength(6),
+        dz: aricaLength(2),
+        count: 1,
+        tag: 'bolognesi',
+        stance: 'defensivo',
+      },
+      // A garrison holds the line: `defensivo` sends it back to the ground it was ordered to hold, not to
+      // wherever a pursuit ends.
+      { kind: UnitKind.RIFLEMAN, dx: aricaLength(4), dz: aricaLength(8), count: 4, stance: 'defensivo' },
+      { kind: UnitKind.REPUBLICA_DEFENSOR, dx: aricaLength(2), dz: aricaLength(6), count: 2, stance: 'defensivo' },
+      { kind: UnitKind.SOLDIER, dx: aricaLength(8), dz: 0, count: 4, stance: 'defensivo' },
     ],
   },
   enemy: { active: true, difficulty: 'normal', aggression: 0.35, economy: false, attacks: false },
@@ -285,8 +297,8 @@ export const m9GuerraPacifico: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [
-            { kind: UnitKind.SOLDIER, count: 5 },
-            { kind: UnitKind.RIFLEMAN, count: 2 },
+            { kind: UnitKind.SOLDIER, count: 4 },
+            { kind: UnitKind.RIFLEMAN, count: 1 },
             { kind: UnitKind.CHILE_INFANTE, count: 1 },
           ],
           spawn: ARICA_APPROACH_EAST,
@@ -298,8 +310,8 @@ export const m9GuerraPacifico: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [
-            { kind: UnitKind.SOLDIER, count: 4 },
-            { kind: UnitKind.RIFLEMAN, count: 2 },
+            { kind: UnitKind.SOLDIER, count: 3 },
+            { kind: UnitKind.RIFLEMAN, count: 1 },
           ],
           spawn: ARICA_APPROACH_WEST,
           pos: ARICA_LAST_LINE,
