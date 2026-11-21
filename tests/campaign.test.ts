@@ -632,10 +632,14 @@ describe('campaign educational content', () => {
     expect(marcha.requires).toBe('obj_junin');
     expect(marcha.radius).toBeCloseTo(10.667, 3);
     expect(marcha.pos?.ref).toBe('enemy');
-    expect(marcha.pos?.dx).toBeCloseTo(-10.667, 3);
+    // Junín and Ayacucho must be two fields, not one: the march is a real displacement between them.
+    const juninPoint = junin!.pos as { dx: number; dz: number };
+    const ayacuchoPoint = ayacucho!.pos as { dx: number; dz: number };
+    expect(ayacuchoPoint.dx - juninPoint.dx, 'Junín and Ayacucho are the same place').toBeGreaterThan(60);
+    expect(marcha.pos!.dx, 'the march must lie between the two fields').toBeGreaterThan(juninPoint.dx);
+    expect(marcha.pos!.dx).toBeLessThan(ayacuchoPoint.dx);
     expect(ayacucho?.requires).toBe('obj_marcha');
     expect(junin?.radius).toBeCloseTo(18.667, 3);
-    expect(junin?.pos).toEqual({ ref: 'enemy', dx: -40, dz: 0 });
     expect(ayacucho?.radius).toBeCloseTo(24, 3);
     expect(ayacucho?.time).toBe(90);
     const actTitles = m8.triggers.flatMap((t) => t.effects.flatMap((e) => (e.type === 'act' ? [e.title] : [])));

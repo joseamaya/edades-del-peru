@@ -41,7 +41,8 @@ export const m9GuerraPacifico: MissionDef = {
   layout: {
     labels: [
       { text: 'Arica', x: ARICA_BASE_ANCHOR.x, z: ARICA_BASE_ANCHOR.z, kind: 'settlement' },
-      { text: 'Morro de Arica', x: 0.62, z: 0.28, kind: 'region' },
+      // The Morro is the coastal headland that closes the bay: in-world it sat far inland.
+      { text: 'Morro de Arica', x: 0.16, z: 0.26, kind: 'region' },
       { text: 'Campamento chileno', x: ARICA_CAMP_ANCHOR.x, z: ARICA_CAMP_ANCHOR.z, kind: 'region' },
     ],
     base: ARICA_BASE_ANCHOR,

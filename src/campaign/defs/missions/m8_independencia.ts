@@ -4,6 +4,9 @@ import { INDEPENDENCE_MAP_SIZE, independenceLength } from '../../../model/defs/i
 
 // Each royalist column enters from its own side of the field.
 const INDEPENDENCE_JUNIN_ENTRY = { ref: 'enemy' as const, dx: 0, dz: 0 };
+// Junín is the approach and Ayacucho the final field: at 30 m they were the same place.
+const INDEPENDENCE_JUNIN = { ref: 'enemy' as const, dx: -independenceLength(90), dz: 0 };
+const INDEPENDENCE_MARCH = { ref: 'enemy' as const, dx: -independenceLength(45), dz: 0 };
 const INDEPENDENCE_AYACUCHO_ENTRY = { ref: 'enemy' as const, dx: 0, dz: -independenceLength(20) };
 
 export const m8Independencia: MissionDef = {
@@ -98,7 +101,7 @@ export const m8Independencia: MissionDef = {
     {
       id: 'obj_junin',
       kind: 'hold',
-      pos: { ref: 'enemy', dx: -independenceLength(30), dz: 0 },
+      pos: INDEPENDENCE_JUNIN,
       radius: independenceLength(14),
       unitKind: UnitKind.CAVALRY,
       time: 90,
@@ -108,7 +111,7 @@ export const m8Independencia: MissionDef = {
       id: 'obj_marcha',
       kind: 'reach',
       // West of the royalist centre, on walkable pampa: the chapel footprint blocks its own centre.
-      pos: { ref: 'enemy', dx: -independenceLength(8), dz: 0 },
+      pos: INDEPENDENCE_MARCH,
       radius: independenceLength(8),
       hidden: true,
       requires: 'obj_junin',
