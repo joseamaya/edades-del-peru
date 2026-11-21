@@ -391,7 +391,7 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 | Art         | Met                 | Approved authored battery intro (`m9_guerra_pacifico-intro`); the `arica_site` GLB and the in-engine captures keep their own status.                                                               |
 | Performance | Met                 | `bench_scene.mjs`: opening ~535k tris / 600 calls, late ~813k / 782, under the recorded first-pass caps; `yarn bench:check` green. The call count is over §11's 200 target, as Lima and the Junta. |
 | Scale       | Met                 | 256 m map, 128² painted ground over 256 m, `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                         |
-| Pacing      | Pending (exception) | The real-command bot reaches the ending in ~7 min of simulated time; a human 20–30 min path is still unmeasured. The 30–40 target is documented as an exception in `arica-model-mission.md`.       |
+| Pacing      | Pending (exception) | The real-command bot reaches the ending in ~4 min of simulated time; a human 20–30 min path is still unmeasured. The 30–40 target is documented as an exception in `arica-model-mission.md`.       |
 | Site        | Met (exception)     | No construction phases: the port and fort are in use, not a monument the player builds; recorded here and in `arica-site.md`.                                                                      |
 
 ## La República arc (m_tarapaca, m_miraflores and m_brena)

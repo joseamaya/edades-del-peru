@@ -67,9 +67,9 @@ recorded here and in the quality bar. The Morro is not invented as a new mesh.
 - **No artillery on the attacking side.** The engine's siege piece (`ARTILLERY`) has 150 attack and a 56 m
   range against an 84 HP infantryman with a 13 m weapon: it removes the garrison from outside every player
   weapon, so a mission whose premise is "hold the line with the infantry you have" cannot field one and
-  stay winnable. The bombardment is told by the intro, the act card and the dialogue; the gun remains in the
-  approved intro render, where it is a depiction and not a unit. `tests/campaign-forces.test.ts` guards
-  both rules.
+  stay winnable. The bombardment is therefore **narration only** (intro, act card, dialogue): no gun is
+  fielded and no off-board strike exists in the engine; the gun remains in the approved intro render, where
+  it is a depiction and not a unit. `tests/campaign-forces.test.ts` guards both rules.
 
 ## Opening and closing
 

@@ -78,6 +78,14 @@ describe('campaign force contract', () => {
         const target = game.resolveMissionPoint((wave.target ?? wave.pos)!);
         const nearest = Math.min(...before.map((p) => Math.hypot(p.x - target.x, p.z - target.z)));
         expect(nearest, 'a wave aims at the town instead of a defended line').toBeLessThan(1);
+        // It enters on the northern approach, clear of the ground it attacks (the contract only guarantees
+        // the radius; a column could still appear inside the town and march out).
+        const entry = game.resolveMissionPoint((wave.spawn ?? wave.pos)!);
+        const toLine = Math.min(...before.map((p) => Math.hypot(p.x - entry.x, p.z - entry.z)));
+        expect(toLine, 'a wave spawns inside the defended ground').toBeGreaterThan(20);
+        expect(entry.z, 'a wave enters from the south instead of the northern approach').toBeLessThan(
+          Math.min(...before.map((p) => p.z)),
+        );
         // A 56 m gun against 13 m weapons removes the garrison before it can fight; the bombardment is told.
         expect(wave.units.map((u) => u.kind)).not.toContain(UnitKind.ARTILLERY);
       }
