@@ -270,11 +270,14 @@ test('an informational tutorial step advances on its own', async ({ page }) => {
   const tutorial = page.locator('#ed-tutorial');
   await expect(tutorial).toContainText('Paso 1 /', { timeout: 60_000 });
 
-  // Step 2 needs a rifleman next to the fort; step 3 is informational and advances on its own.
+  // Step 1 names «los defensores de Arica», so that is the unit it checks; step 2 needs a rifleman next to
+  // the fort; step 3 is informational and advances on its own.
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const rifle = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'rifleman' && !u.dead);
-    g.selectUnits([rifle.id]);
+    const defender =
+      [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'republica_defensor' && !u.dead) ??
+      [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'rifleman' && !u.dead);
+    g.selectUnits([defender.id]);
   });
   await expect(tutorial).toContainText('Paso 2 /', { timeout: 20_000 });
   await expect(tutorial).toContainText('El fuerte cubre el puerto');
@@ -515,7 +518,9 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
     const group = g.scene.getObjectByName('canal');
     // The gate is locked until the army reaches Paramonga and the canal objective activates.
     const lockedOpen = g.toggleCanal() as boolean;
-    setPos(enemy.pos.x - 18, enemy.pos.z);
+    // Paramonga is its own point in the valley now, not an offset from Chan Chan.
+    const paramonga = m.getObjectiveAnchor('obj_avanzar') as { x: number; z: number };
+    setPos(paramonga.x, paramonga.z);
     g.update(1 / 60, 0);
     // The Act II card opens on reaching Paramonga; the player closes it before acting.
     document.querySelector<HTMLElement>('.ed-mission-card')?.click();
@@ -768,8 +773,16 @@ test('m9 ends on the documented fall, not on Arica resisting', async ({ page }) 
     step();
     const asalto = m.getObjectiveState('a3_asalto') as string;
     const bolognesiCredited = m.getObjectiveState('a2_bolognesi') as string;
-    // Holding the last line ends the mission: the epilogue tells the fall.
+    // Holding the last line ends the mission: the epilogue tells the fall. The hold needs boots on the
+    // marker, which is its own line now rather than the spawn.
     const lastHold = m.def.objectives.find((o: any) => o.id === 'a3_asalto')!;
+    const line = m.getObjectiveAnchor('a3_asalto') as { x: number; z: number };
+    let posted = 0;
+    for (const u of g.units.values()) {
+      if (u.owner !== 0 || u.dead || u.kind === 'worker' || posted >= (lastHold.minUnits ?? 1)) continue;
+      u.pos.set(line.x, g.terrain.getHeight(line.x, line.z), line.z);
+      posted++;
+    }
     m.holdTimers.set('a3_asalto', lastHold.time ?? 0);
     step();
     return {
@@ -791,7 +804,7 @@ test('m9 ends on the documented fall, not on Arica resisting', async ({ page }) 
   expect(out.asalto).toBe('activo');
   expect(out.bolognesiCredited).toBe('completed');
   expect(out.victory).not.toMatch(/Arica resiste/i);
-  expect(out.ended).toBe(true);
+  expect(out.ended, JSON.stringify(out)).toBe(true);
   expect(out.won).toBe(true);
 });
 
@@ -1017,7 +1030,7 @@ test('m7 wins at Sangarará and withdraws from Cusco', async ({ page }) => {
   expect(out.cerco).toBe('activo');
   expect(out.sostener).toBe('activo');
   expect(out.retirada).toBe('activo');
-  expect(out.ended).toBe(true);
+  expect(out.ended, JSON.stringify(out)).toBe(true);
   expect(out.won).toBe(true);
 });
 

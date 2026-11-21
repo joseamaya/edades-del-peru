@@ -506,17 +506,23 @@ export class WorldViewDecor {
   frameSeat(x: number, z: number): void {
     const opening = this.game.missionLayout?.opening;
     let focus = { x, z };
+    let atOpening = false;
     if (opening) {
       const size = this.game.settings.mapSize;
       const ox = opening.x * size;
       const oz = opening.z * size;
-      if (distance2D(ox, oz, x, z) <= OPENING_HOLD_RADIUS) focus = { x: ox, z: oz };
+      if (distance2D(ox, oz, x, z) <= OPENING_HOLD_RADIUS) {
+        focus = { x: ox, z: oz };
+        atOpening = true;
+      }
     }
     this.game.camera.moveTo(focus.x, focus.z, true);
     const base = this.game.siteDef?.cameraHeight;
     if (base) {
-      // Keep the extra height the site-biased framing always used, so the composition does not change.
-      this.game.camera.setHeight(this.game.siteDef?.framing === 'site-biased' ? base + 10 : base);
+      // An opening keeps the authored height; following the army keeps the extra height of a site-biased
+      // composition, so the shipped framing does not change.
+      const lift = !atOpening && this.game.siteDef?.framing === 'site-biased' ? 10 : 0;
+      this.game.camera.setHeight(base + lift);
     }
   }
 
