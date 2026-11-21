@@ -5,6 +5,9 @@ import { CHIMU_MAP_SIZE, chimuLength } from '../../../model/defs/chimuSite';
 // The counterattack's entry, on the Paramonga side of the Inca camp.
 // East of the Chan Chan canal, on the Paramonga side: the old point straddled the acequia bed.
 const CHIMU_COUNTER_ENTRY = { dx: 150, dz: 110 } as const;
+// Paramonga is its own coastal point on the advance (world metres): as an offset from the enemy base the
+// objective sat inside the Chimú capital.
+const CHIMU_PARAMONGA_WORLD = { dx: 150, dz: 80 } as const;
 
 export const m6ChimuInca: MissionDef = {
   id: 'm6_chimu_inca',
@@ -57,7 +60,12 @@ export const m6ChimuInca: MissionDef = {
   layout: {
     labels: [
       { text: 'Chan Chan', x: 0.744, z: 0.339, kind: 'settlement' },
-      { text: 'Paramonga', x: 0.674, z: 0.339, kind: 'region' },
+      {
+        text: 'Paramonga',
+        x: CHIMU_PARAMONGA_WORLD.dx / CHIMU_MAP_SIZE,
+        z: CHIMU_PARAMONGA_WORLD.dz / CHIMU_MAP_SIZE,
+        kind: 'region',
+      },
       { text: 'Canal de Chan Chan', x: 0.5, z: 0.5, kind: 'water' },
     ],
     base: { x: 0.35, z: 0.62 },
@@ -109,7 +117,7 @@ export const m6ChimuInca: MissionDef = {
       id: 'obj_avanzar',
       kind: 'reach',
       entityTag: 'tupac_yupanqui',
-      pos: { ref: 'enemy', dx: -chimuLength(18), dz: 0 },
+      pos: CHIMU_PARAMONGA_WORLD,
       radius: chimuLength(8),
       title: 'Avanza hasta Paramonga',
     },
@@ -200,7 +208,7 @@ export const m6ChimuInca: MissionDef = {
       condition: {
         type: 'unit_near',
         entityTag: 'tupac_yupanqui',
-        pos: { ref: 'enemy', dx: -chimuLength(18), dz: 0 },
+        pos: CHIMU_PARAMONGA_WORLD,
         radius: chimuLength(8),
       },
       effects: [
