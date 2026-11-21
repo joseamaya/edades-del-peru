@@ -34,34 +34,19 @@ function spawnsOnObjective(wave: Wave): boolean {
 }
 
 /**
- * Known debt: waves that still appear on the objective they must reach. The count is a ratchet and must
- * stay exact — a new wave cannot be added without an entry point, and fixing a mission means lowering
- * its number here.
- */
-const WAVES_WITHOUT_ENTRY_POINT: Record<string, number> = {
-  m5_yahuar_pampa: 2,
-  m6_chimu_inca: 1,
-  m6b_guerra_civil: 1,
-  m_lima: 1,
-  m_junta_cusco: 2,
-  m8_independencia: 2,
-};
-
-/**
  * A hold anchored on the player's own start completes while the player does nothing. The only exception
  * is a position the mission deliberately defends and that an authored column attacks (Tarapacá's village).
  */
 const DEFENDED_START_HOLDS = new Set(['m_tarapaca:a1_pueblo']);
 
 describe('campaign mission contract', () => {
-  it('records exactly the waves that appear on the objective they must reach', () => {
-    const drift: string[] = [];
-    for (const mission of MISSIONS) {
-      const bad = waves(mission).filter(spawnsOnObjective).length;
-      const known = WAVES_WITHOUT_ENTRY_POINT[mission.id] ?? 0;
-      if (bad !== known) drift.push(`${mission.id}: ${bad} bad waves, recorded ${known}`);
-    }
-    expect(drift).toEqual([]);
+  it('gives every wave an entry point away from the objective it must reach', () => {
+    const offenders = MISSIONS.flatMap((mission) =>
+      waves(mission)
+        .filter(spawnsOnObjective)
+        .map((wave) => `${mission.id}: ${wave.units.map((u) => u.kind).join('+')}`),
+    );
+    expect(offenders).toEqual([]);
   });
 
   it('does not add a hold that completes on the player start position', () => {

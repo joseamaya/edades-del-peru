@@ -53,6 +53,8 @@ in the quality bar.
 - Inca workers, warriors, riflemen and honderos; the Chanca side fields warriors and honderos.
   `UnitKind.MUSKETEER` is the legacy ranged id: in this era it renders as a hondero, not a firearm.
 - Four fortresses guard the Cusco opening; the enemy is active and aggressive, with scripted waves.
+  Each column enters from outside the camp (north, then the south-west flank) and marches on it, so the
+  dialogue's «por el norte» is true and nothing materialises inside the defence.
 - The narrator is **Cusi Yupanqui**, a documented figure; the pururaucas are presented as tradition, not as
   an attested event.
 

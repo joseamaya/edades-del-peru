@@ -188,6 +188,7 @@ export const m6bGuerraCivil: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 8 },
             { kind: UnitKind.MUSKETEER, count: 2 },
           ],
+          spawn: { ref: 'enemy', dx: -cuscoIncaLength(18), dz: cuscoIncaLength(8) },
           pos: { ref: 'enemy', dx: 0, dz: 0 },
           radius: cuscoIncaLength(7),
           objective: 'position',

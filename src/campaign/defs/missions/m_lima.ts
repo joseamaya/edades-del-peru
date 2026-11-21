@@ -283,6 +283,7 @@ export const mLima: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [{ kind: UnitKind.SOLDIER, count: 3 }],
+          spawn: { dx: LIMA_ENEMY.x + 14, dz: LIMA_ENEMY.z },
           pos: { dx: LIMA_ENEMY.x, dz: LIMA_ENEMY.z },
           radius: 10,
           objective: 'position',

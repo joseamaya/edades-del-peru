@@ -120,13 +120,14 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
 - Give every enemy wave a `spawn` (entry point) and a `target`/`pos` (objective); `pos` alone is the legacy
   "spawn here" contract and must not sit inside the player's hold radius. Guard the distance in a test.
   The target must also be walkable: a column ordered into a blocked village footprint stops outside both
-  firing envelopes. Tarapacá walks to a plaza edge point, not the exact centre. `campaign-contract` counts
-  the missions that still spawn on their objective (a ratchet: a new wave needs an entry point).
+  firing envelopes. Tarapacá walks to a plaza edge point, not the exact centre. `campaign-contract` rejects
+  a wave whose entry point is missing or lands on its own objective; a `position` garrison still needs a
+  `spawn` away from the spot it holds, so it deploys instead of popping in.
 - A `hold` must sit where the player has to go. Anchored on the start position it finishes after its timer
   with no order at all (Arica's bombardment and assault, Túpac Amaru's supply beat); a purely timed
   `wait`/`survive` in a mission with no enemy is pacing, not a goal. `campaign-contract` rejects a hold
   within 8 m of the player start unless it is a defended position listed by name or declares
-  `clearEnemies`, and the wave ledger it keeps must stay exact, so fixing a mission lowers the number.
+  `clearEnemies`.
 - An objective that a trigger activates must be `hidden` (or `awaitsCall`): a visible goal opens with the
   mission, so the activation is a no-op and the goal can be met before its act. The same applies to
   `requires`, which only gates activation — trigger-driven, card-initiated (`awaitsCall`) or deferred — and
