@@ -7,6 +7,9 @@ import { CUSCO_COLONIAL } from '../../../model/defs/colonialLayout';
 const JUNTA_CUSCO = CUSCO_COLONIAL.center;
 const JUNTA_APACHETA = { x: 140, z: 168 } as const;
 const JUNTA_UMACHIRI = { x: 198, z: 214 } as const;
+// The royalist columns enter on the roads and then occupy each point.
+const JUNTA_APACHETA_ENTRY = { dx: JUNTA_APACHETA.x + 22, dz: JUNTA_APACHETA.z - 14 } as const;
+const JUNTA_UMACHIRI_ENTRY = { dx: JUNTA_UMACHIRI.x + 20, dz: JUNTA_UMACHIRI.z - 18 } as const;
 const JUNTA_ENEMY = { x: 222, z: 238 } as const;
 
 export const mJuntaCusco: MissionDef = {
@@ -291,7 +294,7 @@ export const mJuntaCusco: MissionDef = {
             { kind: UnitKind.RIFLEMAN, count: 1 },
             { kind: UnitKind.REALISTA_DRAGON, count: 1 },
           ],
-          spawn: { dx: JUNTA_APACHETA.x + 22, dz: JUNTA_APACHETA.z - 14 },
+          spawn: JUNTA_APACHETA_ENTRY,
           pos: { dx: JUNTA_APACHETA.x, dz: JUNTA_APACHETA.z },
           radius: 12,
           objective: 'position',
@@ -333,7 +336,7 @@ export const mJuntaCusco: MissionDef = {
             { kind: UnitKind.RIFLEMAN, count: 1 },
             { kind: UnitKind.REALISTA_DRAGON, count: 1 },
           ],
-          spawn: { dx: JUNTA_UMACHIRI.x + 20, dz: JUNTA_UMACHIRI.z - 18 },
+          spawn: JUNTA_UMACHIRI_ENTRY,
           pos: { dx: JUNTA_UMACHIRI.x, dz: JUNTA_UMACHIRI.z },
           radius: 14,
           objective: 'position',

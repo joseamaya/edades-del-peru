@@ -2,6 +2,9 @@ import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../c
 import type { MissionDef } from '../../types';
 import { CHANCA_MAP_SIZE, chancaLength } from '../../../model/defs/chancaSite';
 
+// Where the Chanca columns converge: the camp's edge, not the blocked centre of its buildings.
+const CHANCA_CAMP_STAND = { ref: 'player' as const, dx: chancaLength(6), dz: chancaLength(4) };
+
 export const m5YahuarPampa: MissionDef = {
   id: 'm5_yahuar_pampa',
   commanders: ['cusi_yupanqui', 'anccu_hualloc'],
@@ -145,7 +148,8 @@ export const m5YahuarPampa: MissionDef = {
           units: [{ kind: UnitKind.SOLDIER, count: 6 }],
           // The line says «por el norte»: enter from the north instead of materialising south-east.
           spawn: { ref: 'player', dx: -chancaLength(6), dz: -chancaLength(32) },
-          pos: { ref: 'player', dx: 0, dz: 0 },
+          pos: CHANCA_CAMP_STAND,
+          target: CHANCA_CAMP_STAND,
           radius: chancaLength(6),
         },
         { type: 'dialogue', text: '¡Anccu Hualloc ataca por el norte! ¡A las armas!' },
@@ -195,7 +199,8 @@ export const m5YahuarPampa: MissionDef = {
             { kind: UnitKind.MUSKETEER, count: 2 },
           ],
           spawn: { ref: 'player', dx: -chancaLength(30), dz: chancaLength(26) },
-          pos: { ref: 'player', dx: 0, dz: 0 },
+          pos: CHANCA_CAMP_STAND,
+          target: CHANCA_CAMP_STAND,
           radius: chancaLength(6),
         },
       ],

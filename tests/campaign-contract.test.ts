@@ -25,12 +25,19 @@ function positionedHolds(mission: MissionDef): PositionedHold[] {
   return (mission.objectives ?? []).filter((o): o is PositionedHold => o.kind === 'hold' && o.pos !== undefined);
 }
 
-/** A wave that appears where it must arrive: no entry point, or an entry point on the objective itself. */
-function spawnsOnObjective(wave: Wave): boolean {
-  const hasEntry = (p: { dx: number; dz: number } | undefined): boolean =>
-    p !== undefined && (p.dx !== wave.pos?.dx || p.dz !== wave.pos?.dz);
-  if (hasEntry(wave.spawn)) return false;
-  return wave.target === undefined || !hasEntry(wave.target);
+/** Two authored points are the same place when they share anchor and offsets. */
+function samePoint(a: { ref?: string; dx: number; dz: number }, b: { ref?: string; dx: number; dz: number }): boolean {
+  return (a.ref ?? null) === (b.ref ?? null) && a.dx === b.dx && a.dz === b.dz;
+}
+
+/**
+ * A wave must enter away from the place it must reach: an explicit `spawn`, or a `target` that is not the
+ * `pos` it sits on. A wave with neither appears where it is supposed to arrive.
+ */
+function entersOnItsObjective(wave: Wave): boolean {
+  const destination = wave.target ?? (wave.objective === 'position' ? wave.pos : undefined);
+  if (wave.spawn) return destination !== undefined && samePoint(wave.spawn, destination);
+  return destination === undefined || samePoint(wave.pos!, destination);
 }
 
 /**
@@ -40,10 +47,10 @@ function spawnsOnObjective(wave: Wave): boolean {
 const DEFENDED_START_HOLDS = new Set(['m_tarapaca:a1_pueblo']);
 
 describe('campaign mission contract', () => {
-  it('gives every wave an entry point away from the objective it must reach', () => {
+  it('does not let a wave appear on the point it must reach', () => {
     const offenders = MISSIONS.flatMap((mission) =>
       waves(mission)
-        .filter(spawnsOnObjective)
+        .filter(entersOnItsObjective)
         .map((wave) => `${mission.id}: ${wave.units.map((u) => u.kind).join('+')}`),
     );
     expect(offenders).toEqual([]);

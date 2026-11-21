@@ -25,7 +25,8 @@ The Cusco centre stays standing: the victory is the capture, not the destruction
 narrates Cajamarca and the weakened empire.
 
 The enemy base is labelled «Ejército de Huáscar», not «Cusco»: the capture is Huáscar's field headquarters at
-Quipaipan, and the mission is not fought in the city. The Act III relief column enters on the Quito road,
+Quipaipan, and the mission is not fought in the city. The Quipaipan garrison deploys from the pampa's edge instead of appearing on it, and the Act III relief
+column enters on the Quito road,
 behind the line, and marches on the camp — it used to appear beside the advance and still announce a rear
 attack.
 

@@ -2,6 +2,9 @@ import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../c
 import type { MissionDef } from '../../types';
 import { CHIMU_MAP_SIZE, chimuLength } from '../../../model/defs/chimuSite';
 
+// The counterattack's entry, on the Paramonga side of the Inca camp.
+const CHIMU_COUNTER_ENTRY = { ref: 'player' as const, dx: chimuLength(28), dz: -chimuLength(24) };
+
 export const m6ChimuInca: MissionDef = {
   id: 'm6_chimu_inca',
   commanders: ['tupac_yupanqui', 'minchancaman'],
@@ -184,7 +187,7 @@ export const m6ChimuInca: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 6 },
             { kind: UnitKind.MUSKETEER, count: 3 },
           ],
-          spawn: { ref: 'player', dx: chimuLength(28), dz: -chimuLength(24) },
+          spawn: CHIMU_COUNTER_ENTRY,
           pos: { ref: 'player', dx: 0, dz: 0 },
           radius: chimuLength(7),
         },
