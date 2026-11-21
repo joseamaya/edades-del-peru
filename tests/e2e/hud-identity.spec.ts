@@ -35,3 +35,24 @@ test('a named dialogue speaker gets their portrait @smoke', async ({ page }) => 
   // the redundant "Nombre:" prefix is stripped from the body
   await expect(page.locator('#ed-dialogue .txt')).toHaveText('—El enemigo es superior.');
 });
+
+test('a short historical name resolves to the commander card', async ({ page }) => {
+  await bootMission(page);
+  await page.evaluate(() => {
+    (window as unknown as { game: any }).game.mission.triggerDialogue('Cáceres: —Sostened la línea.', 5);
+  });
+  await expect(page.locator('#ed-dialogue .who')).toHaveText('Andrés A. Cáceres');
+  await expect(page.locator('#ed-dialogue .pic .ed-portrait')).toHaveCount(1);
+  await expect(page.locator('#ed-dialogue .txt')).toHaveText('—Sostened la línea.');
+});
+
+test('a colon in prose is not read as the speaker', async ({ page }) => {
+  await bootMission(page);
+  const line = 'El algodón del valle baja a la costa: con él, Áspero teje sus redes.';
+  await page.evaluate((text) => {
+    (window as unknown as { game: any }).game.mission.triggerDialogue(text, 5);
+  }, line);
+  // The narrator speaks, and the clause stays in the body instead of becoming the name.
+  await expect(page.locator('#ed-dialogue .who')).toHaveText('Cusi Yupanqui');
+  await expect(page.locator('#ed-dialogue .txt')).toHaveText(line);
+});
