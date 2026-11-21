@@ -120,10 +120,19 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
 - Give every enemy wave a `spawn` (entry point) and a `target`/`pos` (objective); `pos` alone is the legacy
   "spawn here" contract and must not sit inside the player's hold radius. Guard the distance in a test.
   The target must also be walkable: a column ordered into a blocked village footprint stops outside both
-  firing envelopes. Tarapacá walks to a plaza edge point, not the exact centre.
+  firing envelopes. Tarapacá walks to a plaza edge point, not the exact centre. `campaign-contract` counts
+  the missions that still spawn on their objective (a ratchet: a new wave needs an entry point).
+- A `hold` must sit where the player has to go. Anchored on the start position it finishes after its timer
+  with no order at all (Arica's bombardment and assault, Túpac Amaru's supply beat); a purely timed
+  `wait`/`survive` in a mission with no enemy is pacing, not a goal. `campaign-contract` rejects a hold
+  within 8 m of the player start unless it is a defended position listed by name or declares
+  `clearEnemies`, and the wave ledger it keeps must stay exact, so fixing a mission lowers the number.
 - A reconquest is `reach` + `clearEnemies`: the objective stays active while a hostile unit stands inside
   the radius (`clearRadius` widens the check beyond the reach radius so a defender cannot step off and
   back). Arriving on a crest still held by ten men is not taking it.
+- A `protect` goal guards its character from the moment that character is on the field, not from its act
+  card: if he dies while the goal is still `pendiente`, the goal fails in the same tick and the defeat card
+  names it. Otherwise the loss only surfaces when a later trigger activates a goal that was already lost.
 - The player's defensive line needs an engagement envelope that matches enemy fire: acquisition uses the
   same `range × 1.15` firing slack plus a margin, and a unit that is shot returns fire from a bounded
   radius. Do not tune a mission around a mismatch of 13.2 m acquisition vs 16 m enemy fire.

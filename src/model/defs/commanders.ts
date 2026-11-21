@@ -522,11 +522,31 @@ for (const c of Object.values(COMMANDERS)) BY_NAME.set(normalizeCommanderName(c.
 
 const BY_ID = new Map<string, CommanderDef>(Object.values(COMMANDERS).map((c) => [c.id, c]));
 
-/** Resolve a commander by display name (accent/case insensitive). */
-export function commanderFor(name: string): CommanderDef | undefined {
-  return BY_NAME.get(normalizeCommanderName(name));
-}
+/**
+ * Short forms a dialogue line may use (`Cáceres: —…`). Explicit rather than a last-word index: several
+ * commanders share a surname (Manco, Amaru, Yupanqui), so a generic index would attribute the line to
+ * the wrong portrait. Only the short forms the missions actually write belong here; a line may also use
+ * the portrait id or the full name.
+ */
+const SPEAKER_ALIASES: Record<string, PortraitId> = {
+  pizarro: 'pizarro',
+  caceres: 'caceres',
+  pumacahua: 'pumacahua',
+  'san martin': 'san_martin',
+  salom: 'salom',
+};
 
+/**
+ * Resolve a dialogue speaker: mission authoring may use the id (`bolognesi`), the full display name or a
+ * documented short form (`Cáceres`). Accent and case insensitive.
+ */
+export function commanderFor(name: string): CommanderDef | undefined {
+  const raw = name.trim();
+  const byId = BY_ID.get(raw);
+  if (byId) return byId;
+  const key = normalizeCommanderName(raw);
+  return BY_NAME.get(key) ?? (SPEAKER_ALIASES[key] ? BY_ID.get(SPEAKER_ALIASES[key]) : undefined);
+}
 /**
  * Resolve a commander by id. A unit's mission tag uses the same id, so a named
  * character can be labelled in the world and in the selection panel.

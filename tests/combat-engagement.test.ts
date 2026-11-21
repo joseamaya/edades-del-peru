@@ -14,9 +14,10 @@ function duel(
   attackerStance: CombatStance = 'agresivo',
   defenderKind: UnitKind = UnitKind.REPUBLICA_DEFENSOR,
   attackerKind: UnitKind = UnitKind.CHILE_INFANTE,
+  era: Era = Era.REPUBLIC,
 ) {
-  const defender = new Unit(defenderKind, 0, Era.REPUBLIC, noBuildContext);
-  const attacker = new Unit(attackerKind, 1, Era.REPUBLIC, noBuildContext);
+  const defender = new Unit(defenderKind, 0, era, noBuildContext);
+  const attacker = new Unit(attackerKind, 1, era, noBuildContext);
   defender.pos.set(100, 0, 100);
   attacker.pos.set(100 + defenderDistance, 0, 100);
   defender.setCombatStance(stance);
@@ -116,6 +117,22 @@ describe('combat engagement radius', () => {
       run([defender, attacker], 3);
       expect(attacker.hp, `${stance} melee should close and strike`).toBeLessThan(attacker.maxHp);
     }
+  });
+
+  it('answers fire with a sling, the pre-Hispanic ranged weapon', () => {
+    // `MUSKETEER` is the legacy id of the basic ranged line (sling -> arquebus -> rifle) and `RIFLEMAN` the
+    // elite one (bow -> musket -> rifle). In the Formative era that pair is exactly sling (9 m) against bow
+    // (11 m): the slinger must answer fire from beyond its own reach.
+    const { defender, attacker, fired } = duel(
+      15,
+      'defensivo',
+      'pasivo',
+      UnitKind.MUSKETEER,
+      UnitKind.RIFLEMAN,
+      Era.FORMATIVE,
+    );
+    run([defender, attacker], 4);
+    expect(fired, 'the slinger never returned fire').toContain(0);
   });
 
   it('does not chase an enemy that is out of reach', () => {

@@ -448,15 +448,30 @@ Definition of Done and the building audit see
   commander's role line for one mission (Cáceres is `Perú · Tarapacá`, not only La Breña), and
   `ObjectiveDef.clearEnemies` keeps a `reach`/`hold` active while a hostile unit stands inside the radius
   (`clearRadius` widens that check).
+- **Objective safety**: a `protect` goal is live from the moment its unit is on the field, even while the
+  goal is still `pendiente` behind `requires`/`hidden`: killing the commander before his act opens fails it
+  in the same tick (`Mission.failPendingProtect`) and the defeat card names the objective. A `hold` anchored
+  on the player's own start finishes with no input, so the anchor sits on the position that must be taken
+  (Arica's cuartel and last line, Túpac Amaru's stores); a timed `wait`/`survive` in a mission with no enemy
+  is a beat, not a goal. `tests/campaign-contract.test.ts` enforces the anchor rule, the walkable radius and
+  the wave entry point, and runs the Túpac Amaru hold without orders.
+- **Dialogue speakers**: `splitSpeaker` (`src/campaign/dialogueLine.ts`) only treats a `Nombre:` prefix as a
+  speaker when `commanderFor` resolves it — full name, portrait id or a short form listed in
+  `SPEAKER_ALIASES`. A colon in prose stays in the line and goes to the narrator, instead of becoming the
+  speaker name and being cut from the text. The narrator's own portrait is resolved too. A label that is not
+  a commander (a chorus, `Señor de Moche`) must use the effect's `speaker:` field, which accepts any string
+  and keeps it as the label without a portrait. Guarded by `tests/dialogue-speakers.test.ts`.
 - **Combat engagement**: a defensive unit's acquisition and fire share one envelope (`src/entities/Unit.ts`):
   `nominal range × 1.15` (the same slack `updateAttack` uses to fire) plus a 4 m margin, against the old
   `range + 1` acquisition. This is what lets a defensive line answer a rifleman parked at 16 m instead of
-  dying without returning fire. An aggressive idle unit keeps its `range + 1` pick, but `takeDamage`
-  remembers the shooter for 6 s and any unit returns fire from a bounded response radius even outside its
-  defensive leash, then walks back to its post. An `attack_move` still engages at `nominal range + 2` so a
-  march reaches its destination, and a defensive anchor is set when the march arrives instead of at the
-  order's start. Guarded by `tests/combat-engagement.test.ts`, `tests/tarapaca-battle.test.ts` and the
-  Tarapacá real-order specs.
+  dying without returning fire. Acquisition is additionally widened by the **enemy's** reach, bounded by the
+  same 6 m response radius (`withinEnemyReach`): a 9 m sling cannot otherwise answer an archer that opens
+  fire from 11 m, even though its own envelope is correct. An aggressive idle unit keeps its `range + 1`
+  pick, but `takeDamage` remembers the shooter for 6 s and any unit returns fire from a bounded response
+  radius even outside its defensive leash, then walks back to its post. An `attack_move` still engages at
+  `nominal range + 2` so a march reaches its destination, and a defensive anchor is set when the march
+  arrives instead of at the order's start. Guarded by `tests/combat-engagement.test.ts` (rifles, slings,
+  melee), `tests/tarapaca-battle.test.ts` and the Tarapacá real-order specs.
 - **Zero-resource battles**: `MapOverrides.resources` with every weight at 0 now means _no nodes_.
   `WorldViewDecor.pickResourceKind` returns `null` instead of falling back to `'tree'`, and `scatter: 0`
   skips the scatter pass; before this an all-zero profile planted ~65 lush trees on Tarapacá.

@@ -747,6 +747,17 @@ export class Unit {
     return this.nominalRange() * ATTACK_STOP_SLACK + ACQUIRE_MARGIN;
   }
 
+  /**
+   * True when `enemy` is close enough that it could already be firing on this unit. A sling (9 m) cannot
+   * answer a rifleman that opens fire from 15 m with its own reach alone; the response is bounded by the
+   * same radius a retaliation uses, so a melee unit does not chase a distant gun across the map.
+   */
+  private withinEnemyReach(enemy: Unit, distance: number): boolean {
+    if (enemy.stats.range <= 0) return false;
+    const reach = enemy.stats.range * ATTACK_STOP_SLACK + ACQUIRE_MARGIN;
+    return distance <= Math.min(reach, this.attackEnvelope() + RETALIATION_RADIUS);
+  }
+
   /** Living enemy that damaged this unit recently; cleared once it dies or the memory lapses. */
   private retaliationTarget(): Unit | null {
     if (this.retaliationTimer <= 0 || this.retaliationId === null) return null;
@@ -808,10 +819,18 @@ export class Unit {
       if (fromOrigin <= envelope + RETALIATION_RADIUS) return responder;
     }
     const candidates =
-      this.ctx?.enemiesNear?.(origin.x, origin.z, Math.max(this.leashRadius(), envelope), this.owner) ?? [];
+      this.ctx?.enemiesNear?.(
+        origin.x,
+        origin.z,
+        Math.max(this.leashRadius(), envelope + RETALIATION_RADIUS),
+        this.owner,
+      ) ?? [];
     return (
       candidates
-        .filter((u) => distance2D(this.pos.x, this.pos.z, u.pos.x, u.pos.z) <= envelope)
+        .filter((u) => {
+          const d = distance2D(this.pos.x, this.pos.z, u.pos.x, u.pos.z);
+          return d <= envelope || this.withinEnemyReach(u, d);
+        })
         .sort(
           (a, b) =>
             distance2D(this.pos.x, this.pos.z, a.pos.x, a.pos.z) - distance2D(this.pos.x, this.pos.z, b.pos.x, b.pos.z),
@@ -1230,7 +1249,8 @@ export class Unit {
       // A target the unit can already be shot from is a legitimate engagement even when it stands
       // past the leash: fire, then walk back. Anything farther cancels the order and returns home.
       const inEnvelope = fromOrigin <= this.attackEnvelope();
-      if (!responding && !inEnvelope) {
+      const exposed = this.withinEnemyReach(target, fromOrigin);
+      if (!responding && !inEnvelope && !exposed) {
         const am = this.orderQueue[0];
         if (am?.kind === OrderKind.ATTACK_MOVE && am.target) {
           // an out-of-leash target must not cancel the attack-move march

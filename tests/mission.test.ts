@@ -144,6 +144,28 @@ describe('mission objective progress', () => {
     expect(m.getObjectiveProgress('farms')).toEqual({ current: 1, target: 2, format: 'count' });
   });
 
+  it('fails a protected unit that dies before its act opens', () => {
+    const guard = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(guard) as any;
+    const missionDef: MissionDef = {
+      ...def,
+      objectives: [
+        { id: 'req', kind: 'gather', resource: 'food', count: 1, title: 'required' },
+        { id: 'guard', kind: 'protect', entityTag: 'guarda', hidden: true, title: 'protégelo' },
+      ],
+      triggers: [],
+    };
+    const m = new Mission(game, missionDef, () => {});
+    m.start();
+    expect(m.getObjectiveState('guard'), 'a hidden goal waits for its act').toBe('pendiente');
+    // An escort on the field is at risk before its act card appears: dying must not be a silent, late defeat.
+    guard.dead = true;
+    m.update(0.1, 0);
+    expect(m.getObjectiveState('guard')).toBe('failed');
+    expect(m.ended).toBe(true);
+    expect(m.won).toBe(false);
+  });
+
   it('does not take a contested position until the last defender is gone', () => {
     const player = { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.SOLDIER, pos: { x: 0, z: 0 } };
     const enemy = { id: 2, tag: '', owner: 1, dead: false, kind: UnitKind.RIFLEMAN, pos: { x: 8, z: 0 } };

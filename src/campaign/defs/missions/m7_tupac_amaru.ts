@@ -172,7 +172,9 @@ export const m7TupacAmaru: MissionDef = {
     {
       id: 'a1_avituallamiento',
       kind: 'hold',
-      pos: { ref: 'player', dx: 0, dz: 0 },
+      // Off the camp centre: with the anchor on the start point the goal completed after 20 s without the
+      // player doing anything. The crew has to reach the camp's stores and hold them.
+      pos: { ref: 'player', dx: colonialLength(24), dz: 0 },
       radius: colonialLength(18),
       time: 20,
       minUnits: 3,
@@ -252,7 +254,7 @@ export const m7TupacAmaru: MissionDef = {
           type: 'dialogue',
           speaker: 'Micaela Bastidas',
           duration: 8,
-          text: '—Las comunidades responden: hay hombres, caballos y algo de pólvora. Reunamos el avituallamiento antes de marchar.',
+          text: '—Las comunidades responden; hay hombres, caballos y algo de pólvora. Reunamos el avituallamiento antes de marchar.',
         },
       ],
     },
@@ -278,13 +280,13 @@ export const m7TupacAmaru: MissionDef = {
           kicker: 'Acto II · 18 de noviembre de 1780',
           title: 'Sangarará',
           image: 'media/cusco/intro-sangarara.webp',
-          text: 'La rebelión ha tomado Tungasuca: el corregidor Arriaga fue capturado y ejecutado. La columna realista se refugia en Sangarará; la rebelión la cerca y la vence, pero el Cusco sigue en pie.',
+          text: 'La rebelión ha tomado Tungasuca: el corregidor Arriaga fue capturado y ejecutado. La columna realista se retira hacia Sangarará y la rebelión la persigue. El Cusco sigue en pie.',
         },
         {
           type: 'dialogue',
           speaker: 'Túpac Amaru II',
           duration: 8,
-          text: '—Sangarará ha caído. Que la noticia corra por la sierra: el Virreinato no es invencible.',
+          text: '—La columna se retira a Sangarará. No la dejemos reorganizarse: la sierra entera nos mira.',
         },
         { type: 'objective', objectiveId: 'a2_sangarara', state: 'activate', announce: true },
         {
@@ -311,6 +313,9 @@ export const m7TupacAmaru: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [...ROYALIST_COLUMN],
+          // The garrison is inside the town; it enters from the far side so it does not materialise on top
+          // of the column that has just marched there.
+          spawn: { dx: TUPAC_SANGARARA.dx, dz: TUPAC_SANGARARA.dz - colonialLength(16) },
           pos: TUPAC_SANGARARA,
           radius: colonialLength(10),
           objective: 'position',
@@ -327,6 +332,12 @@ export const m7TupacAmaru: MissionDef = {
           title: 'El cerco del Cusco',
           image: 'media/cusco/intro-cusco.webp',
           text: 'La rebelión pone cerco al Cusco. La ciudad resiste y el socorro realista baja de Lima: el cerco fracasará, y con él la oportunidad de tomar la capital.',
+        },
+        {
+          type: 'dialogue',
+          speaker: 'Túpac Amaru II',
+          duration: 8,
+          text: '—Sangarará ha caído. Que la noticia corra por la sierra: el Virreinato no es invencible.',
         },
         {
           type: 'dialogue',

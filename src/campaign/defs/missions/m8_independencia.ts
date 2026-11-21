@@ -154,7 +154,7 @@ export const m8Independencia: MissionDef = {
       effects: [
         {
           type: 'dialogue',
-          text: 'General patriota: —La independencia se decide en la sierra. ¡Sostén Junín y protege a Sucre!',
+          text: '—La independencia se decide en la sierra. Sostén Junín con la caballería: sin ella no hay ejército.',
         },
       ],
     },
@@ -209,7 +209,7 @@ export const m8Independencia: MissionDef = {
         },
         {
           type: 'dialogue',
-          text: 'General patriota: —Junín resiste. Ahora, a Ayacucho: la decisión final está allí.',
+          text: '—Junín resiste. Ahora, a Ayacucho: la decisión final está allí.',
         },
         { type: 'objective', objectiveId: 'obj_marcha', state: 'activate' },
         {

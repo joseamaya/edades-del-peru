@@ -18,6 +18,7 @@ import { BuildingKind, OrderKind, Resources } from '../core/types';
 import { distance2D } from '../util/math';
 import { t } from '../i18n';
 import { commanderFor } from '../model/defs/commanders';
+import { splitSpeaker } from './dialogueLine';
 import { unitBaseKind, unitClassFor } from '../model/defs/units';
 import { phaseOrder } from '../model/defs/sitePhases';
 import type { MissionSave } from '../game/saveTypes';
@@ -315,7 +316,10 @@ export class Mission {
   private fail(id: string): void {
     if (this.objState.get(id) === 'failed' || this.objState.get(id) === 'completed') return;
     this.objState.set(id, 'failed');
-    this.game.hud.showToast('✖ Objetivo fallado: ' + this.objective(id)?.title, 'danger');
+    // Always announced: by the time a protect goal fails, its unit is already gone, so naming it reveals
+    // nothing the player has not just lost.
+    const title = this.objective(id)?.title ?? id;
+    this.game.hud.showToast(t('hud.objective.failed', { objective: title }), 'danger');
   }
 
   // --- objectives ---
@@ -323,6 +327,13 @@ export class Mission {
   private evalObjectives(): void {
     for (const o of this.def.objectives) {
       const st = this.objState.get(o.id);
+      if (st === 'pendiente') {
+        // A commander on the field is already at risk before his act opens. If he falls while the goal is
+        // still pending it would only fail when a trigger finally activates it — a late defeat with no
+        // explanation. Fail now, so the same tick ends the mission and names the objective.
+        this.failPendingProtect(o);
+        continue;
+      }
       if (st !== 'activo') continue;
       const done = this.evalObjective(o);
       if (done === 'win') this.complete(o.id);
@@ -330,6 +341,14 @@ export class Mission {
     }
     this.checkAllComplete();
     this.checkBaseLost();
+  }
+
+  /** A `protect` goal guards its entity from the moment that entity exists, not from its act card. */
+  private failPendingProtect(o: ObjectiveDef): void {
+    if (o.kind !== 'protect' || !o.entityTag) return;
+    if (!this.spawned(o.entityTag)) return;
+    if (this.countAlive(o.entityTag) > 0) return;
+    this.fail(o.id);
   }
 
   /** Current value of a `gather` objective: fished/harvested from its node kind, or the resource reserve. */
@@ -428,7 +447,11 @@ export class Mission {
       g.push(o);
       groups.set(o.group, g);
     }
-    if (objs.some((o) => !optional(o) && !o.group && state(o) === 'failed')) return this.defeat();
+    const lost = objs.find((o) => !optional(o) && !o.group && state(o) === 'failed');
+    if (lost) {
+      // Name the goal that lost the mission instead of ending on a bare "derrota".
+      return this.defeat(t('hud.defeat.objective', { objective: lost.title }));
+    }
     for (const g of groups.values()) {
       if (g.every((o) => state(o) === 'failed')) return this.defeat();
     }
@@ -606,30 +629,26 @@ export class Mission {
     }
   }
 
-  private triggerDialogue(text: string, duration = 5, label?: string): void {
-    if (label) {
+  /** Show a line under a speaker, with that commander's portrait when the name resolves. */
+  private speak(name: string, text: string, duration: number): void {
+    const cmd = commanderFor(name);
+    this.game.hud.showDialogue(cmd?.name ?? name, text, duration, cmd?.id);
+  }
+
+  private triggerDialogue(text: string, duration = 5, speaker?: string): void {
+    if (speaker) {
       // A named speaker keeps their (stylized) portrait even when the mission has a narrator.
-      const cmd = commanderFor(label);
-      this.game.hud.showDialogue(cmd?.name ?? label, text, duration, cmd?.id);
+      this.speak(speaker, text, duration);
       return;
     }
-    // Speakers are written as `Nombre: —texto`; an explicit prefix wins over the mission narrator, so a
-    // named line keeps its (stylized) portrait instead of being attributed to the narrator.
-    const match = text.match(/^\s*([^:\n]{2,40}):\s/);
-    if (match) {
-      const speaker = match[1]!.trim();
-      const cmd = commanderFor(speaker);
-      // A named speaker who is not a portrait commander (Señor de Moche, General patriota) still labels the
-      // box; keeping the prefix in the text read as «Comandante: Señor de Moche: —…».
-      this.game.hud.showDialogue(cmd?.name ?? speaker, text.slice(match[0].length), duration, cmd?.id);
+    // A line may be written as `Nombre: —texto`. Only a prefix that resolves to a commander is a speaker:
+    // anything else is prose and stays with the narrator.
+    const line = splitSpeaker(text);
+    if (line) {
+      this.game.hud.showDialogue(line.commander.name, line.text, duration, line.commander.id);
       return;
     }
-    const narrator = this.def.narrator;
-    if (narrator) {
-      this.game.hud.showDialogue(narrator, text, duration);
-      return;
-    }
-    this.game.hud.showDialogue('Comandante', text, duration);
+    this.speak(this.def.narrator ?? 'Comandante', text, duration);
   }
 
   private win(): void {
@@ -791,7 +810,7 @@ export class Mission {
       this.complete(id);
       return true;
     }
-    if (announce) this.game.hud?.showToast('Nuevo objetivo: ' + def.title, 'info');
+    if (announce) this.game.hud?.showToast(t('hud.objective.new', { objective: def.title }), 'info');
     return true;
   }
 
