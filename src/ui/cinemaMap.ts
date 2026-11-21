@@ -96,31 +96,19 @@ export function paintCampaignMap(
   ctx.putImageData(image, 0, 0);
 }
 
-/** In-place separable box blur of a square height grid. */
+/** In-place separable box blur of a square height grid, with the edge samples clamped to the border. */
 function smooth(grid: Float32Array, n: number, radius: number): void {
   const tmp = new Float32Array(grid.length);
   const pass = (src: Float32Array, dst: Float32Array, horizontal: boolean) => {
     for (let a = 0; a < n; a++) {
-      let sum = 0;
-      let count = 0;
-      const at = (b: number) => (horizontal ? src[a * n + b]! : src[b * n + a]!);
-      for (let b = 0; b <= Math.min(n - 1, radius); b++) {
-        sum += at(b);
-        count++;
-      }
       for (let b = 0; b < n; b++) {
-        if (horizontal) dst[a * n + b] = sum / count;
-        else dst[b * n + a] = sum / count;
-        const add = b + radius + 1;
-        const drop = b - radius;
-        if (add < n) {
-          sum += at(add);
-          count++;
+        let sum = 0;
+        for (let k = -radius; k <= radius; k++) {
+          const c = Math.min(n - 1, Math.max(0, b + k));
+          sum += horizontal ? src[a * n + c]! : src[c * n + a]!;
         }
-        if (drop >= 0) {
-          sum -= at(drop);
-          count--;
-        }
+        if (horizontal) dst[a * n + b] = sum / (radius * 2 + 1);
+        else dst[b * n + a] = sum / (radius * 2 + 1);
       }
     }
   };
