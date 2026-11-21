@@ -456,11 +456,10 @@ Definition of Done and the building audit see
   is a beat, not a goal. `tests/campaign-contract.test.ts` enforces the anchor rule, the walkable radius and
   the wave entry point, and runs the Túpac Amaru hold without orders.
 - **Dialogue speakers**: `splitSpeaker` (`src/campaign/dialogueLine.ts`) only treats a `Nombre:` prefix as a
-  speaker when `commanderFor` resolves it — full name, portrait id or a documented short form (`Cáceres`,
-  `Pizarro`, `San Martín`, `Salom`, `bolognesi`; `SPEAKER_ALIASES`). A colon in prose stays in the line and
-  goes to the narrator, instead of becoming the speaker name and being cut from the text. The narrator's
-  own portrait is resolved too, and the mission `speaker:` field accepts an id. Guarded by
-  `tests/dialogue-speakers.test.ts`.
+  speaker when `commanderFor` resolves it — full name, portrait id or a short form listed in
+  `SPEAKER_ALIASES`. A colon in prose stays in the line and goes to the narrator, instead of becoming the
+  speaker name and being cut from the text. The narrator's own portrait is resolved too, and the mission
+  `speaker:` field accepts an id. Guarded by `tests/dialogue-speakers.test.ts`.
 - **Combat engagement**: a defensive unit's acquisition and fire share one envelope (`src/entities/Unit.ts`):
   `nominal range × 1.15` (the same slack `updateAttack` uses to fire) plus a 4 m margin, against the old
   `range + 1` acquisition. This is what lets a defensive line answer a rifleman parked at 16 m instead of

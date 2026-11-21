@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
-import type { MissionDef } from '../src/campaign/types';
+import type { MissionDef, MissionPoint, ObjectiveDef } from '../src/campaign/types';
 import { setAutoStart } from '../src/core/Game';
 import { headlessMission } from './headless';
 
@@ -10,9 +10,19 @@ import { headlessMission } from './headless';
  */
 
 type Wave = Extract<MissionDef['triggers'][number]['effects'][number], { type: 'wave' }>;
+type PositionedHold = ObjectiveDef & { pos: MissionPoint };
+
+/** A hold this close to the player's start is satisfied by the units already standing there. */
+const START_HOLD_RADIUS = 8;
+/** Probe this fraction of a hold radius for walkable ground (the anchor cell itself may be a building). */
+const HOLD_PROBE_FRACTION = 0.6;
 
 function waves(mission: MissionDef): Wave[] {
   return mission.triggers.flatMap((t) => t.effects).filter((e): e is Wave => e.type === 'wave');
+}
+
+function positionedHolds(mission: MissionDef): PositionedHold[] {
+  return (mission.objectives ?? []).filter((o): o is PositionedHold => o.kind === 'hold' && o.pos !== undefined);
 }
 
 /** A wave that appears where it must arrive: no `spawn` and no separate target. */
@@ -23,8 +33,9 @@ function spawnsOnObjective(wave: Wave): boolean {
 }
 
 /**
- * Known debt: waves that still appear on the objective they must reach. The number is a ratchet — a new
- * wave cannot be added without an entry point, and fixing a mission means lowering its count here.
+ * Known debt: waves that still appear on the objective they must reach. The count is a ratchet and must
+ * stay exact — a new wave cannot be added without an entry point, and fixing a mission means lowering
+ * its number here.
  */
 const WAVES_WITHOUT_ENTRY_POINT: Record<string, number> = {
   m3_moche_recuay: 3,
@@ -43,44 +54,43 @@ const WAVES_WITHOUT_ENTRY_POINT: Record<string, number> = {
 const DEFENDED_START_HOLDS = new Set(['m_tarapaca:a1_pueblo']);
 
 describe('campaign mission contract', () => {
-  it('does not add waves that appear on the objective they must reach', () => {
-    const unexpected: string[] = [];
+  it('records exactly the waves that appear on the objective they must reach', () => {
+    const drift: string[] = [];
     for (const mission of MISSIONS) {
       const bad = waves(mission).filter(spawnsOnObjective).length;
       const known = WAVES_WITHOUT_ENTRY_POINT[mission.id] ?? 0;
-      if (bad > known) unexpected.push(`${mission.id}: ${bad} waves (known debt ${known})`);
+      if (bad !== known) drift.push(`${mission.id}: ${bad} bad waves, recorded ${known}`);
     }
-    expect(unexpected).toEqual([]);
+    expect(drift).toEqual([]);
   });
 
   it('does not add a hold that completes on the player start position', () => {
     const offenders: string[] = [];
     const unreachable: string[] = [];
     for (const mission of MISSIONS) {
-      const holds = (mission.objectives ?? []).filter((o) => o.kind === 'hold' && o.pos);
+      const holds = positionedHolds(mission);
       if (holds.length === 0) continue;
       const game = headlessMission(mission.id);
       try {
         const start = game.playerCenter(0);
         for (const hold of holds) {
-          const at = game.resolveMissionPoint(hold.pos as never);
+          const at = game.resolveMissionPoint(hold.pos);
           // An anchor whose radius has no walkable ground is an objective that can never be finished.
           // Holds inside an enemy town are anchored on a blocked plaza cell, so probe the radius too.
-          const reach = (hold.radius ?? 6) * 0.6;
-          const probe = [
+          const reach = (hold.radius ?? 6) * HOLD_PROBE_FRACTION;
+          const probe: ReadonlyArray<readonly [number, number]> = [
             [0, 0],
             [reach, 0],
             [-reach, 0],
             [0, reach],
             [0, -reach],
-          ] as const;
-          const reachable = probe.some(([dx, dz]) => game.pathfinder.isWalkable(at.x + dx, at.z + dz, 0));
-          if (!reachable) {
+          ];
+          if (!probe.some(([dx, dz]) => game.pathfinder.isWalkable(at.x + dx, at.z + dz, 0))) {
             unreachable.push(`${mission.id}:${hold.id}`);
             continue;
           }
           const distance = Math.hypot(at.x - start.x, at.z - start.z);
-          if (distance > 8) continue;
+          if (distance > START_HOLD_RADIUS) continue;
           if (DEFENDED_START_HOLDS.has(`${mission.id}:${hold.id}`)) continue;
           if (hold.clearEnemies === true) continue;
           offenders.push(`${mission.id}:${hold.id} at ${distance.toFixed(0)} m`);

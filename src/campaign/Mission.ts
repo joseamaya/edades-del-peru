@@ -313,10 +313,19 @@ export class Mission {
     this.retryDeferredActivations();
   }
 
-  private fail(id: string, silent = false): void {
+  private fail(id: string): void {
+    this.markFailed(id, true);
+  }
+
+  /** A hidden goal fails without announcing itself through the toast. */
+  private failQuietly(id: string): void {
+    this.markFailed(id, false);
+  }
+
+  private markFailed(id: string, announce: boolean): void {
     if (this.objState.get(id) === 'failed' || this.objState.get(id) === 'completed') return;
     this.objState.set(id, 'failed');
-    if (silent) return;
+    if (!announce) return;
     const title = this.objective(id)?.title ?? id;
     this.game.hud.showToast(t('hud.objective.failed', { objective: title }), 'danger');
   }
@@ -347,8 +356,8 @@ export class Mission {
     if (o.kind !== 'protect' || !o.entityTag) return;
     if (!this.spawned(o.entityTag)) return;
     if (this.countAlive(o.entityTag) > 0) return;
-    // A hidden goal must not announce itself through the failure toast; a required one still ends the run.
-    this.fail(o.id, o.hidden === true);
+    if (o.hidden === true) this.failQuietly(o.id);
+    else this.fail(o.id);
   }
 
   /** Current value of a `gather` objective: fished/harvested from its node kind, or the resource reserve. */
@@ -447,10 +456,10 @@ export class Mission {
       g.push(o);
       groups.set(o.group, g);
     }
-    if (objs.some((o) => !optional(o) && !o.group && state(o) === 'failed')) {
+    const lost = objs.find((o) => !optional(o) && !o.group && state(o) === 'failed');
+    if (lost) {
       // Name the goal that lost the mission instead of ending on a bare "derrota".
-      const lost = objs.find((o) => !optional(o) && !o.group && state(o) === 'failed');
-      return this.defeat(lost ? t('hud.defeat.objective', { objective: lost.title }) : undefined);
+      return this.defeat(t('hud.defeat.objective', { objective: lost.title }));
     }
     for (const g of groups.values()) {
       if (g.every((o) => state(o) === 'failed')) return this.defeat();
@@ -629,11 +638,16 @@ export class Mission {
     }
   }
 
-  private triggerDialogue(text: string, duration = 5, label?: string): void {
-    if (label) {
+  /** Show a line under a speaker, with that commander's portrait when the name resolves. */
+  private speak(name: string, text: string, duration: number): void {
+    const cmd = commanderFor(name);
+    this.game.hud.showDialogue(cmd?.name ?? name, text, duration, cmd?.id);
+  }
+
+  private triggerDialogue(text: string, duration = 5, speaker?: string): void {
+    if (speaker) {
       // A named speaker keeps their (stylized) portrait even when the mission has a narrator.
-      const cmd = commanderFor(label);
-      this.game.hud.showDialogue(cmd?.name ?? label, text, duration, cmd?.id);
+      this.speak(speaker, text, duration);
       return;
     }
     // A line may be written as `Nombre: —texto`. Only a prefix that resolves to a commander is a speaker:
@@ -643,13 +657,7 @@ export class Mission {
       this.game.hud.showDialogue(line.commander.name, line.text, duration, line.commander.id);
       return;
     }
-    const narrator = this.def.narrator;
-    if (narrator) {
-      const cmd = commanderFor(narrator);
-      this.game.hud.showDialogue(narrator, text, duration, cmd?.id);
-      return;
-    }
-    this.game.hud.showDialogue('Comandante', text, duration);
+    this.speak(this.def.narrator ?? 'Comandante', text, duration);
   }
 
   private win(): void {

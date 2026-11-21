@@ -125,7 +125,8 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
 - A `hold` must sit where the player has to go. Anchored on the start position it finishes after its timer
   with no order at all (Arica's bombardment and assault, Túpac Amaru's supply beat); a purely timed
   `wait`/`survive` in a mission with no enemy is pacing, not a goal. `campaign-contract` rejects a hold
-  within 8 m of the player start unless it is a defended position listed by name.
+  within 8 m of the player start unless it is a defended position listed by name or declares
+  `clearEnemies`, and the wave ledger it keeps must stay exact, so fixing a mission lowers the number.
 - A reconquest is `reach` + `clearEnemies`: the objective stays active while a hostile unit stands inside
   the radius (`clearRadius` widens the check beyond the reach radius so a defender cannot step off and
   back). Arriving on a crest still held by ten men is not taking it.

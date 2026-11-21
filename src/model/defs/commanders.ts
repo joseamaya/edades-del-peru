@@ -525,7 +525,8 @@ const BY_ID = new Map<string, CommanderDef>(Object.values(COMMANDERS).map((c) =>
 /**
  * Short forms a dialogue line may use (`Cáceres: —…`). Explicit rather than a last-word index: several
  * commanders share a surname (Manco, Amaru, Yupanqui), so a generic index would attribute the line to
- * the wrong portrait.
+ * the wrong portrait. Only the short forms the missions actually write belong here; a line may also use
+ * the portrait id or the full name.
  */
 const SPEAKER_ALIASES: Record<string, PortraitId> = {
   pizarro: 'pizarro',
@@ -533,20 +534,6 @@ const SPEAKER_ALIASES: Record<string, PortraitId> = {
   pumacahua: 'pumacahua',
   'san martin': 'san_martin',
   salom: 'salom',
-  bolognesi: 'bolognesi',
-  'tupac amaru': 'tupac_amaru',
-  micaela: 'micaela_bastidas',
-  'micaela bastidas': 'micaela_bastidas',
-  bolivar: 'bolivar',
-  sucre: 'sucre',
-  grau: 'grau',
-  rodil: 'rodil',
-  huascar: 'huascar',
-  atahualpa: 'atahualpa',
-  quizquiz: 'quizquiz',
-  melgar: 'melgar',
-  buendia: 'buendia',
-  'manco inca': 'manco_inca',
 };
 
 /**
@@ -560,7 +547,6 @@ export function commanderFor(name: string): CommanderDef | undefined {
   const key = normalizeCommanderName(raw);
   return BY_NAME.get(key) ?? (SPEAKER_ALIASES[key] ? BY_ID.get(SPEAKER_ALIASES[key]) : undefined);
 }
-
 /**
  * Resolve a commander by id. A unit's mission tag uses the same id, so a named
  * character can be labelled in the world and in the selection panel.

@@ -146,8 +146,8 @@ export const m4Wari: MissionDef = {
     },
     {
       id: 'obj_sostener',
-      // A timed goal with no enemigo completes by itself, which is what it used to do. It now asks for the
-      // third provincial centre to be occupied: the player must build it and keep a crew there.
+      // A timed goal with no enemy on the map completes by itself, which is what it used to do. It now
+      // asks for the third provincial centre to be occupied: build it and keep a crew there.
       kind: 'hold',
       pos: WARI_BONUS_NODE,
       radius: wariLength(16),
