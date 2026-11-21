@@ -80,9 +80,10 @@ Arica. Sources and certainty: [`docs/historia/campanas/tarapaca.md`](../historia
   and Cáceres. The captured artillery arrives as a scripted reinforcement after the heights.
 - Two captured artillery pieces arrive after Act II; four defenders arrive from Pachica when Act II opens,
   and the optional Pachica link adds four more.
-- Cáceres is a protected field commander with a battle marker, posted at the rear of the village, and both
-  his card note and the tutorial say he must not join the assault: sending him with it loses the mission
-  by design. Buendía
+- Cáceres is a protected field commander with a battle marker, posted at the rear of the village. His card
+  note says «no lo lleves al asalto» and the tutorial repeats it **before** the heights, which is the
+  assault that kills him if he goes: sending him with it risks the mission, and if he falls it is lost.
+  Buendía
   is briefing-only. The first column is five men, the second eight and the third ten: Act I leaves the
   player a field army, and the Pachica reinforcement makes the heights winnable with ordinary orders.
 

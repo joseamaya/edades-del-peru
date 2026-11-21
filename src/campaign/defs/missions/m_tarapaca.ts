@@ -173,7 +173,7 @@ export const mTarapaca: MissionDef = {
   // He commands from the rear: the mission is lost if he falls, and the assault is no place for him.
   commanderNotes: {
     buendia: 'Mando general · no en el campo',
-    caceres: 'Manda desde la retaguardia; si cae, la misión se pierde.',
+    caceres: 'Manda desde la retaguardia: no lo lleves al asalto. Si cae, la misión se pierde.',
   },
   commanderRoles: { caceres: 'Perú · Tarapacá' },
   objectives: [

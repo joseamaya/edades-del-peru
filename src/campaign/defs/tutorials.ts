@@ -220,14 +220,14 @@ export const TUTORIALS: Record<string, TutorialDef> = {
         check: { type: 'objectiveCompleted', objectiveId: 'a1_pueblo' },
       },
       {
-        id: 'alturas',
-        text: 'Desaloja a la columna chilena de las alturas y ocúpalas: llegar con el enemigo dentro del radio no cuenta como reconquista.',
-        check: { type: 'objectiveCompleted', objectiveId: 'a2_alturas' },
-      },
-      {
         id: 'caceres',
         text: 'Cáceres manda desde la retaguardia y debe seguir con vida: no lo lleves con el asalto, su experiencia será necesaria en Arica y en la Breña.',
         check: { type: 'elapsed', seconds: 12 },
+      },
+      {
+        id: 'alturas',
+        text: 'Desaloja a la columna chilena de las alturas y ocúpalas: llegar con el enemigo dentro del radio no cuenta como reconquista.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a2_alturas' },
       },
       {
         id: 'resistir',
