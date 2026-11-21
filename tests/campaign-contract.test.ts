@@ -41,7 +41,7 @@ function spawnsOnObjective(wave: Wave): boolean {
 const WAVES_WITHOUT_ENTRY_POINT: Record<string, number> = {
   m5_yahuar_pampa: 2,
   m6_chimu_inca: 1,
-  m6b_guerra_civil: 2,
+  m6b_guerra_civil: 1,
   m_lima: 1,
   m_junta_cusco: 2,
   m8_independencia: 2,
@@ -181,6 +181,17 @@ describe('campaign mission contract', () => {
       }
     }
     expect(leaked).toEqual([]);
+  });
+
+  it('does not gate a trigger on an objective "activation"', () => {
+    // `state: 'activate'` is also true for a pending goal, so such a trigger fires at the mission start:
+    // the Cusco counterattack used it and arrived in the first second.
+    const early = MISSIONS.flatMap((mission) =>
+      mission.triggers
+        .filter((trigger) => trigger.condition.type === 'objective' && trigger.condition.state === 'activate')
+        .map((trigger) => `${mission.id}:${trigger.id}`),
+    );
+    expect(early).toEqual([]);
   });
 
   it('does not finish the Tupac Amaru supply hold while the player does nothing', () => {

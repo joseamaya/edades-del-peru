@@ -19,7 +19,9 @@ Sources and certainty: [`docs/historia/campanas/real_felipe.md`](../historia/cam
    kind so both positions must be covered.
 2. **Blockade.** Hold the coast with artillery for 45 s. The sea approach is an abstraction: the game has
    no naval units, so the blockade is represented by coastal batteries and the scripted sorties.
-3. **Sorties.** Defend the siege camp for 60 s while Rodil's garrison attacks the lines.
+3. **Sorties.** Defend the siege camp for 60 s while Rodil's garrison attacks the lines. The act card
+   stages the hunger and the coming surrender; the capitulation itself is narrated after the objective is
+   forced, not before.
 4. **Capitulation.** Hold the fortress approaches for 90 s with at least eight units; the hold consumes
    food, so an empty store pauses the siege.
 

@@ -191,9 +191,8 @@ export const mVilcabamba: MissionDef = {
       id: 'a2_curi',
       kind: 'protect',
       entityTag: 'curi_paucar',
-      optional: true,
-      // Activated by the Act II trigger: a visible goal would open with the mission and the trigger would
-      // do nothing.
+      // Required: the captain who opens the escape is the mission's own way to lose the court.
+      // Activated by the Act II trigger, so it stays hidden until then.
       hidden: true,
       title: 'Protege al capitán Curi Paucar',
     },
@@ -202,7 +201,8 @@ export const mVilcabamba: MissionDef = {
       kind: 'hold',
       pos: { dx: VILCABAMBA_ESCAPE.x, dz: VILCABAMBA_ESCAPE.z },
       radius: 18,
-      time: 20,
+      // Long enough for the column to reach the road: at 20 s the mission ended before it arrived.
+      time: 45,
       minUnits: 5,
       hidden: true,
       requires: 'a2_evacua',
@@ -220,6 +220,23 @@ export const mVilcabamba: MissionDef = {
           duration: 9,
           text: '—No podemos detener a Toledo en campo abierto. Defendamos Huayna Pucará y salvemos a la corte; la selva es nuestro último aliado.',
         },
+      ],
+    },
+    {
+      id: 't_probe',
+      // Act I had no pressure at all: the Spanish vanguard probes the pucará before the main column.
+      condition: { type: 'time', seconds: 60 },
+      effects: [
+        {
+          type: 'wave',
+          owner: 1,
+          units: [{ kind: UnitKind.SOLDIER, count: 2 }],
+          spawn: { dx: VILCABAMBA_ENEMY.x, dz: VILCABAMBA_ENEMY.z },
+          pos: { dx: VILCABAMBA_FORT.x, dz: VILCABAMBA_FORT.z },
+          target: { dx: VILCABAMBA_FORT.x, dz: VILCABAMBA_FORT.z },
+          radius: 10,
+        },
+        { type: 'dialogue', text: '—La vanguardia española tantea Huayna Pucará. Son pocos: que sirvan de aviso.' },
       ],
     },
     {
@@ -269,9 +286,11 @@ export const mVilcabamba: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 5 },
             { kind: UnitKind.CAVALRY, count: 1 },
           ],
-          pos: { dx: VILCABAMBA_ENEMY.x, dz: VILCABAMBA_ENEMY.z },
-          radius: 12,
+          // On the escape road, not back at the Spanish camp: a 200 m march never reached the hold.
+          spawn: { dx: VILCABAMBA_ESCAPE.x + 55, dz: VILCABAMBA_ESCAPE.z - 45 },
+          pos: { dx: VILCABAMBA_ESCAPE.x, dz: VILCABAMBA_ESCAPE.z },
           target: { dx: VILCABAMBA_ESCAPE.x, dz: VILCABAMBA_ESCAPE.z },
+          radius: 12,
         },
       ],
     },

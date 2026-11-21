@@ -41,6 +41,8 @@ export class Mission {
   private objState = new Map<string, ObjState>();
   private fired = new Set<string>();
   private lastFired = new Map<string, number>();
+  /** Times each trigger has fired, so a repeating trigger can be capped (`maxFires`). */
+  private fireCounts = new Map<string, number>();
   private spawnedCount = new Map<string, number>();
   private holdTimers = new Map<string, number>();
   /** Mission time at which each objective was activated (for `wait` beats). */
@@ -486,11 +488,13 @@ export class Mission {
       const last = this.lastFired.get(tr.id);
       if (this.fired.has(tr.id)) {
         if (!tr.repeat) continue;
+        if (tr.maxFires !== undefined && (this.fireCounts.get(tr.id) ?? 0) >= tr.maxFires) continue;
         if (last !== undefined && this.timer - last < (tr.cooldown ?? 2)) continue;
       }
       if (this.evalCond(tr.condition)) {
         this.fired.add(tr.id);
         this.lastFired.set(tr.id, this.timer);
+        this.fireCounts.set(tr.id, (this.fireCounts.get(tr.id) ?? 0) + 1);
         for (const fx of tr.effects) this.applyEffect(fx);
       }
     }
@@ -893,6 +897,7 @@ export class Mission {
       objState: [...this.objState.entries()],
       fired: [...this.fired],
       lastFired: [...this.lastFired.entries()],
+      fireCounts: [...this.fireCounts.entries()],
       spawnedCount: [...this.spawnedCount.entries()],
       holdTimers: [...this.holdTimers.entries()],
       activatedAt: [...this.activatedAt.entries()],
@@ -915,6 +920,8 @@ export class Mission {
     }
     this.fired = new Set(s.fired);
     this.lastFired = new Map(s.lastFired);
+    // Older saves have no per-trigger counts: a repeating trigger that already fired counts as one.
+    this.fireCounts = new Map(s.fireCounts ?? [...this.fired].map((id) => [id, 1] as [string, number]));
     this.spawnedCount = new Map(s.spawnedCount);
     this.holdTimers = new Map(s.holdTimers ?? []);
     this.activatedAt = new Map(s.activatedAt ?? []);

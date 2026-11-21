@@ -331,7 +331,9 @@ Definition of Done and the building audit see
   player unit inside a radius for `time` seconds (m8 Junín/Ayacucho); `holdTimers` are saved. A `hold`
   may also `consume` a resource per second (Caral's construction turns pause when the communal store is empty),
   and new hidden objectives declare `afterPhase`/`requires` so a save written before they existed repairs
-  itself on load. The `requires` repair only runs when the trigger that activates the objective is already
+  itself on load. A repeating trigger (`repeat` + `cooldown`) can be capped with `maxFires`; the count is
+  saved (`fireCounts`), so a reload does not restart the relief columns. Trigger conditions never use
+  `state: 'activate'`: it is true for a pending goal, so it fires at the mission start. The `requires` repair only runs when the trigger that activates the objective is already
   in `fired`; objectives that no trigger activates (optional card actions) and triggers still to fire are
   left for the normal evaluation. `ObjectiveDef.minUnits` makes a `hold` wait for a crew (Caral's Act IV departure
   needs three workers on its own beach marker, away from the fishing banks); `legacyPhases` restores the

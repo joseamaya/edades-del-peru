@@ -131,6 +131,11 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
   mission, so the activation is a no-op and the goal can be met before its act. The same applies to
   `requires`, which only gates activation — trigger-driven, card-initiated (`awaitsCall`) or deferred — and
   never the opening state of a visible goal.
+- Never gate a trigger on `{ state: 'activate' }`: the condition is true for a **pending** goal too, so the
+  trigger fires in the first second (Cusco's counterattack arrived before Sacsayhuamán was touched). Gate on
+  `completed` or `failed`.
+- A repeating trigger that spawns reinforcements needs `maxFires`: `repeat` + `cooldown` alone runs forever
+  (Lima's relief columns added ~36 men over twenty minutes). The count is saved, so a reload keeps the cap.
 - A mission that narrows its buildings must narrow its techs to match. `allowedTechs` entries whose tech
   needs an institute or a smelter are unresearchable when those buildings are not allowed; the town centre
   is the one building that always stands.

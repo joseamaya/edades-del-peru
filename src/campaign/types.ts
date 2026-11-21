@@ -398,6 +398,8 @@ export interface TriggerDef {
   /** If true, the trigger can fire again after `cooldown` seconds. */
   repeat?: boolean;
   cooldown?: number;
+  /** Maximum times a repeating trigger may fire; unlimited when omitted. */
+  maxFires?: number;
 }
 
 /** Per-scenario atmosphere override (fields mirror `HistoricalMapProfile.atmosphere`). */

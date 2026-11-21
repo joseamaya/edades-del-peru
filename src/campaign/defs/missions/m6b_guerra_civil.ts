@@ -58,7 +58,7 @@ export const m6bGuerraCivil: MissionDef = {
   layout: {
     labels: [
       { text: 'Quipaipan', x: 0.65, z: 0.68, kind: 'region' },
-      { text: 'Cusco', x: 0.71, z: 0.68, kind: 'settlement' },
+      { text: 'Ejército de Huáscar', x: 0.71, z: 0.68, kind: 'region' },
       { text: 'Ruta de Quito', x: 0.35, z: 0.3, kind: 'region' },
     ],
     base: { x: 0.35, z: 0.3 },
@@ -170,7 +170,7 @@ export const m6bGuerraCivil: MissionDef = {
           kicker: 'Acto II · Quipaipan',
           title: 'La pampa',
           image: 'media/cusco-inca/intro-quipaipan.webp',
-          text: 'Huáscar ha reunido su ejército en Quipaipan. Sostén la pampa con la línea de guerreros y no dejes caer a Atahualpa.',
+          text: 'Huáscar ha reunido su ejército en Quipaipan. Sostén la pampa con la línea de guerreros y no dejes caer a Quizquiz.',
         },
         {
           type: 'dialogue',
@@ -226,10 +226,13 @@ export const m6bGuerraCivil: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 5 },
             { kind: UnitKind.MUSKETEER, count: 2 },
           ],
-          pos: { ref: 'player', dx: cuscoIncaLength(20), dz: cuscoIncaLength(16) },
+          // Behind the line, on the Quito road: the column that was following the army cuts the camp off.
+          spawn: { ref: 'player', dx: -cuscoIncaLength(26), dz: -cuscoIncaLength(22) },
+          pos: { ref: 'player', dx: 0, dz: 0 },
+          target: { ref: 'player', dx: 0, dz: 0 },
           radius: cuscoIncaLength(7),
         },
-        { type: 'dialogue', text: '¡Refuerzos de Huáscar atacan tu retaguardia!' },
+        { type: 'dialogue', text: '¡Refuerzos de Huáscar cortan el camino de Quito y atacan tu retaguardia!' },
       ],
     },
   ],

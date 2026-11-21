@@ -144,6 +144,34 @@ describe('mission objective progress', () => {
     expect(m.getObjectiveProgress('farms')).toEqual({ current: 1, target: 2, format: 'count' });
   });
 
+  it('caps a repeating trigger at maxFires', () => {
+    const guard = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(guard) as any;
+    let lines = 0;
+    game.hud.showDialogue = () => {
+      lines++;
+    };
+    const missionDef: MissionDef = {
+      ...def,
+      objectives: [{ id: 'req', kind: 'gather', resource: 'food', count: 99, title: 'required' }],
+      triggers: [
+        {
+          id: 'relief',
+          condition: { type: 'time', seconds: 1 },
+          repeat: true,
+          cooldown: 1,
+          maxFires: 2,
+          effects: [{ type: 'dialogue', text: 'Llega una columna de socorro.' }],
+        },
+      ],
+    };
+    const m = new Mission(game, missionDef, () => {});
+    m.start();
+    const startLines = lines;
+    for (let i = 0; i < 20; i++) m.update(0.5, i * 0.5);
+    expect(lines - startLines, 'the relief column kept arriving').toBe(2);
+  });
+
   it('fails a protected unit that dies before its act opens', () => {
     const guard = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
     const game = stubGame(guard) as any;
