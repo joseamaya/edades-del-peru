@@ -440,6 +440,12 @@ Definition of Done and the building audit see
   presses nearby buildings, raids workers (on `hard`+), and, when the enemy has **no soldiers left**, marches on
   the base so a won match doesn't stall on leftover buildings. Training is chronology-guarded (`unitMinPeriod` in
   `Building.queueUnit`, the AI candidate filter and the HUD).
+- **Opening camera**: the settled frame after a briefing is the trimmed centroid of the player's living units
+  (`Game.seatFocus`), set by `WorldViewDecor.frameSeat`; the site blend is skipped there. An authored
+  `layout.opening` still frames the army when it stands within 20 m of it (Caral's huaca, Tambotoco's cave) and
+  is the cinematic hold point of the intro flight (`siteDef.openingHeight`). Lima, Lima 1821, the Real Felipe
+  and Cusco 1536 used to open with the troops in a corner under the dialogue box. Guarded by the captures and
+  `tests/campaign-forces.test.ts`.
 - **Campaign force contract**: `MissionDef.start.playerBase`/`enemyBase` remove the generic centre/houses per
   seat, and `openingUnits` (default: the seat's base flag) gates the four workers + scout, so a base-less
   party keeps only its authored roster. `MissionDef.enemy.economy: false` / `attacks: false` turn the AI into
@@ -549,10 +555,11 @@ Definition of Done and the building audit see
   (`node scripts/capture_camera_pan.mjs --tag=after` on this branch; copy the script into a worktree at
   `origin/main` and run `--tag=before` there).
 - **Campaign intro (visual only)**: `Mission.start` calls `Game.playIntro()` from the briefing's onStart
-  callback, which frames an overview and runs `RTSCamera.flyTo(x, z, zoom, seconds)` down to the player base;
-  for the authored Caral site it settles at `CARAL_SITE_CAMERA.height` so the valley, base and city share the opening.
-  Skipped with `?intro=0` (and under `?noloop=1`, since tests drive fixed steps). `layout.opening` overrides the
-  normalized opening focus without moving the base; m1 uses it to frame the Huaca de los Ídolos beside Áspero.
+  callback, which frames an overview and runs `RTSCamera.flyTo(x, z, zoom, seconds)` down to the player's army
+  (`Game.seatFocus`); for the authored Caral site it settles at `CARAL_SITE_CAMERA.height` so the valley, base and
+  city share the opening. Skipped with `?intro=0` (and under `?noloop=1`, since tests drive fixed steps).
+  `layout.opening` is the cinematic hold point (`siteDef.openingHeight`) and still wins the settled frame when the
+  army stands within 20 m of it, so m1 keeps the Huaca de los Ídolos beside Áspero; it never moves the base.
 - **Site discoveries**: `layout.discoveries` names heritage sites that clear the fog in a growing radius (1.2 s)
   and announce themselves with a toast and a minimap ping (`src/game/Discoveries.ts`). `initial` sites reveal at
   mission start (visible objectives); the rest trigger on the first vision contact. They wait for the intro/card,

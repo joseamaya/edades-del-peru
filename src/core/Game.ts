@@ -1013,6 +1013,27 @@ export class Game {
     return seatStartsWithBase(this.missionDef?.start, owner === 0 ? 0 : 1);
   }
 
+  /**
+   * Centroid of a seat's living units: the army, not the centre building, is what the opening camera has to
+   * show. The farthest tenth is trimmed so one distant scout cannot drag the frame off the main body.
+   */
+  seatFocus(owner: number): { x: number; z: number } {
+    const units = [...this.units.values()].filter((u) => u.owner === owner && !u.dead);
+    if (units.length === 0) return this.playerCenter(owner);
+    const centroid = (list: Unit[]): { x: number; z: number } => ({
+      x: list.reduce((sum, u) => sum + u.pos.x, 0) / list.length,
+      z: list.reduce((sum, u) => sum + u.pos.z, 0) / list.length,
+    });
+    const all = centroid(units);
+    if (units.length < 10) return all;
+    const keep = units
+      .map((u) => ({ u, d: distance2D(u.pos.x, u.pos.z, all.x, all.z) }))
+      .sort((a, b) => a.d - b.d)
+      .slice(0, Math.ceil(units.length * 0.9))
+      .map((entry) => entry.u);
+    return centroid(keep);
+  }
+
   /** Whether a seat receives the generic four workers + scout; defaults to its own base flag. */
   openingUnitsFor(owner: number): boolean {
     const start = this.missionDef?.start;
@@ -1107,7 +1128,7 @@ export class Game {
 
   reframeMissionOpening(): void {
     if (!this.missionLayout?.site && !this.missionLayout?.opening) return;
-    const c = this.playerCenter(0);
+    const c = this.seatFocus(0);
     const opening = this.missionLayout?.opening;
     if (this.introEnabled && opening && this.siteDef?.openingHeight) {
       // The title card and the opening flight hold the cave, not the camp: the legend starts there.
@@ -1117,7 +1138,7 @@ export class Game {
       this.camera.setHeight(this.siteDef.openingHeight);
       return;
     }
-    this.world.frameAuthoredSite(c.x, c.z);
+    this.world.frameSeat(c.x, c.z);
   }
 
   /** True while the opening flight or the chapter title card is holding the mission clock. */
@@ -1140,7 +1161,7 @@ export class Game {
   /** Campaign intro: a short overview flight down to the player's base. */
   playIntro(): void {
     if (!this.introEnabled) return;
-    const c = this.playerCenter(0);
+    const c = this.seatFocus(0);
     const opening = this.missionLayout?.opening;
     if (opening && this.siteDef?.openingHeight) {
       // The legend starts in the cave: hold it, then fly down to the camp.
@@ -1158,7 +1179,8 @@ export class Game {
       this.camera.moveTo(c.x + INTRO_CAMERA.offset, c.z + INTRO_CAMERA.offset, true);
       this.camera.setHeight(INTRO_CAMERA.fromHeight);
     }
-    const framing = this.world.missionFraming(c.x, c.z);
+    // The flight lands on the army, not on a landmark or the enemy side of the map.
+    const framing = this.world.seatFraming(c.x, c.z);
     this.camera.flyTo(framing.x, framing.z, framing.height ?? INTRO_CAMERA.toZoom, INTRO_CAMERA.seconds);
   }
 

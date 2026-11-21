@@ -88,6 +88,9 @@ const GROVE_START_CLEARANCE = 72;
 /** Riparian fauna roosts keep this far from trees (crown radius plus their grazing orbit). */
 const FAUNA_TREE_CLEARANCE = 7;
 
+// How close the army has to be to an authored opening point for that point to frame the settled camera.
+const OPENING_HOLD_RADIUS = 20;
+
 export class WorldViewDecor {
   /** The deterministic valley scenery is drawn once (opening base or loaded save), never twice. */
   private caralValleyDrawn = false;
@@ -463,7 +466,13 @@ export class WorldViewDecor {
     const opening = this.game.missionLayout?.opening;
     if (opening) {
       const size = this.game.settings.mapSize;
-      return { x: opening.x * size, z: opening.z * size, height: this.game.siteDef?.cameraHeight };
+      const ox = opening.x * size;
+      const oz = opening.z * size;
+      // An authored opening frames the landmark the mission starts at; when the army is elsewhere (Lima,
+      // the Real Felipe, Cusco 1536) framing it would leave the troops under the dialogue box.
+      if (distance2D(ox, oz, x, z) <= OPENING_HOLD_RADIUS) {
+        return { x: ox, z: oz, height: this.game.siteDef?.cameraHeight };
+      }
     }
     const focus = this.game.siteFocus;
     if (this.game.siteDef?.framing === 'midpoint' && focus) {
@@ -482,8 +491,34 @@ export class WorldViewDecor {
     return { x, z, height: this.game.siteDef?.cameraHeight };
   }
 
+  /** Frame the authored site relative to a point (the pre-briefing backdrop). */
   frameAuthoredSite(x: number, z: number): void {
     const framing = this.missionFraming(x, z);
+    this.game.camera.moveTo(framing.x, framing.z, true);
+    if (framing.height) this.game.camera.setHeight(framing.height);
+  }
+
+  /**
+   * Where the camera settles on the army: the authored opening still wins when the army stands at it (Caral's
+   * Huaca de los Ídolos, Tambotoco's cave), otherwise the troops frame the shot instead of a landmark or the
+   * enemy's half of the map. `height` mirrors `missionFraming`, so a site-biased composition keeps its lift.
+   */
+  seatFraming(x: number, z: number): { x: number; z: number; height?: number } {
+    const site = this.game.siteDef;
+    const opening = this.game.missionLayout?.opening;
+    if (opening) {
+      const size = this.game.settings.mapSize;
+      const ox = opening.x * size;
+      const oz = opening.z * size;
+      if (distance2D(ox, oz, x, z) <= OPENING_HOLD_RADIUS) return { x: ox, z: oz, height: site?.cameraHeight };
+    }
+    const lift = site?.framing === 'site-biased' && site.cameraHeight !== undefined ? 10 : 0;
+    return { x, z, height: site?.cameraHeight === undefined ? undefined : site.cameraHeight + lift };
+  }
+
+  /** Frame the army once the briefing closes (the settled view, not the intro's hold point). */
+  frameSeat(x: number, z: number): void {
+    const framing = this.seatFraming(x, z);
     this.game.camera.moveTo(framing.x, framing.z, true);
     if (framing.height) this.game.camera.setHeight(framing.height);
   }

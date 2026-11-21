@@ -23,6 +23,35 @@ describe('campaign force contract', () => {
     }
   });
 
+  it('anchors the opening frame on the army, not on the base', () => {
+    // The four missions whose troops stood in a corner: the army is well away from the centre building.
+    for (const id of ['m_lima', 'm_lima_1821', 'm_real_felipe', 'm_cusco_1536']) {
+      const game = headlessMission(id);
+      try {
+        const focus = game.seatFocus(0);
+        const base = game.playerCenter(0);
+        expect(Math.hypot(focus.x - base.x, focus.z - base.z), `${id} frames the base`).toBeGreaterThan(3);
+      } finally {
+        game.destroy();
+        setAutoStart(true);
+      }
+    }
+    // The landmark missions keep their army on the authored opening, so the cave/huaca still frames the shot.
+    for (const id of ['m1_caral', 'm_tambotoco', 'm_tarapaca']) {
+      const game = headlessMission(id);
+      try {
+        const focus = game.seatFocus(0);
+        const size = game.settings.mapSize;
+        const opening = game.missionLayout!.opening!;
+        const distance = Math.hypot(focus.x - opening.x * size, focus.z - opening.z * size);
+        expect(distance, `${id} would lose its landmark frame`).toBeLessThanOrEqual(20);
+      } finally {
+        game.destroy();
+        setAutoStart(true);
+      }
+    }
+  });
+
   it('keeps a documented scripted defence without an enemy economy', () => {
     const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
     // Its dossier says the enemy runs no economy; the pressure is the authored bombardment and assault.

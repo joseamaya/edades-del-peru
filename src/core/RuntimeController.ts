@@ -70,7 +70,8 @@ export class RuntimeController {
     this.updatePopulation();
     p.bonus.population += Math.max(0, p.populationUsed - p.populationCap);
     this.updatePopulation();
-    this.game.world.frameAuthoredSite(c.x, c.z);
+    const focus = this.game.seatFocus(0);
+    this.game.world.frameSeat(focus.x, focus.z);
   }
 
   /** Re-apply the authored-site opening framing after the briefing closes. */
