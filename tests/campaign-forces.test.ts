@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { setAutoStart } from '../src/core/Game';
-import { UnitKind } from '../src/core/types';
+import { BuildingKind, UnitKind } from '../src/core/types';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import { headlessMission } from './headless';
 
@@ -52,7 +52,7 @@ describe('campaign force contract', () => {
     }
   });
 
-  it('fields a garrison, not a peasant economy, where the enemy is a scripted force', () => {
+  it('gives a scripted enemy no generic peasant crew', () => {
     // Tambotoco's later acts are tied to the valley ayllus' camp, so its economy is a separate pass.
     for (const id of ['m3_moche_recuay', 'm5_yahuar_pampa']) {
       const game = headlessMission(id);

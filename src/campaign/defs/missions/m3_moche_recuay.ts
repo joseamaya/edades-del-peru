@@ -112,7 +112,8 @@ export const m3MocheRecuay: MissionDef = {
     ],
   },
   mark: [],
-  // A Recuay camp under pressure, not a skirmish player: no workers or buildings behind the waves.
+  // A Recuay camp under pressure, not a skirmish player: no peasant economy behind the waves (its centre
+  // and houses remain).
   enemy: { active: true, difficulty: 'normal', aggression: 1, economy: false },
   buildingNames: { [BuildingKind.INSTITUTE]: 'Casa de los ancestros' },
   objectives: [

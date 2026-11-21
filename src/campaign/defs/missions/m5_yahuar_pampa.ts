@@ -4,6 +4,8 @@ import { CHANCA_MAP_SIZE, chancaLength } from '../../../model/defs/chancaSite';
 
 // Where the Chanca columns converge: the camp's edge, not the blocked centre of its buildings.
 const CHANCA_CAMP_STAND = { ref: 'player' as const, dx: chancaLength(6), dz: chancaLength(4) };
+/** The Chanca camp at Cusco (normalized); its centre is tagged `centro_chanca`. */
+const CHANCA_CITY = { x: 0.7725, z: 0.38 } as const;
 
 export const m5YahuarPampa: MissionDef = {
   id: 'm5_yahuar_pampa',
@@ -60,7 +62,7 @@ export const m5YahuarPampa: MissionDef = {
       { text: 'Camino a Andahuaylas', x: 0.7725, z: 0.38, kind: 'region' },
     ],
     base: { x: 0.36, z: 0.62 },
-    enemyBase: { x: 0.7725, z: 0.38 },
+    enemyBase: { x: CHANCA_CITY.x, z: CHANCA_CITY.z },
     site: {
       id: 'chanca_site',
       y: 5,
@@ -98,7 +100,7 @@ export const m5YahuarPampa: MissionDef = {
     { tag: 'cusco', kind: BuildingKind.CENTER, owner: 0 },
     { tag: 'centro_chanca', kind: BuildingKind.CENTER, owner: 1 },
   ],
-  // The Chanca host is a marching army: its own camp and garrison, no peasant economy.
+  // The Chanca host is a marching army: its camp and a scripted city garrison, no peasant economy.
   enemy: { active: true, difficulty: 'hard', aggression: 1.3, economy: false },
   buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
   objectives: [
@@ -123,6 +125,24 @@ export const m5YahuarPampa: MissionDef = {
     },
   ],
   triggers: [
+    {
+      // The city is not empty: with no peasant economy the Chanca host still mans Cusco. This garrison
+      // holds the centre from the opening, so `obj_kill` is a fight and not a walk-in.
+      id: 't_guarnicion',
+      condition: { type: 'time', seconds: 0.5 },
+      effects: [
+        {
+          type: 'reinforce',
+          owner: 1,
+          units: [
+            { kind: UnitKind.SOLDIER, count: 5 },
+            { kind: UnitKind.MUSKETEER, count: 2 },
+          ],
+          pos: { dx: CHANCA_CITY.x * CHANCA_MAP_SIZE, dz: CHANCA_CITY.z * CHANCA_MAP_SIZE },
+          radius: chancaLength(4),
+        },
+      ],
+    },
     {
       id: 't_dial_0',
       condition: { type: 'time', seconds: 15 },

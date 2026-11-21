@@ -447,8 +447,9 @@ Definition of Done and the building audit see
   and Cusco 1536 used to open with the troops in a corner under the dialogue box. Guarded by the captures and
   `tests/campaign-forces.test.ts`.
 - **Campaign force contract**: `MissionDef.start.playerBase`/`enemyBase` remove the generic centre/houses per
-  seat, and `openingUnits` (default: the seat's base flag) gates the four workers + scout, so a base-less
-  party keeps only its authored roster. `MissionDef.enemy.economy: false` / `attacks: false` turn the AI into
+  seat; `openingUnits` (default: the seat's base flag) gates the player's four workers + scout and
+  `enemyOpeningUnits` overrides it for the enemy, so a scripted garrison can keep its town while losing the
+  peasants. `MissionDef.enemy.economy: false` / `attacks: false` turn the AI into
   a scripted opponent (micro and defense only), and `wave.spawn` separates an enemy wave's entry point from
   the `pos` it attacks or holds. Tarapacá is the reference battle: both seats are base-less, it has no
   economy, and its three columns enter from the map edges. A scripted (`attacks: false`) enemy presses any
