@@ -295,7 +295,11 @@ def callao(x: float, z: float) -> float:
     # maritime setting reads in the fortress frame. The siege camp and both battery sites stay dry.
     bay = 1.0 - smooth(26.0, 48.0, x + (z - 96) * 0.18)
     bight = 1.0 - smooth(0.0, 1.0, math.hypot((x - 110.0) / 75.0, (z - 80.0) / 65.0))
-    bay = max(bay, bight)
+    # The bay mouth: without it the bight was a closed lagoon 130 m from the sea, so the fortress looked
+    # inland and the patriot squadron had nothing to blockade. It opens south-west onto the Pacific and
+    # leaves a dry east shore beside the fort for the coastal battery.
+    mouth = 1.0 - smooth(0.0, 1.0, math.hypot((x - 66.0) / 38.0, (z - 104.0) / 24.0))
+    bay = max(bay, bight, mouth)
     h = h * (1.0 - bay) + 0.4 * bay
     # San Lorenzo: the low island that shelters the bay (un-normalised metres, so it stays an islet).
     island = 1.0 - smooth(9.0, 14.0, math.hypot(x - 30, z - 122))

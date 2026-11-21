@@ -7,7 +7,9 @@ const REAL_FELIPE = { x: 0.702, z: 0.38 } as const;
 const REAL_FELIPE_CAMP = { x: 0.34, z: 0.66 } as const;
 const REAL_FELIPE_BATTERY_A = { x: 0.46, z: 0.56 } as const;
 const REAL_FELIPE_BATTERY_B = { x: 0.55, z: 0.48 } as const;
-const REAL_FELIPE_COAST = { x: 0.18, z: 0.42 } as const;
+// The bay's east shore beside the fortress: the squadron blockades the port in front of the Real Felipe,
+// not the open sea 130 m away across the bay.
+const REAL_FELIPE_COAST = { x: 0.613, z: 0.4 } as const;
 
 export const mRealFelipe: MissionDef = {
   id: 'm_real_felipe',
@@ -33,6 +35,7 @@ export const mRealFelipe: MissionDef = {
   layout: {
     labels: [
       { text: 'Mar del Sur', x: 0.12, z: 0.3, kind: 'water' },
+      { text: 'Bahía del Callao', x: 0.4, z: 0.34, kind: 'water' },
       { text: 'Callao', x: REAL_FELIPE.x, z: REAL_FELIPE.z, kind: 'settlement' },
       { text: 'Real Felipe', x: REAL_FELIPE.x, z: REAL_FELIPE.z, kind: 'settlement' },
       { text: 'Campamento sitiador', x: REAL_FELIPE_CAMP.x, z: REAL_FELIPE_CAMP.z, kind: 'region' },
@@ -46,7 +49,7 @@ export const mRealFelipe: MissionDef = {
       flats: [
         { name: 'Campamento sitiador', x: REAL_FELIPE_CAMP.x, z: REAL_FELIPE_CAMP.z, rx: 0.16, rz: 0.12 },
         { name: 'Real Felipe', x: REAL_FELIPE.x, z: REAL_FELIPE.z, rx: 0.12, rz: 0.1 },
-        { name: 'Playas del Callao', x: 0.18, z: 0.42, rx: 0.1, rz: 0.1 },
+        { name: 'Boca de la bahía', x: 0.61, z: 0.41, rx: 0.07, rz: 0.07 },
       ],
     },
     site: {

@@ -17,8 +17,9 @@ Sources and certainty: [`docs/historia/campanas/real_felipe.md`](../historia/cam
 
 1. **Batteries.** Build two `FORTRESS` batteries at the marked approaches. The objective uses the `network`
    kind so both positions must be covered.
-2. **Blockade.** Hold the coast with artillery for 45 s. The sea approach is an abstraction: the game has
-   no naval units, so the blockade is represented by coastal batteries and the scripted sorties.
+2. **Blockade.** Hold the bay shore with artillery for 45 s. The sea approach is an abstraction: the game
+   has no naval units, so the blockade is represented by coastal batteries on the bay's east shore and the
+   scripted sorties.
 3. **Sorties.** Defend the siege camp for 60 s while Rodil's garrison attacks the lines. The intro's last beat and
    the Act III card stage the hunger and the coming surrender; the capitulation itself is narrated after the
    objective is forced, not before.
@@ -33,7 +34,11 @@ Optional/failure: if Salom dies or the camp falls, the mission is lost.
 - New `real_felipe_site` reuses the Arica coastal-fort composition and heightfield as a **labelled
   abstraction**: the real Real Felipe is a larger bastion, but the terrace, battery and sea approach read
   correctly at RTS zoom. No heritage card is attached; the fortress is the objective area, not a museum.
-- Player camp inland, two battery nodes between the camp and the fort, coast on the west.
+- The bay of Callao **opens to the Pacific**: the heightfield (`scripts/build_geographic_heightmaps.py`)
+  joins the bight to the western sea through a south-west mouth, so the fortress is a port fortress and not
+  a fort behind a closed lagoon. The patriot squadron's blockade node sits on the bay's east shore, ~24 m
+  from the fortress, instead of on the open sea 130 m away across the water.
+- Player camp inland (south-east), two battery nodes between the camp and the fort, the bay on the west.
 - No new GLB. The reused site is recorded in `PROVENANCE.md`; the mission has its own in-engine captures
   (`scripts/capture_independencia_arc.mjs`) for the bastion, the batteries and the siege camp. A dedicated
   star-fort kit is future work.
