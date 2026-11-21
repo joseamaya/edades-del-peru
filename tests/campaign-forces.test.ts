@@ -89,12 +89,16 @@ describe('campaign force contract', () => {
     try {
       expect([...town.units.values()].some((u) => u.owner === 1 && u.kind === UnitKind.WORKER)).toBe(true);
       expect(MISSIONS.find((m) => m.id === 'm_lima')!.enemy.economy).not.toBe(false);
-      // A minute later the camp is still hiring: the siege army is not a scripted force.
+      // A minute later the camp has hired past its five opening crew: with `economy: false` those five
+      // would survive unchanged, so this is what proves the hunger of a besieging army.
+      const opening = [...town.units.values()].filter(
+        (u) => u.owner === 1 && !u.dead && (u.kind === UnitKind.WORKER || u.kind === UnitKind.SCOUT),
+      ).length;
       for (let i = 0; i < 60 * 60; i++) town.update(1 / 60, i / 60);
       const crew = [...town.units.values()].filter(
         (u) => u.owner === 1 && !u.dead && (u.kind === UnitKind.WORKER || u.kind === UnitKind.SCOUT),
       );
-      expect(crew.length, 'the Lima camp stopped hiring').toBeGreaterThan(0);
+      expect(crew.length, 'the Lima camp stopped hiring').toBeGreaterThan(opening);
     } finally {
       town.destroy();
       setAutoStart(true);

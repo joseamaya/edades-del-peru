@@ -223,8 +223,9 @@ export const mCusco1536: MissionDef = {
     },
     {
       id: 't_probe',
-      // Act I had no enemy at all until the hold ended: a small sortie tests the line inside the 45 s.
-      condition: { type: 'time', seconds: 20 },
+      // Act I had no enemy at all until the hold ended: the probe is timed to reach the fortress inside
+      // the 45 s hold (the column needs ~20 s from the plaza).
+      condition: { type: 'time', seconds: 50 },
       effects: [
         {
           type: 'wave',
@@ -234,6 +235,8 @@ export const mCusco1536: MissionDef = {
           pos: { dx: CUSCO_1536_SACSAY.x, dz: CUSCO_1536_SACSAY.z },
           target: { dx: CUSCO_1536_SACSAY.x, dz: CUSCO_1536_SACSAY.z },
           radius: 10,
+          // The small probe is not a general wave: keep the generic "¡Oleada enemiga!" toast out of it.
+          objective: 'position',
         },
         { type: 'dialogue', text: '—Una salida española tantea Sacsayhuamán. Son pocos: que sirvan de aviso.' },
       ],
@@ -278,13 +281,16 @@ export const mCusco1536: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 2 },
             { kind: UnitKind.CAVALRY, count: 1 },
           ],
-          // It enters from the city's edge, clear of the spread it spawns over (28 m > 8√2 + 10), and
-          // marches on the closing ring.
-          spawn: { dx: CUSCO_1536_CITY.x + 28, dz: CUSCO_1536_CITY.z },
+          // It enters from the city outskirts, clear of both the 24 m siege ring and the spread it
+          // spawns over (40 m > 4√2 + 10, and 40 - 4√2 > 24), then marches on the closing ring.
+          spawn: { dx: CUSCO_1536_CITY.x + 40, dz: CUSCO_1536_CITY.z },
           pos: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
           target: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
-          radius: 8,
+          radius: 4,
+          // A sally, not a general wave: suppress the generic wave toast and announce it as a sortie.
+          objective: 'position',
         },
+        { type: 'dialogue', text: '—La plaza intenta romper el cerro. ¡Sostened la línea!' },
       ],
     },
     {
