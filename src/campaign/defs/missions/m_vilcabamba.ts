@@ -192,6 +192,9 @@ export const mVilcabamba: MissionDef = {
       kind: 'protect',
       entityTag: 'curi_paucar',
       optional: true,
+      // Activated by the Act II trigger: a visible goal would open with the mission and the trigger would
+      // do nothing.
+      hidden: true,
       title: 'Protege al capitán Curi Paucar',
     },
     {

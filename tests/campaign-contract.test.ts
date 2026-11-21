@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import type { MissionDef, MissionPoint, ObjectiveDef } from '../src/campaign/types';
 import { setAutoStart } from '../src/core/Game';
+import { BuildingKind } from '../src/core/types';
+import { getTech } from '../src/model/defs/techs';
 import { headlessMission } from './headless';
 
 /**
@@ -37,7 +39,6 @@ function spawnsOnObjective(wave: Wave): boolean {
  * its number here.
  */
 const WAVES_WITHOUT_ENTRY_POINT: Record<string, number> = {
-  m3_moche_recuay: 3,
   m5_yahuar_pampa: 2,
   m6_chimu_inca: 1,
   m6b_guerra_civil: 2,
@@ -137,6 +138,46 @@ describe('campaign mission contract', () => {
       } finally {
         game.destroy();
         setAutoStart(true);
+      }
+    }
+    expect(leaked).toEqual([]);
+  });
+
+  it('does not offer a technology its allowed buildings cannot host', () => {
+    // Chavín listed the loom (institute) and silver metallurgy (smelter) while allowing only a house, a
+    // mill, a farm and the market: two techs nobody could ever research.
+    const orphans: string[] = [];
+    for (const mission of MISSIONS) {
+      if (!mission.allowedTechs || !mission.allowedBuildings) continue;
+      for (const id of mission.allowedTechs) {
+        const tech = getTech(id);
+        if (!tech) {
+          orphans.push(`${mission.id}: ${id} (unknown tech)`);
+          continue;
+        }
+        // The town centre is always standing, so it never needs to be listed.
+        if (tech.building === BuildingKind.CENTER) continue;
+        if (!mission.allowedBuildings.includes(tech.building)) orphans.push(`${mission.id}: ${id}`);
+      }
+    }
+    expect(orphans).toEqual([]);
+  });
+
+  it('does not activate a goal that already opens with the mission', () => {
+    // An objective a trigger activates must start pending, or the trigger is a no-op: the Chavín offering
+    // could be handed over before the column reached the centre.
+    const leaked: string[] = [];
+    for (const mission of MISSIONS) {
+      const activated = new Set(
+        mission.triggers.flatMap((trigger) =>
+          trigger.effects.flatMap((effect) =>
+            effect.type === 'objective' && effect.state === 'activate' ? [effect.objectiveId] : [],
+          ),
+        ),
+      );
+      for (const objective of mission.objectives ?? []) {
+        if (!activated.has(objective.id)) continue;
+        if (!objective.hidden && !objective.awaitsCall) leaked.push(`${mission.id}:${objective.id}`);
       }
     }
     expect(leaked).toEqual([]);

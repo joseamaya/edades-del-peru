@@ -97,8 +97,9 @@ export const m2Chavin: MissionDef = {
   // Chavín has no documented war: dwellings, storehouses, fields and the pilgrimage fair, no army.
   allowedBuildings: [BuildingKind.HOUSE, BuildingKind.MILL, BuildingKind.FARM, BuildingKind.MARKET],
   allowedUnits: [UnitKind.WORKER, UnitKind.SCOUT],
-  // Only Early Horizon technologies: no war techs and no later Andean engineering.
-  allowedTechs: ['irrigation_canal', 'andean_loom', 'silver_metallurgy', 'chavin_pilgrimage'],
+  // Only Early Horizon technologies, and only those its four buildings can host: no war techs, no later
+  // Andean engineering, and none of the loom/metallurgy techs that need an institute or a smelter.
+  allowedTechs: ['irrigation_canal', 'chavin_pilgrimage'],
   // The fair is the mission's own institution, not a generic market.
   buildingNames: { [BuildingKind.MARKET]: 'Feria de peregrinos' },
   startingResources: { food: 300, wood: 450, silver: 300, stone: 100 },
@@ -121,6 +122,10 @@ export const m2Chavin: MissionDef = {
       heritageId: 'chavin_edificio_b',
       pos: { ref: 'site', dx: 0, dz: 0 },
       radius: 20,
+      // Hidden so it waits for the arrival trigger: a visible goal opens with the mission, and the
+      // offering could be handed over before the column reached the ceremonial centre.
+      hidden: true,
+      requires: 'a1_llegada',
       title: 'Acto I · Entrega 100 de plata como ofrenda en el Edificio B',
     },
     {

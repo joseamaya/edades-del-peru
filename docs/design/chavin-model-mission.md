@@ -63,10 +63,19 @@ building exists. The hidden source GLB keeps the click proxies; the kit draws th
 
 - `allowedBuildings`: `HOUSE`, `MILL`, `FARM`, `MARKET`.
 - `allowedUnits`: `WORKER`, `SCOUT`.
+- `startingEra: REGIONAL_STATES` is the internal tech level that `HistoricalPeriod.EARLY_HORIZON` maps to
+  (`EARLY_HORIZON`/`EARLY_INTERMEDIATE` share it); the mission is 900–200 B.C. on every card and in the
+  briefing, because the HUD prints the period, not the era. `tests/defs.test.ts` enforces the mapping.
 - No military: there is no documented Chavín–Paracas war.
-- Technologies are filtered to the match period and civilization; `chavin_pilgrimage` is the mission's
-  own research goal.
-- The market is the game's abstraction for the pilgrimage fair and is labelled as such in its card.
+- Technologies are filtered by period, civilization and the mission's `allowedTechs`, which must match the
+  buildings the mission allows: only `irrigation_canal` and `chavin_pilgrimage` (both researched at the town
+  centre). The loom needs an institute and silver metallurgy a smelter, which this mission never builds, so
+  listing them offered two techs nobody could research.
+- The opening offering (`a1_ofrenda`) waits for the arrival trigger: as a visible goal it opened with the
+  mission and could be handed over before the column reached the ceremonial centre.
+- `chavin_pilgrimage` is the mission's own research goal.
+- The market is the game's abstraction for the pilgrimage fair and is labelled «Feria de peregrinos» in its
+  card.
 
 ## Opening, briefing and closing
 

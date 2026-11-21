@@ -127,6 +127,13 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
   `wait`/`survive` in a mission with no enemy is pacing, not a goal. `campaign-contract` rejects a hold
   within 8 m of the player start unless it is a defended position listed by name or declares
   `clearEnemies`, and the wave ledger it keeps must stay exact, so fixing a mission lowers the number.
+- An objective that a trigger activates must be `hidden` (or `awaitsCall`): a visible goal opens with the
+  mission, so the activation is a no-op and the goal can be met before its act. The same applies to
+  `requires`, which only gates activation — trigger-driven, card-initiated (`awaitsCall`) or deferred — and
+  never the opening state of a visible goal.
+- A mission that narrows its buildings must narrow its techs to match. `allowedTechs` entries whose tech
+  needs an institute or a smelter are unresearchable when those buildings are not allowed; the town centre
+  is the one building that always stands.
 - A reconquest is `reach` + `clearEnemies`: the objective stays active while a hostile unit stands inside
   the radius (`clearRadius` widens the check beyond the reach radius so a defender cannot step off and
   back). Arriving on a crest still held by ten men is not taking it.
