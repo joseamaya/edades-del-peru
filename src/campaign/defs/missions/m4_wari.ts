@@ -146,10 +146,16 @@ export const m4Wari: MissionDef = {
     },
     {
       id: 'obj_sostener',
-      kind: 'survive',
+      // A timed goal with no enemigo completes by itself, which is what it used to do. It now asks for the
+      // third provincial centre to be occupied: the player must build it and keep a crew there.
+      kind: 'hold',
+      pos: WARI_BONUS_NODE,
+      radius: wariLength(16),
       time: 480,
+      minUnits: 1,
       optional: true,
-      title: 'Sostén la esfera wari 8 minutos (opcional)',
+      requires: 'bonus_red',
+      title: 'Sostén el tercer centro wari 8 minutos (opcional)',
     },
     {
       id: 'bonus_red',

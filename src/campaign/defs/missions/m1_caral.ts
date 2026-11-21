@@ -335,7 +335,7 @@ export const m1Caral: MissionDef = {
       // Announced with Act III (listed in the panel and called from the pyramid card), but the
       // assembly only starts when the player calls it.
       awaitsCall: true,
-      title: 'Convoca una asamblea comunal en la Plaza Central',
+      title: 'Acto III · Convoca una asamblea comunal en la Plaza Central',
     },
     {
       id: 'a3_prosperidad',
@@ -439,7 +439,7 @@ export const m1Caral: MissionDef = {
       effects: [
         {
           type: 'dialogue',
-          text: 'El algodón del valle baja a la costa: con él, Áspero teje sus redes. El pescado sube a cambio.',
+          text: 'El algodón del valle baja a la costa; con él, Áspero teje sus redes. El pescado sube a cambio.',
         },
         { type: 'objective', objectiveId: 'a2_redes', state: 'activate', announce: true },
       ],
@@ -535,7 +535,7 @@ export const m1Caral: MissionDef = {
         { type: 'site_phase', phase: 'in_use' },
         {
           type: 'dialogue',
-          text: 'La ciudad está en uso: se abren las tiendas de la feria, llegan peregrinos de los valles y el fuego sagrado arde en la cima.',
+          text: 'La ciudad está en uso; se abren las tiendas de la feria, llegan peregrinos de los valles y el fuego sagrado arde en la cima.',
         },
         { type: 'objective', objectiveId: 'a3_prosperidad', state: 'activate', announce: true },
       ],
@@ -584,7 +584,7 @@ export const m1Caral: MissionDef = {
       effects: [
         {
           type: 'dialogue',
-          text: 'Seis complejos piramidales: la escala se asocia al excedente y al trabajo comunal; es una interpretación arqueológica, no un registro escrito.',
+          text: 'Seis complejos piramidales. La escala se asocia al excedente y al trabajo comunal; es una interpretación arqueológica, no un registro escrito.',
         },
       ],
     },

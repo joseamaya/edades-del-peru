@@ -522,9 +522,43 @@ for (const c of Object.values(COMMANDERS)) BY_NAME.set(normalizeCommanderName(c.
 
 const BY_ID = new Map<string, CommanderDef>(Object.values(COMMANDERS).map((c) => [c.id, c]));
 
-/** Resolve a commander by display name (accent/case insensitive). */
+/**
+ * Short forms a dialogue line may use (`Cáceres: —…`). Explicit rather than a last-word index: several
+ * commanders share a surname (Manco, Amaru, Yupanqui), so a generic index would attribute the line to
+ * the wrong portrait.
+ */
+const SPEAKER_ALIASES: Record<string, PortraitId> = {
+  pizarro: 'pizarro',
+  caceres: 'caceres',
+  pumacahua: 'pumacahua',
+  'san martin': 'san_martin',
+  salom: 'salom',
+  bolognesi: 'bolognesi',
+  'tupac amaru': 'tupac_amaru',
+  micaela: 'micaela_bastidas',
+  'micaela bastidas': 'micaela_bastidas',
+  bolivar: 'bolivar',
+  sucre: 'sucre',
+  grau: 'grau',
+  rodil: 'rodil',
+  huascar: 'huascar',
+  atahualpa: 'atahualpa',
+  quizquiz: 'quizquiz',
+  melgar: 'melgar',
+  buendia: 'buendia',
+  'manco inca': 'manco_inca',
+};
+
+/**
+ * Resolve a dialogue speaker: mission authoring may use the id (`bolognesi`), the full display name or a
+ * documented short form (`Cáceres`). Accent and case insensitive.
+ */
 export function commanderFor(name: string): CommanderDef | undefined {
-  return BY_NAME.get(normalizeCommanderName(name));
+  const raw = name.trim();
+  const byId = BY_ID.get(raw);
+  if (byId) return byId;
+  const key = normalizeCommanderName(raw);
+  return BY_NAME.get(key) ?? (SPEAKER_ALIASES[key] ? BY_ID.get(SPEAKER_ALIASES[key]) : undefined);
 }
 
 /**

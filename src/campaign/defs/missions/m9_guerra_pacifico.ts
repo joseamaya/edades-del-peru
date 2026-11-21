@@ -151,8 +151,10 @@ export const m9GuerraPacifico: MissionDef = {
     {
       id: 'a2_bombardeo',
       kind: 'hold',
-      pos: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
-      radius: aricaLength(26),
+      // On the cuartel's forward line, not on the start position: anchored on the spawn the act completed
+      // after 60 s with the player doing nothing.
+      pos: { ref: 'player', dx: 0, dz: -aricaLength(20) },
+      radius: aricaLength(10),
       time: 60,
       minUnits: 3,
       hidden: true,
@@ -168,8 +170,9 @@ export const m9GuerraPacifico: MissionDef = {
     {
       id: 'a3_asalto',
       kind: 'hold',
-      pos: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
-      radius: aricaLength(30),
+      // The last line is a position to take and keep, not the ground the player already stands on.
+      pos: { ref: 'player', dx: -aricaLength(8), dz: -aricaLength(22) },
+      radius: aricaLength(12),
       time: 120,
       minUnits: 4,
       hidden: true,
@@ -226,6 +229,8 @@ export const m9GuerraPacifico: MissionDef = {
           units: [
             { kind: UnitKind.SOLDIER, count: 4 },
             { kind: UnitKind.RIFLEMAN, count: 2 },
+            // The bombardment is fought with the guns that actually battered the plaza, not infantry alone.
+            { kind: UnitKind.ARTILLERY, count: 1 },
           ],
           pos: { dx: aricaLength(115), dz: aricaLength(100) },
           radius: aricaLength(6),

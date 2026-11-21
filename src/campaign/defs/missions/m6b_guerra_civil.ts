@@ -174,7 +174,8 @@ export const m6bGuerraCivil: MissionDef = {
         },
         {
           type: 'dialogue',
-          text: 'General de Atahualpa: —Huáscar ha reunido su ejército en Quipaipan. ¡Es ahora!',
+          speaker: 'quizquiz',
+          text: '—Huáscar ha reunido su ejército en Quipaipan. ¡Es ahora!',
         },
         { type: 'objective', objectiveId: 'obj_quipaipan', state: 'activate' },
         {

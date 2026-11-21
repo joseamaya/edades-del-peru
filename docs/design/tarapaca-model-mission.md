@@ -43,8 +43,10 @@ Arica. Sources and certainty: [`docs/historia/campanas/tarapaca.md`](../historia
 ## Combat and engagement
 
 - Acquisition and fire use one envelope: a ranged unit fires up to `range × 1.15` and looks for enemies
-  with a 4 m margin, so a unit parked at the edge of its reach is still answered. Before this fix the
-  defenders looked only 13.2 m while the Chileans fired from 16 m and the line died without returning fire.
+  with a 4 m margin, plus the enemy's own reach (bounded by the 6 m response radius), so a unit parked at the
+  edge of its reach is still answered — and a 9 m sling answers an archer that opens fire from 11 m. Before
+  this fix the defenders looked only 13.2 m while the Chileans fired from 16 m and the line died without
+  returning fire.
 - A unit that takes damage remembers the shooter for six seconds and returns fire from a bounded response
   radius, even outside its defensive leash; after the fight it walks back to its post.
 - An `attack_move` engages at `nominal range + 2` (its historic distance) so a march still reaches its

@@ -55,6 +55,10 @@ recorded here and in the quality bar. The Morro is not invented as a new mesh.
 - The royalist pressure is scripted: the bombardment wave, the sortie and the final assault.
   The enemy does not run an economy in this mission; the waves are labelled as an abstraction in the
   dossier.
+- The bombardment and the assault are `hold` objectives on the cuartel's forward line and on the last line,
+  not on the player's start: anchored on the port terrace they completed after 60 s and 120 s with no order.
+  The bombardment wave carries one Chilean gun — the artillery that actually battered the plaza — while the
+  garrison still has no artillery of its own.
 
 ## Opening and closing
 
