@@ -276,6 +276,8 @@ export const mLima: MissionDef = {
       condition: { type: 'time', seconds: 300 },
       repeat: true,
       cooldown: 75,
+      // Two relief columns, not an endless one: the old trigger added ~36 men over twenty minutes.
+      maxFires: 2,
       effects: [
         {
           type: 'wave',

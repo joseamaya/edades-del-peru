@@ -3,6 +3,9 @@ import { QUIPAIPAN_HEIGHTFIELD } from '../../../model/defs/quipaipanHeightmap';
 import type { MissionDef } from '../../types';
 import { CUSCO_INCA_MAP_SIZE, cuscoIncaLength } from '../../../model/defs/cuscoIncaSite';
 
+// The army's camp on the Quito road: the relief column cuts it off and marches on it.
+const QUIPAIPAN_CAMP = { ref: 'player' as const, dx: 0, dz: 0 };
+
 export const m6bGuerraCivil: MissionDef = {
   id: 'm6b_guerra_civil',
   commanders: ['atahualpa', 'huascar', 'quizquiz'],
@@ -58,7 +61,7 @@ export const m6bGuerraCivil: MissionDef = {
   layout: {
     labels: [
       { text: 'Quipaipan', x: 0.65, z: 0.68, kind: 'region' },
-      { text: 'Cusco', x: 0.71, z: 0.68, kind: 'settlement' },
+      { text: 'Ejército de Huáscar', x: 0.71, z: 0.68, kind: 'region' },
       { text: 'Ruta de Quito', x: 0.35, z: 0.3, kind: 'region' },
     ],
     base: { x: 0.35, z: 0.3 },
@@ -170,7 +173,7 @@ export const m6bGuerraCivil: MissionDef = {
           kicker: 'Acto II · Quipaipan',
           title: 'La pampa',
           image: 'media/cusco-inca/intro-quipaipan.webp',
-          text: 'Huáscar ha reunido su ejército en Quipaipan. Sostén la pampa con la línea de guerreros y no dejes caer a Atahualpa.',
+          text: 'Huáscar ha reunido su ejército en Quipaipan. Sostén la pampa con la línea de guerreros y no dejes caer a Quizquiz.',
         },
         {
           type: 'dialogue',
@@ -226,10 +229,13 @@ export const m6bGuerraCivil: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 5 },
             { kind: UnitKind.MUSKETEER, count: 2 },
           ],
-          pos: { ref: 'player', dx: cuscoIncaLength(20), dz: cuscoIncaLength(16) },
+          // Behind the line, on the Quito road: the column that was following the army cuts the camp off.
+          spawn: { ref: 'player', dx: -cuscoIncaLength(26), dz: -cuscoIncaLength(22) },
+          pos: QUIPAIPAN_CAMP,
+          target: QUIPAIPAN_CAMP,
           radius: cuscoIncaLength(7),
         },
-        { type: 'dialogue', text: '¡Refuerzos de Huáscar atacan tu retaguardia!' },
+        { type: 'dialogue', text: '¡Refuerzos de Huáscar cortan el camino de Quito y atacan tu retaguardia!' },
       ],
     },
   ],

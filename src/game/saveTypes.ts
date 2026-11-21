@@ -119,6 +119,8 @@ export interface MissionSave {
   objState: [string, ObjState][];
   fired: string[];
   lastFired: [string, number][];
+  /** Times each trigger fired; absent in saves written before repeating triggers were capped. */
+  fireCounts?: [string, number][];
   spawnedCount: [string, number][];
   /** Per-hold-objective elapsed time (optional for older saves). */
   holdTimers?: [string, number][];

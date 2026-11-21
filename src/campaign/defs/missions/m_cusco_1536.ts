@@ -156,7 +156,7 @@ export const mCusco1536: MissionDef = {
       radius: 18,
       time: 45,
       minUnits: 6,
-      title: 'Ocupa Sacsayhuamán y resiste el contraataque',
+      title: 'Ocupa Sacsayhuamán durante 45 segundos',
     },
     {
       id: 'a2_cerco',
@@ -182,6 +182,8 @@ export const mCusco1536: MissionDef = {
     {
       id: 'a3_retirada',
       kind: 'reach',
+      // The retreat is Manco's own: any scout reaching the road used to end the mission for him.
+      entityTag: 'manco_inca',
       pos: { dx: CUSCO_1536_RETREAT.x, dz: CUSCO_1536_RETREAT.z },
       radius: 16,
       hidden: true,
@@ -210,7 +212,9 @@ export const mCusco1536: MissionDef = {
     },
     {
       id: 't_counter',
-      condition: { type: 'objective', objectiveId: 'a1_sacsay', state: 'activate' },
+      // `activate` is true for a pending goal too, so this fired in the first second. Wait until Sacsayhuamán
+      // is actually taken and the counterattack has something to answer.
+      condition: { type: 'objective', objectiveId: 'a1_sacsay', state: 'completed' },
       effects: [
         {
           type: 'wave',

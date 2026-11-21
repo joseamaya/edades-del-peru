@@ -8,6 +8,9 @@ const VILCABAMBA_TOWN = { x: 150, z: 132 } as const;
 const VILCABAMBA_CAMP = { x: 90, z: 166 } as const;
 const VILCABAMBA_ENEMY = { x: 198, z: 64 } as const;
 const VILCABAMBA_ESCAPE = { x: 54, z: 220 } as const;
+const VILCABAMBA_FORT_POINT = { dx: VILCABAMBA_FORT.x, dz: VILCABAMBA_FORT.z } as const;
+// Where the Act III column meets the escape road, instead of the Spanish camp 200 m away.
+const VILCABAMBA_ESCAPE_ROAD = { dx: VILCABAMBA_ESCAPE.x + 55, dz: VILCABAMBA_ESCAPE.z - 45 } as const;
 // The label sits on the generated centreline (the river meanders), not on a copied constant.
 const VILCABAMBA_RIVER = VILCABAMBA_RIVER_PATH.reduce((best, p) =>
   Math.abs(p[1]! - 141) < Math.abs(best[1]! - 141) ? p : best,
@@ -191,10 +194,8 @@ export const mVilcabamba: MissionDef = {
       id: 'a2_curi',
       kind: 'protect',
       entityTag: 'curi_paucar',
-      optional: true,
-      // Activated by the Act II trigger: a visible goal would open with the mission and the trigger would
-      // do nothing.
-      hidden: true,
+      // Required and visible from the start: the captain who opens the escape is the mission's own way to
+      // lose the court, and the player must know he is at risk from Act I.
       title: 'Protege al capitán Curi Paucar',
     },
     {
@@ -202,7 +203,8 @@ export const mVilcabamba: MissionDef = {
       kind: 'hold',
       pos: { dx: VILCABAMBA_ESCAPE.x, dz: VILCABAMBA_ESCAPE.z },
       radius: 18,
-      time: 20,
+      // Long enough for the column to reach the road: at 20 s the mission ended before it arrived.
+      time: 45,
       minUnits: 5,
       hidden: true,
       requires: 'a2_evacua',
@@ -223,6 +225,23 @@ export const mVilcabamba: MissionDef = {
       ],
     },
     {
+      id: 't_probe',
+      // Act I had no pressure at all: the Spanish vanguard probes the pucará inside the 45 s hold.
+      condition: { type: 'time', seconds: 20 },
+      effects: [
+        {
+          type: 'wave',
+          owner: 1,
+          units: [{ kind: UnitKind.SOLDIER, count: 2 }],
+          spawn: { dx: VILCABAMBA_ENEMY.x, dz: VILCABAMBA_ENEMY.z },
+          pos: VILCABAMBA_FORT_POINT,
+          target: VILCABAMBA_FORT_POINT,
+          radius: 10,
+        },
+        { type: 'dialogue', text: '—La vanguardia española tantea Huayna Pucará. Son pocos: que sirvan de aviso.' },
+      ],
+    },
+    {
       id: 't_huayna',
       condition: { type: 'objective', objectiveId: 'a1_huayna', state: 'completed' },
       effects: [
@@ -235,7 +254,6 @@ export const mVilcabamba: MissionDef = {
         },
         { type: 'objective', objectiveId: 'a2_evacua', state: 'activate', announce: true },
         { type: 'objective', objectiveId: 'a2_senderos', state: 'activate' },
-        { type: 'objective', objectiveId: 'a2_curi', state: 'activate' },
         {
           type: 'wave',
           owner: 1,
@@ -269,9 +287,11 @@ export const mVilcabamba: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 5 },
             { kind: UnitKind.CAVALRY, count: 1 },
           ],
-          pos: { dx: VILCABAMBA_ENEMY.x, dz: VILCABAMBA_ENEMY.z },
-          radius: 12,
+          // On the escape road, not back at the Spanish camp: a 200 m march never reached the hold.
+          spawn: VILCABAMBA_ESCAPE_ROAD,
+          pos: { dx: VILCABAMBA_ESCAPE.x, dz: VILCABAMBA_ESCAPE.z },
           target: { dx: VILCABAMBA_ESCAPE.x, dz: VILCABAMBA_ESCAPE.z },
+          radius: 12,
         },
       ],
     },
