@@ -58,10 +58,10 @@ builds; the exception is recorded here and in the quality bar.
   as a hondero in this era, not a firearm. No horses or firearms on the Inca side.
 - Huáscar's headquarters is a **field command, not a town**: `enemy.economy: false` and
   `start.enemyOpeningUnits: false` keep its centre and houses but stop the peasant economy, and a scripted
-  guard (three warriors and two honderos) mans the centre from the opening. The pressure is the Act II wave
+  guard (four warriors and three honderos) mans the centre from the opening. The pressure is the Act II wave
   on the pampa and the relief column on the Quito road; the capture is not a walk-in.
-- The narrator is **Atahualpa**, a documented protagonist; the enemy centre is Huáscar's Cusco but is not a
-  destroy objective.
+- The narrator is **Atahualpa**, a documented protagonist; the enemy centre is Huáscar's headquarters at
+  Quipaipan, not the city, and is not a destroy objective.
 
 ## Opening and closing
 

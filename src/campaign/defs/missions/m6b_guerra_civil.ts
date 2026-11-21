@@ -148,11 +148,13 @@ export const m6bGuerraCivil: MissionDef = {
           type: 'reinforce',
           owner: 1,
           units: [
-            { kind: UnitKind.SOLDIER, count: 3 },
-            { kind: UnitKind.MUSKETEER, count: 2 },
+            { kind: UnitKind.SOLDIER, count: 4 },
+            { kind: UnitKind.MUSKETEER, count: 3 },
           ],
           pos: { ref: 'enemy', dx: 0, dz: 0 },
           radius: cuscoIncaLength(4),
+          // `reinforce` defaults to an attack-move on the player's camp; a garrison must hold its post.
+          objective: 'position',
         },
       ],
     },

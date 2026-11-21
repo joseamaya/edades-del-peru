@@ -59,8 +59,9 @@ in the quality bar.
   of the documented cut, not a reconstructed canal trace.
 - Chan Chan keeps its centre and houses — the capital is not a camp — but it does not run the generic
   economy: `enemy.economy: false` and `start.enemyOpeningUnits: false` remove the peasant crew, sawmill and
-  mill. The pressure is authored (the counterattack from Paramonga, the optional resistance of the city),
-  and the surrender stays the victory.
+  mill. A token watch holds the city gate, clear of the surrender circle, so the optional «take Chan Chan if
+  it resists» is a fight and the capital is not empty; the other pressure is the timed counterattack from
+  Paramonga. The surrender stays the victory.
 - The narrator is **Túpac Yupanqui**, a documented commander.
 
 ## Opening and closing

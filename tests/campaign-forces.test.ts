@@ -52,7 +52,7 @@ describe('campaign force contract', () => {
     }
   });
 
-  it('gives a scripted enemy no generic peasant crew', () => {
+  it('starts a mission without an enemy economy with no peasant crew', () => {
     // Tambotoco's later acts are tied to the valley ayllus' camp, so its economy is a separate pass.
     // Chimú and the Inca civil war are the Inca phase: a capital and a field headquarters keep their
     // buildings but neither runs the skirmish economy.
@@ -66,15 +66,8 @@ describe('campaign force contract', () => {
         const def = MISSIONS.find((m) => m.id === id)!;
         expect(def.enemy.economy, `${id} runs a generic enemy economy`).toBe(false);
         const centre = [...game.buildings.values()].find((b) => b.owner === 1 && b.kind === BuildingKind.CENTER);
-        expect(centre?.dead, `${id} lost the enemy town it keeps around the scripted force`).toBeFalsy();
-        // A minute of simulation: no peasant economy means no new crew and no sawmill or mill either.
-        for (let i = 0; i < 60 * 60; i++) game.update(1 / 60, i / 60);
-        expect(crew(UnitKind.WORKER), `${id} grew a peasant crew`).toHaveLength(0);
-        expect(crew(UnitKind.SCOUT), `${id} grew a scout`).toHaveLength(0);
-        const industry = [...game.buildings.values()].filter(
-          (b) => b.owner === 1 && !b.dead && (b.kind === BuildingKind.SAWMILL || b.kind === BuildingKind.MILL),
-        );
-        expect(industry, `${id} built a sawmill or mill`).toHaveLength(0);
+        expect(centre, `${id} lost the enemy town it keeps around the scripted force`).toBeDefined();
+        expect(centre!.dead).toBeFalsy();
       } finally {
         game.destroy();
         setAutoStart(true);
@@ -88,6 +81,58 @@ describe('campaign force contract', () => {
     } finally {
       town.destroy();
       setAutoStart(true);
+    }
+  });
+
+  it('keeps the enemy from hiring or building once the economy is off', () => {
+    // The AI's first sawmill lands within a second of a revert, so a minute is long enough to falsify the
+    // `economy: false` flag; the mill at ~203 s would never be reached because construction already ran.
+    for (const id of ['m3_moche_recuay', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']) {
+      const game = headlessMission(id);
+      try {
+        for (let i = 0; i < 60 * 60; i++) game.update(1 / 60, i / 60);
+        const enemy = [...game.units.values()].filter((u) => u.owner === 1 && !u.dead);
+        expect(
+          enemy.filter((u) => u.kind === UnitKind.WORKER),
+          `${id} grew a peasant crew`,
+        ).toHaveLength(0);
+        expect(
+          enemy.filter((u) => u.kind === UnitKind.SCOUT),
+          `${id} grew a scout`,
+        ).toHaveLength(0);
+        const industry = [...game.buildings.values()].filter(
+          (b) => b.owner === 1 && !b.dead && (b.kind === BuildingKind.SAWMILL || b.kind === BuildingKind.MILL),
+        );
+        expect(industry, `${id} built a sawmill or mill`).toHaveLength(0);
+      } finally {
+        game.destroy();
+        setAutoStart(true);
+      }
+    }
+  });
+
+  it('keeps a scripted garrison at its post', () => {
+    // `reinforce` defaults to an attack-move on the player's camp (a relief column); a garrison has to say
+    // `objective: 'position'`, or it walks off and leaves the city it was meant to hold.
+    for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']) {
+      const game = headlessMission(id);
+      try {
+        for (let i = 0; i < 2 * 60; i++) game.update(1 / 60, i / 60);
+        const guards = [...game.units.values()].filter(
+          (u) => u.owner === 1 && !u.dead && u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT,
+        );
+        expect(guards.length, `${id} opens without a scripted garrison`).toBeGreaterThan(0);
+        const posts = new Map(guards.map((guard) => [guard.id, { x: guard.pos.x, z: guard.pos.z }]));
+        for (let i = 0; i < 60 * 60; i++) game.update(1 / 60, i / 60);
+        for (const guard of guards) {
+          const post = posts.get(guard.id)!;
+          const distance = Math.hypot(guard.pos.x - post.x, guard.pos.z - post.z);
+          expect(distance, `${id} guard ${guard.id} abandoned its post`).toBeLessThanOrEqual(24);
+        }
+      } finally {
+        game.destroy();
+        setAutoStart(true);
+      }
     }
   });
 

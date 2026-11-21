@@ -461,7 +461,8 @@ Definition of Done and the building audit see
   `enemyOpeningUnits` overrides it for the enemy, so a scripted garrison can keep its town while losing the
   peasants. `MissionDef.enemy.economy: false` / `attacks: false` turn the AI into
   a scripted opponent (micro and defense only), and `wave.spawn` separates an enemy wave's entry point from
-  the `pos` it attacks or holds. Tarapacá is the reference battle: both seats are base-less, it has no
+  the `pos` it attacks or holds. `reinforce` defaults to an attack-move on the player's camp; a garrison
+  that must stay put needs `objective: 'position'`. Tarapacá is the reference battle: both seats are base-less, it has no
   economy, and its three columns enter from the map edges. A scripted (`attacks: false`) enemy presses any
   reachable enemy within 20 m after its authored attack-move ends (`SCRIPTED_PURSUIT` in `AI.microCombat`);
   without it the wave freezes at the edge of its firing envelope. `MissionDef.commanderRoles` overrides a
