@@ -1094,10 +1094,11 @@ test('the campaign path opens the next campaign once the previous one is complet
   await page.getByRole('button', { name: /Campañas/ }).click();
   const menu = page.locator('.ed-campaign-panel');
   const inca = menu.locator('.ed-campaign-card[data-campaign="inca"]');
-  // The whole pre-Inca campaign is done, so the path selects the Inca campaign and its first mission.
+  // The legacy path's nine missions are done; two of them (Yahuar Pampa and La Guerra del Norte) belong to
+  // the Inca campaign after the re-cut, so the chapter opens with 2/4 and Tambotoco still to play.
   await expect(inca).toBeEnabled();
   await expect(inca).toHaveAttribute('aria-selected', 'true');
-  await expect(inca).toContainText('0 / 4 misiones completadas');
+  await expect(inca).toContainText('2 / 4 misiones completadas');
   await expect(menu.getByRole('button', { name: /Jugar Los hijos de Tambotoco/ })).toBeVisible();
   await expect(menu.getByRole('button', { name: /Jugar La Guerra del Norte/ })).toHaveCount(0);
   await expect(menu.locator('.ed-campaign-card[data-campaign="virreinato"]')).toBeEnabled();
