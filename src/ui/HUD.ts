@@ -76,6 +76,7 @@ import { bus } from '../core/EventBus';
 import { hasSave, saveIncompatible } from '../game/SaveGame';
 import { hasReplay, saveReplay } from '../game/replay';
 import { mountMatchStats } from './MatchStatsPanel';
+import { escapeHtml } from '../util/escapeHtml';
 import {
   COMMAND_SLOT_COUNT,
   HOTKEYS,
@@ -111,11 +112,6 @@ const ORDINAL_KEYS = [
   'hud.ordinal.fourth',
   'hud.ordinal.fifth',
 ] as const;
-
-function escapeHtml(s: string): string {
-  const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
-  return s.replace(/[&<>"']/g, (c) => map[c]);
-}
 
 /** Player-buildable buildings (single list for all panels). */
 const BUILDABLE_KINDS: BuildingKind[] = [

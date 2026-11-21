@@ -1,10 +1,6 @@
 import { artAssetSrcset, artAssetUrl, artReviewLabel } from '../art/manifest';
 import type { ArtManifestRecord } from '../art/types';
-
-function escapeHtml(value: string): string {
-  const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
-  return value.replace(/[&<>"']/g, (char) => map[char]);
-}
+import { escapeHtml } from '../util/escapeHtml';
 
 /** `?art=all` (or the legacy `?aiart=all`) previews drafts; default only shows reviewed assets. */
 export function includeUnreviewedArt(): boolean {

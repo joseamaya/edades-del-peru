@@ -2,14 +2,10 @@ import { getCiv } from '../model/defs/civs';
 import type { CommanderDef } from '../model/defs/commanders';
 import type { EmblemId } from '../model/defs/civs';
 import { HUMAN_HAIR } from '../model/defs/people';
+import { escapeHtml as escapeXml } from '../util/escapeHtml';
 
 const PORTRAIT_VIEW = 64;
 let portraitSeq = 0;
-
-function escapeXml(s: string): string {
-  const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' };
-  return s.replace(/[&<>"']/g, (c) => map[c]);
-}
 
 /** Two significant initials ("José de San Martín" → "SM", "Miguel Grau" → "MG"). */
 function initials(name: string): string {

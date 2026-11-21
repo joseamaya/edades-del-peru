@@ -5,6 +5,7 @@ import { RESOURCE_KEYS, type CivId, type Resources } from '../core/types';
 import { RESOURCE_INFO } from '../core/Config';
 import type { MatchSnapshot, PlayerSnapshot } from '../game/matchStats';
 import { t } from '../i18n';
+import { escapeHtml as esc } from '../util/escapeHtml';
 
 export interface MatchStatsPlayerMeta {
   id: number;
@@ -31,13 +32,6 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'tech', label: t('hud.stats.tab.tech') },
   { id: 'timeline', label: t('hud.stats.tab.timeline') },
 ];
-
-function esc(value: string): string {
-  return value.replace(/[&<>"']/g, (char) => {
-    const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
-    return map[char] ?? char;
-  });
-}
 
 /** Player-facing civilization name; the snapshot stores the internal id. */
 function civLabel(civ: CivId): string {
