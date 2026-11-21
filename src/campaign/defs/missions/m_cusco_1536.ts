@@ -222,6 +222,23 @@ export const mCusco1536: MissionDef = {
       ],
     },
     {
+      id: 't_probe',
+      // Act I had no enemy at all until the hold ended: a small sortie tests the line inside the 45 s.
+      condition: { type: 'time', seconds: 20 },
+      effects: [
+        {
+          type: 'wave',
+          owner: 1,
+          units: [{ kind: UnitKind.SOLDIER, count: 2 }],
+          spawn: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
+          pos: { dx: CUSCO_1536_SACSAY.x, dz: CUSCO_1536_SACSAY.z },
+          target: { dx: CUSCO_1536_SACSAY.x, dz: CUSCO_1536_SACSAY.z },
+          radius: 10,
+        },
+        { type: 'dialogue', text: '—Una salida española tantea Sacsayhuamán. Son pocos: que sirvan de aviso.' },
+      ],
+    },
+    {
       id: 't_counter',
       // `activate` is true for a pending goal too, so this fired in the first second. Wait until Sacsayhuamán
       // is actually taken and the counterattack has something to answer.
@@ -253,6 +270,21 @@ export const mCusco1536: MissionDef = {
         },
         { type: 'objective', objectiveId: 'a2_cerco', state: 'activate', announce: true },
         { type: 'objective', objectiveId: 'a2_suministros', state: 'activate' },
+        {
+          // Act II was a food-drain timer with no enemy: the plaza sorties against the closing ring.
+          type: 'wave',
+          owner: 1,
+          units: [
+            { kind: UnitKind.SOLDIER, count: 2 },
+            { kind: UnitKind.CAVALRY, count: 1 },
+          ],
+          // It enters from the city's edge, clear of the spread it spawns over (28 m > 8√2 + 10), and
+          // marches on the closing ring.
+          spawn: { dx: CUSCO_1536_CITY.x + 28, dz: CUSCO_1536_CITY.z },
+          pos: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
+          target: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
+          radius: 8,
+        },
       ],
     },
     {

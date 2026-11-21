@@ -110,7 +110,7 @@ export const mVilcabamba: MissionDef = {
     units: [
       { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 3 },
       // The garrison holds Huayna Pucará: a defensive stance keeps the forty-five second hold from
-      // unravelling when an enemy worker crosses the aggro radius and the line chases it downhill.
+      // unravelling when the Spanish probe crosses the aggro radius and the line chases it downhill.
       { kind: UnitKind.INCA_WARRIOR, dx: 8, dz: 0, count: 10, stance: 'defensivo' },
       { kind: UnitKind.SOLDIER, dx: 12, dz: 2, count: 4, stance: 'defensivo' },
       { kind: UnitKind.SCOUT, dx: 14, dz: 0, count: 1 },

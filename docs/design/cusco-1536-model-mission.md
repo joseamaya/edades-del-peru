@@ -12,11 +12,12 @@ plays the siege as a **timed economy of food and seasons**, not as a capture. So
 
 ## Acts
 
-1. **Take Sacsayhuamán.** Six units hold the fortress for 45 s while the Spanish counterattack
-   converges; the fortress changes hands in the history, so the victory is the withdrawal, not its permanent capture.
+1. **Take Sacsayhuamán.** Six units hold the fortress for 45 s while a small Spanish sortie probes the
+   line; the counterattack proper answers the completed hold. The fortress changes hands in the history, so
+   the victory is the withdrawal, not its permanent capture.
 2. **Hold the siege through the planting.** Six units hold the city approaches for 60 s while consuming
-   6 food per second; an empty store pauses the siege rather than resetting it. This is the seasonal
-   abstraction, not a full calendar subsystem.
+   6 food per second and the plaza sorties against the closing ring; an empty store pauses the siege rather
+   than resetting it. This is the seasonal abstraction, not a full calendar subsystem.
 3. **Withdraw to Ollantaytambo.** Reach the road north-west of the city with Manco alive (Ollantaytambo lies
    down the Sacred Valley, not across the pampa to the south-west). The city is not captured; the epilogue
    states the withdrawal and the continuation of the war in Vilcabamba.
@@ -35,8 +36,9 @@ Optional: cut the city's supplies. The mission never stages the later «Santiago
 - `INCA` vs `HUESTE_INDIANA`; period-locked Viceroyalty.
 - Units: workers, Inca warriors, soldiers and scouts; no horses or firearms for the player.
 - The Spanish city is a **besieged garrison**: `enemy.economy: false` and `start.enemyOpeningUnits: false`
-  keep its centre and houses but stop the peasant economy, sawmill and mill. The pressure is the authored
-  sortie that answers the taking of Sacsayhuamán; the mission is a siege of the city, not a skirmish beside it.
+  keep its centre and houses but stop the peasant economy, sawmill and mill. The pressure is authored: a
+  probe inside Act I, the counterattack after Sacsayhuamán and the plaza sortie that contests the siege, so
+  the mission is a siege of the city, not a skirmish beside it.
 - Manco Inca is a protected commander card; no invented likeness.
 
 ## Opening and closing

@@ -75,6 +75,10 @@ describe('campaign force contract', () => {
         const centre = [...game.buildings.values()].find((b) => b.owner === 1 && b.kind === BuildingKind.CENTER);
         expect(centre, `${id} lost the enemy town it keeps around the scripted force`).toBeDefined();
         expect(centre!.dead).toBeFalsy();
+        const houses = [...game.buildings.values()].filter(
+          (b) => b.owner === 1 && !b.dead && b.kind === BuildingKind.HOUSE,
+        );
+        expect(houses.length, `${id} lost the houses it keeps around the scripted force`).toBeGreaterThan(0);
       } finally {
         game.destroy();
         setAutoStart(true);
@@ -85,6 +89,12 @@ describe('campaign force contract', () => {
     try {
       expect([...town.units.values()].some((u) => u.owner === 1 && u.kind === UnitKind.WORKER)).toBe(true);
       expect(MISSIONS.find((m) => m.id === 'm_lima')!.enemy.economy).not.toBe(false);
+      // A minute later the camp is still hiring: the siege army is not a scripted force.
+      for (let i = 0; i < 60 * 60; i++) town.update(1 / 60, i / 60);
+      const crew = [...town.units.values()].filter(
+        (u) => u.owner === 1 && !u.dead && (u.kind === UnitKind.WORKER || u.kind === UnitKind.SCOUT),
+      );
+      expect(crew.length, 'the Lima camp stopped hiring').toBeGreaterThan(0);
     } finally {
       town.destroy();
       setAutoStart(true);
