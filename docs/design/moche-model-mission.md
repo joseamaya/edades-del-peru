@@ -56,8 +56,9 @@ builds; the exception is recorded here and in the quality bar.
 - Recuay has its own camp in the sierra (`layout.enemyBase`, under the authored «Sierra recuay» label).
   Without it the AI camp was placed at random and could land beside the huacas.
 - The three columns answer the player's acts instead of fixed minutes: the first enters when the canal
-  opens, the other two when the huacas hold and the exchange opens. An idle player is no longer raided at
-  170 s by a wave that was scheduled before the canal was even touched.
+  opens, the other two when the huacas hold and the exchange opens, and all three enter from the sierra
+  (`spawn`) to the plaza instead of materialising on it. An idle player is no longer raided at 80 s by a wave
+  that was scheduled before the canal was even touched.
 - No firearms, horses or engines: the period roster and the Moche/Recuay architecture only.
 - The narrator is an anonymous **Voz del valle**: the dossier records that no Moche or Recuay ruler is known,
   so the mission invents no name or title.

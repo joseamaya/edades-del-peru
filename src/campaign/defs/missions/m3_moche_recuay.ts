@@ -2,6 +2,11 @@ import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../c
 import type { MissionDef } from '../../types';
 import { MOCHE_MAP_SIZE, mocheLength } from '../../../model/defs/mocheSite';
 
+// Recuay's camp, its label and its terrain pad sit on the same anchor so they cannot drift apart.
+const MOCHE_ENEMY_ANCHOR = { x: 0.78, z: 0.28 } as const;
+// The plaza the columns must reach: the same point the huacas hold defends.
+const MOCHE_PLAZA = { ref: 'site' as const, dx: mocheLength(4), dz: mocheLength(8) };
+
 export const m3MocheRecuay: MissionDef = {
   id: 'm3_moche_recuay',
   title: 'La Frontera de los Valles',
@@ -53,12 +58,12 @@ export const m3MocheRecuay: MissionDef = {
     labels: [
       { text: 'Valle de Moche', x: 0.3, z: 0.66, kind: 'settlement' },
       { text: 'Huacas del Sol y de la Luna', x: 0.62, z: 0.38, kind: 'region' },
-      { text: 'Sierra recuay', x: 0.78, z: 0.28, kind: 'region' },
+      { text: 'Sierra recuay', x: MOCHE_ENEMY_ANCHOR.x, z: MOCHE_ENEMY_ANCHOR.z, kind: 'region' },
     ],
     base: { x: 0.3, z: 0.66 },
     // Recuay sits in its own sierra, under the authored label; without this the AI camp landed at random
     // and could appear next to the huacas.
-    enemyBase: { x: 0.78, z: 0.28 },
+    enemyBase: { x: MOCHE_ENEMY_ANCHOR.x, z: MOCHE_ENEMY_ANCHOR.z },
     site: {
       id: 'moche_site',
       y: 6,
@@ -79,7 +84,7 @@ export const m3MocheRecuay: MissionDef = {
       flats: [
         { name: 'Valles de Moche y Chicama', x: 0.3, z: 0.66, rx: 0.18, rz: 0.14 },
         { name: 'Huacas de Moche', x: 0.62, z: 0.38, rx: 0.2, rz: 0.17 },
-        { name: 'Sierra recuay', x: 0.72, z: 0.3, rx: 0.1, rz: 0.08 },
+        { name: 'Sierra recuay', x: MOCHE_ENEMY_ANCHOR.x, z: MOCHE_ENEMY_ANCHOR.z, rx: 0.1, rz: 0.08 },
       ],
     },
     decor: { model: 'recuay_pashash', at: 'enemy', dx: mocheLength(10), dz: 0, scale: 1.05 },
@@ -117,7 +122,7 @@ export const m3MocheRecuay: MissionDef = {
     {
       id: 'obj_huacas',
       kind: 'hold',
-      pos: { ref: 'site', dx: mocheLength(4), dz: mocheLength(8) },
+      pos: MOCHE_PLAZA,
       radius: mocheLength(18),
       time: 90,
       hidden: true,
@@ -185,7 +190,8 @@ export const m3MocheRecuay: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [{ kind: UnitKind.SOLDIER, count: 5 }],
-          pos: { ref: 'site', dx: -mocheLength(20), dz: -mocheLength(26) },
+          spawn: { ref: 'site', dx: -mocheLength(20), dz: -mocheLength(26) },
+          pos: MOCHE_PLAZA,
           radius: mocheLength(6),
         },
         { type: 'dialogue', text: '¡Recuay cruza la quebrada por el norte! Asegura la plaza entre las huacas.' },
@@ -217,7 +223,8 @@ export const m3MocheRecuay: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 4 },
             { kind: UnitKind.MUSKETEER, count: 2 },
           ],
-          pos: { ref: 'site', dx: mocheLength(22), dz: -mocheLength(24) },
+          spawn: { ref: 'site', dx: mocheLength(22), dz: -mocheLength(24) },
+          pos: MOCHE_PLAZA,
           radius: mocheLength(6),
         },
         { type: 'dialogue', text: 'Otra columna baja desde la sierra recuay. ¡Refuerza el flanco este!' },
@@ -225,7 +232,8 @@ export const m3MocheRecuay: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [{ kind: UnitKind.SOLDIER, count: 6 }],
-          pos: { ref: 'site', dx: 0, dz: -mocheLength(30) },
+          spawn: { ref: 'site', dx: 0, dz: -mocheLength(30) },
+          pos: MOCHE_PLAZA,
           radius: mocheLength(6),
         },
       ],

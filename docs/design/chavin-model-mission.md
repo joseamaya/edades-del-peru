@@ -64,10 +64,10 @@ building exists. The hidden source GLB keeps the click proxies; the kit draws th
 - `allowedBuildings`: `HOUSE`, `MILL`, `FARM`, `MARKET`.
 - `allowedUnits`: `WORKER`, `SCOUT`.
 - No military: there is no documented Chavín–Paracas war.
-- Technologies are filtered to the match period, civilization **and the buildings the mission allows**: only
-  `irrigation_canal` and `chavin_pilgrimage` (both researched at the town centre). The loom needs an
-  institute and silver metallurgy a smelter, which this mission never builds, so listing them offered two
-  techs nobody could research.
+- Technologies are filtered by period, civilization and the mission's `allowedTechs`, which must match the
+  buildings the mission allows: only `irrigation_canal` and `chavin_pilgrimage` (both researched at the town
+  centre). The loom needs an institute and silver metallurgy a smelter, which this mission never builds, so
+  listing them offered two techs nobody could research.
 - The opening offering (`a1_ofrenda`) waits for the arrival trigger: as a visible goal it opened with the
   mission and could be handed over before the column reached the ceremonial centre.
 - `chavin_pilgrimage` is the mission's own research goal.
