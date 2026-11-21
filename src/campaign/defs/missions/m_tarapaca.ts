@@ -15,6 +15,10 @@ const TARAPACA_ENEMY = { x: 210, z: 64 } as const;
 const TARAPACA_COLUMN_EAST = { x: 142, z: 168 } as const;
 const TARAPACA_COLUMN_NORTH = { x: 200, z: 54 } as const;
 const TARAPACA_COLUMN_SOUTH = { x: 214, z: 222 } as const;
+// Bends of the columns on the cinema map: the arrows follow the valley, and the film and the map agree.
+const TARAPACA_ROUTE_NORTH_BEND = { x: 186, z: 88 } as const;
+const TARAPACA_ROUTE_SOUTH_BEND = { x: 196, z: 176 } as const;
+const TARAPACA_ROUTE_REFUERZO_BEND = { x: 150, z: 186 } as const;
 
 export const mTarapaca: MissionDef = {
   id: 'm_tarapaca',
@@ -153,8 +157,8 @@ export const mTarapaca: MissionDef = {
       seconds: 12,
       source: 'docs/historia/campanas/tarapaca.md',
       map: {
-        // The theatre, without the raised rim at the map edges.
-        view: { x: 30, z: 20, size: 200 },
+        // The theatre, wide enough to hold the columns' real entry points (the easternmost is at z 222).
+        view: { x: 28, z: 16, size: 208 },
         marks: [
           { x: TARAPACA_VILLAGE.x, z: TARAPACA_VILLAGE.z - 9, label: 'Tarapacá', side: 'place' },
           { x: TARAPACA_HEIGHTS.x, z: TARAPACA_HEIGHTS.z - 9, label: 'Alturas', side: 'place' },
@@ -167,43 +171,41 @@ export const mTarapaca: MissionDef = {
             side: 'enemy',
             label: '1.ª columna',
             points: [
-              { x: TARAPACA_COLUMN_EAST.x + 14, z: TARAPACA_COLUMN_EAST.z + 4 },
               { x: TARAPACA_COLUMN_EAST.x, z: TARAPACA_COLUMN_EAST.z },
-              { x: TARAPACA_VILLAGE_EDGE.x + 6, z: TARAPACA_VILLAGE_EDGE.z },
+              { x: TARAPACA_VILLAGE_EDGE.x, z: TARAPACA_VILLAGE_EDGE.z },
             ],
-            delay: 1.4,
+            delay: 1.2,
           },
           {
             side: 'enemy',
             label: '2.ª columna',
             points: [
               { x: TARAPACA_COLUMN_NORTH.x, z: TARAPACA_COLUMN_NORTH.z },
-              { x: 186, z: 88 },
+              { x: TARAPACA_ROUTE_NORTH_BEND.x, z: TARAPACA_ROUTE_NORTH_BEND.z },
               { x: TARAPACA_HEIGHTS.x + 6, z: TARAPACA_HEIGHTS.z - 6 },
             ],
-            delay: 3.4,
+            delay: 3,
           },
           {
             side: 'enemy',
             label: '3.ª columna',
             points: [
-              // Its entry point sits on the map edge: the arrow starts just inside the crop.
-              { x: TARAPACA_COLUMN_SOUTH.x - 4, z: TARAPACA_COLUMN_SOUTH.z - 14 },
-              { x: 196, z: 176 },
+              { x: TARAPACA_COLUMN_SOUTH.x, z: TARAPACA_COLUMN_SOUTH.z },
+              { x: TARAPACA_ROUTE_SOUTH_BEND.x, z: TARAPACA_ROUTE_SOUTH_BEND.z },
               { x: TARAPACA_HEIGHTS.x + 8, z: TARAPACA_HEIGHTS.z + 8 },
             ],
-            delay: 5.4,
+            delay: 4.8,
           },
           {
             side: 'player',
             label: 'Refuerzos',
             dashed: true,
             points: [
-              { x: TARAPACA_PACHICA.x - 4, z: TARAPACA_PACHICA.z + 6 },
-              { x: 150, z: 186 },
+              { x: TARAPACA_PACHICA.x, z: TARAPACA_PACHICA.z },
+              { x: TARAPACA_ROUTE_REFUERZO_BEND.x, z: TARAPACA_ROUTE_REFUERZO_BEND.z },
               { x: TARAPACA_VILLAGE.x + 8, z: TARAPACA_VILLAGE.z + 6 },
             ],
-            delay: 7.4,
+            delay: 6.4,
           },
         ],
       },
@@ -211,7 +213,7 @@ export const mTarapaca: MissionDef = {
     {
       kicker: 'Tu mando',
       title: 'Sostén el pueblo',
-      text: 'Cáceres manda su sector a pie. Aguanta la primera columna en el pueblo, reconquista las alturas y mantén al ejército con vida: el camino a Arica es la única salida.',
+      text: 'Cáceres manda su sector a pie. Aguanta la primera columna en el pueblo y mantén vivo al ejército: la quebrada se defiende con la línea que no se rompe.',
       seconds: 11,
       source: 'docs/historia/campanas/tarapaca.md',
       image: 'media/tarapaca/cine-linea.webp',

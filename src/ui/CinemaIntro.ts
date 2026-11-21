@@ -9,7 +9,7 @@ export interface CinemaIntroOptions {
   series: string;
   /** Label of the button on the last beat. */
   finalLabel: string;
-  /** Mission terrain, for map beats; without it a map beat falls back to its image. */
+  /** Mission terrain, for map beats; without it a map beat falls back to its image (or an empty stage). */
   terrain?: CinemaMapTerrain;
   onDone: () => void;
 }
@@ -83,6 +83,7 @@ const CSS = `
 @media (prefers-reduced-motion: reduce) {
   .ed-cine-layer, .ed-cine-map-sheet { animation: none !important; }
   .cine-map-draw { animation-duration: .01s !important; }
+  .cine-map-mark, .cine-map-route-label, .cine-map-head { animation: none !important; opacity: 1; }
 }
 @media (max-width: 720px) {
   .ed-cine-bar { height: 6vh; }
@@ -168,6 +169,15 @@ export class CinemaIntro {
     // stop instead of opening the briefing over whatever replaced it.
     if (!this.root.isConnected) {
       this.dispose();
+      return;
+    }
+    // A letterboxed film keeps the keyboard inside it: Tab cycles the two buttons.
+    if (event.key === 'Tab') {
+      const buttons = [...this.root.querySelectorAll<HTMLButtonElement>('.ed-cine-actions button')];
+      const current = buttons.indexOf(document.activeElement as HTMLButtonElement);
+      const next = buttons[(current + (event.shiftKey ? -1 : 1) + buttons.length) % buttons.length];
+      event.preventDefault();
+      next?.focus();
       return;
     }
     // A focused button activates itself (Space fires its click on key-up): handling the key here as

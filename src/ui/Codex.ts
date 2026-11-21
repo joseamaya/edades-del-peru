@@ -8,6 +8,7 @@ import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
 import { techTreeHtml } from './TechTree';
 import { uniqueTechsForCiv, uniqueUnitGapForCiv, uniqueUnitsForCiv } from '../model/defs/unique';
 import { t } from '../i18n';
+import { escapeHtml } from '../util/escapeHtml';
 
 /**
  * Codex/educational encyclopedia. Gathers periods, civilizations and campaigns from the
@@ -27,10 +28,6 @@ interface CodexItem {
   id: string;
   title: string;
   render: () => string;
-}
-
-function escapeHtml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function inline(s: string): string {

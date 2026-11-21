@@ -10,6 +10,7 @@ import {
 } from '../campaign/progress';
 import { t } from '../i18n';
 import { CAMPAIGN_ART, MENU_BACKDROP, MISSION_ART } from './menuArt';
+import { escapeHtml as esc } from '../util/escapeHtml';
 
 /**
  * The series front door: the main menu and the campaign path ("La Senda del Sol"). The campaigns are
@@ -44,10 +45,6 @@ export interface CampaignPathActions {
   onPlay(missionId: string): void;
   onPrologue(campaignId: CampaignId): void;
   onBack(): void;
-}
-
-function esc(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 }
 
 /** First paragraph of a mission's history, trimmed to two sentences for a menu line. */

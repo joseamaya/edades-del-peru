@@ -474,7 +474,7 @@ slot is absent (offline / without assets).
 - **Locations**: `docs/media/geographic-identity-closeout.webp` (2100x788 WebP q78, 102 KB) and
   `docs/media/geographic-identity-closeout-before-after.webp` (2100x788 WebP q78, 91 KB).
 - **Source**: `yarn shot blind-<id> --url="/?mission=<id>&seed=777&fog=0&intro=0" --click --site --height=78
---no-hud --no-labels --wait=6000` for `m_vilcabamba`, `m6b_guerra_civil`, `m_lima_1821`, `m_miraflores`,
+  --no-hud --no-labels --wait=6000` for `m_vilcabamba`, `m6b_guerra_civil`, `m_lima_1821`, `m_miraflores`,
   `m_tarapaca` and `m_real_felipe`; tiled 3x2 with Pillow at 700x394 per cell. The before row reuses the
   `audit-*` captures taken with the same camera before the slice (they still carry the in-world place names,
   because `--no-labels` did not exist yet).
@@ -806,7 +806,7 @@ slot is absent (offline / without assets).
 - **Location**: `public/media/tarapaca/cine-{quebrada,linea}.webp` (1920x1080, WebP).
 - **Source**: captured from the game itself by `scripts/capture_tarapaca_cinema.mjs`, with staged troops and
   the world labels hidden. Regenerate with `node scripts/capture_tarapaca_cinema.mjs [--only=cine-linea]
-[--gpu]` after art changes.
+  [--gpu]` after art changes.
 - **Runtime**: `m_tarapaca`'s letterboxed intro (`introStyle: 'cinema'`), first and third beats; the middle
   beat is the campaign map painted from the live mission terrain by `src/ui/cinemaMap.ts`.
 - **Content**: project-owned game renders of the Tarapacá quebrada and the Peruvian line. They are
