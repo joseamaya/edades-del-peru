@@ -3,6 +3,9 @@ import { QUIPAIPAN_HEIGHTFIELD } from '../../../model/defs/quipaipanHeightmap';
 import type { MissionDef } from '../../types';
 import { CUSCO_INCA_MAP_SIZE, cuscoIncaLength } from '../../../model/defs/cuscoIncaSite';
 
+// The army's camp on the Quito road: the relief column cuts it off and marches on it.
+const QUIPAIPAN_CAMP = { ref: 'player' as const, dx: 0, dz: 0 };
+
 export const m6bGuerraCivil: MissionDef = {
   id: 'm6b_guerra_civil',
   commanders: ['atahualpa', 'huascar', 'quizquiz'],
@@ -228,8 +231,8 @@ export const m6bGuerraCivil: MissionDef = {
           ],
           // Behind the line, on the Quito road: the column that was following the army cuts the camp off.
           spawn: { ref: 'player', dx: -cuscoIncaLength(26), dz: -cuscoIncaLength(22) },
-          pos: { ref: 'player', dx: 0, dz: 0 },
-          target: { ref: 'player', dx: 0, dz: 0 },
+          pos: QUIPAIPAN_CAMP,
+          target: QUIPAIPAN_CAMP,
           radius: cuscoIncaLength(7),
         },
         { type: 'dialogue', text: '¡Refuerzos de Huáscar cortan el camino de Quito y atacan tu retaguardia!' },

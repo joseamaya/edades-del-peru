@@ -473,12 +473,18 @@ export class Mission {
 
   // --- triggers ---
 
+  /** Record a firing in one place, so `fired`, `lastFired` and the `maxFires` counter never diverge. */
+  private markFired(tr: TriggerDef): void {
+    this.fired.add(tr.id);
+    this.lastFired.set(tr.id, this.timer);
+    this.fireCounts.set(tr.id, (this.fireCounts.get(tr.id) ?? 0) + 1);
+  }
+
   /** Triggers waiting on an objective that is now completed (used on the victory tick). */
   private fireCompletionTriggers(): void {
     for (const tr of this.def.triggers) {
       if (this.fired.has(tr.id) || tr.condition.type !== 'objective' || !this.evalCond(tr.condition)) continue;
-      this.fired.add(tr.id);
-      this.lastFired.set(tr.id, this.timer);
+      this.markFired(tr);
       for (const fx of tr.effects) this.applyEffect(fx);
     }
   }
@@ -492,9 +498,7 @@ export class Mission {
         if (last !== undefined && this.timer - last < (tr.cooldown ?? 2)) continue;
       }
       if (this.evalCond(tr.condition)) {
-        this.fired.add(tr.id);
-        this.lastFired.set(tr.id, this.timer);
-        this.fireCounts.set(tr.id, (this.fireCounts.get(tr.id) ?? 0) + 1);
+        this.markFired(tr);
         for (const fx of tr.effects) this.applyEffect(fx);
       }
     }

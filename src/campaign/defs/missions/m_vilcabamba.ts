@@ -8,6 +8,9 @@ const VILCABAMBA_TOWN = { x: 150, z: 132 } as const;
 const VILCABAMBA_CAMP = { x: 90, z: 166 } as const;
 const VILCABAMBA_ENEMY = { x: 198, z: 64 } as const;
 const VILCABAMBA_ESCAPE = { x: 54, z: 220 } as const;
+const VILCABAMBA_FORT_POINT = { dx: VILCABAMBA_FORT.x, dz: VILCABAMBA_FORT.z } as const;
+// Where the Act III column meets the escape road, instead of the Spanish camp 200 m away.
+const VILCABAMBA_ESCAPE_ROAD = { dx: VILCABAMBA_ESCAPE.x + 55, dz: VILCABAMBA_ESCAPE.z - 45 } as const;
 // The label sits on the generated centreline (the river meanders), not on a copied constant.
 const VILCABAMBA_RIVER = VILCABAMBA_RIVER_PATH.reduce((best, p) =>
   Math.abs(p[1]! - 141) < Math.abs(best[1]! - 141) ? p : best,
@@ -232,8 +235,8 @@ export const mVilcabamba: MissionDef = {
           owner: 1,
           units: [{ kind: UnitKind.SOLDIER, count: 2 }],
           spawn: { dx: VILCABAMBA_ENEMY.x, dz: VILCABAMBA_ENEMY.z },
-          pos: { dx: VILCABAMBA_FORT.x, dz: VILCABAMBA_FORT.z },
-          target: { dx: VILCABAMBA_FORT.x, dz: VILCABAMBA_FORT.z },
+          pos: VILCABAMBA_FORT_POINT,
+          target: VILCABAMBA_FORT_POINT,
           radius: 10,
         },
         { type: 'dialogue', text: '—La vanguardia española tantea Huayna Pucará. Son pocos: que sirvan de aviso.' },
@@ -287,7 +290,7 @@ export const mVilcabamba: MissionDef = {
             { kind: UnitKind.CAVALRY, count: 1 },
           ],
           // On the escape road, not back at the Spanish camp: a 200 m march never reached the hold.
-          spawn: { dx: VILCABAMBA_ESCAPE.x + 55, dz: VILCABAMBA_ESCAPE.z - 45 },
+          spawn: VILCABAMBA_ESCAPE_ROAD,
           pos: { dx: VILCABAMBA_ESCAPE.x, dz: VILCABAMBA_ESCAPE.z },
           target: { dx: VILCABAMBA_ESCAPE.x, dz: VILCABAMBA_ESCAPE.z },
           radius: 12,

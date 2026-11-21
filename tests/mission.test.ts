@@ -172,6 +172,54 @@ describe('mission objective progress', () => {
     expect(lines - startLines, 'the relief column kept arriving').toBe(2);
   });
 
+  it('keeps a repeating trigger capped across a save', () => {
+    const guard = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const missionDef: MissionDef = {
+      ...def,
+      objectives: [{ id: 'req', kind: 'gather', resource: 'food', count: 99, title: 'required' }],
+      triggers: [
+        {
+          id: 'relief',
+          condition: { type: 'time', seconds: 1 },
+          repeat: true,
+          cooldown: 1,
+          maxFires: 2,
+          effects: [{ type: 'dialogue', text: 'Llega una columna de socorro.' }],
+        },
+      ],
+    };
+    const linesOf = (): { mission: Mission; count: () => number } => {
+      let lines = 0;
+      const game = stubGame(guard) as any;
+      game.hud.showDialogue = () => {
+        lines++;
+      };
+      return { mission: new Mission(game, missionDef, () => {}), count: () => lines };
+    };
+
+    const first = linesOf();
+    first.mission.start();
+    for (let i = 0; i < 20; i++) first.mission.update(0.5, i * 0.5);
+    expect(first.count(), 'the relief column kept arriving').toBeGreaterThanOrEqual(2);
+    const save = first.mission.toSave();
+
+    const loaded = linesOf();
+    loaded.mission.start();
+    const before = loaded.count();
+    loaded.mission.applySave(save);
+    for (let i = 0; i < 10; i++) loaded.mission.update(0.5, 10 + i * 0.5);
+    expect(loaded.count() - before, 'a reload restarted the relief columns').toBe(0);
+
+    // A save written before `fireCounts` existed counts the fired trigger as one: one column may still come.
+    const legacy = { ...save, fireCounts: undefined };
+    const old = linesOf();
+    old.mission.start();
+    const beforeOld = old.count();
+    old.mission.applySave(legacy);
+    for (let i = 0; i < 10; i++) old.mission.update(0.5, 10 + i * 0.5);
+    expect(old.count() - beforeOld).toBe(1);
+  });
+
   it('fails a protected unit that dies before its act opens', () => {
     const guard = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
     const game = stubGame(guard) as any;
