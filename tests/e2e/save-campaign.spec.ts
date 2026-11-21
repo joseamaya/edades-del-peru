@@ -304,7 +304,9 @@ test('saves and loads m9 during the bombardment', async ({ page }) => {
     const minUnits = m.def.objectives.find((o: any) => o.id === 'a2_bombardeo')?.minUnits ?? 3;
     let posted = 0;
     for (const u of g.units.values()) {
-      if (u.owner !== 0 || u.dead || u.kind === 'worker' || posted >= minUnits) continue;
+      if (u.owner !== 0 || u.dead || u.kind === 'worker' || posted >= minUnits + 2) continue;
+      // Clearing the setup orders keeps the crew on the line: a teleport alone walks back to the spawn.
+      u.orderQueue.length = 0;
       u.pos.set(line.x, g.terrain.getHeight(line.x, line.z), line.z);
       posted++;
     }

@@ -284,7 +284,7 @@ export const mJuntaCusco: MissionDef = {
           type: 'dialogue',
           speaker: 'Pumacahua',
           duration: 8,
-          text: '—La Apacheta está a la vista. Sostened la posición: si la vanguardia realista cruza, la columna se deshace.',
+          text: '—La Apacheta está a la vista. Sostengan la posición: si la vanguardia realista cruza, la columna se deshace.',
         },
         { type: 'objective', objectiveId: 'a2_batalla', state: 'activate', announce: true },
         {

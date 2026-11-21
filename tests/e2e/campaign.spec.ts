@@ -512,7 +512,6 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
     if (g.getPaused()) g.togglePause();
     const m = g.mission;
     const tupac = [...g.units.values()].find((u: any) => u.tag === 'tupac_yupanqui') as any;
-    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
     const canal = g.canalSite as { x: number; z: number } | null;
     const setPos = (x: number, z: number) => tupac.pos.set(x, g.terrain.getHeight(x, z), z);
     const group = g.scene.getObjectByName('canal');
@@ -918,15 +917,19 @@ test('m8 holds Junín, marches and then Ayacucho with Sucre alive', async ({ pag
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     const m = g.mission;
-    const cavalry = [...g.units.values()].find((u: any) => u.kind === 'cavalry' && u.owner === 0) as any;
-    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
+    // The hold asks for three riders now: one scout on the marker is not a line.
+    const cavalry = [...g.units.values()].filter((u: any) => u.kind === 'cavalry' && u.owner === 0 && !u.dead) as any[];
     const dismiss = () => document.querySelector<HTMLElement>('.ed-mission-card')?.click();
-    const move = (x: number, z: number) => cavalry.pos.set(x, g.terrain.getHeight(x, z), z);
+    const move = (x: number, z: number) => {
+      for (const c of cavalry) c.pos.set(x, g.terrain.getHeight(x, z), z);
+    };
+    const junin = m.getObjectiveAnchor('obj_junin') as { x: number; z: number };
+    const ayacucho = m.getObjectiveAnchor('obj_ayacucho') as { x: number; z: number };
     const dt = 1 / 60;
     // Junín: hold the forward position for 90s.
     for (let i = 0; i < Math.ceil(95 / dt) && !m.ended; i++) {
       dismiss();
-      move(enemy.pos.x - 30, enemy.pos.z);
+      move(junin.x, junin.z);
       for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, i * dt);
     }
@@ -951,7 +954,7 @@ test('m8 holds Junín, marches and then Ayacucho with Sucre alive', async ({ pag
     // Act III: hold Ayacucho for 90s.
     for (let i = 0; i < Math.ceil(95 / dt) && !m.ended; i++) {
       dismiss();
-      move(enemy.pos.x, enemy.pos.z);
+      move(ayacucho.x, ayacucho.z);
       for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, i * dt);
     }

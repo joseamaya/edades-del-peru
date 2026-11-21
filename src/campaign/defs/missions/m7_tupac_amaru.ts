@@ -306,7 +306,7 @@ export const m7TupacAmaru: MissionDef = {
           type: 'dialogue',
           speaker: 'Túpac Amaru II',
           duration: 7,
-          text: '—La columna se ha encerrado en el pueblo. Sostened el cerco: si rompen la línea, la victoria no sirve de nada.',
+          text: '—La columna se ha encerrado en el pueblo. Sostengan el cerco: si rompen la línea, la victoria no sirve de nada.',
         },
         { type: 'objective', objectiveId: 'a2_batalla', state: 'activate', announce: true },
         {

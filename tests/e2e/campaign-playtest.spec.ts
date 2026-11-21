@@ -331,26 +331,23 @@ test('plays m9 by refusing the summons, mining the approaches and holding the la
         const fighters = own().filter((u) => u.kind !== 'worker' && u.tag !== 'bolognesi');
         const line = lineFor();
         if (line) {
-          // Hold the line in a ring (a clump eats the bombardment) and answer what comes near it: standing
-          // still while the enemy picks the squad apart is not a defence.
+          // Hold the line in a ring (a clump eats the bombardment) and focus what comes near it. The
+          // garrison is `defensivo`, so it returns to the ring instead of chasing a column off the line.
           const enemies = [...g.units.values()].filter(
             (u: any) => u.owner === 1 && !u.dead && u.kind !== 'worker',
           ) as any[];
+          const focus = enemies
+            .filter((e) => Math.hypot(e.pos.x - line.x, e.pos.z - line.z) <= 20)
+            .sort(
+              (a, b) => Math.hypot(a.pos.x - line.x, a.pos.z - line.z) - Math.hypot(b.pos.x - line.x, b.pos.z - line.z),
+            )[0];
           fighters.forEach((u, k) => {
-            const onLine = enemies
-              .map((e) => ({ e, d: Math.hypot(e.pos.x - line.x, e.pos.z - line.z) }))
-              .filter((x) => x.d <= 34)
-              .sort(
-                (a, b) =>
-                  Math.hypot(a.e.pos.x - u.pos.x, a.e.pos.z - u.pos.z) -
-                  Math.hypot(b.e.pos.x - u.pos.x, b.e.pos.z - u.pos.z),
-              )[0];
-            if (onLine) {
+            if (focus) {
               g.executeCommand(
                 {
                   kind: 'order',
                   unitIds: [u.id],
-                  order: { kind: 'attack', target: { entityId: onLine.e.id } },
+                  order: { kind: 'attack', target: { entityId: focus.id } },
                   clear: true,
                 },
                 false,
@@ -491,9 +488,6 @@ test('plays m5 by holding Cusco and counterattacking with real orders', async ({
     if (g.getPaused()) g.togglePause();
     const m = g.mission;
     const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
-    const attackers = [...g.units.values()]
-      .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.tag !== 'cusi_yupanqui')
-      .map((u: any) => u.id);
     const dt = 1 / 60;
     let t = 0;
     const killBefore = m.getObjectiveState('obj_kill') as string;
