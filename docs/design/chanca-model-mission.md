@@ -50,6 +50,9 @@ in the quality bar.
 
 ## Economy and units
 
+- The Chanca host is a marching army: `enemy.economy: false` and `start.enemyOpeningUnits: false`
+  keep its camp but skip the peasant economy; the scripted columns carry the attack.
+
 - Inca workers, warriors, riflemen and honderos; the Chanca side fields warriors and honderos.
   `UnitKind.MUSKETEER` is the legacy ranged id: in this era it renders as a hondero, not a firearm.
 - Four fortresses guard the Cusco opening; the enemy is active and aggressive, with scripted waves.

@@ -102,6 +102,7 @@ export const m3MocheRecuay: MissionDef = {
   startingEra: Era.REGIONAL_STATES,
   startingResources: { food: 700, wood: 600, silver: 300, stone: 200 },
   start: {
+    enemyOpeningUnits: false,
     // `UnitKind.MUSKETEER` is the legacy id of the basic ranged slot: in this era it renders as a
     // hondero with a sling, not a firearm.
     units: [
@@ -111,7 +112,8 @@ export const m3MocheRecuay: MissionDef = {
     ],
   },
   mark: [],
-  enemy: { active: true, difficulty: 'normal', aggression: 1 },
+  // A Recuay camp under pressure, not a skirmish player: no workers or buildings behind the waves.
+  enemy: { active: true, difficulty: 'normal', aggression: 1, economy: false },
   buildingNames: { [BuildingKind.INSTITUTE]: 'Casa de los ancestros' },
   objectives: [
     {

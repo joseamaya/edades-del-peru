@@ -81,6 +81,7 @@ export const m5YahuarPampa: MissionDef = {
   startingEra: Era.TAHUANTINSUYO,
   startingResources: { food: 700, wood: 600, silver: 400, stone: 200 },
   start: {
+    enemyOpeningUnits: false,
     buildings: [
       { kind: BuildingKind.FORTRESS, dx: -chancaLength(9), dz: -chancaLength(7) },
       { kind: BuildingKind.FORTRESS, dx: chancaLength(9), dz: -chancaLength(7) },
@@ -97,7 +98,8 @@ export const m5YahuarPampa: MissionDef = {
     { tag: 'cusco', kind: BuildingKind.CENTER, owner: 0 },
     { tag: 'centro_chanca', kind: BuildingKind.CENTER, owner: 1 },
   ],
-  enemy: { active: true, difficulty: 'hard', aggression: 1.3 },
+  // The Chanca host is a marching army: its own camp and garrison, no peasant economy.
+  enemy: { active: true, difficulty: 'hard', aggression: 1.3, economy: false },
   buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
   objectives: [
     { id: 'obj_defend', kind: 'defend', entityTag: 'cusco', time: 480, title: 'Defiende el Cusco 8 minutos' },

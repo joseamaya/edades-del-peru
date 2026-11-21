@@ -52,6 +52,30 @@ describe('campaign force contract', () => {
     }
   });
 
+  it('fields a garrison, not a peasant economy, where the enemy is a scripted force', () => {
+    // Tambotoco's later acts are tied to the valley ayllus' camp, so its economy is a separate pass.
+    for (const id of ['m3_moche_recuay', 'm5_yahuar_pampa']) {
+      const game = headlessMission(id);
+      try {
+        const workers = [...game.units.values()].filter((u) => u.owner === 1 && !u.dead && u.kind === UnitKind.WORKER);
+        expect(workers, `${id} still fields the generic enemy crew`).toHaveLength(0);
+        const def = MISSIONS.find((m) => m.id === id)!;
+        expect(def.enemy.economy, `${id} runs a generic enemy economy`).toBe(false);
+      } finally {
+        game.destroy();
+        setAutoStart(true);
+      }
+    }
+    // A town keeps its own crew until its own cut.
+    const town = headlessMission('m_lima');
+    try {
+      expect([...town.units.values()].some((u) => u.owner === 1 && u.kind === UnitKind.WORKER)).toBe(true);
+    } finally {
+      town.destroy();
+      setAutoStart(true);
+    }
+  });
+
   it('keeps a documented scripted defence without an enemy economy', () => {
     const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
     // Its dossier says the enemy runs no economy; the pressure is the authored bombardment and assault.

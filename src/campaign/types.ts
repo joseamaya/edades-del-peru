@@ -533,6 +533,12 @@ export interface MissionDef {
      * party never receives anonymous workers.
      */
     openingUnits?: boolean;
+    /**
+     * Generic opening crew for the enemy seat (four workers + one scout). Defaults to `openingUnits`, then
+     * to the enemy's base flag. `false` keeps its centre and houses (a town) but removes the skirmish
+     * peasants, which is what a garrison or a siege camp needs.
+     */
+    enemyOpeningUnits?: boolean;
     buildings?: { kind: BuildingKind; dx: number; dz: number; tag?: string }[];
     /**
      * `stance` fixes the opening combat stance; omitted keeps the unit default (`agresivo`). A defence
