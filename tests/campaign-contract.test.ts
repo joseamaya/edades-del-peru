@@ -12,8 +12,6 @@ import { headlessMission } from './headless';
 type Wave = Extract<MissionDef['triggers'][number]['effects'][number], { type: 'wave' }>;
 type PositionedHold = ObjectiveDef & { pos: MissionPoint };
 
-/** A hold this close to the player's start is satisfied by the units already standing there. */
-const START_HOLD_RADIUS = 8;
 /** Probe this fraction of a hold radius for walkable ground (the anchor cell itself may be a building). */
 const HOLD_PROBE_FRACTION = 0.6;
 
@@ -25,11 +23,12 @@ function positionedHolds(mission: MissionDef): PositionedHold[] {
   return (mission.objectives ?? []).filter((o): o is PositionedHold => o.kind === 'hold' && o.pos !== undefined);
 }
 
-/** A wave that appears where it must arrive: no `spawn` and no separate target. */
+/** A wave that appears where it must arrive: no entry point, or an entry point on the objective itself. */
 function spawnsOnObjective(wave: Wave): boolean {
-  if (wave.spawn) return false;
-  if (!wave.target || !wave.pos) return true;
-  return wave.pos.dx === wave.target.dx && wave.pos.dz === wave.target.dz;
+  const hasEntry = (p: { dx: number; dz: number } | undefined): boolean =>
+    p !== undefined && (p.dx !== wave.pos?.dx || p.dz !== wave.pos?.dz);
+  if (hasEntry(wave.spawn)) return false;
+  return wave.target === undefined || !hasEntry(wave.target);
 }
 
 /**
@@ -73,27 +72,29 @@ describe('campaign mission contract', () => {
       const game = headlessMission(mission.id);
       try {
         const start = game.playerCenter(0);
+        const main = game.pathfinder.mainComponent();
         for (const hold of holds) {
           const at = game.resolveMissionPoint(hold.pos);
-          // An anchor whose radius has no walkable ground is an objective that can never be finished.
+          const radius = hold.radius ?? 6;
+          // An anchor whose radius has no walkable ground in the main component can never be finished.
           // Holds inside an enemy town are anchored on a blocked plaza cell, so probe the radius too.
-          const reach = (hold.radius ?? 6) * HOLD_PROBE_FRACTION;
           const probe: ReadonlyArray<readonly [number, number]> = [
             [0, 0],
-            [reach, 0],
-            [-reach, 0],
-            [0, reach],
-            [0, -reach],
+            [radius * HOLD_PROBE_FRACTION, 0],
+            [-radius * HOLD_PROBE_FRACTION, 0],
+            [0, radius * HOLD_PROBE_FRACTION],
+            [0, -radius * HOLD_PROBE_FRACTION],
           ];
-          if (!probe.some(([dx, dz]) => game.pathfinder.isWalkable(at.x + dx, at.z + dz, 0))) {
+          if (!probe.some(([dx, dz]) => game.pathfinder.componentAt(at.x + dx, at.z + dz) === main)) {
             unreachable.push(`${mission.id}:${hold.id}`);
             continue;
           }
+          // The goal is only a goal if standing on the start does not already satisfy it.
           const distance = Math.hypot(at.x - start.x, at.z - start.z);
-          if (distance > START_HOLD_RADIUS) continue;
+          if (distance > radius) continue;
           if (DEFENDED_START_HOLDS.has(`${mission.id}:${hold.id}`)) continue;
           if (hold.clearEnemies === true) continue;
-          offenders.push(`${mission.id}:${hold.id} at ${distance.toFixed(0)} m`);
+          offenders.push(`${mission.id}:${hold.id} (start ${distance.toFixed(0)} m inside ${radius.toFixed(0)} m)`);
         }
       } finally {
         game.destroy();
@@ -117,6 +118,28 @@ describe('campaign mission contract', () => {
     }
     // Caral's Act III prosperity beat is authored pacing, not a defence.
     expect(selfCompleting.filter((entry) => !entry.startsWith('m1_caral:'))).toEqual([]);
+  });
+
+  it('does not activate a gated goal before its prerequisite', () => {
+    // `requires` only gates trigger-driven activation; a goal that is not `hidden` opens with the mission,
+    // which is how the Wari hold ended up live from the first second.
+    const leaked: string[] = [];
+    for (const mission of MISSIONS) {
+      const gated = (mission.objectives ?? []).filter((o) => o.hidden === true && o.requires);
+      if (gated.length === 0) continue;
+      const game = headlessMission(mission.id);
+      try {
+        for (const objective of gated) {
+          if (game.mission!.getObjectiveState(objective.id) !== 'pendiente') {
+            leaked.push(`${mission.id}:${objective.id}`);
+          }
+        }
+      } finally {
+        game.destroy();
+        setAutoStart(true);
+      }
+    }
+    expect(leaked).toEqual([]);
   });
 
   it('does not finish the Tupac Amaru supply hold while the player does nothing', () => {

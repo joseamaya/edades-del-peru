@@ -147,14 +147,15 @@ export const m4Wari: MissionDef = {
     {
       id: 'obj_sostener',
       // A timed goal with no enemy on the map completes by itself, which is what it used to do. It now
-      // asks for the third provincial centre to be occupied: build it and keep a crew there.
+      // asks for the third provincial centre to be occupied: build it and keep a crew there. It is hidden
+      // because `requires` only gates trigger-driven activation, not the opening state.
       kind: 'hold',
       pos: WARI_BONUS_NODE,
       radius: wariLength(16),
       time: 480,
       minUnits: 1,
       optional: true,
-      requires: 'bonus_red',
+      hidden: true,
       title: 'Sostén el tercer centro wari 8 minutos (opcional)',
     },
     {
@@ -243,6 +244,11 @@ export const m4Wari: MissionDef = {
           text: 'La frontera sostiene la red. Wari articula andenes, almacenes y centros sin una guerra única documentada.',
         },
       ],
+    },
+    {
+      id: 't_bonus',
+      condition: { type: 'objective', objectiveId: 'bonus_red', state: 'completed' },
+      effects: [{ type: 'objective', objectiveId: 'obj_sostener', state: 'activate', announce: true }],
     },
     {
       id: 't_declive',

@@ -120,8 +120,9 @@ describe('combat engagement radius', () => {
   });
 
   it('answers fire with a sling, the pre-Hispanic ranged weapon', () => {
-    // `MUSKETEER` is the legacy id of the basic ranged line (sling -> arquebus -> rifle). A sling reaches
-    // 9 m while an archer reaches 11: the defender must still answer fire from beyond its own reach.
+    // `MUSKETEER` is the legacy id of the basic ranged line (sling -> arquebus -> rifle) and `RIFLEMAN` the
+    // elite one (bow -> musket -> rifle). In the Formative era that pair is exactly sling (9 m) against bow
+    // (11 m): the slinger must answer fire from beyond its own reach.
     const { defender, attacker, fired } = duel(
       15,
       'defensivo',

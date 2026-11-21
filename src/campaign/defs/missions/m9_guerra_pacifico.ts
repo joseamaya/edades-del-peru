@@ -11,6 +11,10 @@ const ARICA_BASE_ANCHOR = {
 } as const;
 const ARICA_MINES_WORLD = { dx: aricaLength(92), dz: aricaLength(104) } as const;
 const ARICA_CAMP_ANCHOR = { x: 0.78, z: 0.22 } as const;
+// The two lines the mission defends, north of the port terrace toward the Chilean camp (the waves come
+// from the north-east). Named so the mission, its design doc and its tests agree on what they are.
+const ARICA_CUARTEL_LINE = { ref: 'player', dx: 0, dz: -aricaLength(20) } as const;
+const ARICA_LAST_LINE = { ref: 'player', dx: -aricaLength(8), dz: -aricaLength(22) } as const;
 
 export const m9GuerraPacifico: MissionDef = {
   id: 'm9_guerra_pacifico',
@@ -153,7 +157,7 @@ export const m9GuerraPacifico: MissionDef = {
       kind: 'hold',
       // On the cuartel's forward line, not on the start position: anchored on the spawn the act completed
       // after 60 s with the player doing nothing.
-      pos: { ref: 'player', dx: 0, dz: -aricaLength(20) },
+      pos: ARICA_CUARTEL_LINE,
       radius: aricaLength(10),
       time: 60,
       minUnits: 3,
@@ -171,7 +175,7 @@ export const m9GuerraPacifico: MissionDef = {
       id: 'a3_asalto',
       kind: 'hold',
       // The last line is a position to take and keep, not the ground the player already stands on.
-      pos: { ref: 'player', dx: -aricaLength(8), dz: -aricaLength(22) },
+      pos: ARICA_LAST_LINE,
       radius: aricaLength(12),
       time: 120,
       minUnits: 4,

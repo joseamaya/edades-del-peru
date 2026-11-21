@@ -458,8 +458,9 @@ Definition of Done and the building audit see
 - **Dialogue speakers**: `splitSpeaker` (`src/campaign/dialogueLine.ts`) only treats a `Nombre:` prefix as a
   speaker when `commanderFor` resolves it — full name, portrait id or a short form listed in
   `SPEAKER_ALIASES`. A colon in prose stays in the line and goes to the narrator, instead of becoming the
-  speaker name and being cut from the text. The narrator's own portrait is resolved too, and the mission
-  `speaker:` field accepts an id. Guarded by `tests/dialogue-speakers.test.ts`.
+  speaker name and being cut from the text. The narrator's own portrait is resolved too. A label that is not
+  a commander (a chorus, `Señor de Moche`) must use the effect's `speaker:` field, which accepts any string
+  and keeps it as the label without a portrait. Guarded by `tests/dialogue-speakers.test.ts`.
 - **Combat engagement**: a defensive unit's acquisition and fire share one envelope (`src/entities/Unit.ts`):
   `nominal range × 1.15` (the same slack `updateAttack` uses to fire) plus a 4 m margin, against the old
   `range + 1` acquisition. This is what lets a defensive line answer a rifleman parked at 16 m instead of

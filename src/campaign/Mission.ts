@@ -314,18 +314,10 @@ export class Mission {
   }
 
   private fail(id: string): void {
-    this.markFailed(id, true);
-  }
-
-  /** A hidden goal fails without announcing itself through the toast. */
-  private failQuietly(id: string): void {
-    this.markFailed(id, false);
-  }
-
-  private markFailed(id: string, announce: boolean): void {
     if (this.objState.get(id) === 'failed' || this.objState.get(id) === 'completed') return;
     this.objState.set(id, 'failed');
-    if (!announce) return;
+    // Always announced: by the time a protect goal fails, its unit is already gone, so naming it reveals
+    // nothing the player has not just lost.
     const title = this.objective(id)?.title ?? id;
     this.game.hud.showToast(t('hud.objective.failed', { objective: title }), 'danger');
   }
@@ -356,8 +348,7 @@ export class Mission {
     if (o.kind !== 'protect' || !o.entityTag) return;
     if (!this.spawned(o.entityTag)) return;
     if (this.countAlive(o.entityTag) > 0) return;
-    if (o.hidden === true) this.failQuietly(o.id);
-    else this.fail(o.id);
+    this.fail(o.id);
   }
 
   /** Current value of a `gather` objective: fished/harvested from its node kind, or the resource reserve. */
