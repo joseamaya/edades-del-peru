@@ -35,7 +35,8 @@ former 192 m composition 4/3 larger:
 
 Painted ground uses `INDEPENDENCE_GROUND` (pampa grass, terrace dirt, quebrada sand, ridge rock) sampled at
 128 × 128 over 256 m. The worker crosses in ≈2:22 (`unitSpeedScale: 0.75`), inside the model-mission band.
-The horizontal composition scales 4/3 (start offsets, hold radii and wave centres included). The heightfield
+The horizontal composition scales 4/3 (start offsets, hold radii and wave centres included; each royalist
+column now enters from its own side and marches to Junín or Ayacucho). The heightfield
 keeps the 192 m vertical amplitude, so slopes read gentler; the site GLB scales uniformly with the terrace.
 Both are presentation trade-offs, not a survey.
 

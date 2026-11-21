@@ -315,7 +315,7 @@ export const m7TupacAmaru: MissionDef = {
           units: [...ROYALIST_COLUMN],
           // The garrison is inside the town; it enters from the far side so it does not materialise on top
           // of the column that has just marched there.
-          spawn: { dx: TUPAC_SANGARARA.dx, dz: TUPAC_SANGARARA.dz - colonialLength(16) },
+          spawn: { dx: TUPAC_SANGARARA.dx, dz: TUPAC_SANGARARA.dz - colonialLength(32) },
           pos: TUPAC_SANGARARA,
           radius: colonialLength(10),
           objective: 'position',

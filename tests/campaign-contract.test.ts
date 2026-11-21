@@ -14,6 +14,8 @@ import { headlessMission } from './headless';
 type Wave = Extract<MissionDef['triggers'][number]['effects'][number], { type: 'wave' }>;
 type PositionedHold = ObjectiveDef & { pos: MissionPoint };
 
+/** Minimum clear ground between a wave's entry point and the place it must reach. */
+const WAVE_ENTRY_MARGIN = 10;
 /** Probe this fraction of a hold radius for walkable ground (the anchor cell itself may be a building). */
 const HOLD_PROBE_FRACTION = 0.6;
 
@@ -25,28 +27,6 @@ function positionedHolds(mission: MissionDef): PositionedHold[] {
   return (mission.objectives ?? []).filter((o): o is PositionedHold => o.kind === 'hold' && o.pos !== undefined);
 }
 
-/** A wave that appears where it must arrive: no entry point, or an entry point on the objective itself. */
-function spawnsOnObjective(wave: Wave): boolean {
-  const hasEntry = (p: { dx: number; dz: number } | undefined): boolean =>
-    p !== undefined && (p.dx !== wave.pos?.dx || p.dz !== wave.pos?.dz);
-  if (hasEntry(wave.spawn)) return false;
-  return wave.target === undefined || !hasEntry(wave.target);
-}
-
-/**
- * Known debt: waves that still appear on the objective they must reach. The count is a ratchet and must
- * stay exact — a new wave cannot be added without an entry point, and fixing a mission means lowering
- * its number here.
- */
-const WAVES_WITHOUT_ENTRY_POINT: Record<string, number> = {
-  m5_yahuar_pampa: 2,
-  m6_chimu_inca: 1,
-  m6b_guerra_civil: 1,
-  m_lima: 1,
-  m_junta_cusco: 2,
-  m8_independencia: 2,
-};
-
 /**
  * A hold anchored on the player's own start completes while the player does nothing. The only exception
  * is a position the mission deliberately defends and that an authored column attacks (Tarapacá's village).
@@ -54,14 +34,35 @@ const WAVES_WITHOUT_ENTRY_POINT: Record<string, number> = {
 const DEFENDED_START_HOLDS = new Set(['m_tarapaca:a1_pueblo']);
 
 describe('campaign mission contract', () => {
-  it('records exactly the waves that appear on the objective they must reach', () => {
-    const drift: string[] = [];
+  it('does not let a wave appear on the point it must reach', () => {
+    const offenders: string[] = [];
     for (const mission of MISSIONS) {
-      const bad = waves(mission).filter(spawnsOnObjective).length;
-      const known = WAVES_WITHOUT_ENTRY_POINT[mission.id] ?? 0;
-      if (bad !== known) drift.push(`${mission.id}: ${bad} bad waves, recorded ${known}`);
+      const list = waves(mission);
+      if (list.length === 0) continue;
+      const game = headlessMission(mission.id);
+      try {
+        for (const wave of list) {
+          const entry = game.resolveMissionPoint((wave.spawn ?? wave.pos)!);
+          const destination = wave.target
+            ? game.resolveMissionPoint(wave.target)
+            : wave.objective === 'position' && wave.pos
+              ? game.resolveMissionPoint(wave.pos)
+              : game.playerCenter(0);
+          // Units land anywhere inside the wave radius, so the entry must clear that spread plus a margin.
+          const spread = (wave.radius ?? 6) * Math.SQRT2 + WAVE_ENTRY_MARGIN;
+          const distance = Math.hypot(entry.x - destination.x, entry.z - destination.z);
+          if (distance <= spread) {
+            offenders.push(
+              `${mission.id}: ${wave.units.map((u) => u.kind).join('+')} enters ${distance.toFixed(0)} m from its objective`,
+            );
+          }
+        }
+      } finally {
+        game.destroy();
+        setAutoStart(true);
+      }
     }
-    expect(drift).toEqual([]);
+    expect(offenders).toEqual([]);
   });
 
   it('does not add a hold that completes on the player start position', () => {

@@ -2,6 +2,10 @@ import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../c
 import type { MissionDef } from '../../types';
 import { INDEPENDENCE_MAP_SIZE, independenceLength } from '../../../model/defs/independenceSite';
 
+// Each royalist column enters from its own side of the field.
+const INDEPENDENCE_JUNIN_ENTRY = { ref: 'enemy' as const, dx: 0, dz: 0 };
+const INDEPENDENCE_AYACUCHO_ENTRY = { ref: 'enemy' as const, dx: 0, dz: -independenceLength(20) };
+
 export const m8Independencia: MissionDef = {
   id: 'm8_independencia',
   commanders: ['sucre'],
@@ -189,6 +193,7 @@ export const m8Independencia: MissionDef = {
             { kind: UnitKind.REALISTA_DRAGON, count: 1 },
             { kind: UnitKind.SOLDIER, count: 4 },
           ],
+          spawn: INDEPENDENCE_JUNIN_ENTRY,
           pos: { ref: 'enemy', dx: -independenceLength(30), dz: 0 },
           radius: independenceLength(7),
           objective: 'position',
@@ -219,6 +224,7 @@ export const m8Independencia: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 5 },
             { kind: UnitKind.CAVALRY, count: 3 },
           ],
+          spawn: INDEPENDENCE_AYACUCHO_ENTRY,
           pos: { ref: 'enemy', dx: 0, dz: 0 },
           radius: independenceLength(7),
           objective: 'position',

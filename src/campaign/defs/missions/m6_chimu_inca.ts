@@ -2,6 +2,10 @@ import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../c
 import type { MissionDef } from '../../types';
 import { CHIMU_MAP_SIZE, chimuLength } from '../../../model/defs/chimuSite';
 
+// The counterattack's entry, on the Paramonga side of the Inca camp.
+// East of the Chan Chan canal, on the Paramonga side: the old point straddled the acequia bed.
+const CHIMU_COUNTER_ENTRY = { dx: 150, dz: 110 } as const;
+
 export const m6ChimuInca: MissionDef = {
   id: 'm6_chimu_inca',
   commanders: ['tupac_yupanqui', 'minchancaman'],
@@ -184,7 +188,8 @@ export const m6ChimuInca: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 6 },
             { kind: UnitKind.MUSKETEER, count: 3 },
           ],
-          pos: { ref: 'player', dx: chimuLength(20), dz: chimuLength(20) },
+          spawn: CHIMU_COUNTER_ENTRY,
+          pos: { ref: 'player', dx: 0, dz: 0 },
           radius: chimuLength(7),
         },
         { type: 'dialogue', text: '¡Querrotumi contraataca desde Paramonga!' },

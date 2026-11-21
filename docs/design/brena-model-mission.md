@@ -14,7 +14,8 @@ Huamachuco and the Treaty of Ancón. Sources and certainty: [`docs/historia/camp
 1. **Build the community network.** Three `HOUSE` nodes in the Mantaro valley represent the communities
    that provide guides, food and guerrillas; completing the network brings four community defenders.
 2. **Ambush at the pass.** Hold the pass for 45 s against a Chilean column.
-3. **Huamachuco and withdrawal.** Hold the field for 60 s while Cáceres survives, then reach the Ayacucho
+3. **Huamachuco and withdrawal.** Hold the field for 60 s while Cáceres survives (the town sits 44 m west
+   of the Chilean camp, so the hold no longer contains the enemy base), then reach the Ayacucho
    road. Victory is the escape, not the destruction of the Chilean army.
 
 The executions and violence of Concepción/Huamachuco are told in the epilogue and Codex, not staged.

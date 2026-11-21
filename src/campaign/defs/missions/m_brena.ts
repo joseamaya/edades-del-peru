@@ -10,7 +10,9 @@ const BRENA_COMMUNITY_1 = { x: 0.28, z: 0.46 } as const;
 const BRENA_COMMUNITY_2 = { x: 0.46, z: 0.54 } as const;
 const BRENA_COMMUNITY_3 = { x: 0.58, z: 0.42 } as const;
 const BRENA_PASS = { x: 0.6, z: 0.55 } as const;
-const BRENA_HUAMACHUCO = { x: 0.702, z: 0.37 } as const;
+// Huamachuco is the town the battle is named after, 44 m west of the Chilean camp: at 0.702 the two
+// overlapped and the hold contained the enemy base.
+const BRENA_HUAMACHUCO = { x: 0.6, z: 0.37 } as const;
 const BRENA_RETREAT = { x: 0.28, z: 0.78 } as const;
 
 export const mBrena: MissionDef = {
