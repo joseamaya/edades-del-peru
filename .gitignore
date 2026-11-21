@@ -35,3 +35,5 @@ __pycache__/
 
 # Temporary capture scripts from local sessions
 .tmpcap/
+# Local trailer experiments (kept on disk, not part of the game)
+scripts/trailer_*
