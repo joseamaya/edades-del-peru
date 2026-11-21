@@ -197,7 +197,8 @@ export const m8Independencia: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 4 },
           ],
           spawn: INDEPENDENCE_JUNIN_ENTRY,
-          pos: { ref: 'enemy', dx: -independenceLength(30), dz: 0 },
+          // The charge defends the Junín hold: sharing its constant is what keeps the two in step.
+          pos: INDEPENDENCE_JUNIN,
           radius: independenceLength(7),
           objective: 'position',
         },

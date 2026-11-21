@@ -633,11 +633,18 @@ describe('campaign educational content', () => {
     expect(marcha.radius).toBeCloseTo(10.667, 3);
     expect(marcha.pos?.ref).toBe('enemy');
     // Junín and Ayacucho must be two fields, not one: the march is a real displacement between them.
-    const juninPoint = junin!.pos as { dx: number; dz: number };
-    const ayacuchoPoint = ayacucho!.pos as { dx: number; dz: number };
+    const juninPoint = junin!.pos!;
+    const ayacuchoPoint = ayacucho!.pos!;
     expect(ayacuchoPoint.dx - juninPoint.dx, 'Junín and Ayacucho are the same place').toBeGreaterThan(60);
+    expect(ayacuchoPoint.ref, 'both fields share a reference frame').toBe(juninPoint.ref);
     expect(marcha.pos!.dx, 'the march must lie between the two fields').toBeGreaterThan(juninPoint.dx);
     expect(marcha.pos!.dx).toBeLessThan(ayacuchoPoint.dx);
+    // The royalist charge must defend the Junín hold it is named after, not a point of its own.
+    const juninWave = m8.triggers
+      .flatMap((t) => t.effects)
+      .find((e) => e.type === 'wave' && e.units.some((u) => u.kind === UnitKind.REALISTA_DRAGON && u.count === 1));
+    expect(juninWave?.type).toBe('wave');
+    if (juninWave?.type === 'wave') expect(juninWave.pos).toEqual(juninPoint);
     expect(ayacucho?.requires).toBe('obj_marcha');
     expect(junin?.radius).toBeCloseTo(18.667, 3);
     expect(ayacucho?.radius).toBeCloseTo(24, 3);

@@ -58,9 +58,9 @@ The mission follows the documented fall of the plaza (7 June 1880), not a counte
    for the documented ending. Victory is the tactical fulfilment of the defence and the epilogue tells
    the fall, Bolognesi's death and the scuttling of the *Manco Cápac*.
 
-The fort is the RTS abstraction of the port's battery/cuartel; the Morro label sits on the coastal headland
-that closes the bay (it used to be placed inland) and stays outside the playable
-height range. The enemy camp on the northern approach and the assault waves are an abstraction of the
+The fort is the RTS abstraction of the port's battery/cuartel; the Morro itself stays outside the playable
+height range, and only its map label sits on the coastal headland that closes the bay (it used to be placed
+inland). The enemy camp on the northern approach and the assault waves are an abstraction of the
 documented attack, not a literal order of battle.
 
 ## Status
