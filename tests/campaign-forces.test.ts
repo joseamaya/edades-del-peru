@@ -54,9 +54,16 @@ describe('campaign force contract', () => {
 
   it('starts a mission without an enemy economy with no peasant crew', () => {
     // Tambotoco's later acts are tied to the valley ayllus' camp, so its economy is a separate pass.
-    // Chimú and the Inca civil war are the Inca phase: a capital and a field headquarters keep their
-    // buildings but neither runs the skirmish economy.
-    for (const id of ['m3_moche_recuay', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']) {
+    // The Inca and viceroyalty missions keep their centres and houses but not the skirmish economy: a
+    // capital, a headquarters, a besieged city and a jungle expedition are not competing players.
+    for (const id of [
+      'm3_moche_recuay',
+      'm5_yahuar_pampa',
+      'm6_chimu_inca',
+      'm6b_guerra_civil',
+      'm_cusco_1536',
+      'm_vilcabamba',
+    ]) {
       const game = headlessMission(id);
       try {
         const crew = (kind: UnitKind) =>
@@ -87,7 +94,14 @@ describe('campaign force contract', () => {
   it('keeps the enemy from hiring or building once the economy is off', () => {
     // The AI's first sawmill lands within a second of a revert, so a minute is long enough to falsify the
     // `economy: false` flag; the mill at ~203 s would never be reached because construction already ran.
-    for (const id of ['m3_moche_recuay', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']) {
+    for (const id of [
+      'm3_moche_recuay',
+      'm5_yahuar_pampa',
+      'm6_chimu_inca',
+      'm6b_guerra_civil',
+      'm_cusco_1536',
+      'm_vilcabamba',
+    ]) {
       const game = headlessMission(id);
       try {
         for (let i = 0; i < 60 * 60; i++) game.update(1 / 60, i / 60);

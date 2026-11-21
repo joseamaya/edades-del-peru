@@ -36,6 +36,9 @@ The Inca's capture and execution are narrated in the epilogue; no counterfactual
 
 - `INCA` vs `REALISTAS`; period-locked Viceroyalty.
 - Units: workers, Inca warriors, soldiers and scouts; no horses or firearms for the player.
+- Arbieto's column is an **expedition, not a settlement**: `enemy.economy: false` and
+  `start.enemyOpeningUnits: false` keep its camp but stop the peasant economy, sawmill and mill. Its pressure
+  is authored (the vanguard, the column after Huayna Pucará and the escape-road column).
 - Túpac Amaru I is a briefing card and narrator; his capture is not a player-controlled survival objective.
 
 ## Opening and closing

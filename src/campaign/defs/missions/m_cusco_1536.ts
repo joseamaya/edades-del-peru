@@ -102,6 +102,7 @@ export const mCusco1536: MissionDef = {
   unitSpeedScale: 0.75,
   startingResources: { food: 900, wood: 700, silver: 300, stone: 400 },
   start: {
+    enemyOpeningUnits: false,
     units: [
       { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 4 },
       { kind: UnitKind.INCA_WARRIOR, dx: 8, dz: 0, count: 12 },
@@ -110,7 +111,9 @@ export const mCusco1536: MissionDef = {
       { kind: UnitKind.INCA_WARRIOR, dx: 6, dz: 0, count: 1, tag: 'manco_inca' },
     ],
   },
-  enemy: { active: true, difficulty: 'normal', aggression: 0.8 },
+  // A besieged city, not a skirmish player: the Spanish sortie is the authored pressure, so the
+  // centre and houses stay but no peasant economy runs inside the walls.
+  enemy: { active: true, difficulty: 'normal', aggression: 0.8, economy: false },
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/cusco-1536/intro-epilogo.webp',

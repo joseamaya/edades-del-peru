@@ -18,7 +18,7 @@ plays the siege as a **timed economy of food and seasons**, not as a capture. So
    6 food per second; an empty store pauses the siege rather than resetting it. This is the seasonal
    abstraction, not a full calendar subsystem.
 3. **Withdraw to Ollantaytambo.** Reach the road north-west of the city with Manco alive (Ollantaytambo lies
-down the Sacred Valley, not across the pampa to the south-west). The city is not captured; the epilogue
+   down the Sacred Valley, not across the pampa to the south-west). The city is not captured; the epilogue
    states the withdrawal and the continuation of the war in Vilcabamba.
 
 Optional: cut the city's supplies. The mission never stages the later «Santiago» hagiography.
@@ -34,6 +34,9 @@ Optional: cut the city's supplies. The mission never stages the later «Santiago
 
 - `INCA` vs `HUESTE_INDIANA`; period-locked Viceroyalty.
 - Units: workers, Inca warriors, soldiers and scouts; no horses or firearms for the player.
+- The Spanish city is a **besieged garrison**: `enemy.economy: false` and `start.enemyOpeningUnits: false`
+  keep its centre and houses but stop the peasant economy, sawmill and mill. The pressure is the authored
+  sortie that answers the taking of Sacsayhuamán; the mission is a siege of the city, not a skirmish beside it.
 - Manco Inca is a protected commander card; no invented likeness.
 
 ## Opening and closing
