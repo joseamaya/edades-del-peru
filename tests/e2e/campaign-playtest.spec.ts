@@ -311,7 +311,7 @@ test('plays m9 by refusing the summons, mining the approaches and holding the la
     const own = (kind?: string) =>
       [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead && (!kind || u.kind === kind)) as any[];
     const fort = [...g.buildings.values()].find((b: any) => b.tag === 'puerto') as any;
-    // Each act has its own line; the two are 11 m apart, so the squad has to move when the act turns.
+    // Each act has its own line, ~19 m apart and outside each other's hold radius, so the squad has to move.
     const lineFor = (): { x: number; z: number } | null => {
       const id = m.getObjectiveState('a3_asalto') === 'activo' ? 'a3_asalto' : null;
       const active = id ?? (m.getObjectiveState('a2_bombardeo') === 'activo' ? 'a2_bombardeo' : null);

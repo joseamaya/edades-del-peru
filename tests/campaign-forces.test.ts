@@ -67,7 +67,7 @@ describe('campaign force contract', () => {
       expect(holds.map((o) => o.id)).toEqual(['a1_minas', 'a2_bombardeo', 'a3_asalto']);
       const lines = holds.filter((o) => o.id !== 'a1_minas');
       const before = lines.map((o) => game.resolveMissionPoint(o.pos!));
-      // The bombardment can raze the centre; a line anchored on it would move with the rubble.
+      // The bombardment can raze the town; a line anchored on the centre would move with the rubble.
       for (const b of [...game.buildings.values()]) if (b.owner === 0) b.dead = true;
       lines.forEach((o, i) => expect(game.resolveMissionPoint(o.pos!)).toEqual(before[i]));
 

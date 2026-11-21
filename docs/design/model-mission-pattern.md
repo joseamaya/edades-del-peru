@@ -126,8 +126,9 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
   both points and rejects a wave whose entry is within the spread it spawns over (`radius × √2`) plus 10 m
   of its destination, so a column cannot land inside the ring it attacks; a `position` garrison still needs
   a `spawn` clear of the spot it holds, so it deploys instead of popping in.
-- A defensive `hold` is an authored **world point**, never `ref: 'player'`: the reference follows the
-  player's centre building, so a bombardment that razes it moves the objective mid-act (Arica).
+- A `hold` that an enemy bombardment can reach is an authored **world point**, not `ref: 'player'`: the
+  reference follows the player's centre building, so razing it moves the objective mid-act (Arica). A
+  supply point the player carries with them may still anchor on the player.
 - A `hold` must sit where the player has to go. Anchored on the start position it finishes after its timer
   with no order at all (Túpac Amaru's supply beat); a purely timed
   `wait`/`survive` in a mission with no enemy is pacing, not a goal. `campaign-contract` rejects a hold

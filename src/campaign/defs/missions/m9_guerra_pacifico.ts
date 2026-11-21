@@ -4,34 +4,29 @@ import { ARICA_MAP_SIZE, aricaLength, aricaPoint } from '../../../model/defs/ari
 
 // The authored Arica heightfield: the 192 m composition (sea to the west, the port terrace, the battery
 // site and the northern Chilean camp) sampled 4/3 larger on the 256 m map.
-const ARICA_BASE_WORLD = aricaPoint({ x: 73, z: 115 });
+const ARICA_BASE_SOURCE = { x: 73, z: 115 } as const;
+const ARICA_BASE_WORLD = aricaPoint(ARICA_BASE_SOURCE);
+/** A point authored in the former 192 m site frame, as an absolute mission point. */
+const aricaWorldPoint = (x: number, z: number) => {
+  const p = aricaPoint({ x, z });
+  return { dx: p.x, dz: p.z };
+};
 const ARICA_BASE_ANCHOR = {
   x: ARICA_BASE_WORLD.x / ARICA_MAP_SIZE,
   z: ARICA_BASE_WORLD.z / ARICA_MAP_SIZE,
 } as const;
 const ARICA_MINES_WORLD = { dx: aricaLength(92), dz: aricaLength(104) } as const;
 const ARICA_CAMP_ANCHOR = { x: 0.78, z: 0.22 } as const;
-// The two lines the mission defends, north of the port terrace toward the Chilean camp (the waves come
-// from the north-east). Authored world points: anchored on `ref: 'player'` they followed the centre
-// building, and the bombardment that razed it silently moved both objectives mid-act.
-const ARICA_CUARTEL_LINE = {
-  dx: ARICA_BASE_WORLD.x,
-  dz: ARICA_BASE_WORLD.z - aricaLength(20),
-} as const;
-const ARICA_LAST_LINE = {
-  dx: ARICA_BASE_WORLD.x - aricaLength(8),
-  dz: ARICA_BASE_WORLD.z - aricaLength(22),
-} as const;
+// The two lines the mission defends, north of the port terrace toward the Chilean camp. Authored world
+// points: anchored on `ref: 'player'` they followed the centre building, and the bombardment that razed
+// it silently moved both objectives mid-act. Each line sits outside the other's hold radius, so the
+// assault is a line to march to and not the ground the bombardment was already held on.
+const ARICA_CUARTEL_LINE = aricaWorldPoint(ARICA_BASE_SOURCE.x, ARICA_BASE_SOURCE.z - 20);
+const ARICA_LAST_LINE = aricaWorldPoint(ARICA_BASE_SOURCE.x - 8, ARICA_BASE_SOURCE.z - 32);
 // Entry points on the northern approach: the columns crest the ridge instead of appearing on the line
 // they must take.
-const ARICA_APPROACH_EAST = {
-  dx: ARICA_BASE_WORLD.x + aricaLength(30),
-  dz: ARICA_BASE_WORLD.z - aricaLength(44),
-} as const;
-const ARICA_APPROACH_WEST = {
-  dx: ARICA_BASE_WORLD.x - aricaLength(16),
-  dz: ARICA_BASE_WORLD.z - aricaLength(40),
-} as const;
+const ARICA_APPROACH_EAST = aricaWorldPoint(ARICA_BASE_SOURCE.x + 30, ARICA_BASE_SOURCE.z - 44);
+const ARICA_APPROACH_WEST = aricaWorldPoint(ARICA_BASE_SOURCE.x - 28, ARICA_BASE_SOURCE.z - 46);
 
 export const m9GuerraPacifico: MissionDef = {
   id: 'm9_guerra_pacifico',
