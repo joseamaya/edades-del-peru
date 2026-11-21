@@ -120,9 +120,10 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
 - Give every enemy wave a `spawn` (entry point) and a `target`/`pos` (objective); `pos` alone is the legacy
   "spawn here" contract and must not sit inside the player's hold radius. Guard the distance in a test.
   The target must also be walkable: a column ordered into a blocked village footprint stops outside both
-  firing envelopes. Tarapacá walks to a plaza edge point, not the exact centre. `campaign-contract` rejects
-  a wave whose entry point is missing or lands on its own objective; a `position` garrison still needs a
-  `spawn` away from the spot it holds, so it deploys instead of popping in.
+  firing envelopes. Tarapacá walks to a plaza edge point, not the exact centre. `campaign-contract` resolves
+  both points and rejects a wave whose entry is within the spread it spawns over (`radius × √2`) plus 10 m
+  of its destination, so a column cannot land inside the ring it attacks; a `position` garrison still needs
+  a `spawn` clear of the spot it holds, so it deploys instead of popping in.
 - A `hold` must sit where the player has to go. Anchored on the start position it finishes after its timer
   with no order at all (Arica's bombardment and assault, Túpac Amaru's supply beat); a purely timed
   `wait`/`survive` in a mission with no enemy is pacing, not a goal. `campaign-contract` rejects a hold

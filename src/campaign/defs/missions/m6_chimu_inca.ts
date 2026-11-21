@@ -3,7 +3,8 @@ import type { MissionDef } from '../../types';
 import { CHIMU_MAP_SIZE, chimuLength } from '../../../model/defs/chimuSite';
 
 // The counterattack's entry, on the Paramonga side of the Inca camp.
-const CHIMU_COUNTER_ENTRY = { ref: 'player' as const, dx: chimuLength(28), dz: -chimuLength(24) };
+// East of the Chan Chan canal, on the Paramonga side: the old point straddled the acequia bed.
+const CHIMU_COUNTER_ENTRY = { dx: 150, dz: 110 } as const;
 
 export const m6ChimuInca: MissionDef = {
   id: 'm6_chimu_inca',

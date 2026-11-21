@@ -14,6 +14,8 @@ import { headlessMission } from './headless';
 type Wave = Extract<MissionDef['triggers'][number]['effects'][number], { type: 'wave' }>;
 type PositionedHold = ObjectiveDef & { pos: MissionPoint };
 
+/** Minimum clear ground between a wave's entry point and the place it must reach. */
+const WAVE_ENTRY_MARGIN = 10;
 /** Probe this fraction of a hold radius for walkable ground (the anchor cell itself may be a building). */
 const HOLD_PROBE_FRACTION = 0.6;
 
@@ -25,21 +27,6 @@ function positionedHolds(mission: MissionDef): PositionedHold[] {
   return (mission.objectives ?? []).filter((o): o is PositionedHold => o.kind === 'hold' && o.pos !== undefined);
 }
 
-/** Two authored points are the same place when they share anchor and offsets. */
-function samePoint(a: { ref?: string; dx: number; dz: number }, b: { ref?: string; dx: number; dz: number }): boolean {
-  return (a.ref ?? null) === (b.ref ?? null) && a.dx === b.dx && a.dz === b.dz;
-}
-
-/**
- * A wave must enter away from the place it must reach: an explicit `spawn`, or a `target` that is not the
- * `pos` it sits on. A wave with neither appears where it is supposed to arrive.
- */
-function entersOnItsObjective(wave: Wave): boolean {
-  const destination = wave.target ?? (wave.objective === 'position' ? wave.pos : undefined);
-  if (wave.spawn) return destination !== undefined && samePoint(wave.spawn, destination);
-  return destination === undefined || samePoint(wave.pos!, destination);
-}
-
 /**
  * A hold anchored on the player's own start completes while the player does nothing. The only exception
  * is a position the mission deliberately defends and that an authored column attacks (Tarapacá's village).
@@ -48,11 +35,33 @@ const DEFENDED_START_HOLDS = new Set(['m_tarapaca:a1_pueblo']);
 
 describe('campaign mission contract', () => {
   it('does not let a wave appear on the point it must reach', () => {
-    const offenders = MISSIONS.flatMap((mission) =>
-      waves(mission)
-        .filter(entersOnItsObjective)
-        .map((wave) => `${mission.id}: ${wave.units.map((u) => u.kind).join('+')}`),
-    );
+    const offenders: string[] = [];
+    for (const mission of MISSIONS) {
+      const list = waves(mission);
+      if (list.length === 0) continue;
+      const game = headlessMission(mission.id);
+      try {
+        for (const wave of list) {
+          const entry = game.resolveMissionPoint((wave.spawn ?? wave.pos)!);
+          const destination = wave.target
+            ? game.resolveMissionPoint(wave.target)
+            : wave.objective === 'position' && wave.pos
+              ? game.resolveMissionPoint(wave.pos)
+              : game.playerCenter(0);
+          // Units land anywhere inside the wave radius, so the entry must clear that spread plus a margin.
+          const spread = (wave.radius ?? 6) * Math.SQRT2 + WAVE_ENTRY_MARGIN;
+          const distance = Math.hypot(entry.x - destination.x, entry.z - destination.z);
+          if (distance <= spread) {
+            offenders.push(
+              `${mission.id}: ${wave.units.map((u) => u.kind).join('+')} enters ${distance.toFixed(0)} m from its objective`,
+            );
+          }
+        }
+      } finally {
+        game.destroy();
+        setAutoStart(true);
+      }
+    }
     expect(offenders).toEqual([]);
   });
 

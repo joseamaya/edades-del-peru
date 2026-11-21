@@ -9,7 +9,7 @@ const LIMA_ENEMY = { x: 205, z: 70 } as const;
 const LIMA_CURACAS = { x: 55, z: 200 } as const;
 
 // The relief column musters outside its camp instead of inside it.
-const LIMA_RELIEF_ENTRY = { dx: LIMA_ENEMY.x + 14, dz: LIMA_ENEMY.z } as const;
+const LIMA_RELIEF_ENTRY = { dx: LIMA_ENEMY.x + 30, dz: LIMA_ENEMY.z } as const;
 
 export const mLima: MissionDef = {
   id: 'm_lima',
