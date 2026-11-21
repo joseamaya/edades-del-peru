@@ -13,7 +13,7 @@ describe('cinema intro', () => {
     for (const mission of cinemaMissions) {
       for (const beat of mission.intro ?? []) {
         if (!beat.map) continue;
-        const view = beat.map.view ?? fullView(256);
+        const view = beat.map.view ?? fullView(mission.map.size);
         const inside = (p: { x: number; z: number }) =>
           p.x >= view.x && p.x <= view.x + view.size && p.z >= view.z && p.z <= view.z + view.size;
         for (const mark of beat.map.marks) expect(inside(mark), `${mission.id}: ${mark.label}`).toBe(true);
@@ -56,7 +56,7 @@ describe('cinema intro', () => {
     );
     expect(svg).toContain('viewBox="10 20 100 100"');
     expect(svg).toContain('A &amp; &lt;B&gt;');
-    expect(svg).toContain('marker-end="url(#cine-head-enemy)"');
+    expect(svg).toMatch(/marker-end="url\(#cine-map-\d+-head-enemy\)"/);
     expect(svg).toContain('animation-delay:1s');
   });
 });

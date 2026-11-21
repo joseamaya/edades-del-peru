@@ -1528,13 +1528,11 @@ export class HUD {
         beats,
         series: mis.title,
         finalLabel: t('hud.cinematic.toBriefing'),
-        terrain: terrain
-          ? {
-              size: terrain.size,
-              heightAt: (x, z) => terrain.getHeight(x, z),
-              isWater: (x, z) => terrain.isWater(x, z),
-            }
-          : undefined,
+        terrain: {
+          size: terrain.size,
+          heightAt: (x, z) => terrain.getHeight(x, z),
+          waterLevel: terrain.data.waterLevel,
+        },
         onDone: done,
       });
       return;

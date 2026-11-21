@@ -151,6 +151,16 @@ export class CinemaIntro {
   }
 
   private readonly onKeyDown = (event: KeyboardEvent): void => {
+    // The overlay can be removed from outside (the HUD clears every overlay when it leaves a match):
+    // stop instead of opening the briefing over whatever replaced it.
+    if (!this.root.isConnected) {
+      this.dispose();
+      return;
+    }
+    // A focused button activates itself (Space fires its click on key-up): handling the key here as
+    // well would advance two beats.
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    if (target?.closest('button') && event.key !== 'Escape') return;
     if (event.key === 'Escape') {
       event.preventDefault();
       this.finish();
@@ -197,7 +207,19 @@ export class CinemaIntro {
     this.root.querySelector('.next')!.textContent = last ? this.options.finalLabel : t('hud.cinematic.next');
 
     if (this.timer !== null) window.clearTimeout(this.timer);
-    this.timer = window.setTimeout(() => this.next(), seconds * 1000);
+    this.timer = window.setTimeout(() => {
+      if (this.root.isConnected) this.next();
+      else this.dispose();
+    }, seconds * 1000);
+    this.preload(this.options.beats[this.index + 1]);
+  }
+
+  /** Start fetching the next still while this beat plays, so its fade does not open on black. */
+  private preload(beat: CinematicBeat | undefined): void {
+    if (!beat?.image || (beat.map && this.options.terrain)) return;
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = publicAsset(beat.image);
   }
 
   private imageLayer(beat: CinematicBeat, duration: string): HTMLElement {
@@ -227,11 +249,16 @@ export class CinemaIntro {
 
   private finish(): void {
     if (this.finished) return;
-    this.finished = true;
-    if (this.timer !== null) window.clearTimeout(this.timer);
-    window.removeEventListener('keydown', this.onKeyDown);
-    this.root.classList.add('closing');
+    this.dispose();
     this.root.remove();
     this.options.onDone();
+  }
+
+  /** Drop the timer and the key listener without running `onDone`. */
+  private dispose(): void {
+    this.finished = true;
+    if (this.timer !== null) window.clearTimeout(this.timer);
+    this.timer = null;
+    window.removeEventListener('keydown', this.onKeyDown);
   }
 }

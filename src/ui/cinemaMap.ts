@@ -1,10 +1,12 @@
 import type { CinematicMap, CinematicMapPoint, CinematicMapRoute, CinematicMapView } from '../campaign/defs/cinematics';
+import { escapeHtml } from '../util/escapeHtml';
 
 /** Terrain the map is drawn from: the live mission terrain, in world coordinates. */
 export interface CinemaMapTerrain {
   size: number;
   heightAt: (x: number, z: number) => number;
-  isWater?: (x: number, z: number) => boolean;
+  /** Height below which the ground is drawn as water; missing, the map has no water. */
+  waterLevel?: number;
 }
 
 /** The whole map, when a beat does not crop it. */
@@ -35,12 +37,16 @@ export function paintCampaignMap(
   if (!ctx) return;
   const step = view.size / pixels;
   const heights = new Float32Array(pixels * pixels);
+  // Water is decided on the raw heights: smoothing would blur the shoreline.
+  const water = new Uint8Array(pixels * pixels);
+  const waterLevel = terrain.waterLevel;
   let min = Infinity;
   let max = -Infinity;
   for (let j = 0; j < pixels; j++) {
     for (let i = 0; i < pixels; i++) {
       const h = terrain.heightAt(view.x + (i + 0.5) * step, view.z + (j + 0.5) * step);
       heights[j * pixels + i] = h;
+      if (waterLevel !== undefined && h < waterLevel) water[j * pixels + i] = 1;
       if (h < min) min = h;
       if (h > max) max = h;
     }
@@ -75,13 +81,13 @@ export function paintCampaignMap(
       const edge =
         slope > minSlope &&
         (Math.floor((at(i + 1, j) - min) / contour) !== band || Math.floor((at(i, j + 1) - min) / contour) !== band);
-      const water = terrain.isWater?.(view.x + (i + 0.5) * step, view.z + (j + 0.5) * step) ?? false;
+      const wet = water[j * pixels + i] === 1;
       const k = (j * pixels + i) * 4;
       for (let c = 0; c < 3; c++) {
         let v = LOW[c]! + (HIGH[c]! - LOW[c]!) * t;
         v *= 1 + shade * 0.55;
         if (edge) v *= 0.8;
-        if (water) v = [150, 170, 172][c]!;
+        if (wet) v = [150, 170, 172][c]!;
         image.data[k + c] = Math.max(0, Math.min(255, v));
       }
       image.data[k + 3] = 255;
@@ -139,17 +145,13 @@ function pathData(points: CinematicMapPoint[]): string {
   return d;
 }
 
-function escapeXml(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
 function routeLabel(route: CinematicMapRoute, size: number, delay: number, draw: number): string {
   if (!route.label || route.points.length < 2) return '';
   const start = route.points[0]!;
   const fs = size * 0.026;
   return `<text class="cine-map-route-label" x="${start.x}" y="${start.z - fs * 0.9}" text-anchor="middle"
     font-size="${fs.toFixed(2)}" fill="${CINEMA_SIDE_COLORS[route.side]}"
-    style="animation-delay:${(delay + draw * 0.3).toFixed(2)}s">${escapeXml(route.label)}</text>`;
+    style="animation-delay:${(delay + draw * 0.3).toFixed(2)}s">${escapeHtml(route.label)}</text>`;
 }
 
 /**
@@ -158,24 +160,28 @@ function routeLabel(route: CinematicMapRoute, size: number, delay: number, draw:
  * a stroke-dash animation; marks fade in after their delay. Timing lives in inline CSS so the player only
  * has to insert the markup.
  */
+/** Each map gets its own id prefix: two maps can share the DOM while they cross-fade. */
+let mapSerial = 0;
+
 export function campaignMapSvg(map: CinematicMap, view: CinematicMapView): string {
+  const prefix = `cine-map-${++mapSerial}`;
   const size = view.size;
   const stroke = size * 0.011;
   const markers = (['player', 'enemy'] as const)
     .map(
-      (side) => `<marker id="cine-head-${side}" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="3.2"
+      (side) => `<marker id="${prefix}-head-${side}" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="3.2"
         markerHeight="3.2" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${CINEMA_SIDE_COLORS[side]}"/></marker>`,
     )
     .join('');
   const routes = map.routes
-    .map((route) => {
+    .map((route, index) => {
       const delay = route.delay ?? 0;
       const draw = route.draw ?? DEFAULT_DRAW;
       const d = pathData(route.points);
       const color = CINEMA_SIDE_COLORS[route.side];
       const dash = route.dashed ? `stroke-dasharray="${(stroke * 2.2).toFixed(2)} ${(stroke * 1.6).toFixed(2)}"` : '';
       // A dashed route reveals itself through a mask, because its own dash pattern cannot be animated.
-      const id = `cine-route-${Math.round(delay * 100)}-${route.points.length}-${Math.round(route.points[0]!.x)}`;
+      const id = `${prefix}-route-${index}`;
       const reveal = `<path d="${d}" pathLength="1" class="cine-map-draw" stroke="#fff" stroke-width="${(stroke * 3).toFixed(2)}"
         fill="none" stroke-linecap="round" style="animation-delay:${delay}s;animation-duration:${draw}s"/>`;
       return `<mask id="${id}" maskUnits="userSpaceOnUse">${reveal}</mask>
@@ -184,7 +190,7 @@ export function campaignMapSvg(map: CinematicMap, view: CinematicMapView): strin
         <path d="${d}" fill="none" stroke="${color}" stroke-width="${stroke.toFixed(2)}" stroke-linecap="round"
           ${dash} mask="url(#${id})"/>
         <path d="${d}" fill="none" stroke="transparent" stroke-width="${stroke.toFixed(2)}" class="cine-map-head"
-          marker-end="url(#cine-head-${route.side})" style="animation-delay:${(delay + draw * 0.92).toFixed(2)}s"/>
+          marker-end="url(#${prefix}-head-${route.side})" style="animation-delay:${(delay + draw * 0.92).toFixed(2)}s"/>
         ${routeLabel(route, size, delay, draw)}`;
     })
     .join('');
@@ -203,7 +209,7 @@ export function campaignMapSvg(map: CinematicMap, view: CinematicMapView): strin
                stroke="#f3e6c8" stroke-width="${(size * 0.0025).toFixed(2)}"/>`;
       const labelY = mark.side === 'place' ? mark.z - fs * 0.7 : mark.z + size * 0.014 + fs * 1.05;
       return `<g class="cine-map-mark cine-map-${mark.side}" style="animation-delay:${delay}s">${glyph}
-        <text x="${mark.x}" y="${labelY}" text-anchor="middle" font-size="${fs.toFixed(2)}" fill="${color}">${escapeXml(mark.label)}</text></g>`;
+        <text x="${mark.x}" y="${labelY}" text-anchor="middle" font-size="${fs.toFixed(2)}" fill="${color}">${escapeHtml(mark.label)}</text></g>`;
     })
     .join('');
   return `<svg class="cine-map-svg" viewBox="${view.x} ${view.z} ${size} ${size}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
