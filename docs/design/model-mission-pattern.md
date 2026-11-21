@@ -151,11 +151,15 @@ When the mission is about named people, put them on the board instead of only in
   army's overall chief but is not on the board, keep the card and say so with `MissionDef.commanderNotes`
   ("Mando general · no en el campo") instead of adding a decorative unit.
 - Lead characters need field identity, not only a tag: a hero ring/banner, an accent on the tunic or
-  portrait, a `★` nameplate and a hero card in the selection panel. Professional RTS leads are readable at
-  a glance; a name over a generic soldier is not enough. Modern leads use `fieldCommander: true` (marker and
-  a slight scale, no Andean hero attire); the Ayar keep `hero: true`.
-- Mission-scoped names belong in `MissionDef.unitNames` (e.g. Tarapacá's republican unique) rather than in a
-  global archetype name.
+  portrait, a `★` nameplate and a hero card in the selection panel. The name also wins outside the panel:
+  the hover card and the camera-follow toast show the commander (`Game.unitNameFor`), never the unit kind
+  in their place. Professional RTS leads are readable at a glance; a name over a generic soldier is not
+  enough. Modern leads use `fieldCommander: true` (marker and a slight scale, no Andean hero attire); the
+  Ayar keep `hero: true`.
+- Mission-scoped names belong in `MissionDef.unitNames` (Arica's «Defensor de Arica», Tarapacá's
+  «Defensor de Tarapacá», Miraflores' «Reservista de Miraflores», the Breña's «Guerrillero de la Breña»)
+  rather than in a global archetype name: the shared republican infantry is «Defensor republicano», and a
+  mission that inherits another mission's place name is a naming bug.
 - If the legend loses a character on the way, stage the loss: the `memory` trigger effect retires the unit
   without a death animation and raises a named huaca at the scripted spot (`MemoryStones`).
 - Never invent a likeness: nameplates and medallions say who the person is and are labelled `abstraction`

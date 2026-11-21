@@ -261,7 +261,7 @@ export const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'retirada',
-        text: 'Cuando la línea aguante, retira a Cáceres y a la fuerza hacia la sierra. Lima caerá; la guerra continúa.',
+        text: 'Cuando la línea aguante, retira a Cáceres hacia la sierra. Lima caerá; la guerra continúa.',
         check: { type: 'objectiveCompleted', objectiveId: 'a3_retirada' },
       },
     ],
@@ -366,7 +366,7 @@ export const TUTORIALS: Record<string, TutorialDef> = {
       {
         id: 'select',
         text: 'Selecciona a los defensores de Arica: la guarnición debe sostener el puerto.',
-        check: { type: 'selectUnit', unitKind: UnitKind.RIFLEMAN },
+        check: { type: 'selectUnit', unitKind: UnitKind.REPUBLICA_DEFENSOR },
       },
       {
         id: 'battery',
@@ -547,7 +547,7 @@ export const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'feria',
-        text: 'Abre la feria de peregrinos: construye un mercado junto al templo.',
+        text: 'Abre la feria de peregrinos: construye la feria junto al templo.',
         highlight: '#ed-bottom',
         gateObjective: 'a2_feria',
         check: { type: 'build', buildingKind: BuildingKind.MARKET, baseline: 'markets' },

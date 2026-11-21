@@ -19,7 +19,7 @@ export const mBrena: MissionDef = {
   title: 'El brujo de los Andes',
   subtitle: 'Sierra central · 1882–1883',
   history:
-    'Tras la caída de Lima, Andrés A. Cáceres organiza la resistencia en la sierra central. La campaña de la Breña combina guerrillas, comunidades campesinas, emboscadas y galgas contra las columnas chilenas. Combina la guerra de guerrillas con batallas campales cuando no puede evitarlas; en Huamachuco la munición se agota y la batalla se pierde.\n' +
+    'Tras la caída de Lima, Andrés A. Cáceres organiza la resistencia en la sierra central. La campaña de la Breña combina guerrillas, comunidades campesinas, emboscadas y galgas contra las columnas chilenas.\n' +
     'La resistencia culmina en Huamachuco (10 de julio de 1883): la munición se agota y la batalla se pierde, pero Cáceres escapa a Ayacucho. El Tratado de Ancón cierra la guerra ese mismo año.',
   victory:
     'Cáceres y parte de la fuerza escapan de Huamachuco. La campaña no gana la guerra, pero sostiene la resistencia hasta el Tratado de Ancón y deja una memoria de guerrilla campesina. La represión y los fusilamientos de Huamachuco se recuerdan sin convertirlos en espectáculo.',
@@ -117,7 +117,7 @@ export const mBrena: MissionDef = {
     {
       kicker: 'MARGEN DEL MANTARO · 1882',
       title: 'Galgas y emboscadas',
-      text: 'La campaña evita la batalla campal: emboscadas, galgas en los pasos y columnas móviles desgastan a las fuerzas chilenas. Cada comunidad protegida sostiene la red.',
+      text: 'Galgas en los pasos, columnas móviles y las comunidades del Mantaro desgastan a las fuerzas chilenas. Cada comunidad protegida sostiene la red.',
       seconds: 9,
       source: 'docs/historia/campanas/brena.md',
       image: 'media/brena/intro-galgas.webp',
@@ -125,7 +125,7 @@ export const mBrena: MissionDef = {
     {
       kicker: 'HUAMACHUCO · 10 DE JULIO DE 1883',
       title: 'La última batalla',
-      text: 'En Huamachuco se agota la munición y la batalla se pierde. Cáceres escapa a Ayacucho; el Tratado de Ancón cierra la guerra, pero la resistencia de la Breña queda en la memoria.',
+      text: 'En Huamachuco la munición escasea y la columna chilena cierra el cerco. Cáceres necesita sostener el campo el tiempo suficiente para retirarse hacia Ayacucho.',
       seconds: 10,
       source: 'docs/historia/campanas/brena.md',
       image: 'media/brena/intro-huamachuco.webp',
@@ -158,6 +158,8 @@ export const mBrena: MissionDef = {
     BuildingKind.MARKET,
   ],
   buildingNames: { [BuildingKind.FORTRESS]: 'Fortín' },
+  // The Breña was fought by the Mantaro communities' guerrillas, not by the Arica garrison.
+  unitNames: { [UnitKind.REPUBLICA_DEFENSOR]: 'Guerrillero de la Breña' },
   objectives: [
     {
       id: 'a1_comunidades',

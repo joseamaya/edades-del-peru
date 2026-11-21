@@ -143,6 +143,8 @@ export const mMiraflores: MissionDef = {
     BuildingKind.MARKET,
   ],
   buildingNames: { [BuildingKind.FORTRESS]: 'Reducto' },
+  // The Miraflores line was held by limeño reservists, not by the Arica garrison.
+  unitNames: { [UnitKind.REPUBLICA_DEFENSOR]: 'Reservista de Miraflores' },
   objectives: [
     {
       id: 'a1_reductos',
@@ -180,11 +182,13 @@ export const mMiraflores: MissionDef = {
     {
       id: 'a3_retirada',
       kind: 'reach',
+      // The withdrawal is Cáceres' own: any scout reaching the road used to end the mission for him.
+      entityTag: 'caceres',
       pos: { dx: MIRAFLORES_RETREAT.x, dz: MIRAFLORES_RETREAT.z },
       radius: 16,
       hidden: true,
       requires: 'a2_linea',
-      title: 'Retira a Cáceres y a la fuerza hacia la sierra',
+      title: 'Retira a Cáceres hacia la sierra',
     },
     {
       id: 'a3_caceres',
@@ -215,7 +219,7 @@ export const mMiraflores: MissionDef = {
           kicker: 'Acto II · Miraflores',
           title: 'La línea de fuego',
           image: 'media/miraflores/intro-reductos.webp',
-          text: 'Los reductos están listos. La infantería chilena avanza sobre la línea; los reservistas y el sector de Cáceres deben sostener el centro.',
+          text: 'Los reductos están listos. La infantería chilena avanza sobre la línea; los reservistas y el sector derecho de Cáceres deben sostenerla.',
         },
         { type: 'objective', objectiveId: 'a2_linea', state: 'activate', announce: true },
         {

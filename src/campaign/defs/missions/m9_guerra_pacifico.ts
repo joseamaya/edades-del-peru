@@ -117,6 +117,7 @@ export const m9GuerraPacifico: MissionDef = {
     UnitKind.SCOUT,
   ],
   buildingNames: { [BuildingKind.FORTRESS]: 'Fortín', [BuildingKind.INSTITUTE]: 'Academia' },
+  unitNames: { [UnitKind.REPUBLICA_DEFENSOR]: 'Defensor de Arica' },
   objectives: [
     {
       id: 'obj_puerto',
@@ -223,7 +224,7 @@ export const m9GuerraPacifico: MissionDef = {
           type: 'dialogue',
           speaker: 'bolognesi',
           duration: 7,
-          text: '—Aguantad el cañoneo. Si el cuartel cede, la plaza entera cede con él.',
+          text: '—Aguanten el cañoneo. Si el cuartel cede, la plaza entera cede con él.',
         },
         { type: 'objective', objectiveId: 'a2_bombardeo', state: 'activate', announce: true },
         { type: 'objective', objectiveId: 'a2_bolognesi', state: 'activate' },
@@ -265,7 +266,7 @@ export const m9GuerraPacifico: MissionDef = {
           type: 'dialogue',
           speaker: 'bolognesi',
           duration: 8,
-          text: '—Sostened la última línea. Que nadie diga que Arica cayó sin pelear.',
+          text: '—Sostengan la última línea. Que nadie diga que Arica cayó sin pelear.',
         },
         {
           type: 'wave',

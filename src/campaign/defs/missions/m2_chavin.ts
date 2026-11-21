@@ -99,6 +99,8 @@ export const m2Chavin: MissionDef = {
   allowedUnits: [UnitKind.WORKER, UnitKind.SCOUT],
   // Only Early Horizon technologies: no war techs and no later Andean engineering.
   allowedTechs: ['irrigation_canal', 'andean_loom', 'silver_metallurgy', 'chavin_pilgrimage'],
+  // The fair is the mission's own institution, not a generic market.
+  buildingNames: { [BuildingKind.MARKET]: 'Feria de peregrinos' },
   startingResources: { food: 300, wood: 450, silver: 300, stone: 100 },
   start: {},
   enemy: { active: false, difficulty: 'easy', aggression: 0 },
