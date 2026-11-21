@@ -49,6 +49,9 @@ builds; the exception is recorded here and in the quality bar.
 
 ## Economy and units
 
+- The Recuay camp is a scripted force: `enemy.economy: false` and `start.enemyOpeningUnits: false`
+  leave its centre and houses but no peasant economy; its warriors and hondero waves carry the pressure.
+
 - Moche workers, warriors and hondero (ranged) units; the Recuay side fields warrior and hondero waves.
   `UnitKind.MUSKETEER` is the project's legacy ranged id: at this period it renders as a hondero with a
   sling, not a firearm.

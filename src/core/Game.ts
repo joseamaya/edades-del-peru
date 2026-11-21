@@ -1034,11 +1034,15 @@ export class Game {
     return centroid(keep);
   }
 
-  /** Whether a seat receives the generic four workers + scout; defaults to its own base flag. */
+  /**
+   * Whether a seat receives the generic four workers + scout. The player uses `openingUnits`; the enemy
+   * can override it with `enemyOpeningUnits` (a scripted garrison keeps its town but no peasants).
+   */
   openingUnitsFor(owner: number): boolean {
     const start = this.missionDef?.start;
     if (!start) return true;
-    return start.openingUnits ?? this.startBaseFor(owner);
+    if (owner === 0) return start.openingUnits ?? this.startBaseFor(0);
+    return start.enemyOpeningUnits ?? start.openingUnits ?? this.startBaseFor(1);
   }
 
   /** Player-facing unit name, with the mission's scoped override for the player's seat. */
