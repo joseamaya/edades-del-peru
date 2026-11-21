@@ -20,12 +20,6 @@ describe('campaign unit names', () => {
     expect(mBrena.unitNames?.[DEFENSOR]).toBe('Guerrillero de la Breña');
   });
 
-  it('keeps Arica a scripted defence without an enemy economy', () => {
-    // The dossier says the enemy runs no economy; the bombardment and the assault are authored waves.
-    expect(m9GuerraPacifico.enemy.economy).toBe(false);
-    expect(m9GuerraPacifico.enemy.attacks).toBe(false);
-  });
-
   it('shows a named character by name, not by the unit kind', () => {
     // Pizarro is a CAVALRY unit tagged `pizarro`; the hover card used to read «Caballería de Choque».
     expect(namedEntityName('pizarro', 'Caballería de Choque')).toBe('Francisco Pizarro');

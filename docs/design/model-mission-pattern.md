@@ -113,7 +113,9 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
   on its opening spot, so authored points still resolve.
 - `enemy.economy: false` skips worker management, construction, training, research and era advance;
   `enemy.attacks: false` keeps combat micro and defense but leaves the offensive to authored waves.
-  Wire the mission's `enemy.difficulty`/`aggression` — they are not the menu difficulty.
+  Wire the mission's `enemy.difficulty`/`aggression` — they are not the menu difficulty. Drop the generic
+  economy only when the design says so **and** the pressure is already authored (Arica, Tarapacá): removing
+  it without re-authoring the waves leaves the map empty.
 - A scripted enemy (`attacks: false`) presses any reachable enemy within 20 m once its authored
   attack-move ends. Without this the wave stops at the edge of its firing envelope and the battle freezes;
   `tests/tarapaca-battle.test.ts` and the release playtest guard it.
@@ -151,10 +153,6 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
 - The player's defensive line needs an engagement envelope that matches enemy fire: acquisition uses the
   same `range × 1.15` firing slack plus a margin, and a unit that is shot returns fire from a bounded
   radius. Do not tune a mission around a mismatch of 13.2 m acquisition vs 16 m enemy fire.
-- A battle drops the generic enemy economy only when its design says so and its pressure is already
-  authored: `enemy.economy: false` + `enemy.attacks: false` leave the AI its micro and defence while the
-  waves carry the offensive (Arica). A settlement scenario keeps its economy even when the fight is the
-  point; removing it without re-authoring the waves leaves the map empty (Tarapacá needed both halves).
 - If the mission has a build objective (Lima's cabildo, the Junta's barracks), keep a small founding crew
   and the specific building; do not restore the generic town. Tarapacá has no build objective, so it can
   be a true zero-economy battle.

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { setAutoStart } from '../src/core/Game';
 import { UnitKind } from '../src/core/types';
+import { MISSIONS } from '../src/campaign/defs/campaign';
 import { headlessMission } from './headless';
 
 describe('campaign force contract', () => {
@@ -20,6 +21,13 @@ describe('campaign force contract', () => {
       game.destroy();
       setAutoStart(true);
     }
+  });
+
+  it('keeps a documented scripted defence without an enemy economy', () => {
+    const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
+    // Its dossier says the enemy runs no economy; the pressure is the authored bombardment and assault.
+    expect(m9.enemy.economy).toBe(false);
+    expect(m9.enemy.attacks).toBe(false);
   });
 
   it('lets a scripted battle disable both seats and skip the opening resource ring', () => {
