@@ -54,6 +54,10 @@ recorded here and in the quality bar.
   measured by the frontier objective, not by waves.
 - No firearms, horses or engines; the narrator is an anonymous **Voz de los Andes** because no Wari or
   Tiahuanaco ruler is known.
+- `startingEra: TAHUANTINSUYO` is the **internal tech level** that `HistoricalPeriod.MIDDLE_HORIZON` maps to
+  (`getPeriod(...).level`), not a claim that the mission is Inca; the top bar and every card show «Horizonte
+  Medio · 600–1000 d.C.», the architecture uses the Wari override (fieldstone, thatch, planned compounds)
+  and the Wari Guardian's `eraStats` stay keyed to that same era. `tests/defs.test.ts` enforces the mapping.
 
 ## Opening and closing
 

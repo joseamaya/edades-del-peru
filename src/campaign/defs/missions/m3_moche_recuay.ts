@@ -56,6 +56,9 @@ export const m3MocheRecuay: MissionDef = {
       { text: 'Sierra recuay', x: 0.78, z: 0.28, kind: 'region' },
     ],
     base: { x: 0.3, z: 0.66 },
+    // Recuay sits in its own sierra, under the authored label; without this the AI camp landed at random
+    // and could appear next to the huacas.
+    enemyBase: { x: 0.78, z: 0.28 },
     site: {
       id: 'moche_site',
       y: 6,
@@ -176,13 +179,8 @@ export const m3MocheRecuay: MissionDef = {
           type: 'dialogue',
           text: 'La compuerta está abierta. Los andenes recuperan agua; ahora asegura la plaza entre las huacas.',
         },
-        { type: 'objective', objectiveId: 'obj_huacas', state: 'activate' },
-      ],
-    },
-    {
-      id: 't_wave_1',
-      condition: { type: 'time', seconds: 80 },
-      effects: [
+        // The first column answers the opened canal: the old timer shouted «defiende la plaza» while the
+        // mission was still about the water.
         {
           type: 'wave',
           owner: 1,
@@ -190,24 +188,8 @@ export const m3MocheRecuay: MissionDef = {
           pos: { ref: 'site', dx: -mocheLength(20), dz: -mocheLength(26) },
           radius: mocheLength(6),
         },
-        { type: 'dialogue', text: '¡Recuay cruza la quebrada por el norte! ¡Defiende la plaza!' },
-      ],
-    },
-    {
-      id: 't_wave_2',
-      condition: { type: 'time', seconds: 200 },
-      effects: [
-        {
-          type: 'wave',
-          owner: 1,
-          units: [
-            { kind: UnitKind.SOLDIER, count: 4 },
-            { kind: UnitKind.MUSKETEER, count: 2 },
-          ],
-          pos: { ref: 'site', dx: mocheLength(22), dz: -mocheLength(24) },
-          radius: mocheLength(6),
-        },
-        { type: 'dialogue', text: 'Otra columna baja desde la sierra recuay. ¡Refuerza el flanco este!' },
+        { type: 'dialogue', text: '¡Recuay cruza la quebrada por el norte! Asegura la plaza entre las huacas.' },
+        { type: 'objective', objectiveId: 'obj_huacas', state: 'activate' },
       ],
     },
     {
@@ -227,12 +209,18 @@ export const m3MocheRecuay: MissionDef = {
         },
         { type: 'objective', objectiveId: 'obj_intercambio', state: 'activate' },
         { type: 'objective', objectiveId: 'bonus_intercambio', state: 'activate' },
-      ],
-    },
-    {
-      id: 't_wave_3',
-      condition: { type: 'time', seconds: 360 },
-      effects: [
+        // The escalation arrives with the act that opens it, not on a clock the player cannot influence.
+        {
+          type: 'wave',
+          owner: 1,
+          units: [
+            { kind: UnitKind.SOLDIER, count: 4 },
+            { kind: UnitKind.MUSKETEER, count: 2 },
+          ],
+          pos: { ref: 'site', dx: mocheLength(22), dz: -mocheLength(24) },
+          radius: mocheLength(6),
+        },
+        { type: 'dialogue', text: 'Otra columna baja desde la sierra recuay. ¡Refuerza el flanco este!' },
         {
           type: 'wave',
           owner: 1,

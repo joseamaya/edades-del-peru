@@ -53,6 +53,11 @@ builds; the exception is recorded here and in the quality bar.
   `UnitKind.MUSKETEER` is the project's legacy ranged id: at this period it renders as a hondero with a
   sling, not a firearm.
 - The canal gate is the Act I mechanic (`canal_open`, heritage `moche_canal`); it irrigates nearby farms.
+- Recuay has its own camp in the sierra (`layout.enemyBase`, under the authored «Sierra recuay» label).
+  Without it the AI camp was placed at random and could land beside the huacas.
+- The three columns answer the player's acts instead of fixed minutes: the first enters when the canal
+  opens, the other two when the huacas hold and the exchange opens. An idle player is no longer raided at
+  170 s by a wave that was scheduled before the canal was even touched.
 - No firearms, horses or engines: the period roster and the Moche/Recuay architecture only.
 - The narrator is an anonymous **Voz del valle**: the dossier records that no Moche or Recuay ruler is known,
   so the mission invents no name or title.
