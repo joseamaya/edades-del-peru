@@ -7,7 +7,7 @@ import { CHIMU_MAP_SIZE, chimuLength } from '../../../model/defs/chimuSite';
 const CHIMU_COUNTER_ENTRY = { dx: 150, dz: 110 } as const;
 // Paramonga is its own coastal point on the advance (world metres): as an offset from the enemy base the
 // objective sat inside the Chimú capital.
-const CHIMU_PARAMONGA_WORLD = { dx: 161, dz: 82 } as const;
+const CHIMU_PARAMONGA_WORLD = { dx: 150, dz: 80 } as const;
 
 export const m6ChimuInca: MissionDef = {
   id: 'm6_chimu_inca',

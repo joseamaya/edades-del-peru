@@ -38,7 +38,7 @@ sampling the former 192 m composition 4/3 larger:
 Painted ground uses `CHIMU_GROUND` (beach sand, valley grass, terrace dirt, foothills rock) sampled at
 128 × 128 over 256 m. The worker crosses in ≈2:22 (`unitSpeedScale: 0.75`), inside the model-mission band.
 The horizontal composition scales 4/3 (start offsets, wave centres and radii, canal length and gate radius,
-and Paramonga as its own coastal point (world 161, 82), with the objective ring clear of the capital,
+and Paramonga as its own point in the valley (world 150, 80), with the objective ring clear of the capital's keepout,
 plus the counterattack's Paramonga-side entry point,
 site proxies and corridor included). The heightfield keeps the 192 m vertical amplitude, so slopes read
 gentler; the site GLB scales uniformly with the terrace. Both are presentation trade-offs, not a survey.

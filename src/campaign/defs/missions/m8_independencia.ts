@@ -4,8 +4,9 @@ import { INDEPENDENCE_MAP_SIZE, independenceLength } from '../../../model/defs/i
 
 // Each royalist column enters from its own side of the field.
 const INDEPENDENCE_JUNIN_ENTRY = { ref: 'enemy' as const, dx: 0, dz: 0 };
-// Junín is the approach and Ayacucho the final field: at 30 m they were the same place.
-const INDEPENDENCE_JUNIN = { ref: 'enemy' as const, dx: -independenceLength(90), dz: 0 };
+// Junín is the patriot approach on its own pampa, Ayacucho the royalist field: anchored to the enemy base it
+// sat 22 m from Ayacucho and was the same place.
+const INDEPENDENCE_JUNIN = { ref: 'player' as const, dx: independenceLength(25), dz: 0 };
 const INDEPENDENCE_MARCH = { ref: 'enemy' as const, dx: -independenceLength(45), dz: 0 };
 const INDEPENDENCE_AYACUCHO_ENTRY = { ref: 'enemy' as const, dx: 0, dz: -independenceLength(20) };
 
