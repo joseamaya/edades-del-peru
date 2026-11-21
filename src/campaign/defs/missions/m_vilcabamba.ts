@@ -106,17 +106,20 @@ export const mVilcabamba: MissionDef = {
   unitSpeedScale: 0.75,
   startingResources: { food: 900, wood: 600, silver: 300, stone: 300 },
   start: {
+    enemyOpeningUnits: false,
     units: [
       { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 3 },
       // The garrison holds Huayna Pucará: a defensive stance keeps the forty-five second hold from
-      // unravelling when an enemy worker crosses the aggro radius and the line chases it downhill.
+      // unravelling when the Spanish probe crosses the aggro radius and the line chases it downhill.
       { kind: UnitKind.INCA_WARRIOR, dx: 8, dz: 0, count: 10, stance: 'defensivo' },
       { kind: UnitKind.SOLDIER, dx: 12, dz: 2, count: 4, stance: 'defensivo' },
       { kind: UnitKind.SCOUT, dx: 14, dz: 0, count: 1 },
       { kind: UnitKind.INCA_WARRIOR, dx: 6, dz: 0, count: 1, tag: 'curi_paucar', stance: 'defensivo' },
     ],
   },
-  enemy: { active: true, difficulty: 'hard', aggression: 1.0 },
+  // Arbieto's column is an expedition: it keeps its camp but its pressure is the authored waves, not a
+  // peasant economy in the jungle.
+  enemy: { active: true, difficulty: 'hard', aggression: 1.0, economy: false },
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/vilcabamba/intro-epilogo.webp',

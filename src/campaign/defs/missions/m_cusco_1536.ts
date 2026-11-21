@@ -102,6 +102,7 @@ export const mCusco1536: MissionDef = {
   unitSpeedScale: 0.75,
   startingResources: { food: 900, wood: 700, silver: 300, stone: 400 },
   start: {
+    enemyOpeningUnits: false,
     units: [
       { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 4 },
       { kind: UnitKind.INCA_WARRIOR, dx: 8, dz: 0, count: 12 },
@@ -110,7 +111,9 @@ export const mCusco1536: MissionDef = {
       { kind: UnitKind.INCA_WARRIOR, dx: 6, dz: 0, count: 1, tag: 'manco_inca' },
     ],
   },
-  enemy: { active: true, difficulty: 'normal', aggression: 0.8 },
+  // A besieged city, not a skirmish player: the Spanish sortie is the authored pressure, so the
+  // centre and houses stay but no peasant economy runs inside the walls.
+  enemy: { active: true, difficulty: 'normal', aggression: 0.8, economy: false },
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/cusco-1536/intro-epilogo.webp',
@@ -219,6 +222,26 @@ export const mCusco1536: MissionDef = {
       ],
     },
     {
+      id: 't_probe',
+      // Act I had no enemy at all until the hold ended: the probe is timed to reach the fortress inside
+      // the 45 s hold (the column needs ~20 s from the plaza).
+      condition: { type: 'time', seconds: 50 },
+      effects: [
+        {
+          type: 'wave',
+          owner: 1,
+          units: [{ kind: UnitKind.SOLDIER, count: 2 }],
+          spawn: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
+          pos: { dx: CUSCO_1536_SACSAY.x, dz: CUSCO_1536_SACSAY.z },
+          target: { dx: CUSCO_1536_SACSAY.x, dz: CUSCO_1536_SACSAY.z },
+          radius: 10,
+          // The small probe is not a general wave: keep the generic "¡Oleada enemiga!" toast out of it.
+          objective: 'position',
+        },
+        { type: 'dialogue', text: '—Una salida española tantea Sacsayhuamán. Son pocos: que sirvan de aviso.' },
+      ],
+    },
+    {
       id: 't_counter',
       // `activate` is true for a pending goal too, so this fired in the first second. Wait until Sacsayhuamán
       // is actually taken and the counterattack has something to answer.
@@ -250,6 +273,24 @@ export const mCusco1536: MissionDef = {
         },
         { type: 'objective', objectiveId: 'a2_cerco', state: 'activate', announce: true },
         { type: 'objective', objectiveId: 'a2_suministros', state: 'activate' },
+        {
+          // Act II was a food-drain timer with no enemy: the plaza sorties against the closing ring.
+          type: 'wave',
+          owner: 1,
+          units: [
+            { kind: UnitKind.SOLDIER, count: 2 },
+            { kind: UnitKind.CAVALRY, count: 1 },
+          ],
+          // It enters from the city outskirts, clear of both the 24 m siege ring and the spread it
+          // spawns over (40 m > 4√2 + 10, and 40 - 4√2 > 24), then marches on the closing ring.
+          spawn: { dx: CUSCO_1536_CITY.x + 40, dz: CUSCO_1536_CITY.z },
+          pos: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
+          target: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
+          radius: 4,
+          // A sally, not a general wave: suppress the generic wave toast and announce it as a sortie.
+          objective: 'position',
+        },
+        { type: 'dialogue', text: '—La plaza intenta romper el cerro. ¡Sostened la línea!' },
       ],
     },
     {

@@ -54,9 +54,16 @@ describe('campaign force contract', () => {
 
   it('starts a mission without an enemy economy with no peasant crew', () => {
     // Tambotoco's later acts are tied to the valley ayllus' camp, so its economy is a separate pass.
-    // Chimú and the Inca civil war are the Inca phase: a capital and a field headquarters keep their
-    // buildings but neither runs the skirmish economy.
-    for (const id of ['m3_moche_recuay', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']) {
+    // The Inca and viceroyalty missions keep their centres and houses but not the skirmish economy: a
+    // capital, a headquarters, a besieged city and a jungle expedition are not competing players.
+    for (const id of [
+      'm3_moche_recuay',
+      'm5_yahuar_pampa',
+      'm6_chimu_inca',
+      'm6b_guerra_civil',
+      'm_cusco_1536',
+      'm_vilcabamba',
+    ]) {
       const game = headlessMission(id);
       try {
         const crew = (kind: UnitKind) =>
@@ -68,6 +75,10 @@ describe('campaign force contract', () => {
         const centre = [...game.buildings.values()].find((b) => b.owner === 1 && b.kind === BuildingKind.CENTER);
         expect(centre, `${id} lost the enemy town it keeps around the scripted force`).toBeDefined();
         expect(centre!.dead).toBeFalsy();
+        const houses = [...game.buildings.values()].filter(
+          (b) => b.owner === 1 && !b.dead && b.kind === BuildingKind.HOUSE,
+        );
+        expect(houses.length, `${id} lost the houses it keeps around the scripted force`).toBeGreaterThan(0);
       } finally {
         game.destroy();
         setAutoStart(true);
@@ -78,6 +89,16 @@ describe('campaign force contract', () => {
     try {
       expect([...town.units.values()].some((u) => u.owner === 1 && u.kind === UnitKind.WORKER)).toBe(true);
       expect(MISSIONS.find((m) => m.id === 'm_lima')!.enemy.economy).not.toBe(false);
+      // A minute later the camp has hired past its five opening crew: with `economy: false` those five
+      // would survive unchanged, so this is what proves the hunger of a besieging army.
+      const opening = [...town.units.values()].filter(
+        (u) => u.owner === 1 && !u.dead && (u.kind === UnitKind.WORKER || u.kind === UnitKind.SCOUT),
+      ).length;
+      for (let i = 0; i < 60 * 60; i++) town.update(1 / 60, i / 60);
+      const crew = [...town.units.values()].filter(
+        (u) => u.owner === 1 && !u.dead && (u.kind === UnitKind.WORKER || u.kind === UnitKind.SCOUT),
+      );
+      expect(crew.length, 'the Lima camp stopped hiring').toBeGreaterThan(opening);
     } finally {
       town.destroy();
       setAutoStart(true);
@@ -87,7 +108,14 @@ describe('campaign force contract', () => {
   it('keeps the enemy from hiring or building once the economy is off', () => {
     // The AI's first sawmill lands within a second of a revert, so a minute is long enough to falsify the
     // `economy: false` flag; the mill at ~203 s would never be reached because construction already ran.
-    for (const id of ['m3_moche_recuay', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']) {
+    for (const id of [
+      'm3_moche_recuay',
+      'm5_yahuar_pampa',
+      'm6_chimu_inca',
+      'm6b_guerra_civil',
+      'm_cusco_1536',
+      'm_vilcabamba',
+    ]) {
       const game = headlessMission(id);
       try {
         for (let i = 0; i < 60 * 60; i++) game.update(1 / 60, i / 60);
