@@ -140,6 +140,8 @@ export const m5YahuarPampa: MissionDef = {
           ],
           pos: { dx: CHANCA_CITY.x * CHANCA_MAP_SIZE, dz: CHANCA_CITY.z * CHANCA_MAP_SIZE },
           radius: chancaLength(4),
+          // `reinforce` defaults to an attack-move on the player's camp; a garrison must hold its post.
+          objective: 'position',
         },
       ],
     },

@@ -115,12 +115,16 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
   `enemy.attacks: false` keeps combat micro and defense but leaves the offensive to authored waves.
   Pair it with `start.enemyOpeningUnits: false` (per-seat; without it the enemy falls back to the shared
   `openingUnits`) to remove the generic four workers and scout: the enemy keeps its centre and houses as a
-  town, but no peasants and no construction or training follow. A mission whose authored wave is measured against the player's hold
+  town, but no peasants and no construction or training follow. A `reinforce` defaults to an attack-move on
+  the player's camp (a relief column); a garrison that should hold a city or a headquarters must set
+  `objective: 'position'`, or it walks off at the first tick. A mission whose authored wave is measured against the player's hold
   keeps its economy (Tambotoco's third-act test asserts the wave damages the hold, and it stops doing so
   without the AI's units), so that is its own pass, not a flag.
   Wire the mission's `enemy.difficulty`/`aggression` — they are not the menu difficulty. Drop the generic
-  economy only when the design says so **and** the pressure is already authored (Arica, Tarapacá): removing
-  it without re-authoring the waves leaves the map empty.
+  economy only when the design says so **and** the pressure is already authored (Arica, Tarapacá, the Inca
+  missions): removing it without re-authoring the waves leaves the map empty. A capital or a field
+  headquarters may keep its centre and houses without running a peasant economy; only a besieging army that
+  feeds the siege (Lima) keeps it.
 - A scripted enemy (`attacks: false`) presses any reachable enemy within 20 m once its authored
   attack-move ends. Without this the wave stops at the edge of its firing envelope and the battle freezes;
   `tests/tarapaca-battle.test.ts` and the release playtest guard it.

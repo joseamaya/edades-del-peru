@@ -87,6 +87,7 @@ export const m6bGuerraCivil: MissionDef = {
   startingEra: Era.TAHUANTINSUYO,
   startingResources: { food: 900, wood: 600, silver: 500, stone: 300 },
   start: {
+    enemyOpeningUnits: false,
     buildings: [
       { kind: BuildingKind.FORTRESS, dx: -cuscoIncaLength(8), dz: -cuscoIncaLength(6) },
       { kind: BuildingKind.FORTRESS, dx: cuscoIncaLength(8), dz: -cuscoIncaLength(6) },
@@ -99,7 +100,8 @@ export const m6bGuerraCivil: MissionDef = {
       { kind: UnitKind.WORKER, dx: -cuscoIncaLength(4), dz: cuscoIncaLength(8), count: 3 },
     ],
   },
-  enemy: { active: true, difficulty: 'normal', aggression: 0.6 },
+  // Huáscar's field headquarters, not a town: its pressure is the Quipaipan waves and its guard.
+  enemy: { active: true, difficulty: 'normal', aggression: 0.6, economy: false },
   buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
   objectives: [
     {
@@ -136,6 +138,26 @@ export const m6bGuerraCivil: MissionDef = {
     { id: 'obj_quizquiz', kind: 'protect', entityTag: 'quizquiz', title: 'Mantén con vida a Quizquiz' },
   ],
   triggers: [
+    {
+      // The capture target is Huáscar's own headquarters: a guard mans it from the opening, so Act III is a
+      // fight and not a walk-in after the pampa.
+      id: 't_guarnicion',
+      condition: { type: 'time', seconds: 0.5 },
+      effects: [
+        {
+          type: 'reinforce',
+          owner: 1,
+          units: [
+            { kind: UnitKind.SOLDIER, count: 4 },
+            { kind: UnitKind.MUSKETEER, count: 3 },
+          ],
+          pos: { ref: 'enemy', dx: 0, dz: 0 },
+          radius: cuscoIncaLength(4),
+          // `reinforce` defaults to an attack-move on the player's camp; a garrison must hold its post.
+          objective: 'position',
+        },
+      ],
+    },
     {
       id: 't_acto_i',
       condition: { type: 'time', seconds: 12 },
