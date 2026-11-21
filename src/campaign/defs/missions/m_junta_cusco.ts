@@ -9,8 +9,8 @@ const JUNTA_APACHETA = { x: 140, z: 168 } as const;
 const JUNTA_UMACHIRI = { x: 198, z: 214 } as const;
 // The royalist columns enter on the roads and then occupy each point.
 // Toward the royalist camp (south-east of both points), not behind the Junta's line.
-const JUNTA_APACHETA_ENTRY = { dx: JUNTA_APACHETA.x + 38, dz: JUNTA_APACHETA.z + 32 } as const;
-const JUNTA_UMACHIRI_ENTRY = { dx: JUNTA_UMACHIRI.x + 32, dz: JUNTA_UMACHIRI.z + 32 } as const;
+const JUNTA_APACHETA_ENTRY = { dx: JUNTA_APACHETA.x + 28, dz: JUNTA_APACHETA.z + 24 } as const;
+const JUNTA_UMACHIRI_ENTRY = { dx: JUNTA_UMACHIRI.x + 24, dz: JUNTA_UMACHIRI.z + 22 } as const;
 const JUNTA_ENEMY = { x: 222, z: 238 } as const;
 
 export const mJuntaCusco: MissionDef = {

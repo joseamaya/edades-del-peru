@@ -113,7 +113,9 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
   on its opening spot, so authored points still resolve.
 - `enemy.economy: false` skips worker management, construction, training, research and era advance;
   `enemy.attacks: false` keeps combat micro and defense but leaves the offensive to authored waves.
-  Wire the mission's `enemy.difficulty`/`aggression` — they are not the menu difficulty.
+  Wire the mission's `enemy.difficulty`/`aggression` — they are not the menu difficulty. Drop the generic
+  economy only when the design says so **and** the pressure is already authored (Arica, Tarapacá): removing
+  it without re-authoring the waves leaves the map empty.
 - A scripted enemy (`attacks: false`) presses any reachable enemy within 20 m once its authored
   attack-move ends. Without this the wave stops at the edge of its firing envelope and the battle freezes;
   `tests/tarapaca-battle.test.ts` and the release playtest guard it.

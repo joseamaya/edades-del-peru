@@ -137,6 +137,14 @@ test('plays m7 by winning at Sangarará and withdrawing from the Cusco siege', a
     for (let i = 0; i < Math.ceil(600 / dt) && !m.ended; i++) {
       if (i % 15 === 0) dismissCard();
       if (i % Math.ceil(4 / dt) === 0) {
+        // The supply turn is a work order at its own marker, not at the camp gate.
+        if (m.getObjectiveState('a1_avituallamiento') === 'activo') {
+          const store = m.getObjectiveAnchor('a1_avituallamiento') as { x: number; z: number } | null;
+          const crew = own('worker')
+            .filter((u) => !builders.includes(u.id))
+            .map((u) => u.id);
+          if (store && crew.length) order(crew, store.x, store.z);
+        }
         const army = own()
           .filter((u) => u.kind !== 'worker' && u.tag !== 'tupac_amaru')
           .map((u) => u.id);
@@ -221,16 +229,25 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
     let t = 0;
     move([sucre.id], g.settings.mapSize * 0.1, g.settings.mapSize * 0.9);
     move(artillery, center.x, center.z + 15);
-    move([...cavalry, ...rifles], enemy.pos.x - 30, enemy.pos.z);
-    for (let i = 0; i < Math.ceil(110 / dt) && !m.ended; i++) {
+    // A home guard keeps the base alive while the field army marches; the rest holds Junín.
+    const homeGuard = rifles.slice(0, 3);
+    const field = rifles.slice(3);
+    move(homeGuard, center.x, center.z + 8);
+    const junin = m.getObjectiveAnchor('obj_junin') as { x: number; z: number };
+    move([...cavalry, ...field], junin.x, junin.z);
+    for (let i = 0; i < Math.ceil(140 / dt) && !m.ended; i++) {
+      if (i % Math.ceil(20 / dt) === 0) {
+        move([...cavalry, ...field], junin.x, junin.z);
+        move(homeGuard, center.x, center.z + 8);
+      }
       if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       g.update(dt, t);
       t += dt;
     }
-    const junin = m.getObjectiveState('obj_junin') as string;
+    const juninState = m.getObjectiveState('obj_junin') as string;
     // Act II: march to the Ayacucho marker before the final hold.
     const marcha = m.getObjectiveAnchor('obj_marcha') as { x: number; z: number };
-    move([...cavalry, ...rifles, ...artillery], marcha.x, marcha.z);
+    move([...cavalry, ...field, ...artillery], marcha.x, marcha.z);
     for (let i = 0; i < Math.ceil(20 / dt) && !m.ended; i++) {
       if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       g.update(dt, t);
@@ -242,7 +259,8 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
       if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       if (i % Math.ceil(20 / dt) === 0) {
         move([...cavalry, ...artillery], enemy.pos.x, enemy.pos.z);
-        move(rifles, enemy.pos.x - 12, enemy.pos.z + 10);
+        move(field, enemy.pos.x - 12, enemy.pos.z + 10);
+        move(homeGuard, center.x, center.z + 8);
       }
       g.update(dt, t);
       t += dt;
@@ -253,7 +271,7 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
       t += dt;
     }
     return {
-      junin,
+      junin: juninState,
       marcha: m.getObjectiveState('obj_marcha') as string,
       ayacucho: m.getObjectiveState('obj_ayacucho') as string,
       sucre: m.getObjectiveState('obj_sucre') as string,
@@ -264,7 +282,7 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
   });
   expect(out.junin).toBe('completed');
   expect(out.marcha).toBe('completed');
-  expect(out.ayacucho).toBe('completed');
+  expect(out.ayacucho, JSON.stringify(out)).toBe('completed');
   expect(out.sucre).not.toBe('failed');
   expect(out.mapSize, 'the model mission runs on 256 m').toBe(256);
   expect(out.site).toBe('independence_site');
@@ -442,17 +460,60 @@ test('plays m5 by holding Cusco and counterattacking with real orders', async ({
     const attackers = [...g.units.values()]
       .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.tag !== 'cusi_yupanqui')
       .map((u: any) => u.id);
-    g.executeCommand(
-      { kind: 'order', unitIds: attackers, order: { kind: 'attack', entityId: enemy.id }, clear: true },
-      false,
-    );
     const dt = 1 / 60;
     let t = 0;
     const killBefore = m.getObjectiveState('obj_kill') as string;
-    for (let i = 0; i < Math.ceil(620 / dt) && !m.ended; i++) {
+    const move = (ids: number[], x: number, z: number) =>
+      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
+    const attackMove = (ids: number[], x: number, z: number) =>
+      g.executeCommand(
+        { kind: 'order', unitIds: ids, order: { kind: 'attack_move', target: { x, z } }, clear: true },
+        false,
+      );
+    const camp = g.playerCenter(0) as { x: number; z: number };
+    // Act I: hold the Cusco camp for the eight-minute defence. Attacking at t=0 met the Chanca columns in
+    // the open and left the centre standing.
+    for (let i = 0; i < Math.ceil(500 / dt) && !m.ended; i++) {
       if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+      if (i % Math.ceil(20 / dt) === 0) {
+        const alive = [...g.units.values()]
+          .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.tag !== 'cusi_yupanqui')
+          .map((u: any) => u.id);
+        if (alive.length) move(alive, camp.x, camp.z);
+      }
       g.update(dt, t);
       t += dt;
+    }
+    // Act II: with the camp held, counterattack the Chanca camp.
+    if (!m.ended && m.getObjectiveState('obj_kill') === 'activo') {
+      for (let i = 0; i < Math.ceil(240 / dt) && !m.ended && m.getObjectiveState('obj_kill') !== 'completed'; i++) {
+        if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+        if (i % Math.ceil(15 / dt) === 0) {
+          const alive = [...g.units.values()]
+            .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.tag !== 'cusi_yupanqui')
+            .map((u: any) => u.id);
+          if (alive.length && enemy && !enemy.dead) attackMove(alive, enemy.pos.x, enemy.pos.z);
+        }
+        g.update(dt, t);
+        t += dt;
+      }
+      // A building is not a point: once the army is there, order the assault on the centre itself.
+      for (let i = 0; i < Math.ceil(120 / dt) && !m.ended && m.getObjectiveState('obj_kill') !== 'completed'; i++) {
+        if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+        if (i % Math.ceil(15 / dt) === 0) {
+          const alive = [...g.units.values()]
+            .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.tag !== 'cusi_yupanqui')
+            .map((u: any) => u.id);
+          if (alive.length && enemy && !enemy.dead) {
+            g.executeCommand(
+              { kind: 'order', unitIds: alive, order: { kind: 'attack', entityId: enemy.id }, clear: true },
+              false,
+            );
+          }
+        }
+        g.update(dt, t);
+        t += dt;
+      }
     }
     // Act III: pursue the remnants toward Andahuaylas.
     if (!m.ended && m.getObjectiveState('obj_persecucion') === 'activo') {
@@ -478,7 +539,7 @@ test('plays m5 by holding Cusco and counterattacking with real orders', async ({
   });
   expect(out.killBefore, 'the counterattack waits for the siege').toBe('pendiente');
   expect(out.defend).toBe('completed');
-  expect(out.kill).toBe('completed');
+  expect(out.kill, JSON.stringify(out)).toBe('completed');
   expect(out.cusi).not.toBe('failed');
   expect(out.persecucion).toBe('completed');
   expect(out.mapSize, 'the model mission runs on 256 m').toBe(256);
@@ -1211,13 +1272,20 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
       if (m.getObjectiveState('a3_umachiri') === 'completed') break;
     }
     const antUmachiri = m.getObjectiveState('a3_umachiri') as string;
-    for (let i = 0; i < Math.ceil(165 / dt) && !m.ended; i++) {
-      if (i % 30 === 0) {
-        move(army, 198, 214);
+    // The royalists now march on Umachiri instead of already standing there: the line is re-formed often
+    // enough that the hold timer is not reset by units chasing the column out of the radius.
+    for (let i = 0; i < Math.ceil(240 / dt) && !m.ended; i++) {
+      if (i % Math.ceil(10 / dt) === 0) {
+        // Reinforcements join after `army` was captured: send whoever is alive, not the original list.
+        const alive = [...g.units.values()]
+          .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.tag !== 'pumacahua')
+          .map((u: any) => u.id);
+        if (alive.length) move(alive, 198, 214);
         dismissCard();
       }
       g.update(dt, t);
       t += dt;
+      if (m.getObjectiveState('a3_resistir') === 'completed') break;
     }
     return {
       cabildo,
@@ -1238,7 +1306,7 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
   expect(out.antApacheta).toBe('completed');
   expect(out.apacheta).toBe('completed');
   expect(out.antUmachiri).toBe('completed');
-  expect(out.resistir).toBe('completed');
+  expect(out.resistir, JSON.stringify(out)).toBe('completed');
   // Pumacahua survives to victory, so his protect goal is credited as achieved.
   expect(out.pumacahua).toBe('completed');
   expect(out.won).toBe(true);

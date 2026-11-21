@@ -79,7 +79,7 @@ export const m9GuerraPacifico: MissionDef = {
       { kind: UnitKind.SOLDIER, dx: aricaLength(8), dz: 0, count: 4 },
     ],
   },
-  enemy: { active: true, difficulty: 'normal', aggression: 0.35 },
+  enemy: { active: true, difficulty: 'normal', aggression: 0.35, economy: false },
   tutorial: true,
   modelMission: true,
   intro: [
