@@ -56,6 +56,35 @@ describe('campaign force contract', () => {
     const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
     // Its dossier says the enemy runs no economy; the pressure is the authored bombardment and assault.
     expect(m9.enemy.economy).toBe(false);
+    expect(m9.enemy.attacks).toBe(false);
+  });
+
+  it('pins Arica’s lines to the ground and sends its waves at them', () => {
+    const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
+    const game = headlessMission(m9.id);
+    try {
+      const holds = m9.objectives.filter((o) => o.kind === 'hold' && o.pos);
+      expect(holds.map((o) => o.id)).toEqual(['a1_minas', 'a2_bombardeo', 'a3_asalto']);
+      const lines = holds.filter((o) => o.id !== 'a1_minas');
+      const before = lines.map((o) => game.resolveMissionPoint(o.pos!));
+      // The bombardment can raze the centre; a line anchored on it would move with the rubble.
+      for (const b of [...game.buildings.values()]) if (b.owner === 0) b.dead = true;
+      lines.forEach((o, i) => expect(game.resolveMissionPoint(o.pos!)).toEqual(before[i]));
+
+      const waves = m9.triggers.flatMap((t) => t.effects).filter((e) => e.type === 'wave');
+      expect(waves.length).toBe(3);
+      for (const wave of waves) {
+        // Each column attacks a defended line, not the town behind it.
+        const target = game.resolveMissionPoint((wave.target ?? wave.pos)!);
+        const nearest = Math.min(...before.map((p) => Math.hypot(p.x - target.x, p.z - target.z)));
+        expect(nearest, 'a wave aims at the town instead of a defended line').toBeLessThan(1);
+        // A 56 m gun against 13 m weapons removes the garrison before it can fight; the bombardment is told.
+        expect(wave.units.map((u) => u.kind)).not.toContain(UnitKind.ARTILLERY);
+      }
+    } finally {
+      game.destroy();
+      setAutoStart(true);
+    }
   });
 
   it('lets a scripted battle disable both seats and skip the opening resource ring', () => {

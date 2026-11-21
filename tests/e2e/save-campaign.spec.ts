@@ -298,6 +298,15 @@ test('saves and loads m9 during the bombardment', async ({ page }) => {
     step();
     m.objState.set('a1_minas', 'completed');
     step();
+    // The hold counts a crew on the cuartel line, not the garrison's start south of the base: post three
+    // soldiers there so the saved state carries real progress.
+    const line = m.getObjectiveAnchor('a2_bombardeo') as { x: number; z: number };
+    let posted = 0;
+    for (const u of g.units.values()) {
+      if (u.owner !== 0 || u.dead || u.kind === 'worker' || posted >= 3) continue;
+      u.pos.set(line.x, g.terrain.getHeight(line.x, line.z), line.z);
+      posted++;
+    }
     for (let i = 0; i < Math.ceil(8 / dt) && !m.ended; i++) step();
     g.saveMatch();
     return {

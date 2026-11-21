@@ -12,9 +12,26 @@ const ARICA_BASE_ANCHOR = {
 const ARICA_MINES_WORLD = { dx: aricaLength(92), dz: aricaLength(104) } as const;
 const ARICA_CAMP_ANCHOR = { x: 0.78, z: 0.22 } as const;
 // The two lines the mission defends, north of the port terrace toward the Chilean camp (the waves come
-// from the north-east). Named so the mission, its design doc and its tests agree on what they are.
-const ARICA_CUARTEL_LINE = { ref: 'player', dx: 0, dz: -aricaLength(20) } as const;
-const ARICA_LAST_LINE = { ref: 'player', dx: -aricaLength(8), dz: -aricaLength(22) } as const;
+// from the north-east). Authored world points: anchored on `ref: 'player'` they followed the centre
+// building, and the bombardment that razed it silently moved both objectives mid-act.
+const ARICA_CUARTEL_LINE = {
+  dx: ARICA_BASE_WORLD.x,
+  dz: ARICA_BASE_WORLD.z - aricaLength(20),
+} as const;
+const ARICA_LAST_LINE = {
+  dx: ARICA_BASE_WORLD.x - aricaLength(8),
+  dz: ARICA_BASE_WORLD.z - aricaLength(22),
+} as const;
+// Entry points on the northern approach: the columns crest the ridge instead of appearing on the line
+// they must take.
+const ARICA_APPROACH_EAST = {
+  dx: ARICA_BASE_WORLD.x + aricaLength(30),
+  dz: ARICA_BASE_WORLD.z - aricaLength(44),
+} as const;
+const ARICA_APPROACH_WEST = {
+  dx: ARICA_BASE_WORLD.x - aricaLength(16),
+  dz: ARICA_BASE_WORLD.z - aricaLength(40),
+} as const;
 
 export const m9GuerraPacifico: MissionDef = {
   id: 'm9_guerra_pacifico',
@@ -79,7 +96,7 @@ export const m9GuerraPacifico: MissionDef = {
       { kind: UnitKind.SOLDIER, dx: aricaLength(8), dz: 0, count: 4 },
     ],
   },
-  enemy: { active: true, difficulty: 'normal', aggression: 0.35, economy: false },
+  enemy: { active: true, difficulty: 'normal', aggression: 0.35, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
   intro: [
@@ -235,12 +252,12 @@ export const m9GuerraPacifico: MissionDef = {
           units: [
             { kind: UnitKind.SOLDIER, count: 4 },
             { kind: UnitKind.RIFLEMAN, count: 2 },
-            // The bombardment is fought with the guns that actually battered the plaza, not infantry alone.
-            { kind: UnitKind.ARTILLERY, count: 1 },
           ],
-          pos: { dx: aricaLength(115), dz: aricaLength(100) },
+          // The bombardment batters the line the garrison holds, not the town behind it.
+          spawn: ARICA_APPROACH_EAST,
+          pos: ARICA_CUARTEL_LINE,
           radius: aricaLength(6),
-          target: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
+          target: ARICA_CUARTEL_LINE,
         },
         {
           type: 'reinforce',
@@ -277,9 +294,10 @@ export const m9GuerraPacifico: MissionDef = {
             { kind: UnitKind.RIFLEMAN, count: 2 },
             { kind: UnitKind.CHILE_INFANTE, count: 1 },
           ],
-          pos: { dx: aricaLength(140), dz: aricaLength(100) },
+          spawn: ARICA_APPROACH_EAST,
+          pos: ARICA_LAST_LINE,
           radius: aricaLength(7),
-          target: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
+          target: ARICA_LAST_LINE,
         },
         {
           type: 'wave',
@@ -288,9 +306,10 @@ export const m9GuerraPacifico: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 4 },
             { kind: UnitKind.RIFLEMAN, count: 2 },
           ],
-          pos: { dx: aricaLength(95), dz: aricaLength(60) },
+          spawn: ARICA_APPROACH_WEST,
+          pos: ARICA_LAST_LINE,
           radius: aricaLength(6),
-          target: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
+          target: ARICA_LAST_LINE,
         },
         {
           type: 'reinforce',
