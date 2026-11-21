@@ -194,9 +194,8 @@ export const mVilcabamba: MissionDef = {
       id: 'a2_curi',
       kind: 'protect',
       entityTag: 'curi_paucar',
-      // Required: the captain who opens the escape is the mission's own way to lose the court.
-      // Activated by the Act II trigger, so it stays hidden until then.
-      hidden: true,
+      // Required and visible from the start: the captain who opens the escape is the mission's own way to
+      // lose the court, and the player must know he is at risk from Act I.
       title: 'Protege al capitán Curi Paucar',
     },
     {
@@ -227,8 +226,8 @@ export const mVilcabamba: MissionDef = {
     },
     {
       id: 't_probe',
-      // Act I had no pressure at all: the Spanish vanguard probes the pucará before the main column.
-      condition: { type: 'time', seconds: 60 },
+      // Act I had no pressure at all: the Spanish vanguard probes the pucará inside the 45 s hold.
+      condition: { type: 'time', seconds: 20 },
       effects: [
         {
           type: 'wave',
@@ -255,7 +254,6 @@ export const mVilcabamba: MissionDef = {
         },
         { type: 'objective', objectiveId: 'a2_evacua', state: 'activate', announce: true },
         { type: 'objective', objectiveId: 'a2_senderos', state: 'activate' },
-        { type: 'objective', objectiveId: 'a2_curi', state: 'activate' },
         {
           type: 'wave',
           owner: 1,

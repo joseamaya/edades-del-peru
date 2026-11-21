@@ -156,7 +156,7 @@ export const mCusco1536: MissionDef = {
       radius: 18,
       time: 45,
       minUnits: 6,
-      title: 'Ocupa Sacsayhuamán y resiste el contraataque',
+      title: 'Ocupa Sacsayhuamán durante 45 segundos',
     },
     {
       id: 'a2_cerco',

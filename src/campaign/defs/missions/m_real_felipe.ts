@@ -110,8 +110,8 @@ export const mRealFelipe: MissionDef = {
     },
     {
       kicker: 'CALLAO · ENERO DE 1826',
-      title: 'La capitulación',
-      text: 'Tras más de un año de sitio, Rodil capitula y sale con honores. Es el último bastión español en el Perú; la independencia queda sellada también en el Callao.',
+      title: 'El último invierno',
+      text: 'Tras más de un año de sitio, los víveres se agotan y las salidas fracasan. Rodil sostiene el Real Felipe con lo que le queda: forzar la capitulación es la última tarea del sitio.',
       seconds: 10,
       source: 'docs/historia/campanas/real_felipe.md',
       image: 'media/real-felipe/intro-epilogo.webp',

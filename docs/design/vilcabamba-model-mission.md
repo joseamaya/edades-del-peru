@@ -14,11 +14,12 @@ are told in the epilogue, off-screen. Sources and certainty:
 ## Acts
 
 1. **Defend Huayna Pucará.** Five units hold the fortress for 45 s; a two-man Spanish vanguard probes
-   it at 60 s so the act is not empty.
+   it at 20 s so the act is not empty.
 2. **Evacuate Vilcabamba.** Reach the town to open the escape route; the expedition occupies and burns it afterwards.
 3. **Save the court.** Five units hold the lower-Urubamba exit for 45 s while a column enters from the
    escape road (not from the distant Spanish camp, a 200 m march that never arrived in time). Curi Paucar is
-   a **required** protect goal: the captain who opens the escape is the mission's own way to lose the court.
+   a **required** protect goal, visible from Act I: the captain who opens the escape is the mission's own
+   way to lose the court, and the commander card must say so before he is in danger.
 
 The Inca's capture and execution are narrated in the epilogue; no counterfactual victory is offered.
 
