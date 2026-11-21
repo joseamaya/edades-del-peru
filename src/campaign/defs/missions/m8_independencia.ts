@@ -6,8 +6,8 @@ import { INDEPENDENCE_MAP_SIZE, independenceLength } from '../../../model/defs/i
 const INDEPENDENCE_JUNIN_ENTRY = { ref: 'enemy' as const, dx: 0, dz: 0 };
 // Junín is the patriot approach on its own pampa, Ayacucho the royalist field: anchored to the enemy base it
 // sat 22 m from Ayacucho and was the same place.
-// Far enough from the opening line that no rider starts inside the hold (25 m left the near edge 14.6 m
-// from the centre, and the cavalry opens at 13.3 m plus dispersion).
+// Far enough from the opening line that no rider starts inside the hold: at 25 m the hold's near edge sat
+// 14.6 m from the camp, where the cavalry opens at 13.3 m plus dispersion (and the montoneras counted too).
 const INDEPENDENCE_JUNIN = { ref: 'player' as const, dx: independenceLength(32), dz: 0 };
 const INDEPENDENCE_MARCH = { ref: 'enemy' as const, dx: -independenceLength(45), dz: 0 };
 const INDEPENDENCE_AYACUCHO_ENTRY = { ref: 'enemy' as const, dx: 0, dz: -independenceLength(20) };

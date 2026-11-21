@@ -57,6 +57,15 @@ describe('campaign force contract', () => {
     // Its dossier says the enemy runs no economy; the pressure is the authored bombardment and assault.
     expect(m9.enemy.economy).toBe(false);
     expect(m9.enemy.attacks).toBe(false);
+    // The Chilean camp is a staging area, not a town, and the garrison holds instead of chasing.
+    expect(m9.start?.enemyBase).toBe(false);
+    const units = m9.start?.units ?? [];
+    expect(units.filter((u) => u.kind !== UnitKind.WORKER).every((u) => u.stance === 'defensivo')).toBe(true);
+    const waves = m9.triggers.filter((t) => t.effects.some((e) => e.type === 'wave'));
+    const sizes = waves.flatMap((t) =>
+      t.effects.filter((e) => e.type === 'wave').map((e) => e.units.reduce((sum, u) => sum + u.count, 0)),
+    );
+    expect(sizes).toEqual([6, 6, 4]);
   });
 
   it('pins Arica’s lines to the ground and sends its waves at them', () => {

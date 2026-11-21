@@ -302,15 +302,20 @@ test('saves and loads m9 during the bombardment', async ({ page }) => {
     // soldiers there so the saved state carries real progress.
     const line = m.getObjectiveAnchor('a2_bombardeo') as { x: number; z: number };
     const minUnits = m.def.objectives.find((o: any) => o.id === 'a2_bombardeo')?.minUnits ?? 3;
-    let posted = 0;
+    const crew: any[] = [];
     for (const u of g.units.values()) {
-      if (u.owner !== 0 || u.dead || u.kind === 'worker' || posted >= minUnits + 2) continue;
-      // Clearing the setup orders keeps the crew on the line: a teleport alone walks back to the spawn.
-      u.orderQueue.length = 0;
-      u.pos.set(line.x, g.terrain.getHeight(line.x, line.z), line.z);
-      posted++;
+      if (u.owner !== 0 || u.dead || u.kind === 'worker' || crew.length >= minUnits + 2) continue;
+      crew.push(u);
     }
-    for (let i = 0; i < Math.ceil(8 / dt) && !m.ended; i++) step();
+    // Keep the crew pinned for the fixture: a teleport alone walks back to the spawn, and one stray step
+    // out of the radius resets the hold. Two spare over `minUnits` cover the count.
+    for (let i = 0; i < Math.ceil(6 / dt) && !m.ended; i++) {
+      for (const u of crew) {
+        u.orderQueue.length = 0;
+        u.pos.set(line.x, g.terrain.getHeight(line.x, line.z), line.z);
+      }
+      step();
+    }
     g.saveMatch();
     return {
       state: m.getObjectiveState('a2_bombardeo'),

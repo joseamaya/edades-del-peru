@@ -88,9 +88,16 @@ export const m9GuerraPacifico: MissionDef = {
     buildings: [{ kind: BuildingKind.FORTRESS, dx: -aricaLength(10), dz: -aricaLength(6), tag: 'puerto' }],
     units: [
       { kind: UnitKind.WORKER, dx: aricaLength(4), dz: aricaLength(6), count: 3 },
-      { kind: UnitKind.RIFLEMAN, dx: aricaLength(6), dz: aricaLength(2), count: 1, tag: 'bolognesi' },
-      // A garrison holds the line: `defensivo` keeps it from chasing a column off the objective and
-      // returning to a leash at the line instead of the spawn.
+      {
+        kind: UnitKind.RIFLEMAN,
+        dx: aricaLength(6),
+        dz: aricaLength(2),
+        count: 1,
+        tag: 'bolognesi',
+        stance: 'defensivo',
+      },
+      // A garrison holds the line: `defensivo` sends it back to the ground it was ordered to hold, not to
+      // wherever a pursuit ends.
       { kind: UnitKind.RIFLEMAN, dx: aricaLength(4), dz: aricaLength(8), count: 4, stance: 'defensivo' },
       { kind: UnitKind.REPUBLICA_DEFENSOR, dx: aricaLength(2), dz: aricaLength(6), count: 2, stance: 'defensivo' },
       { kind: UnitKind.SOLDIER, dx: aricaLength(8), dz: 0, count: 4, stance: 'defensivo' },
