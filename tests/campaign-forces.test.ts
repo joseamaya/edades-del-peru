@@ -54,22 +54,37 @@ describe('campaign force contract', () => {
 
   it('gives a scripted enemy no generic peasant crew', () => {
     // Tambotoco's later acts are tied to the valley ayllus' camp, so its economy is a separate pass.
-    for (const id of ['m3_moche_recuay', 'm5_yahuar_pampa']) {
+    // Chimú and the Inca civil war are the Inca phase: a capital and a field headquarters keep their
+    // buildings but neither runs the skirmish economy.
+    for (const id of ['m3_moche_recuay', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']) {
       const game = headlessMission(id);
       try {
-        const workers = [...game.units.values()].filter((u) => u.owner === 1 && !u.dead && u.kind === UnitKind.WORKER);
-        expect(workers, `${id} still fields the generic enemy crew`).toHaveLength(0);
+        const crew = (kind: UnitKind) =>
+          [...game.units.values()].filter((u) => u.owner === 1 && !u.dead && u.kind === kind);
+        expect(crew(UnitKind.WORKER), `${id} still fields the generic enemy crew`).toHaveLength(0);
+        expect(crew(UnitKind.SCOUT), `${id} still fields the generic enemy scout`).toHaveLength(0);
         const def = MISSIONS.find((m) => m.id === id)!;
         expect(def.enemy.economy, `${id} runs a generic enemy economy`).toBe(false);
+        const centre = [...game.buildings.values()].find((b) => b.owner === 1 && b.kind === BuildingKind.CENTER);
+        expect(centre?.dead, `${id} lost the enemy town it keeps around the scripted force`).toBeFalsy();
+        // A minute of simulation: no peasant economy means no new crew and no sawmill or mill either.
+        for (let i = 0; i < 60 * 60; i++) game.update(1 / 60, i / 60);
+        expect(crew(UnitKind.WORKER), `${id} grew a peasant crew`).toHaveLength(0);
+        expect(crew(UnitKind.SCOUT), `${id} grew a scout`).toHaveLength(0);
+        const industry = [...game.buildings.values()].filter(
+          (b) => b.owner === 1 && !b.dead && (b.kind === BuildingKind.SAWMILL || b.kind === BuildingKind.MILL),
+        );
+        expect(industry, `${id} built a sawmill or mill`).toHaveLength(0);
       } finally {
         game.destroy();
         setAutoStart(true);
       }
     }
-    // A town keeps its own crew until its own cut.
+    // A besieging army keeps its own economy: the Lima camp feeds the siege.
     const town = headlessMission('m_lima');
     try {
       expect([...town.units.values()].some((u) => u.owner === 1 && u.kind === UnitKind.WORKER)).toBe(true);
+      expect(MISSIONS.find((m) => m.id === 'm_lima')!.enemy.economy).not.toBe(false);
     } finally {
       town.destroy();
       setAutoStart(true);

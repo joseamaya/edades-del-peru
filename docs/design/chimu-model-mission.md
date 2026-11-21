@@ -57,6 +57,10 @@ in the quality bar.
   and an arquero, not firearms.
 - The canal gate is Act II's mechanic (`canal_closed`, heritage `chimu_canal`); the water is an abstraction
   of the documented cut, not a reconstructed canal trace.
+- Chan Chan keeps its centre and houses — the capital is not a camp — but it does not run the generic
+  economy: `enemy.economy: false` and `start.enemyOpeningUnits: false` remove the peasant crew, sawmill and
+  mill. The pressure is authored (the counterattack from Paramonga, the optional resistance of the city),
+  and the surrender stays the victory.
 - The narrator is **Túpac Yupanqui**, a documented commander.
 
 ## Opening and closing

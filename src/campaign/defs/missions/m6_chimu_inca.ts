@@ -102,6 +102,7 @@ export const m6ChimuInca: MissionDef = {
   startingEra: Era.TAHUANTINSUYO,
   startingResources: { food: 1000, wood: 700, silver: 900, stone: 400 },
   start: {
+    enemyOpeningUnits: false,
     units: [
       { kind: UnitKind.RIFLEMAN, dx: chimuLength(10), dz: -chimuLength(4), count: 1, tag: 'tupac_yupanqui' },
       { kind: UnitKind.RIFLEMAN, dx: chimuLength(12), dz: -chimuLength(8), count: 1 },
@@ -110,7 +111,9 @@ export const m6ChimuInca: MissionDef = {
     ],
   },
   mark: [{ tag: 'chan_chan', kind: BuildingKind.CENTER, owner: 1 }],
-  enemy: { active: true, difficulty: 'hard', aggression: 1.2 },
+  // Chan Chan keeps its centre and houses (a capital, not a camp), but it does not play the skirmish
+  // economy: its defence is the authored counterattack from Paramonga.
+  enemy: { active: true, difficulty: 'hard', aggression: 1.2, economy: false },
   buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
   objectives: [
     {
