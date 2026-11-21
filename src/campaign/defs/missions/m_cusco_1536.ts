@@ -3,11 +3,12 @@ import { highValleyVegetation } from '../../../model/defs/profiles';
 import { CUSCO1536_HEIGHTFIELD } from '../../../model/defs/cusco1536Heightmap';
 import type { MissionDef } from '../../types';
 
-// Cusco 1536: the Inca camp, Sacsayhuamán, the city and the withdrawal road.
+// Cusco 1536: the Inca camp, Sacsayhuamán, the city and the withdrawal road. Ollantaytambo lies
+// north-west of the city (north is -z), down the Sacred Valley.
 const CUSCO_1536_CITY = { x: 166, z: 174 } as const;
 const CUSCO_1536_SACSAY = { x: 158, z: 141 } as const;
 const CUSCO_1536_CAMP = { x: 77, z: 77 } as const;
-const CUSCO_1536_RETREAT = { x: 77, z: 218 } as const;
+const CUSCO_1536_RETREAT = { x: 100, z: 60 } as const;
 
 export const mCusco1536: MissionDef = {
   id: 'm_cusco_1536',

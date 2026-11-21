@@ -43,7 +43,9 @@ export const mMiraflores: MissionDef = {
       { text: 'Camino a la sierra', x: MIRAFLORES_RETREAT.x / 256, z: MIRAFLORES_RETREAT.z / 256, kind: 'region' },
     ],
     base: { x: MIRAFLORES_CAMP.x / 256, z: MIRAFLORES_CAMP.z / 256 },
-    opening: { x: 112 / 256, z: 176 / 256 },
+    // The camp and its line of reservists, not the redoubts 30 m south: the authored point put the troops
+    // at the top of the frame with a grove in front of them.
+    opening: { x: MIRAFLORES_CAMP.x / 256, z: (MIRAFLORES_CAMP.z + 3) / 256 },
     enemyBase: { x: MIRAFLORES_ENEMY.x / 256, z: MIRAFLORES_ENEMY.z / 256 },
     // The redoubts are the player's forts at the objective nodes (reductos 1-3); the old Arica
     // battery decor has been removed because it was a coastal battery from another battle.

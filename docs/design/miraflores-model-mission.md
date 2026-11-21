@@ -23,6 +23,8 @@ The sack of Chorrillos and the occupation of Lima are stated in the epilogue, ne
 - 256 m coast transect, painted ground every 2 m, worker crossing ≈2:22.
 - Adds `miraflores_site`, which reuses the Lima colonial kit at the `ciudad` phase with its own label: Lima in 1881 is a living capital, not the traced plaza of 1535.
 - Player camp north of the redoubt line, Chilean base at Chorrillos in the south, retreat road east towards the sierra.
+- The opening frames the camp and its line of reservists, not the redoubts 30 m south; the battlefield uses a
+  low vegetation density (a coastal-desert field), because the default coast profile grew a grove over the camp.
 - Own in-engine captures (`scripts/capture_republica_arc.mjs`), documented in `PROVENANCE.md`.
 
 ## Economy and cast

@@ -17,7 +17,8 @@ plays the siege as a **timed economy of food and seasons**, not as a capture. So
 2. **Hold the siege through the planting.** Six units hold the city approaches for 60 s while consuming
    6 food per second; an empty store pauses the siege rather than resetting it. This is the seasonal
    abstraction, not a full calendar subsystem.
-3. **Withdraw to Ollantaytambo.** Reach the road with Manco alive. The city is not captured; the epilogue
+3. **Withdraw to Ollantaytambo.** Reach the road north-west of the city with Manco alive (Ollantaytambo lies
+down the Sacred Valley, not across the pampa to the south-west). The city is not captured; the epilogue
    states the withdrawal and the continuation of the war in Vilcabamba.
 
 Optional: cut the city's supplies. The mission never stages the later «Santiago» hagiography.
