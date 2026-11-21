@@ -23,19 +23,32 @@ describe('campaign force contract', () => {
     }
   });
 
-  it('centres the opening camera on the army, not on the base or a landmark', () => {
-    const game = headlessMission('m_real_felipe');
-    try {
-      const focus = game.seatFocus(0);
-      const base = game.playerCenter(0);
-      // The siege camp's units stand away from the centre building; the frame must follow them.
-      expect(Math.hypot(focus.x - base.x, focus.z - base.z)).toBeGreaterThan(3);
-      const units = [...game.units.values()].filter((u) => u.owner === 0 && !u.dead);
-      const mean = units.reduce((sum, u) => sum + u.pos.x, 0) / units.length;
-      expect(focus.x).toBeCloseTo(mean, 5);
-    } finally {
-      game.destroy();
-      setAutoStart(true);
+  it('anchors the opening frame on the army, not on the base', () => {
+    // The four missions whose troops stood in a corner: the army is well away from the centre building.
+    for (const id of ['m_lima', 'm_lima_1821', 'm_real_felipe', 'm_cusco_1536']) {
+      const game = headlessMission(id);
+      try {
+        const focus = game.seatFocus(0);
+        const base = game.playerCenter(0);
+        expect(Math.hypot(focus.x - base.x, focus.z - base.z), `${id} frames the base`).toBeGreaterThan(3);
+      } finally {
+        game.destroy();
+        setAutoStart(true);
+      }
+    }
+    // The landmark missions keep their army on the authored opening, so the cave/huaca still frames the shot.
+    for (const id of ['m1_caral', 'm_tambotoco', 'm_tarapaca']) {
+      const game = headlessMission(id);
+      try {
+        const focus = game.seatFocus(0);
+        const size = game.settings.mapSize;
+        const opening = game.missionLayout!.opening!;
+        const distance = Math.hypot(focus.x - opening.x * size, focus.z - opening.z * size);
+        expect(distance, `${id} would lose its landmark frame`).toBeLessThanOrEqual(20);
+      } finally {
+        game.destroy();
+        setAutoStart(true);
+      }
     }
   });
 

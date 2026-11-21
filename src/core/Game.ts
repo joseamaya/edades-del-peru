@@ -1015,20 +1015,23 @@ export class Game {
 
   /**
    * Centroid of a seat's living units: the army, not the centre building, is what the opening camera has to
-   * show. Lima and the Real Felipe place their troops well away from the centre, which left them in a corner
-   * under the dialogue box.
+   * show. The farthest tenth is trimmed so one distant scout cannot drag the frame off the main body.
    */
   seatFocus(owner: number): { x: number; z: number } {
-    let x = 0;
-    let z = 0;
-    let n = 0;
-    for (const u of this.units.values()) {
-      if (u.owner !== owner || u.dead) continue;
-      x += u.pos.x;
-      z += u.pos.z;
-      n++;
-    }
-    return n > 0 ? { x: x / n, z: z / n } : this.playerCenter(owner);
+    const units = [...this.units.values()].filter((u) => u.owner === owner && !u.dead);
+    if (units.length === 0) return this.playerCenter(owner);
+    const centroid = (list: Unit[]): { x: number; z: number } => ({
+      x: list.reduce((sum, u) => sum + u.pos.x, 0) / list.length,
+      z: list.reduce((sum, u) => sum + u.pos.z, 0) / list.length,
+    });
+    const all = centroid(units);
+    if (units.length < 10) return all;
+    const keep = units
+      .map((u) => ({ u, d: distance2D(u.pos.x, u.pos.z, all.x, all.z) }))
+      .sort((a, b) => a.d - b.d)
+      .slice(0, Math.ceil(units.length * 0.9))
+      .map((entry) => entry.u);
+    return centroid(keep);
   }
 
   /** Whether a seat receives the generic four workers + scout; defaults to its own base flag. */
@@ -1135,7 +1138,7 @@ export class Game {
       this.camera.setHeight(this.siteDef.openingHeight);
       return;
     }
-    this.world.frameAuthoredSite(c.x, c.z, true);
+    this.world.frameSeat(c.x, c.z);
   }
 
   /** True while the opening flight or the chapter title card is holding the mission clock. */

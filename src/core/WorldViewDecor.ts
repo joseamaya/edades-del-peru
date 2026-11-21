@@ -89,7 +89,7 @@ const GROVE_START_CLEARANCE = 72;
 const FAUNA_TREE_CLEARANCE = 7;
 
 // How close the army has to be to an authored opening point for that point to frame the settled camera.
-const OPENING_HOLD_RADIUS = 24;
+const OPENING_HOLD_RADIUS = 20;
 
 export class WorldViewDecor {
   /** The deterministic valley scenery is drawn once (opening base or loaded save), never twice. */
@@ -470,7 +470,7 @@ export class WorldViewDecor {
       const oz = opening.z * size;
       // An authored opening frames the landmark the mission starts at; when the army is elsewhere (Lima,
       // the Real Felipe, Cusco 1536) framing it would leave the troops under the dialogue box.
-      if (Math.hypot(ox - x, oz - z) <= OPENING_HOLD_RADIUS) {
+      if (distance2D(ox, oz, x, z) <= OPENING_HOLD_RADIUS) {
         return { x: ox, z: oz, height: this.game.siteDef?.cameraHeight };
       }
     }
@@ -491,14 +491,33 @@ export class WorldViewDecor {
     return { x, z, height: this.game.siteDef?.cameraHeight };
   }
 
-  /**
-   * Frame the army. `atStart` skips the authored opening and the base/site blend: the settled camera after a
-   * briefing must show the player's units, not a landmark or the enemy's half of the map.
-   */
-  frameAuthoredSite(x: number, z: number, atStart = false): void {
-    const framing = atStart ? { x, z, height: this.game.siteDef?.cameraHeight } : this.missionFraming(x, z);
+  /** Frame the authored site relative to a point (the pre-briefing backdrop). */
+  frameAuthoredSite(x: number, z: number): void {
+    const framing = this.missionFraming(x, z);
     this.game.camera.moveTo(framing.x, framing.z, true);
     if (framing.height) this.game.camera.setHeight(framing.height);
+  }
+
+  /**
+   * Frame the army once the briefing closes. The authored opening still wins when the army stands at it (Caral's
+   * Huaca de los Ídolos, Tambotoco's cave); otherwise the frame follows the troops instead of a landmark or the
+   * enemy's half of the map.
+   */
+  frameSeat(x: number, z: number): void {
+    const opening = this.game.missionLayout?.opening;
+    let focus = { x, z };
+    if (opening) {
+      const size = this.game.settings.mapSize;
+      const ox = opening.x * size;
+      const oz = opening.z * size;
+      if (distance2D(ox, oz, x, z) <= OPENING_HOLD_RADIUS) focus = { x: ox, z: oz };
+    }
+    this.game.camera.moveTo(focus.x, focus.z, true);
+    const base = this.game.siteDef?.cameraHeight;
+    if (base) {
+      // Keep the extra height the site-biased framing always used, so the composition does not change.
+      this.game.camera.setHeight(this.game.siteDef?.framing === 'site-biased' ? base + 10 : base);
+    }
   }
 
   spawnLandmark(): void {
