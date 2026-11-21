@@ -310,6 +310,60 @@ describe('mission-scoped heightfields', () => {
     expect(drop, 'Quipaipan arroyo depth').toBeGreaterThan(1.5);
   });
 
+  it('connects the Callao bay to the Pacific and keeps the blockade on its shore', () => {
+    const { mission, override } = resolve('m_real_felipe');
+    const sample = (x: number, z: number): number => sampleAuthoredHeight(override, x, z);
+    const wet = (x: number, z: number): boolean => sample(x, z) < WATER_LEVEL;
+
+    // One water body: a closed lagoon behind a dry bar is the defect this guard exists for.
+    const n = 129;
+    const seen = new Uint8Array(n * n);
+    const cell = (x: number, z: number): number => z * n + x;
+    const sizes: number[] = [];
+    for (let j = 0; j < n; j++) {
+      for (let i = 0; i < n; i++) {
+        if (seen[cell(i, j)] || !wet(i * 2 + 1, j * 2 + 1)) continue;
+        const queue: [number, number][] = [[i, j]];
+        seen[cell(i, j)] = 1;
+        let size = 0;
+        while (queue.length) {
+          const [x, z] = queue.pop()!;
+          size++;
+          for (const [dx, dz] of [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+          ] as const) {
+            const nx = x + dx;
+            const nz = z + dz;
+            if (nx < 0 || nz < 0 || nx >= n || nz >= n) continue;
+            if (seen[cell(nx, nz)] || !wet(nx * 2 + 1, nz * 2 + 1)) continue;
+            seen[cell(nx, nz)] = 1;
+            queue.push([nx, nz]);
+          }
+        }
+        sizes.push(size);
+      }
+    }
+    expect(
+      sizes.filter((size) => size > 50),
+      'the Callao bay is a closed lagoon',
+    ).toHaveLength(1);
+
+    // The blockade is a shore position: dry ground, within a battery's reach of the bay.
+    const blockade = mission.objectives!.find((o) => o.id === 'a2_bloqueo')!;
+    const at = { x: blockade.pos!.dx, z: blockade.pos!.dz };
+    expect(sample(at.x, at.z), 'the blockade node stands in the water').toBeGreaterThan(WATER_LEVEL);
+    let nearest = Infinity;
+    for (let dz = -15; dz <= 15; dz++) {
+      for (let dx = -15; dx <= 15; dx++) {
+        if (wet(at.x + dx, at.z + dz)) nearest = Math.min(nearest, Math.hypot(dx, dz));
+      }
+    }
+    expect(nearest, 'the blockade is not on the bay shore').toBeLessThanOrEqual(15);
+  });
+
   it('is consumed by TerrainData, not just stored in the campaign data', () => {
     for (const { id } of CASES) {
       const { mission, override } = resolve(id);

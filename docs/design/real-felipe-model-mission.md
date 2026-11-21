@@ -35,10 +35,13 @@ Optional/failure: if Salom dies or the camp falls, the mission is lost.
   abstraction**: the real Real Felipe is a larger bastion, but the terrace, battery and sea approach read
   correctly at RTS zoom. No heritage card is attached; the fortress is the objective area, not a museum.
 - The bay of Callao **opens to the Pacific**: the heightfield (`scripts/build_geographic_heightmaps.py`)
-  joins the bight to the western sea through a south-west mouth, so the fortress is a port fortress and not
-  a fort behind a closed lagoon. The patriot squadron's blockade node sits on the bay's east shore, ~24 m
-  from the fortress, instead of on the open sea 130 m away across the water.
-- Player camp inland (south-east), two battery nodes between the camp and the fort, the bay on the west.
+  joins the bight to the western sea through a south-west mouth; before it, a ~27 m dry bar closed the bay
+  into a lagoon. The fortress fronts the bay (its pad is ~32 m from the water) — the bay is the port, and
+  the open Pacific is beyond it.
+- The patriot squadron's blockade node sits on the bay's east shore, ~24 m from the fortress, instead of
+  on the Pacific shore 134 m away on the far side of the bay.
+- Player camp inland to the **south-west** of the fortress, two battery nodes between the camp and the
+  fort, the bay on the west.
 - No new GLB. The reused site is recorded in `PROVENANCE.md`; the mission has its own in-engine captures
   (`scripts/capture_independencia_arc.mjs`) for the bastion, the batteries and the siege camp. A dedicated
   star-fort kit is future work.
