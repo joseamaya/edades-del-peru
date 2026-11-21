@@ -214,6 +214,8 @@ function surveyCircle(center: { x: number; z: number }, radius: number, until: C
 
 /** The main sunken plaza in front of the Mayor's stair and the larger one at the amphitheatre. */
 const MAIN_PLAZA = { x: mayor.x, z: mayor.z + mayor.d / 2 + 12.5, radius: PLAZA_DIAMETER / 2 };
+/** The Plaza Central in game coordinates: the assembly's ground, at the foot of the Mayor's stair. */
+export const CARAL_PLAZA_CENTER = { x: MAIN_PLAZA.x, z: MAIN_PLAZA.z } as const;
 const AMPH_PLAZA = { x: amphitheatre.x, z: amphitheatre.z - 10, radius: 21 / 2 };
 
 /** Traces of the main plaza (until `fill`) and the amphitheatre plaza (until `in_use`). */

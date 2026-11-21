@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import type { MissionDef, MissionPoint, ObjectiveDef } from '../src/campaign/types';
 import { setAutoStart } from '../src/core/Game';
-import { BuildingKind } from '../src/core/types';
+import { BuildingKind, UnitKind } from '../src/core/types';
 import { getTech } from '../src/model/defs/techs';
+import { CARAL_CITY_BLOCKERS, CARAL_PLAZA_CENTER } from '../src/model/defs/caralCity';
 import { headlessMission } from './headless';
 
 /**
@@ -193,6 +194,60 @@ describe('campaign mission contract', () => {
         .map((trigger) => `${mission.id}:${trigger.id}`),
     );
     expect(early).toEqual([]);
+  });
+
+  it('holds Caral’s assembly on the Plaza Central, not on the site focus', () => {
+    const mission = MISSIONS.find((m) => m.id === 'm1_caral')!;
+    const game = headlessMission('m1_caral');
+    try {
+      const objective = mission.objectives!.find((o) => o.id === 'obj_asamblea')!;
+      const anchor = game.resolveMissionPoint(objective.pos!);
+      // The plaza's authored centre, not the site reference (the intro camera focus at the Mayor's forecourt).
+      expect(anchor.x).toBeCloseTo(CARAL_PLAZA_CENTER.x, 3);
+      expect(anchor.z).toBeCloseTo(CARAL_PLAZA_CENTER.z, 3);
+      const focus = mission.layout!.site!.focus!;
+      const oldAnchor = { x: focus.x * game.settings.mapSize, z: focus.z * game.settings.mapSize };
+      expect(
+        Math.hypot(anchor.x - oldAnchor.x, anchor.z - oldAnchor.z),
+        'the assembly still sits on the site-focus anchor',
+      ).toBeGreaterThan(5);
+
+      // The sunken plaza's rim is solid, so a hold centred on it needs walkable ground on the apron.
+      const blockers = [...(game.siteDef?.blockers ?? []), ...CARAL_CITY_BLOCKERS];
+      const inside = (x: number, z: number): boolean =>
+        blockers.some((b) => Math.abs(x - b.x) <= b.w / 2 && Math.abs(z - b.z) <= b.d / 2);
+      const radius = objective.radius ?? 6;
+      const probe = (x: number, z: number, fraction: number): number => {
+        let free = 0;
+        for (let i = 0; i < 24; i++) {
+          const angle = (i / 24) * Math.PI * 2;
+          if (!inside(x + Math.cos(angle) * radius * fraction, z + Math.sin(angle) * radius * fraction)) free++;
+        }
+        return free;
+      };
+      expect(probe(anchor.x, anchor.z, 0.75), 'the assembly hold has no walkable apron').toBeGreaterThan(0);
+
+      // And it can be met: one worker on the apron fills the 20 s hold (a second of margin).
+      const missionState = game.mission!;
+      missionState.start();
+      missionState.objState.set('a2_excedente', 'completed');
+      expect(missionState.activateObjective('obj_asamblea')).toBe(true);
+      const worker = [...game.units.values()].find((u) => u.owner === 0 && u.kind === UnitKind.WORKER && !u.dead)!;
+      let spot: { x: number; z: number } | null = null;
+      for (let i = 0; i < 24 && !spot; i++) {
+        const angle = (i / 24) * Math.PI * 2;
+        const x = anchor.x + Math.cos(angle) * radius * 0.75;
+        const z = anchor.z + Math.sin(angle) * radius * 0.75;
+        if (!inside(x, z)) spot = { x, z };
+      }
+      expect(spot, 'no apron spot for the assembly').not.toBeNull();
+      worker.pos.set(spot!.x, game.terrain.getHeight(spot!.x, spot!.z), spot!.z);
+      for (let i = 0; i < 21 * 60; i++) game.update(1 / 60, i / 60);
+      expect(missionState.getObjectiveState('obj_asamblea'), 'the assembly hold never advances').toBe('completed');
+    } finally {
+      game.destroy();
+      setAutoStart(true);
+    }
   });
 
   it('does not finish the Tupac Amaru supply hold while the player does nothing', () => {

@@ -69,6 +69,13 @@ separate missions.
   built on top. The city's paint colour changes per phase (documented as changing by period).
 - Optional objectives teach religion and science: the circular plaza, the Amphitheatre (flutes and
   trumpets), the Huanca monolith.
+- The communal assembly is a `hold` on the **Plaza Central** (`CARAL_PLAZA_CENTER` in `caralCity.ts`, the
+  sunken plaza at the foot of the Mayor's stair), not on `ref: 'site'`: that reference resolves to the
+  intro camera focus, which for m1 is the Mayor's forecourt, so the assembly marker sat on the pyramid's
+  stair. The plaza's rim is solid, so the crew forms on the apron inside the hold radius. The other Act III
+  holds keep the site reference because their titles say «junto a la Pirámide Mayor».
+  `tests/campaign-contract.test.ts` guards the anchor, that it is no longer the site-focus point, and that
+  the hold advances.
 - Food surplus in the storehouse feeds the builders; an empty store pauses construction.
 - During the festive calendar, temporary fair tents appear in the open plazas and pilgrims and traders
   arrive. These replace the current unattested "market stalls" reading: tents are temporary and seasonal.
