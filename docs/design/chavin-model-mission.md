@@ -63,6 +63,9 @@ building exists. The hidden source GLB keeps the click proxies; the kit draws th
 
 - `allowedBuildings`: `HOUSE`, `MILL`, `FARM`, `MARKET`.
 - `allowedUnits`: `WORKER`, `SCOUT`.
+- `startingEra: REGIONAL_STATES` is the internal tech level that `HistoricalPeriod.EARLY_HORIZON` maps to
+  (`EARLY_HORIZON`/`EARLY_INTERMEDIATE` share it); the mission is 900–200 B.C. on every card and in the
+  briefing, because the HUD prints the period, not the era. `tests/defs.test.ts` enforces the mapping.
 - No military: there is no documented Chavín–Paracas war.
 - Technologies are filtered by period, civilization and the mission's `allowedTechs`, which must match the
   buildings the mission allows: only `irrigation_canal` and `chavin_pilgrimage` (both researched at the town

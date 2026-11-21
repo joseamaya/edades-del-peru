@@ -65,6 +65,7 @@ describe('campaign authored geography', () => {
 
   it('places later enemy openings at their authored sites, away from the player base', () => {
     for (const id of [
+      'm3_moche_recuay',
       'm5_yahuar_pampa',
       'm6_chimu_inca',
       'm6b_guerra_civil',
