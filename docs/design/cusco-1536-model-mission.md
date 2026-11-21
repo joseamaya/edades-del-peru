@@ -27,7 +27,7 @@ Optional: cut the city's supplies. The mission never stages the later «Santiago
 
 - 256 m andes transect, painted ground every 2 m, worker crossing ≈2:22.
 - Reuses `cusco_inca_site` and its heightfield; the site is the living Inca capital, not a ruin.
-- Player camp in the campiña, enemy in the plaza, Sacsayhuamán on the heights, retreat south.
+- Player camp in the campiña, enemy in the plaza, Sacsayhuamán on the heights, retreat north-west.
 - Own in-engine captures (`scripts/capture_virreinato_arc.mjs`), documented in `PROVENANCE.md`.
 
 ## Economy and cast
