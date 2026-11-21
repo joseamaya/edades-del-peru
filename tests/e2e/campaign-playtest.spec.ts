@@ -311,7 +311,12 @@ test('plays m9 by refusing the summons, mining the approaches and holding the la
     const own = (kind?: string) =>
       [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead && (!kind || u.kind === kind)) as any[];
     const fort = [...g.buildings.values()].find((b: any) => b.tag === 'puerto') as any;
-    const center = m.getObjectiveAnchor('a3_asalto') as { x: number; z: number };
+    // Each act has its own line, ~19 m apart and outside each other's hold radius, so the squad has to move.
+    const lineFor = (): { x: number; z: number } | null => {
+      const id = m.getObjectiveState('a3_asalto') === 'activo' ? 'a3_asalto' : null;
+      const active = id ?? (m.getObjectiveState('a2_bombardeo') === 'activo' ? 'a2_bombardeo' : null);
+      return active ? (m.getObjectiveAnchor(active) as { x: number; z: number } | null) : null;
+    };
     const mines = m.getObjectiveAnchor('a1_minas') as { x: number; z: number } | null;
     if (!mines) return { setup: false };
     // The sappers march while the summons beat runs; the line re-forms around the cuartel.
@@ -323,10 +328,39 @@ test('plays m9 by refusing the summons, mining the approaches and holding the la
     for (let i = 0; i < Math.ceil(430 / dt) && !m.ended; i++) {
       if (i % 15 === 0) dismissCard();
       if (i % Math.ceil(4 / dt) === 0) {
-        const fighters = own()
-          .filter((u) => u.kind !== 'worker' && u.tag !== 'bolognesi')
-          .map((u) => u.id);
-        if (fighters.length) order(fighters, center.x, center.z);
+        const fighters = own().filter((u) => u.kind !== 'worker' && u.tag !== 'bolognesi');
+        const line = lineFor();
+        if (line) {
+          // Hold the line in a ring (a clump eats the bombardment) and answer what comes near it: standing
+          // still while the enemy picks the squad apart is not a defence.
+          const enemies = [...g.units.values()].filter(
+            (u: any) => u.owner === 1 && !u.dead && u.kind !== 'worker',
+          ) as any[];
+          fighters.forEach((u, k) => {
+            const onLine = enemies
+              .map((e) => ({ e, d: Math.hypot(e.pos.x - line.x, e.pos.z - line.z) }))
+              .filter((x) => x.d <= 34)
+              .sort(
+                (a, b) =>
+                  Math.hypot(a.e.pos.x - u.pos.x, a.e.pos.z - u.pos.z) -
+                  Math.hypot(b.e.pos.x - u.pos.x, b.e.pos.z - u.pos.z),
+              )[0];
+            if (onLine) {
+              g.executeCommand(
+                {
+                  kind: 'order',
+                  unitIds: [u.id],
+                  order: { kind: 'attack', target: { entityId: onLine.e.id } },
+                  clear: true,
+                },
+                false,
+              );
+              return;
+            }
+            const ang = (k / Math.max(1, fighters.length)) * Math.PI * 2;
+            order([u.id], line.x + Math.cos(ang) * 6, line.z + Math.sin(ang) * 6);
+          });
+        }
         const hero = own().find((u) => u.tag === 'bolognesi');
         if (hero && fort && !fort.dead) order([hero.id], fort.pos.x - 4, fort.pos.z - 4);
         if (m.getObjectiveState('a1_minas') === 'activo') {

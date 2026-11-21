@@ -4,17 +4,29 @@ import { ARICA_MAP_SIZE, aricaLength, aricaPoint } from '../../../model/defs/ari
 
 // The authored Arica heightfield: the 192 m composition (sea to the west, the port terrace, the battery
 // site and the northern Chilean camp) sampled 4/3 larger on the 256 m map.
-const ARICA_BASE_WORLD = aricaPoint({ x: 73, z: 115 });
+const ARICA_BASE_SOURCE = { x: 73, z: 115 } as const;
+const ARICA_BASE_WORLD = aricaPoint(ARICA_BASE_SOURCE);
+/** A point authored in the former 192 m site frame, as an absolute mission point. */
+const aricaWorldPoint = (x: number, z: number) => {
+  const p = aricaPoint({ x, z });
+  return { dx: p.x, dz: p.z };
+};
 const ARICA_BASE_ANCHOR = {
   x: ARICA_BASE_WORLD.x / ARICA_MAP_SIZE,
   z: ARICA_BASE_WORLD.z / ARICA_MAP_SIZE,
 } as const;
 const ARICA_MINES_WORLD = { dx: aricaLength(92), dz: aricaLength(104) } as const;
 const ARICA_CAMP_ANCHOR = { x: 0.78, z: 0.22 } as const;
-// The two lines the mission defends, north of the port terrace toward the Chilean camp (the waves come
-// from the north-east). Named so the mission, its design doc and its tests agree on what they are.
-const ARICA_CUARTEL_LINE = { ref: 'player', dx: 0, dz: -aricaLength(20) } as const;
-const ARICA_LAST_LINE = { ref: 'player', dx: -aricaLength(8), dz: -aricaLength(22) } as const;
+// The two lines the mission defends, north of the port terrace toward the Chilean camp. Authored world
+// points: anchored on `ref: 'player'` they followed the centre building, and the bombardment that razed
+// it silently moved both objectives mid-act. Each line sits outside the other's hold radius, so the
+// assault is a line to march to and not the ground the bombardment was already held on.
+const ARICA_CUARTEL_LINE = aricaWorldPoint(ARICA_BASE_SOURCE.x, ARICA_BASE_SOURCE.z - 20);
+const ARICA_LAST_LINE = aricaWorldPoint(ARICA_BASE_SOURCE.x - 8, ARICA_BASE_SOURCE.z - 32);
+// Entry points on the northern approach: the columns crest the ridge instead of appearing on the line
+// they must take.
+const ARICA_APPROACH_EAST = aricaWorldPoint(ARICA_BASE_SOURCE.x + 30, ARICA_BASE_SOURCE.z - 44);
+const ARICA_APPROACH_WEST = aricaWorldPoint(ARICA_BASE_SOURCE.x - 28, ARICA_BASE_SOURCE.z - 46);
 
 export const m9GuerraPacifico: MissionDef = {
   id: 'm9_guerra_pacifico',
@@ -79,7 +91,7 @@ export const m9GuerraPacifico: MissionDef = {
       { kind: UnitKind.SOLDIER, dx: aricaLength(8), dz: 0, count: 4 },
     ],
   },
-  enemy: { active: true, difficulty: 'normal', aggression: 0.35, economy: false },
+  enemy: { active: true, difficulty: 'normal', aggression: 0.35, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
   intro: [
@@ -235,12 +247,12 @@ export const m9GuerraPacifico: MissionDef = {
           units: [
             { kind: UnitKind.SOLDIER, count: 4 },
             { kind: UnitKind.RIFLEMAN, count: 2 },
-            // The bombardment is fought with the guns that actually battered the plaza, not infantry alone.
-            { kind: UnitKind.ARTILLERY, count: 1 },
           ],
-          pos: { dx: aricaLength(115), dz: aricaLength(100) },
+          // The bombardment batters the line the garrison holds, not the town behind it.
+          spawn: ARICA_APPROACH_EAST,
+          pos: ARICA_CUARTEL_LINE,
           radius: aricaLength(6),
-          target: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
+          target: ARICA_CUARTEL_LINE,
         },
         {
           type: 'reinforce',
@@ -277,9 +289,10 @@ export const m9GuerraPacifico: MissionDef = {
             { kind: UnitKind.RIFLEMAN, count: 2 },
             { kind: UnitKind.CHILE_INFANTE, count: 1 },
           ],
-          pos: { dx: aricaLength(140), dz: aricaLength(100) },
+          spawn: ARICA_APPROACH_EAST,
+          pos: ARICA_LAST_LINE,
           radius: aricaLength(7),
-          target: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
+          target: ARICA_LAST_LINE,
         },
         {
           type: 'wave',
@@ -288,9 +301,10 @@ export const m9GuerraPacifico: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 4 },
             { kind: UnitKind.RIFLEMAN, count: 2 },
           ],
-          pos: { dx: aricaLength(95), dz: aricaLength(60) },
+          spawn: ARICA_APPROACH_WEST,
+          pos: ARICA_LAST_LINE,
           radius: aricaLength(6),
-          target: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
+          target: ARICA_LAST_LINE,
         },
         {
           type: 'reinforce',

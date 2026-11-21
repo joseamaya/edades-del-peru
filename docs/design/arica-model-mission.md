@@ -58,8 +58,18 @@ recorded here and in the quality bar. The Morro is not invented as a new mesh.
   authored waves, which is what the dossier describes as an abstraction.
 - The bombardment and the assault are `hold` objectives on two named lines north of the port terrace
   (`ARICA_CUARTEL_LINE`, `ARICA_LAST_LINE`), not on the player's start: anchored on the terrace they
-  completed after 60 s and 120 s with no order. The bombardment wave carries one Chilean gun — the artillery
-  that actually battered the plaza — while the garrison still has no artillery of its own.
+  completed after 60 s and 120 s with no order. Both are authored **world points**, not `ref: 'player'`:
+  tied to the player's centre, a bombardment that razed it silently moved the objectives mid-act and the
+  hold could not be finished.
+- The waves enter from the northern approach (`ARICA_APPROACH_EAST`/`ARICA_APPROACH_WEST`) and attack those
+  two lines, not the town behind them; the fort and the centre only fall if the line breaks. The 20 m
+  scripted pursuit keeps a column pressing instead of freezing at the edge of its firing envelope.
+- **No artillery on the attacking side.** The engine's siege piece (`ARTILLERY`) has 150 attack and a 56 m
+  range against an 84 HP infantryman with a 13 m weapon: it removes the garrison from outside every player
+  weapon, so a mission whose premise is "hold the line with the infantry you have" cannot field one and
+  stay winnable. The bombardment is therefore **narration only** (intro, act card, dialogue): no gun is
+  fielded and no off-board strike exists in the engine; the gun remains in the approved intro render, where
+  it is a depiction and not a unit. `tests/campaign-forces.test.ts` guards both rules.
 
 ## Opening and closing
 
@@ -97,7 +107,7 @@ approaches and hold the last line. The summons is told by the intro and the dial
 
 ## Pacing
 
-The pattern's target is 30–40 min. The real-command bot reaches the documented ending in about 7 min of
+The pattern's target is 30–40 min. The real-command bot reaches the documented ending in about 4 min of
 simulated time; a human playtest is still needed to measure the full path (the optional battery, the base
 economy and the assault). The 30–40 target is **not** met and is documented as an exception instead of
 padding the mission with invented acts. Re-measure after map, wave or economy changes.
