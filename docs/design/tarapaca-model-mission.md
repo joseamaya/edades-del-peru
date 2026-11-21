@@ -89,7 +89,15 @@ Arica. Sources and certainty: [`docs/historia/campanas/tarapaca.md`](../historia
 
 ## Opening and closing
 
-- Three beats: the quebrada, the echelon attack, the tactical victory and retreat.
+- Cinema intro (`introStyle: 'cinema'`, the pilot of `src/ui/CinemaIntro.ts`): a letterboxed film of three
+  beats with centred subtitles. The quebrada at dawn (`cine-quebrada`, slow push-in); a campaign map painted
+  from this terrain (`src/ui/cinemaMap.ts`, cropped to the theatre) where the three Chilean columns draw
+  themselves along their real entry points and the Pachica reinforcements arrive dashed; the Peruvian line
+  facing the first column (`cine-linea`, pan). The intro states the mission, not its outcome: the tactical
+  victory and the retreat belong to the act cards and the epilogue.
+- The two stills are 1920x1080 in-engine captures with staged troops and the world labels hidden:
+  `node scripts/capture_tarapaca_cinema.mjs [--only=cine-linea] [--gpu]`. Close ground-level cameras were
+  tried and dropped: the unit and building models do not hold up that close; illustrated art would.
 - Briefing art `media/tarapaca/intro-quebrada.webp`; act cards `intro-alturas` and `intro-retirada`;
   epilogue `intro-epilogo`. Regenerated after the Atacama pass with
   `node scripts/capture_republica_arc.mjs --mission=m_tarapaca`; the old art still showed a green field.
@@ -115,8 +123,11 @@ Arica. Sources and certainty: [`docs/historia/campanas/tarapaca.md`](../historia
   `tarapaca-heights --target=160,120 --height=38`, `tarapaca-pachica --target=198,150 --height=34` and
   `tarapaca-briefing --wait=6000` after the same URL. The opening shot shows the exchange (13/16 and
   “Unidad bajo ataque”), not a silent stand-off.
-- Intro art: `node scripts/capture_republica_arc.mjs --mission=m_tarapaca` rewrites the four
-  `public/media/tarapaca/intro-*.webp` images from the current desert scene.
+- Briefing, act-card and epilogue art: `node scripts/capture_republica_arc.mjs --mission=m_tarapaca` rewrites
+  the four `public/media/tarapaca/intro-*.webp` images from the current desert scene; the cinema stills use
+  `scripts/capture_tarapaca_cinema.mjs`.
+- Cinema intro: `tests/cinema-intro.test.ts` (map marks inside the crop, readable subtitle timing, escaped
+  labels, per-map SVG ids).
 - Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in
   `yarn bench:check`.
 - Open: human no-cheat playtest.

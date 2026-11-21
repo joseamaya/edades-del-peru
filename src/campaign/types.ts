@@ -462,6 +462,11 @@ export interface MissionDef {
   legacyPhases?: { objectiveId: string; phase: string }[];
   /** Narrated intro played before the briefing (skipped with ?intro=0). */
   intro?: CinematicBeat[];
+  /**
+   * `cinema` plays the intro as a letterboxed film: full-bleed art with a slow camera move, subtitles and
+   * animated campaign maps. Missing, the intro uses the classic slide player.
+   */
+  introStyle?: 'cinema';
   /** Backdrop of the victory epilogue (public asset path). */
   epilogueImage?: string;
   /** Show the step-by-step guided tutorial at start (e.g. the Caral mission). */

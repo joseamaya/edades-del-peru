@@ -51,6 +51,7 @@ import { SERIES_INTRO } from '../campaign/defs/cinematics';
 import { CAMPAIGN_ONLY } from '../core/release';
 import { markMissionComplete, parseCampaignProgress } from '../campaign/progress';
 import { CinematicPlayer } from './CinematicPlayer';
+import { CinemaIntro } from './CinemaIntro';
 import { CAMPAIGN_ART, MENU_BACKDROP, MISSION_ART } from './menuArt';
 import { renderBriefing } from './MissionBriefing';
 import { decorateTitleScreen, renderCampaignPath, renderMainMenu } from './SeriesMenu';
@@ -1521,6 +1522,21 @@ export class HUD {
     // The world waits behind the intro, as it does behind the briefing (the mission clock must not run).
     if (!this.game.getPaused()) this.game.togglePause();
     this.game.audio.cinematicSting?.();
+    if (mis.introStyle === 'cinema') {
+      const terrain = this.game.terrain;
+      new CinemaIntro(this.root, {
+        beats,
+        series: mis.title,
+        finalLabel: t('hud.cinematic.toBriefing'),
+        terrain: {
+          size: terrain.size,
+          heightAt: (x, z) => terrain.getHeight(x, z),
+          waterLevel: terrain.data.waterLevel,
+        },
+        onDone: done,
+      });
+      return;
+    }
     new CinematicPlayer(this.root, {
       beats,
       background: MENU_BACKDROP,

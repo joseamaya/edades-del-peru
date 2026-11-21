@@ -1,6 +1,7 @@
 import type { CinematicBeat } from '../campaign/defs/cinematics';
 import { t } from '../i18n';
 import { publicAsset } from '../util/publicAsset';
+import { escapeHtml } from '../util/escapeHtml';
 
 export interface CinematicOptions {
   beats: CinematicBeat[];
@@ -113,8 +114,4 @@ export class CinematicPlayer {
     this.overlay.remove();
     this.options.onDone();
   }
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }

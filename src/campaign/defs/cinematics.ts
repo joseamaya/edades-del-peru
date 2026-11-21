@@ -8,6 +8,54 @@ export interface CinematicBeat {
   source?: string;
   /** Optional backdrop for this beat (public asset path, e.g. 'media/caral/intro-aspero.webp'). */
   image?: string;
+  /** Slow camera move over the backdrop in the cinema intro (Ken Burns). Defaults to `push`. */
+  motion?: CinematicMotion;
+  /** Animated campaign map drawn from the mission terrain; replaces the backdrop for this beat. */
+  map?: CinematicMap;
+}
+
+export type CinematicMotion = 'push' | 'pull' | 'pan-left' | 'pan-right';
+
+/** A point on the mission map, in world coordinates (x east, z south; 0..map size). */
+export interface CinematicMapPoint {
+  x: number;
+  z: number;
+}
+
+/** A labelled place or a force marker on the animated map. */
+export interface CinematicMapMark extends CinematicMapPoint {
+  label: string;
+  /** `place` is a town or feature; `player`/`enemy` draw a force marker in the side's colour. */
+  side: 'place' | 'player' | 'enemy';
+  /** Seconds after the beat opens before the mark appears. */
+  delay?: number;
+}
+
+/** A movement arrow drawn progressively along its points. */
+export interface CinematicMapRoute {
+  points: CinematicMapPoint[];
+  side: 'player' | 'enemy';
+  label?: string;
+  /** Seconds after the beat opens before the arrow starts drawing. */
+  delay?: number;
+  /** Seconds the arrow takes to reach its head (default 2.2). */
+  draw?: number;
+  /** A dashed line: reinforcements, a secondary road. */
+  dashed?: boolean;
+}
+
+/** Square part of the map to show, in world coordinates (top-left corner and side). */
+export interface CinematicMapView {
+  x: number;
+  z: number;
+  size: number;
+}
+
+export interface CinematicMap {
+  marks: CinematicMapMark[];
+  routes: CinematicMapRoute[];
+  /** Crop to the theatre of operations; missing, the whole map. */
+  view?: CinematicMapView;
 }
 
 /** Short first-visit prologue for the whole saga. */
