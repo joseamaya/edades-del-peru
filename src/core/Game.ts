@@ -103,6 +103,7 @@ import { detectSoftwareRenderer } from '../util/gpu';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
 import { getUnitStats, unitAvailableToCiv, unitDisplayName, type DamageClass } from '../model/defs/units';
+import { commanderById } from '../model/defs/commanders';
 import { getTech } from '../model/defs/techs';
 import { AudioEngine } from '../audio/AudioEngine';
 import { Mission } from '../campaign/Mission';
@@ -1024,6 +1025,11 @@ export class Game {
     const p = this.players[owner];
     const override = owner === 0 ? this.missionDef?.unitNames?.[kind] : undefined;
     return override ?? unitDisplayName(kind, p?.civ, p?.era ?? this.settings.startingEra);
+  }
+
+  /** Name of one entity: a tagged named character keeps their name instead of the generic unit kind. */
+  entityName(unit: { kind: UnitKind; owner: number; tag?: string }): string {
+    return commanderById(unit.tag)?.name ?? this.unitName(unit.kind, unit.owner);
   }
 
   /** Find the nearest solid land to a point (for scripted spawns). */

@@ -302,8 +302,8 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   },
   republica_defensor: {
     id: UnitKind.REPUBLICA_DEFENSOR,
-    name: 'Defensor de Arica',
-    description: 'Infantería de línea de la República; resiste posiciones y protege el puerto.',
+    name: 'Defensor republicano',
+    description: 'Infantería de línea de la República; resiste posiciones y sostiene una línea de fuego.',
     category: 'unique',
     baseKind: UnitKind.RIFLEMAN,
     civs: [CivId.REPUBLIC],
@@ -1306,7 +1306,7 @@ export const UNIT_INFO: Record<UnitKind, { name: string; icon: string; category:
   inca_warrior: { name: 'Guerrero Inca', icon: '☀️', category: 'Única' },
   realista_dragon: { name: 'Dragón Realista', icon: '🐎', category: 'Única' },
   patriota_montonera: { name: 'Montonera', icon: '🐎', category: 'Única' },
-  republica_defensor: { name: 'Defensor de Arica', icon: '🎯', category: 'Única' },
+  republica_defensor: { name: 'Defensor republicano', icon: '🎯', category: 'Única' },
   chile_infante: { name: 'Infante de Línea', icon: '🎯', category: 'Única' },
 };
 

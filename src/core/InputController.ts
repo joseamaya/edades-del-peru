@@ -309,7 +309,7 @@ export class InputController {
       const own = picked.unit.owner === 0 ? 'Tú' : (this.game.players[picked.unit.owner]?.name ?? 'Enemigo');
       return {
         icon: unitDisplayIcon(picked.unit.kind, picked.unit.era),
-        title: this.game.unitName(picked.unit.kind, picked.unit.owner),
+        title: this.game.entityName(picked.unit),
         detalle: `${own} · HP ${Math.ceil(picked.unit.hp)}/${Math.ceil(picked.unit.maxHp)} · ${unitDisplayDescription(
           picked.unit.kind,
           this.game.players[picked.unit.owner]?.civ,
@@ -935,7 +935,7 @@ export class InputController {
             this.game.hud?.showToast(t('hud.camera.released'), 'info');
           } else {
             this.game.camera.follow(u.id);
-            const name = this.game.unitName(u.kind, u.owner);
+            const name = this.game.entityName(u);
             this.game.hud?.showToast(t('hud.camera.following', { unit: name }), 'info');
           }
         }

@@ -125,7 +125,7 @@ test('post-1532 civs train their unique units', async ({ page }) => {
   for (const [civ, period, building, name, kind] of [
     ['realistas', 6, 'stable', 'Dragón Realista', 'realista_dragon'],
     ['patriotas', 7, 'stable', 'Montonera', 'patriota_montonera'],
-    ['republica', 8, 'arsenal', 'Defensor de Arica', 'republica_defensor'],
+    ['republica', 8, 'arsenal', 'Defensor republicano', 'republica_defensor'],
     ['chile', 8, 'arsenal', 'Infante de Línea', 'chile_infante'],
   ] as const) {
     await boot(page, civ, period);

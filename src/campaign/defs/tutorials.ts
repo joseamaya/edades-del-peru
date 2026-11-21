@@ -366,7 +366,7 @@ export const TUTORIALS: Record<string, TutorialDef> = {
       {
         id: 'select',
         text: 'Selecciona a los defensores de Arica: la guarnición debe sostener el puerto.',
-        check: { type: 'selectUnit', unitKind: UnitKind.RIFLEMAN },
+        check: { type: 'selectUnit', unitKind: UnitKind.REPUBLICA_DEFENSOR },
       },
       {
         id: 'battery',

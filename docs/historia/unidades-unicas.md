@@ -99,15 +99,17 @@ una caballería ligera y velocísima; «Campaña de la Sierra» mejora la veloci
 
 | Civ | Unidad única | Base | Tecnología única | Fuente |
 |---|---|---|---|---|
-| República del Perú | Defensor de Arica | Arquero (`rifleman`) | Defensa del Puerto (República y Contemporáneo) | [`civilizaciones/republica.md`](./civilizaciones/republica.md), [`campanas/guerra_del_pacifico.md`](./campanas/guerra_del_pacifico.md) |
+| República del Perú | Defensor republicano | Arquero (`rifleman`) | Defensa del Puerto (República y Contemporáneo) | [`civilizaciones/republica.md`](./civilizaciones/republica.md), [`campanas/guerra_del_pacifico.md`](./campanas/guerra_del_pacifico.md) |
 | Chile | Infante de Línea | Arquero (`rifleman`) | Escuadra Blindada | [`civilizaciones/chile.md`](./civilizaciones/chile.md), [`atuendos.md`](./atuendos.md) §4 |
 
 ### República del Perú
 
 La defensa terrestre de Arica (1880) y la figura de Bolognesi son el referente de la guarnición
-republicana. El «Defensor de Arica» es una infantería de línea resistente y se limita al periodo
-República; «Defensa del Puerto» refuerza su armadura y sigue disponible en el Contemporáneo. —
-[`civilizaciones/republica.md`](./civilizaciones/republica.md),
+republicana. El «Defensor republicano» es una infantería de línea resistente y se limita al periodo
+República; «Defensa del Puerto» refuerza su armadura y sigue disponible en el Contemporáneo. La
+campaña lo nombra según su escenario: «Defensor de Arica» en Arica, «Defensor de Tarapacá» en la
+quebrada, «Reservista de Miraflores» en la línea de Lima y «Guerrillero de la Breña» en la sierra.
+— [`civilizaciones/republica.md`](./civilizaciones/republica.md),
 [`campanas/guerra_del_pacifico.md`](./campanas/guerra_del_pacifico.md), [`atuendos.md`](./atuendos.md) §4.
 
 ### Chile

@@ -11,6 +11,8 @@ import { launchChromium, withViteServer, reviewDir, cliArg } from './lib.mjs';
  * `--target=x,z` flies to an explicit world point (e.g. `--target=160,120` for a mission landmark) and
  * `--no-hud` hides the DOM HUD so a capture shows the terrain and the site alone.
  * `--no-labels` also hides the in-world place names, so a blind-test sheet cannot give the mission away.
+ * `--select=N` selects the player's first N units before the shot; `--select=<unit kind>` (e.g.
+ * `republica_defensor`) selects every unit of that kind, so unit panels and their names are visible.
  */
 const name = process.argv[2] ?? 'default';
 const urlArg = cliArg('url');
@@ -23,6 +25,8 @@ const siteHeight = Number.parseFloat(cliArg('height', '78'));
 const targetArg = cliArg('target', '');
 const seed = parseInt(cliArg('seed', '12345'), 10);
 const numShots = parseInt(cliArg('shots', '1'), 10);
+/** Select the player's first N units (or every unit of a kind) before the capture. */
+const selectArg = cliArg('select', '');
 
 const outDir = reviewDir();
 
@@ -51,6 +55,19 @@ async function main() {
       .catch(() => {});
   }
   await page.waitForTimeout(wait);
+  if (selectArg) {
+    await page
+      .evaluate((arg) => {
+        const g = window.game;
+        if (!g) return;
+        const count = Number.parseInt(arg, 10);
+        const owned = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead);
+        const picked = Number.isNaN(count) ? owned.filter((u) => u.kind === arg) : owned.slice(0, count);
+        g.selectUnits(picked.map((u) => u.id));
+      }, selectArg)
+      .catch((e) => errors.push('SELECT: ' + e.message));
+    await page.waitForTimeout(600);
+  }
   if (noHud) {
     await page.evaluate(() => {
       const root = document.getElementById('ui-root');
