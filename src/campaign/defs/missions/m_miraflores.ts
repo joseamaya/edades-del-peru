@@ -143,7 +143,7 @@ export const mMiraflores: MissionDef = {
     BuildingKind.MARKET,
   ],
   buildingNames: { [BuildingKind.FORTRESS]: 'Reducto' },
-  // The Miraflores line was held by Limeño reservists, not by the Arica garrison.
+  // The Miraflores line was held by limeño reservists, not by the Arica garrison.
   unitNames: { [UnitKind.REPUBLICA_DEFENSOR]: 'Reservista de Miraflores' },
   objectives: [
     {

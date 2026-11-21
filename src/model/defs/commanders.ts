@@ -555,6 +555,13 @@ export function commanderById(id: string | undefined): CommanderDef | undefined 
   return id ? BY_ID.get(id) : undefined;
 }
 
+/**
+ * Name of one entity: a tagged named character keeps their name instead of the generic unit kind.
+ */
+export function namedEntityName(tag: string | undefined, fallback: string): string {
+  return commanderById(tag)?.name ?? fallback;
+}
+
 /** Nameplate / HUD title for a commander; heroes carry the star. */
 export function commanderLabel(commander: CommanderDef): string {
   return commander.hero ? `★ ${commander.name}` : commander.name;

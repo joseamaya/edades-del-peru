@@ -25,7 +25,6 @@ const siteHeight = Number.parseFloat(cliArg('height', '78'));
 const targetArg = cliArg('target', '');
 const seed = parseInt(cliArg('seed', '12345'), 10);
 const numShots = parseInt(cliArg('shots', '1'), 10);
-/** Select the player's first N units (or every unit of a kind) before the capture. */
 const selectArg = cliArg('select', '');
 
 const outDir = reviewDir();
@@ -62,6 +61,9 @@ async function main() {
         if (!g) return;
         const count = Number.parseInt(arg, 10);
         const owned = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead);
+        if (Number.isNaN(count) && !owned.some((u) => u.kind === arg)) {
+          throw new Error(`--select: no player unit of kind "${arg}"`);
+        }
         const picked = Number.isNaN(count) ? owned.filter((u) => u.kind === arg) : owned.slice(0, count);
         g.selectUnits(picked.map((u) => u.id));
       }, selectArg)
