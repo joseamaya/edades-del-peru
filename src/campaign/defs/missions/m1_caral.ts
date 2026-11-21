@@ -1,6 +1,7 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import type { MissionDef } from '../../types';
 import { CARAL_MAP_SIZE, CARAL_SITE_BUILD_KEEPOUT, CARAL_SITE_ORIGIN, caralKeepout } from '../../../model/defs/sites';
+import { CARAL_PLAZA_CENTER } from '../../../model/defs/caralCity';
 
 /** Caral's Act III work turns: a worker holds the site while the communal store feeds the crew. */
 const CARAL_WORK_TURN = {
@@ -325,7 +326,9 @@ export const m1Caral: MissionDef = {
     {
       id: 'obj_asamblea',
       kind: 'hold',
-      pos: { ref: 'site', dx: 0, dz: 0 },
+      // The plaza's authored world point. `ref: 'site'` resolves to the intro camera focus (the Mayor's
+      // forecourt), which is what put the assembly marker on the pyramid's stair.
+      pos: { dx: CARAL_PLAZA_CENTER.x, dz: CARAL_PLAZA_CENTER.z },
       radius: 18,
       time: 20,
       unitKind: UnitKind.WORKER,
