@@ -188,7 +188,7 @@ export const mMiraflores: MissionDef = {
       radius: 16,
       hidden: true,
       requires: 'a2_linea',
-      title: 'Retira a Cáceres y a la fuerza hacia la sierra',
+      title: 'Retira a Cáceres hacia la sierra',
     },
     {
       id: 'a3_caceres',
@@ -219,7 +219,7 @@ export const mMiraflores: MissionDef = {
           kicker: 'Acto II · Miraflores',
           title: 'La línea de fuego',
           image: 'media/miraflores/intro-reductos.webp',
-          text: 'Los reductos están listos. La infantería chilena avanza sobre la línea; los reservistas y el sector derecho de Cáceres deben sostenerlo.',
+          text: 'Los reductos están listos. La infantería chilena avanza sobre la línea; los reservistas y el sector derecho de Cáceres deben sostenerla.',
         },
         { type: 'objective', objectiveId: 'a2_linea', state: 'activate', announce: true },
         {

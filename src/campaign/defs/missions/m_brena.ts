@@ -19,7 +19,7 @@ export const mBrena: MissionDef = {
   title: 'El brujo de los Andes',
   subtitle: 'Sierra central · 1882–1883',
   history:
-    'Tras la caída de Lima, Andrés A. Cáceres organiza la resistencia en la sierra central. La campaña de la Breña combina guerrillas, comunidades campesinas, emboscadas y galgas contra las columnas chilenas. Combina la guerra de guerrillas con batallas campales cuando no puede evitarlas; en Huamachuco la munición se agota y la batalla se pierde.\n' +
+    'Tras la caída de Lima, Andrés A. Cáceres organiza la resistencia en la sierra central. La campaña de la Breña combina guerrillas, comunidades campesinas, emboscadas y galgas contra las columnas chilenas.\n' +
     'La resistencia culmina en Huamachuco (10 de julio de 1883): la munición se agota y la batalla se pierde, pero Cáceres escapa a Ayacucho. El Tratado de Ancón cierra la guerra ese mismo año.',
   victory:
     'Cáceres y parte de la fuerza escapan de Huamachuco. La campaña no gana la guerra, pero sostiene la resistencia hasta el Tratado de Ancón y deja una memoria de guerrilla campesina. La represión y los fusilamientos de Huamachuco se recuerdan sin convertirlos en espectáculo.',
@@ -117,7 +117,7 @@ export const mBrena: MissionDef = {
     {
       kicker: 'MARGEN DEL MANTARO · 1882',
       title: 'Galgas y emboscadas',
-      text: 'La campaña combina guerrillas y emboscadas con batallas campales cuando no puede evitarlas: galgas en los pasos y columnas móviles desgastan a las fuerzas chilenas. Cada comunidad protegida sostiene la red.',
+      text: 'Galgas en los pasos, columnas móviles y las comunidades del Mantaro desgastan a las fuerzas chilenas. Cada comunidad protegida sostiene la red.',
       seconds: 9,
       source: 'docs/historia/campanas/brena.md',
       image: 'media/brena/intro-galgas.webp',
