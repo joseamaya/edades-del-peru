@@ -105,7 +105,7 @@ export const mBrena: MissionDef = {
   // The mission's aggression is wired to the AI now; 1.0 keeps the pre-wiring cadence until a dedicated
   // balance pass (0.8 let the AI grow a larger army before committing and broke the real-order playtest).
   // A counter-guerrilla column, not a town: it keeps its camp, its pressure is the authored columns.
-  enemy: { active: true, difficulty: 'normal', aggression: 1.0, economy: false },
+  enemy: { active: true, difficulty: 'normal', aggression: 1.0, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/brena/intro-epilogo.webp',

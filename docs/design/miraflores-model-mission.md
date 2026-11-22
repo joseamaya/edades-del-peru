@@ -35,7 +35,9 @@ The sack of Chorrillos and the occupation of Lima are stated in the epilogue, ne
 
 - The Chilean army is a **field force**: `enemy.economy: false` and `start.enemyOpeningUnits: false` keep
   its camp but stop the peasant economy, sawmill and mill. Its pressure is the authored redoubt waves and
-  their artillery, not a competing settlement.
+  their artillery, not a competing settlement. The battery is kept here because it fires on the redoubts —
+  the act's fortifications — and the real-order line hold completes with it; Huamachuco's was removed
+  because it fires on an infantry line at short range.
 
 ## Opening and closing
 

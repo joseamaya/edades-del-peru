@@ -95,7 +95,7 @@ export const mMiraflores: MissionDef = {
     ],
   },
   // A Chilean field army, not a settlement: its camp stays, its pressure is the authored redoubt waves.
-  enemy: { active: true, difficulty: 'normal', aggression: 0.8, economy: false },
+  enemy: { active: true, difficulty: 'normal', aggression: 0.8, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/miraflores/intro-epilogo.webp',

@@ -7,7 +7,8 @@ import { headlessMission } from './headless';
 /**
  * Missions whose enemy is a scripted force or a garrison: they keep their centre and houses but must not
  * run the generic peasant economy (no opening crew, sawmill or mill). Tambotoco stays out because its
- * third-act test measures the AI's units against the player's hold.
+ * third-act test measures the AI's units against the player's hold; base-less battles (Tarapacá, Arica)
+ * are out because they have no centre or houses to keep and are pinned by their own tests.
  */
 const SCRIPTED_ENEMY = [
   'm3_moche_recuay',
