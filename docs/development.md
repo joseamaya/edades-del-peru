@@ -694,13 +694,14 @@ Definition of Done and the building audit see
   seven `release-playtest` missions, the three mission specs, `campaign-completable` and
   `tests/campaign-forces.test.ts` (the Miraflores infantry-only guard).
 - **Scripted offensives** (2026-11-22): Chimú and Cusco 1536 declare `enemy.attacks: false`.
-  `AI.launchAttack` sends every soldier on its periodic timer, so their authored garrisons walked off the
-  `objective: 'position'` posts and the AI overrode the columns; the flag leaves combat micro, defense and
-  the 20 m scripted pursuit intact, and only removes the strategic sally. Moche, Yahuar Pampa and the Inca civil war are field battles whose watch or garrison opens at the
-  post and then sallies with the columns, so they keep the AI's attacks and record the exception. This
-  changes the simulation of the two flagged missions, so `REPLAY_VERSION` is 44 (it rejects every stored
-  replay). Guarded by `tests/campaign-forces.test.ts`, their `campaign-completable` entries and the mission
-  E2E specs.
+  `AI.launchAttack` sends every soldier toward a building of its choosing, so the authored counterattack,
+  probe and sortie could be re-issued away from their targets and the token watch could leave its post; the
+  flag leaves combat micro, defense and the 20 m scripted pursuit intact and only removes that strategic
+  offensive. Moche, Yahuar Pampa and the Inca civil war are field battles that keep it (it can pull their
+  watch and waves toward the player's base after the authored move), which is the pressure their current
+  real-order playtests are calibrated with; they record the exception. This changes the simulation of the
+  two flagged missions, so `REPLAY_VERSION` is 44 (it rejects every stored replay). Guarded by
+  `tests/campaign-forces.test.ts`, their `campaign-completable` entries and the mission E2E specs.
 - **Caral objective flow** (issue 390): `obj_complejos` activates on `t_a3_obra_muros` (all six monuments
   stand) and gates each visit on `ObjectiveDef.inspectRadius` (a player unit within 8 m of the card's footprint);
   `obj_asamblea` is announced with Act III (`awaitsCall`: listed but pending until the player calls it); the Act III camera reveal is a `reveal` trigger effect that plays

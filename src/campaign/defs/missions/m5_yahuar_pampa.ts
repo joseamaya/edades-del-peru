@@ -128,8 +128,9 @@ export const m5YahuarPampa: MissionDef = {
   ],
   triggers: [
     {
-      // The city is not empty: with no peasant economy the Chanca host still mans Cusco. This garrison
-      // holds the centre from the opening, so `obj_kill` is a fight and not a walk-in.
+      // The Chanca centre is not empty: with no peasant economy the host still garrisons it. The guard
+      // opens on the centre, so `obj_kill` is contested while it stands; the AI's own offensive can pull
+      // it away later.
       id: 't_guarnicion',
       condition: { type: 'time', seconds: 0.5 },
       effects: [
