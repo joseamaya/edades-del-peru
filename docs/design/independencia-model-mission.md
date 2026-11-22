@@ -60,7 +60,8 @@ recorded here and in the quality bar.
   charge, the Ayacucho garrison (which mans the capture point) and the surrender hold; `attacks: false`
   leaves the offensive to those authored waves. Both waves are sized to their 90 s holds: with the scripted
   AI no part of the garrison marches on the camp, and the original counts made the final hold a wipe in the
-  real-order playtest.
+  real-order playtest. The Junín charge is smaller too because its survivors are exactly the units that
+  reinforce Ayacucho when the base is threatened; leaving it at seven kept the final hold unwinnable.
 
 ## Opening and closing
 
