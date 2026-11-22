@@ -304,11 +304,12 @@ describe('Caral model mission', () => {
     expect(progress()).toBe(8);
     const paid = 100 - game.players[0].resources.food;
     // The crew leaves to gather: the turn pauses instead of restarting and charging again.
-    game.units.clear();
+    for (const u of game.units.values()) u.pos = { x: 999, z: 999 };
     for (let i = 0; i < 10; i++) mission.update(1, 0);
     expect(progress()).toBe(8);
     expect(100 - game.players[0].resources.food).toBeCloseTo(paid, 5);
     // Three workers back on site finish the turn with the food already paid plus the rest.
+    game.units.clear();
     for (const id of [1, 2, 3]) {
       game.units.set(id, { id, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } });
     }

@@ -32,7 +32,13 @@ function stubGame(unit: { id: number; tag: string; owner: number; dead: boolean;
   const game: any = {
     players: [{ resources: { food: 0, wood: 0, silver: 0, stone: 0 }, era: Era.FORMATIVE }],
     units: new Map([[unit.id, unit]]),
-    buildings: new Map(),
+    // The stub claims a standing base; the centre is what can still train after an army is lost.
+    buildings: new Map([
+      [
+        99,
+        { id: 99, owner: 0, kind: BuildingKind.CENTER, constructionComplete: true, dead: false, pos: { x: 0, z: 0 } },
+      ],
+    ]),
     hasBuildings: () => true,
     getPaused: () => false,
     isCinematicActive: () => false,

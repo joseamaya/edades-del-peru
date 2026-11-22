@@ -18,6 +18,7 @@ import { BuildingKind, OrderKind, Resources, UnitKind } from '../core/types';
 import { distance2D } from '../util/math';
 import { t } from '../i18n';
 import { commanderFor } from '../model/defs/commanders';
+import { BUILDING_DEFS } from '../model/defs/buildings';
 import { splitSpeaker } from './dialogueLine';
 import { unitBaseKind, unitClassFor } from '../model/defs/units';
 import { phaseOrder } from '../model/defs/sitePhases';
@@ -464,9 +465,15 @@ export class Mission {
   }
 
   private checkBaseLost(): void {
-    if (this.game.hasBuildings(0)) return;
     const units = [...this.game.units.values()].filter((u) => u.owner === 0 && !u.dead);
     const hasUnits = units.length > 0;
+    if (this.game.hasBuildings(0)) {
+      // A standing house is not an army: with no unit and nothing left that can train one, the mission
+      // can never advance (issue 596).
+      if (hasUnits || this.canStillTrain()) return;
+      this.defeat();
+      return;
+    }
     // A party that starts with no base (Tambotoco, Tarapacá) is lost only when no one of it is left.
     if (!seatStartsWithBase(this.def.start, 0) && hasUnits) return;
     if (this.def.outcome === 'retirada' && hasUnits) {
@@ -484,6 +491,16 @@ export class Mission {
       if (!stuck) return;
     }
     this.defeat();
+  }
+
+  /** True while a completed building of the player can still train an army or a worker. */
+  private canStillTrain(): boolean {
+    for (const b of this.game.buildings.values()) {
+      if (b.owner !== 0 || b.dead || !b.constructionComplete) continue;
+      // A market's caravan cannot gather or fight: alone it cannot rebuild a lost party.
+      if (BUILDING_DEFS[b.kind].trainable?.some((kind) => kind !== UnitKind.CARAVAN)) return true;
+    }
+    return false;
   }
 
   // --- triggers ---

@@ -189,6 +189,55 @@ describe('campaign force contract', () => {
     expect(artillery).toHaveLength(0);
   });
 
+  it('ends a mission whose army is gone and nothing can train another', () => {
+    const game = headlessMission('m3_moche_recuay');
+    try {
+      const house =
+        [...game.buildings.values()].find((b) => b.owner === 0 && b.kind === BuildingKind.HOUSE) ??
+        game.spawnScriptedBuilding(BuildingKind.HOUSE, 0, 120, 120);
+      for (const b of [...game.buildings.values()]) if (b.owner === 0 && b.id !== house.id) game.buildings.delete(b.id);
+      for (const u of [...game.units.values()]) if (u.owner === 0) game.units.delete(u.id);
+      game.update(1 / 60, 0);
+      // A standing house cannot rebuild the army: without units or a training building the mission is lost.
+      expect(game.mission.ended, 'a house without an army never ends the mission').toBe(true);
+      expect(game.mission.won).toBe(false);
+    } finally {
+      game.destroy();
+      setAutoStart(true);
+    }
+  });
+
+  it('does not take a market for an army', () => {
+    const game = headlessMission('m3_moche_recuay');
+    try {
+      for (const b of [...game.buildings.values()]) if (b.owner === 0) game.buildings.delete(b.id);
+      // A caravan can trade but not gather or fight: the party is still gone.
+      game.spawnScriptedBuilding(BuildingKind.MARKET, 0, 120, 120);
+      for (const u of [...game.units.values()]) if (u.owner === 0) game.units.delete(u.id);
+      game.update(1 / 60, 0);
+      expect(game.mission.ended, 'a market alone can never rebuild the army').toBe(true);
+      expect(game.mission.won).toBe(false);
+    } finally {
+      game.destroy();
+      setAutoStart(true);
+    }
+  });
+
+  it('keeps a mission alive while a building can still train', () => {
+    const game = headlessMission('m3_moche_recuay');
+    try {
+      const center = [...game.buildings.values()].find((b) => b.owner === 0 && b.kind === BuildingKind.CENTER)!;
+      for (const b of [...game.buildings.values()])
+        if (b.owner === 0 && b.id !== center.id) game.buildings.delete(b.id);
+      for (const u of [...game.units.values()]) if (u.owner === 0) game.units.delete(u.id);
+      game.update(1 / 60, 0);
+      expect(game.mission.ended, 'a centre can still train the next worker').toBe(false);
+    } finally {
+      game.destroy();
+      setAutoStart(true);
+    }
+  });
+
   it('lets a withdrawal survive a lost camp while it has units', () => {
     const game = headlessMission('m_vilcabamba');
     try {
