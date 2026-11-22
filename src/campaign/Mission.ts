@@ -465,6 +465,9 @@ export class Mission {
 
   private checkBaseLost(): void {
     if (this.game.hasBuildings(0)) return;
+    // A withdrawal is not lost because the camp falls: its required objectives (the line, the leaders,
+    // the escape) decide. The historical outcome is a retreat, not a defence of the baggage train.
+    if (this.def.outcome === 'retirada') return;
     // A party that starts with no base (Tambotoco, Tarapacá) is lost only when no one of it is left.
     if (!seatStartsWithBase(this.def.start, 0) && [...this.game.units.values()].some((u) => u.owner === 0 && !u.dead))
       return;

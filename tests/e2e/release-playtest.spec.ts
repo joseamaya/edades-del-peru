@@ -142,9 +142,9 @@ async function playMission(page: Page, missionId: string): Promise<PlaytestResul
           order(front(), o.pos, 'attack_move');
           run(25);
         } else if (o.kind === 'reach') {
-          // The protected commander does not lead the assault in Tarapacá: he is the objective, not a
-          // free casualty, and the real player keeps him behind the line.
-          order(id === 'm_tarapaca' ? front() : all(), o.pos, 'attack_move');
+          // The protected commander does not lead the assault in Tarapacá, and Curi Paucar stays out of
+          // the evacuation march: they are the objective, not free casualties.
+          order(id === 'm_tarapaca' || id === 'm_vilcabamba' ? front() : all(), o.pos, 'attack_move');
           run(25);
         } else {
           run(5);

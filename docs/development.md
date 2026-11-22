@@ -337,8 +337,10 @@ Definition of Done and the building audit see
   objectives/triggers. Each mission also declares an optional `region` (`MissionDef`), fed into
   `resolveMapProfile` so a scenario carries its own geography rather than the player's (e.g. m6 = the Inca on the
   Chimú `north_coast`). Objectives may be **bonus/optional** (`ObjectiveDef.optional`): they are evaluated and
-  can be completed, but never gate victory nor cause defeat when failed. A `hold` objective keeps a
-  player unit inside a radius for `time` seconds (m8 Junín/Ayacucho); `holdTimers` are saved. A `hold`
+  can be completed, but never gate victory nor cause defeat when failed. A mission with
+  `outcome: 'retirada'` is not defeated by losing its camp (`Mission.checkBaseLost`): the required objectives
+  — the line, the leaders, the escape — decide, because the historical outcome is a withdrawal. A `hold`
+  objective keeps a player unit inside a radius for `time` seconds (m8 Junín/Ayacucho); `holdTimers` are saved. A `hold`
   may also `consume` a resource per second (Caral's construction turns pause when the communal store is empty),
   and new hidden objectives declare `afterPhase`/`requires` so a save written before they existed repairs
   itself on load. A repeating trigger (`repeat` + `cooldown`) can be capped with `maxFires`; the count is
