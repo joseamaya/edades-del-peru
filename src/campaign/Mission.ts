@@ -14,7 +14,7 @@ import {
   seatStartsWithBase,
 } from './types';
 import type { HeritageBuildingId } from '../model/defs/heritage';
-import { BuildingKind, OrderKind, Resources } from '../core/types';
+import { BuildingKind, OrderKind, Resources, UnitKind } from '../core/types';
 import { distance2D } from '../util/math';
 import { t } from '../i18n';
 import { commanderFor } from '../model/defs/commanders';
@@ -465,9 +465,24 @@ export class Mission {
 
   private checkBaseLost(): void {
     if (this.game.hasBuildings(0)) return;
+    const units = [...this.game.units.values()].filter((u) => u.owner === 0 && !u.dead);
+    const hasUnits = units.length > 0;
     // A party that starts with no base (Tambotoco, Tarapacá) is lost only when no one of it is left.
-    if (!seatStartsWithBase(this.def.start, 0) && [...this.game.units.values()].some((u) => u.owner === 0 && !u.dead))
-      return;
+    if (!seatStartsWithBase(this.def.start, 0) && hasUnits) return;
+    if (this.def.outcome === 'retirada' && hasUnits) {
+      // A withdrawal survives the fall of its camp, but not a required build/network goal that can no
+      // longer be produced: no camp and no worker left is a dead end, not a retreat.
+      const hasWorker = units.some((u) => u.kind === UnitKind.WORKER);
+      const stuck =
+        !hasWorker &&
+        this.def.objectives.some(
+          (o) =>
+            !o.optional &&
+            (o.kind === 'build' || o.kind === 'network') &&
+            (this.objState.get(o.id) ?? 'pendiente') !== 'completed',
+        );
+      if (!stuck) return;
+    }
     this.defeat();
   }
 

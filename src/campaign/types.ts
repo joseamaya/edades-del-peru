@@ -447,6 +447,8 @@ export interface MissionDef {
   /**
    * Historical outcome of the mission when it is not a victory in the ordinary sense. The result screen
    * uses it to label the ending ("RESISTENCIA CUMPLIDA", "RETIRADA CUMPLIDA") and drops the kill tally.
+   * `retirada` also lets `Mission.checkBaseLost` survive a lost camp while units remain: the required
+   * objectives decide, not the baggage train.
    */
   outcome?: 'resistencia' | 'retirada';
   /** Historical period of the mission (resolves dates and coetaneous civilizations). */

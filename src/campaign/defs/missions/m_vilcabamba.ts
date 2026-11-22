@@ -119,7 +119,7 @@ export const mVilcabamba: MissionDef = {
   },
   // Arbieto's column is an expedition: it keeps its camp but its pressure is the authored waves, not a
   // peasant economy in the jungle.
-  enemy: { active: true, difficulty: 'hard', aggression: 1.0, economy: false },
+  enemy: { active: true, difficulty: 'hard', aggression: 1.0, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/vilcabamba/intro-epilogo.webp',
@@ -261,9 +261,9 @@ export const mVilcabamba: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [
-            { kind: UnitKind.SOLDIER, count: 6 },
+            { kind: UnitKind.SOLDIER, count: 5 },
             { kind: UnitKind.CAVALRY, count: 2 },
-            { kind: UnitKind.MUSKETEER, count: 2 },
+            { kind: UnitKind.MUSKETEER, count: 1 },
           ],
           pos: { dx: VILCABAMBA_ENEMY.x, dz: VILCABAMBA_ENEMY.z },
           radius: 12,
@@ -287,7 +287,7 @@ export const mVilcabamba: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [
-            { kind: UnitKind.SOLDIER, count: 5 },
+            { kind: UnitKind.SOLDIER, count: 4 },
             { kind: UnitKind.CAVALRY, count: 1 },
           ],
           // On the escape road, not back at the Spanish camp: a 200 m march never reached the hold.

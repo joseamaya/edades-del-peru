@@ -126,6 +126,10 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
   headquarters may keep its centre and houses without running a peasant economy; only a besieging army that
   feeds the siege (`m_lima`, the 1535 siege, not `m_lima_1821`, whose Callao is the besieged fortress) keeps
   it, and an already inactive enemy (Túpac Amaru's royalist city) has none to strip.
+- A mission declared `outcome: 'retirada'` (Vilcabamba, Miraflores, Cusco 1536, the Junta, Breña, the
+  Túpac Amaru rebellion) is not defeated by losing its camp while it still has units: its required
+  objectives (the line, the leaders, the escape) decide. A required protect failing, or a required
+  build/network goal left with no camp and no worker, still ends it; the baggage train is not the court.
 - A scripted enemy (`attacks: false`) presses any reachable enemy within 20 m once its authored
   attack-move ends. Without this the wave stops at the edge of its firing envelope and the battle freezes;
   `tests/tarapaca-battle.test.ts` and the release playtest guard it.

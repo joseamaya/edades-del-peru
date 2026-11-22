@@ -13,7 +13,7 @@ force to the sierra. Sources and certainty: [`docs/historia/campanas/miraflores.
 ## Acts
 
 1. **Build the redoubts.** A `network` objective requires three `FORTRESS` redoubts at the marked nodes.
-2. **Hold the line.** Eight units hold the Miraflores line for 90 s under Chilean waves.
+2. **Hold the line.** Six units hold the Miraflores line for 90 s under Chilean waves.
 3. **Withdraw.** Reach the sierra road with Cáceres alive.
 
 The sack of Chorrillos and the occupation of Lima are stated in the epilogue, never staged.
@@ -34,10 +34,13 @@ The sack of Chorrillos and the occupation of Lima are stated in the epilogue, ne
 - Cáceres is a protected commander card; no invented likeness.
 
 - The Chilean army is a **field force**: `enemy.economy: false` and `start.enemyOpeningUnits: false` keep
-  its camp but stop the peasant economy, sawmill and mill. Its pressure is the authored redoubt waves and
-  their artillery, not a competing settlement. The battery is kept here because it fires on the redoubts —
-  the act's fortifications — and the real-order line hold completes with it; Huamachuco's was removed
-  because it fires on an infantry line at short range.
+  its camp but stop the peasant economy, sawmill and mill. Its pressure is the authored redoubt waves, not
+  a competing settlement. The assault column is six line infantry and two riflemen, without the siege
+  battery: its long-range shells one-shot the reservist line, and the real-order hold needed eight units to
+  advance. The line's core is six (`minUnits: 6`); the redoubts are its fortifications, and the withdrawal
+  survives the fall of the camp because the mission is a `retirada`. The historical Chilean expedition did
+  field artillery; the model records that arm but keeps it out of the four-minute assault because the
+  howitzer's 56 m envelope one-shots the reservists (same abstraction as Huamachuco and Arica).
 
 ## Opening and closing
 

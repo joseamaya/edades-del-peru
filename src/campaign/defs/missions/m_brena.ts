@@ -203,6 +203,7 @@ export const mBrena: MissionDef = {
     {
       id: 'a3_retirada',
       kind: 'reach',
+      entityTag: 'caceres',
       pos: { dx: BRENA_RETREAT.x * 256, dz: BRENA_RETREAT.z * 256 },
       radius: 16,
       hidden: true,

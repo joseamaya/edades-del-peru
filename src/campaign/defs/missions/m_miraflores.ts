@@ -183,7 +183,9 @@ export const mMiraflores: MissionDef = {
       pos: { dx: MIRAFLORES_REDOUBT_2.x, dz: MIRAFLORES_REDOUBT_2.z },
       radius: 28,
       time: 90,
-      minUnits: 8,
+      // Eight was brittle against the reservist army: the line's core is six, and the Chilean battery
+      // one-shots it, so the column is infantry and riflemen (same lesson as Huamachuco/Arica).
+      minUnits: 6,
       hidden: true,
       requires: 'a1_reductos',
       title: 'Sostén la línea de Miraflores',
@@ -235,9 +237,8 @@ export const mMiraflores: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [
-            { kind: UnitKind.CHILE_INFANTE, count: 8 },
+            { kind: UnitKind.CHILE_INFANTE, count: 6 },
             { kind: UnitKind.RIFLEMAN, count: 2 },
-            { kind: UnitKind.ARTILLERY, count: 1 },
           ],
           pos: { dx: MIRAFLORES_ENEMY.x, dz: MIRAFLORES_ENEMY.z },
           radius: 14,
