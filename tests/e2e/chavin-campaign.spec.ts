@@ -156,7 +156,9 @@ test('m2 briefing hides later acts and the tutorial starts with nine non-blockin
   await expect(briefing).toBeVisible({ timeout: 30_000 });
   await expect(briefing).not.toContainText('Recibe a los peregrinos');
   await expect(briefing).not.toContainText('Abre la feria');
-  await expect(briefing).toContainText('Entrega 100 de plata');
+  // The arrival opens Act I; the silver offering is the next step and stays out of the briefing.
+  await expect(briefing).toContainText('Llega al centro ceremonial de Chavín');
+  await expect(briefing).not.toContainText('Entrega 100 de plata');
   await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   await tick(2);
   const tutorial = page.locator('#ed-tutorial');

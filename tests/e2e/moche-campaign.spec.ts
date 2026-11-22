@@ -80,12 +80,18 @@ test('m3 opens its acts in order with their chapter cards', async ({ page }) => 
 
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
+    // The site anchor is the plaza the huacas hold defends; keep the holder alive there, as the
+    // exchange spec does, so the hold measures its timer under the scripted columns.
     const anchor = g.siteAnchor as { x: number; z: number };
-    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
     const dt = 1 / 60;
     let t = 11.2;
     for (let i = 0; i < Math.ceil(92 / dt) && !g.mission.ended; i++) {
-      worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+      const holder = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker') as any;
+      if (holder) {
+        holder.clearOrders();
+        holder.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+        holder.hp = holder.maxHp;
+      }
       g.update(dt, t);
       t += dt;
     }
