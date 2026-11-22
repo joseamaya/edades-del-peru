@@ -116,10 +116,11 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
 - An economy-free enemy with a garrison that must **hold** its post also sets `enemy.attacks: false`:
   `AI.launchAttack` sends every soldier on its periodic timer, so the garrison would march off its
   `objective: 'position'` post and the AI would override the authored columns. The flag keeps combat micro,
-  defense and the 20 m scripted pursuit; it only removes the strategic sally. A field battle whose garrison
-  opens at the post and then marches with the AI's own offensive keeps the default and records the exception
-  (Moche, Yahuar Pampa, the Inca civil war). The decision question is whether the authored waves alone carry
-  the pressure or the real-order playtest needs an AI-initiated offensive.
+  defense and the 20 m scripted pursuit; it only removes the strategic offensive (`launchAttack` pulls every
+  soldier toward a player building, not with the authored columns). A field battle that wants that pull as
+  part of the pressure keeps the default and records the exception (Moche, Yahuar Pampa, the Inca civil war).
+  The decision question is whether the authored waves alone carry the pressure or the AI's own offensive is
+  part of it.
   Pair it with `start.enemyOpeningUnits: false` (per-seat; without it the enemy falls back to the shared
   `openingUnits`) to remove the generic four workers and scout: the enemy keeps its centre and houses as a
   town, but no peasants and no construction or training follow. A `reinforce` defaults to an attack-move on

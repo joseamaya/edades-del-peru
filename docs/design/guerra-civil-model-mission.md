@@ -58,9 +58,9 @@ builds; the exception is recorded here and in the quality bar.
   as a hondero in this era, not a firearm. No horses or firearms on the Inca side.
 - Huáscar's headquarters is a **field command, not a town**: `enemy.economy: false` and
   `start.enemyOpeningUnits: false` keep its centre and houses but stop the peasant economy, and a scripted
-  guard (four warriors and three honderos) opens at the centre and then marches with the AI's own offensive;
-  the mission keeps `enemy.attacks` on and the real-order playtest relies on that pressure. The pressure is the Act II wave
-  on the pampa and the relief column on the Quito road; the capture comes after the pampa, not as a walk-in.
+  guard (four warriors and three honderos) opens at the centre, and the AI keeps its strategic offensive,
+  which can pull it toward the player's base after its authored move. The pressure is the Act II wave on
+  the pampa and the relief column on the Quito road; the capture is contested while the guard still stands.
 - The narrator is **Atahualpa**, a documented protagonist; the enemy centre is Huáscar's headquarters at
   Quipaipan, not the city, and is not a destroy objective.
 
