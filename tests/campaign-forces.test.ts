@@ -5,8 +5,8 @@ import { MISSIONS } from '../src/campaign/defs/campaign';
 import { headlessMission } from './headless';
 
 /**
- * Missions whose enemy is a scripted force or a garrison: they keep their centre and houses but must not
- * run the generic peasant economy (no opening crew, sawmill or mill). Tambotoco stays out because its
+ * Missions whose enemy is a scripted force or a garrison that keeps a town: they keep their centre and
+ * houses but must not run the generic peasant economy (no opening crew, sawmill or mill). Tambotoco stays out because its
  * third-act test measures the AI's units against the player's hold; base-less battles (Tarapacá, Arica)
  * are out because they have no centre or houses to keep and are pinned by their own tests.
  */
@@ -165,6 +165,15 @@ describe('campaign force contract', () => {
         setAutoStart(true);
       }
     }
+  });
+
+  it('keeps the Huamachuco assault infantry-only', () => {
+    // The howitzer's 56 m, area shells one-shot the 60 s infantry hold; the battery is out of the assault
+    // and stays a player asset (Arica precedent).
+    const brena = MISSIONS.find((m) => m.id === 'm_brena')!;
+    const waves = brena.triggers.flatMap((t) => t.effects).filter((e) => e.type === 'wave');
+    const artillery = waves.flatMap((w) => w.units).filter((u) => u.kind === UnitKind.ARTILLERY);
+    expect(artillery).toHaveLength(0);
   });
 
   it('keeps a documented scripted defence without an enemy economy', () => {

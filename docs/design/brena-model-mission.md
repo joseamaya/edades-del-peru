@@ -18,8 +18,9 @@ Huamachuco and the Treaty of Ancón. Sources and certainty: [`docs/historia/camp
    of the Chilean camp, so the hold no longer contains the enemy base), then reach the Ayacucho
    road. Victory is the escape, not the destruction of the Chilean army. The final column is infantry and
    riflemen, without the siege battery: the encounter was a knife-edge (the economy change's different RNG
-   flipped the real-order hold from a win to a wipe) and the battery's long-range shells are what empty the
-   line, so it is left out of the assault — the same lesson as Arica's artillery.
+   flipped the real-order autopilot's hold from a win to a wipe) and the battery's long-range shells are what
+   empty the line, so it is left out of the assault — the same lesson as Arica's artillery. The player keeps
+   its own battery; only the defenders' 60 s infantry hold is spared the howitzer.
 
 The executions and violence of Concepción/Huamachuco are told in the epilogue and Codex, not staged.
 
