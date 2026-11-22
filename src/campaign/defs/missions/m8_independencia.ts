@@ -76,7 +76,7 @@ export const m8Independencia: MissionDef = {
   start: {
     enemyOpeningUnits: false,
     units: [
-      // Junín was a cavalry action with no firearms: Sucre rides with the line and the infantry only joins afterwards.
+      // Junín was a cavalry action with no firearms: Sucre rides with the cavalry and the infantry only joins afterwards.
       {
         kind: UnitKind.CAVALRY,
         dx: independenceLength(6),
