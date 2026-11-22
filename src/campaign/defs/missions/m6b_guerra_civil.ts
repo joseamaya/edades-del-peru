@@ -141,8 +141,8 @@ export const m6bGuerraCivil: MissionDef = {
   ],
   triggers: [
     {
-      // The capture target is Huáscar's own headquarters: a guard mans it from the opening, so Act III is a
-      // fight and not a walk-in after the pampa.
+      // The capture target is Huáscar's own headquarters: a guard opens at it, so the capture is contested
+      // while the guard still stands; the field battle's own offensive may have drawn it out.
       id: 't_guarnicion',
       condition: { type: 'time', seconds: 0.5 },
       effects: [
@@ -156,7 +156,7 @@ export const m6bGuerraCivil: MissionDef = {
           pos: { ref: 'enemy', dx: 0, dz: 0 },
           radius: cuscoIncaLength(4),
           // `reinforce` defaults to an attack-move on the player's camp; this garrison opens holding its post,
-          // but the field battle's own attacks may later call it out with the columns.
+          // but the AI's own offensive may later march it out.
           objective: 'position',
         },
       ],

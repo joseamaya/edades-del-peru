@@ -51,7 +51,8 @@ builds; the exception is recorded here and in the quality bar.
 
 - The Recuay camp is a scripted force: `enemy.economy: false` and `start.enemyOpeningUnits: false`
   leave its centre and houses but no peasant economy. It is a field battle, not a held garrison, so the camp
-  keeps the AI's own attacks: its watch and hondero waves sally alongside the three authored columns.
+  keeps the AI's own attacks: its watch and hondero waves march with the AI's offensive alongside the three
+  authored columns.
 
 - Moche workers, warriors and hondero (ranged) units; the Recuay side fields warrior and hondero waves.
   `UnitKind.MUSKETEER` is the project's legacy ranged id: at this period it renders as a hondero with a

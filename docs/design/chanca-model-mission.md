@@ -52,7 +52,7 @@ in the quality bar.
 
 - The Chanca host is a marching army: `enemy.economy: false` and `start.enemyOpeningUnits: false`
   keep its camp but skip the peasant economy; a garrison of five warriors and two honderos opens at the
-  centre and then sallies with the scripted columns, so the mission keeps the AI's own attacks (the
+  centre and then marches with the AI's own offensive, so the mission keeps the AI's own attacks (the
   real-order playtest relies on that pressure) and the kill objective is a fight.
 
 - Inca workers, warriors, riflemen and honderos; the Chanca side fields warriors and honderos.
