@@ -112,7 +112,9 @@ async function playMission(page: Page, missionId: string): Promise<PlaytestResul
         x: ex > MAP_MIDPOINT ? SAFE_INSET : SAFE_FAR,
         z: ez > MAP_MIDPOINT ? SAFE_INSET : SAFE_FAR,
       };
-      for (const u of all()) if (protectedTags.has(u.tag)) order([u], safe, 'move');
+      // `safe` is a world point; MissionPoint reads `dx`/`dz`, so passing `{x,z}` to the order helper
+      // resolved to NaN and the commander was parked at an invalid position.
+      for (const u of all()) if (protectedTags.has(u.tag)) order([u], { dx: safe.x, dz: safe.z }, 'move');
     }
 
     let guard = 0;
