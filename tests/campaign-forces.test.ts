@@ -189,16 +189,27 @@ describe('campaign force contract', () => {
     expect(artillery).toHaveLength(0);
   });
 
-  it('lets a withdrawal survive a lost camp, not a wiped army', () => {
+  it('lets a withdrawal survive a lost camp while it has units', () => {
     const game = headlessMission('m_vilcabamba');
     try {
       for (const b of [...game.buildings.values()]) if (b.owner === 0) game.buildings.delete(b.id);
       game.update(1 / 60, 0);
+      // The historical outcome is a retreat: the baggage train is not the court.
       expect(game.mission.ended, 'a lost camp alone ends the withdrawal').toBe(false);
-      // Curi Paucar is the protect commander: keep him alive for the camp-only step, then wipe the army.
-      for (const u of [...game.units.values()]) if (u.owner === 0) u.dead = true;
-      game.update(1 / 60, 0.1);
-      expect(game.mission.ended, 'a wiped withdrawal never ends').toBe(true);
+    } finally {
+      game.destroy();
+      setAutoStart(true);
+    }
+  });
+
+  it('ends a retreat whose required build goal has no camp and no worker', () => {
+    const game = headlessMission('m_miraflores');
+    try {
+      for (const b of [...game.buildings.values()]) if (b.owner === 0) game.buildings.delete(b.id);
+      for (const u of [...game.units.values()]) if (u.owner === 0 && u.kind === UnitKind.WORKER) u.dead = true;
+      game.update(1 / 60, 0);
+      // Cáceres is still alive, but the redoubts can no longer be raised: no dead end disguised as a retreat.
+      expect(game.mission.ended, 'an impossible build goal never ends the retreat').toBe(true);
       expect(game.mission.won).toBe(false);
     } finally {
       game.destroy();

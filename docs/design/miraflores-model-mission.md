@@ -13,7 +13,7 @@ force to the sierra. Sources and certainty: [`docs/historia/campanas/miraflores.
 ## Acts
 
 1. **Build the redoubts.** A `network` objective requires three `FORTRESS` redoubts at the marked nodes.
-2. **Hold the line.** Eight units hold the Miraflores line for 90 s under Chilean waves.
+2. **Hold the line.** Six units hold the Miraflores line for 90 s under Chilean waves.
 3. **Withdraw.** Reach the sierra road with Cáceres alive.
 
 The sack of Chorrillos and the occupation of Lima are stated in the epilogue, never staged.
