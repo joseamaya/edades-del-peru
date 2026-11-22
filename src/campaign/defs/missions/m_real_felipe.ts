@@ -77,6 +77,7 @@ export const mRealFelipe: MissionDef = {
   unitSpeedScale: 0.75,
   startingResources: { food: 1400, wood: 1000, silver: 1000, stone: 900 },
   start: {
+    enemyOpeningUnits: false,
     buildings: [{ kind: BuildingKind.FORTRESS, dx: 6, dz: 8, tag: 'campamento_sitiador' }],
     units: [
       { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 6 },
@@ -90,7 +91,9 @@ export const mRealFelipe: MissionDef = {
     ],
   },
   mark: [{ tag: 'real_felipe', kind: BuildingKind.CENTER, owner: 1 }],
-  enemy: { active: true, difficulty: 'normal', aggression: 0.5 },
+  // The fortress is a besieged garrison: it keeps its centre and houses but no peasant economy. Its
+  // pressure is the authored sortie, the blockade and the capitulation clock.
+  enemy: { active: true, difficulty: 'normal', aggression: 0.5, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/real-felipe/intro-epilogo.webp',

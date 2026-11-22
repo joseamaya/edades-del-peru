@@ -16,7 +16,11 @@ Huamachuco and the Treaty of Ancón. Sources and certainty: [`docs/historia/camp
 2. **Ambush at the pass.** Hold the pass for 45 s against a Chilean column.
 3. **Huamachuco and withdrawal.** Hold the field for 60 s while Cáceres survives (the town sits 44 m west
    of the Chilean camp, so the hold no longer contains the enemy base), then reach the Ayacucho
-   road. Victory is the escape, not the destruction of the Chilean army.
+   road. Victory is the escape, not the destruction of the Chilean army. The final column is infantry and
+   riflemen, without the siege battery: the encounter was a knife-edge (the economy change's different RNG
+   flipped the real-order autopilot's hold from a win to a wipe) and the battery's long-range shells are what
+   empty the line, so it is left out of the assault — the same lesson as Arica's artillery. The player keeps
+   its own battery; only the defenders' 60 s infantry hold is spared the howitzer.
 
 The executions and violence of Concepción/Huamachuco are told in the epilogue and Codex, not staged.
 
@@ -33,6 +37,11 @@ The executions and violence of Concepción/Huamachuco are told in the epilogue a
 - `REPUBLIC` vs `CHILE`; period-locked Republic.
 - Units: workers, republican defenders, riflemen, cavalry, hussars, artillery and scouts.
 - Cáceres is a protected commander card; no invented likeness.
+
+- The Chilean counter-guerrilla column is a **field force**: `enemy.economy: false` and
+  `start.enemyOpeningUnits: false` keep its camp but stop the peasant economy, sawmill and mill. Its pressure
+  is the authored columns at Galgas and Huamachuco (infantry and riflemen; the battery is not part of the
+  assault).
 
 ## Opening and closing
 

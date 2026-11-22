@@ -54,6 +54,10 @@ Optional/failure: if Salom dies or the camp falls, the mission is lost.
 - Salom and Rodil are commander cards. Both are documented; no invented likeness, the portraits are the
   existing stylized abstractions.
 
+- The Real Felipe is a **besieged fortress**: `enemy.economy: false` and `start.enemyOpeningUnits: false`
+  keep its centre and houses but stop the peasant economy, sawmill and mill. Its pressure is authored: the
+  sortie against the siege camp, the blockade and the capitulation clock.
+
 ## Opening and closing
 
 - Three narrated beats: the last bastion after Ayacucho, the siege and civilian crisis, the capitulation.

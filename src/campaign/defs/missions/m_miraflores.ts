@@ -85,6 +85,7 @@ export const mMiraflores: MissionDef = {
   unitSpeedScale: 0.75,
   startingResources: { food: 1300, wood: 900, silver: 900, stone: 900 },
   start: {
+    enemyOpeningUnits: false,
     units: [
       { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 4 },
       { kind: UnitKind.REPUBLICA_DEFENSOR, dx: 8, dz: 0, count: 10 },
@@ -93,7 +94,8 @@ export const mMiraflores: MissionDef = {
       { kind: UnitKind.RIFLEMAN, dx: 6, dz: 0, count: 1, tag: 'caceres' },
     ],
   },
-  enemy: { active: true, difficulty: 'normal', aggression: 0.8 },
+  // A Chilean field army, not a settlement: its camp stays, its pressure is the authored redoubt waves.
+  enemy: { active: true, difficulty: 'normal', aggression: 0.8, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/miraflores/intro-epilogo.webp',
