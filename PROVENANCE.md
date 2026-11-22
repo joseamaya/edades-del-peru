@@ -408,13 +408,13 @@ slot is absent (offline / without assets).
 
 ### Lima 1821 intro and epilogue images (in-engine recreations)
 
-- **Location**: `public/media/lima-1821/intro-{camino,plaza,callao,epilogo}.webp` (640×360, WebP q28).
+- **Location**: `public/media/lima-1821/intro-{plaza,callao,epilogo}.webp` (640×360, WebP q28).
 - **Source**: captured from the game itself by `scripts/capture_independencia_arc.mjs` on the 1821 Lima
   coast transect: the Lurín road and patriot camp, the Plaza Mayor, the Callao beach and a low epilogue.
   Rendered without the HUD at 1600×900 and resized with `sharp`. Regenerate with
   `node scripts/capture_independencia_arc.mjs --only=ID` after art changes.
-- **Runtime**: the briefing uses `intro-plaza`; the intro beats use `intro-camino`, `intro-callao` and
-  `intro-plaza`; the Act II/III cards use `intro-plaza` and `intro-callao`; the epilogue uses `intro-epilogo`.
+- **Runtime**: the briefing uses `intro-plaza`; the intro beats are cinema stills (`cine-*`, below); the
+  Act II/III cards use `intro-plaza` and `intro-callao`; the epilogue uses `intro-epilogo`.
 - **Content**: project-owned game renders (the reused `lima_site` colonial kit at the `ciudad` phase and the
   procedural camp/wildlife). They are recreations of the game's own scenes: never historical photographs,
   and not Blender renders (so not in `src/art/manifest.json`).
@@ -423,13 +423,13 @@ slot is absent (offline / without assets).
 
 ### Real Felipe intro and epilogue images (in-engine recreations)
 
-- **Location**: `public/media/real-felipe/intro-{bastion,baterias,sitio,epilogo}.webp` (640×360, WebP q28).
+- **Location**: `public/media/real-felipe/intro-{bastion,baterias,epilogo}.webp` (640×360, WebP q28).
 - **Source**: captured from the game itself by `scripts/capture_independencia_arc.mjs` on the Callao
   terrace: the bastion from the sea side, the battery line, the siege camp and a low epilogue. Rendered
   without the HUD at 1600×900 and resized with `sharp`. Regenerate with
   `node scripts/capture_independencia_arc.mjs --only=ID` after art changes.
-- **Runtime**: the briefing and first beat use `intro-bastion`; the second beat and Act II use `intro-sitio`
-  and `intro-baterias`; the third beat, Act III and the epilogue use `intro-epilogo`.
+- **Runtime**: the briefing uses `intro-bastion`; Act II uses `intro-baterias`; Act III and the epilogue use
+  `intro-epilogo`. The intro beats are cinema stills (`cine-*`, below).
 - **Content**: project-owned game renders (the reused `arica_site` coastal-fort composition and the
   procedural camp). The Real Felipe is a labelled abstraction, not a survey of the star fort; the images
   are recreations of the game's own scenes, never historical photographs.
@@ -438,7 +438,7 @@ slot is absent (offline / without assets).
 
 ### Los hijos de Tambotoco intro, chapter and epilogue images (in-engine recreations)
 
-- **Location**: `public/media/tambotoco/intro-{cueva,huanacaure,valle,traza,epilogo}.webp` (960x540, WebP q58,
+- **Location**: `public/media/tambotoco/intro-{huanacaure,valle,traza,epilogo}.webp` (960x540, WebP q58,
   ~112 KB in total; re-shot in E5 on 2026-11-17).
 - **Source**: captured from the game itself by `scripts/capture_tambotoco_intro.mjs`. The cave with the party
   leaving it (no centre, dwellings or huts: the mission starts with nothing built), the Huanacaure monolith,
@@ -447,8 +447,8 @@ slot is absent (offline / without assets).
   with `sharp`. The three beats follow a hero/detail/wide grammar (the eye is lifted above the local ground so
   a low shot never ends up inside the slope). Regenerate them with
   `node scripts/capture_tambotoco_intro.mjs` (one with `--only=ID`) after art changes.
-- **Runtime (menu)**: `intro-huanacaure` is the Inca campaign card; `intro-cueva` is the briefing art for
-  `m_tambotoco`; the intro beats, the Act II–IV chapter cards and the victory epilogue use the captures.
+- **Runtime (menu)**: `intro-huanacaure` is the Inca campaign card; the Act II–IV chapter cards and the
+  victory epilogue use the captures. The intro beats are cinema stills (`cine-*`, below).
 - **Content**: project-owned game renders (authored terrain, the procedural ayllu site and the
   units). They are recreations of the game's own scenes: never historical photographs and not a claim
   that the Ayar myth happened.
@@ -661,14 +661,14 @@ slot is absent (offline / without assets).
 
 ### Arica intro and epilogue images (in-engine recreations)
 
-- **Location**: `public/media/arica/intro-{cuartel,bateria,asalto,epilogo}.webp` (960x540, WebP q58).
+- **Location**: `public/media/arica/intro-epilogo.webp` (960x540, WebP q58).
 - **Source**: captured from the game itself by `scripts/capture_arica_intro.mjs` on the 256 m Arica
   transect: the port terrace and cuartel, the battery with the Pacific behind it, the assault view and a
   low cinematic epilogue over the battery. Rendered without the HUD at 1600x900 and resized with `sharp`.
   Regenerate with `node scripts/capture_arica_intro.mjs` (one with `--only=ID`) after art changes.
 - **Runtime**: the briefing and the "Tu senda" card use the approved Blender render
-  `media/generated/campaigns/republica/m9_guerra_pacifico/intro.webp`; the three intro beats use the cuartel,
-  the battery and the assault; the victory epilogue uses `intro-epilogo`.
+  `media/generated/campaigns/republica/m9_guerra_pacifico/intro.webp`; the intro beats are cinema stills
+  (`cine-*`, below); the victory epilogue uses `intro-epilogo`.
 - **Content**: project-owned game renders (authored Arica heightfield, the low-poly `arica_site` battery,
   the procedural port terrace and the units). They are recreations of the game's own scenes: never
   historical photographs, and not Blender renders (so not in `src/art/manifest.json`). The Morro is
@@ -740,15 +740,15 @@ slot is absent (offline / without assets).
 
 ### Chimú (m6) intro and epilogue images (in-engine recreations)
 
-- **Location**: `public/media/chimu/intro-{costa,paramonga,canal,rendicion,epilogo}.webp` (960x540, WebP q58).
+- **Location**: `public/media/chimu/intro-{paramonga,canal,rendicion,epilogo}.webp` (960x540, WebP q58).
 - **Source**: captured from the game itself by `scripts/capture_chimu_intro.mjs` on the 256 m north-coast
   transect: the Inca camp, Paramonga and the Chan Chan canal, plus a dusk epilogue. Rendered without the
   HUD or character nameplates at 1600x900 and resized with `sharp`. Regenerate with
   `node scripts/capture_chimu_intro.mjs` (one with `--only=ID`) after art changes.
 - **Runtime**: the briefing and the "Tu senda" card use the approved Blender render
-  `media/generated/campaigns/la-senda-del-sol/m6_chimu/intro.webp`; `intro-costa` remains a chapter card.
-  The three intro beats and the act cards use the coast, Paramonga, the canal and the capitulation
-  captures; the victory epilogue uses `intro-epilogo`.
+  `media/generated/campaigns/la-senda-del-sol/m6_chimu/intro.webp`. The act cards use the Paramonga, canal
+  and capitulation captures; the intro beats are cinema stills (`cine-*`, below); the victory epilogue
+  uses `intro-epilogo`.
 - **Content**: project-owned game captures (authored Chimú heightfield, the reused `chimu_site` compound and
   the procedural camps). The captures are recreations of the game's own scenes: never historical
   photographs and not Blender renders. The briefing render is the `m6_chimu-intro` manifest record.
@@ -793,7 +793,7 @@ slot is absent (offline / without assets).
   heights. Rendered without the HUD at 1600×900 and resized with `sharp`. Regenerate with
   `node scripts/capture_republica_arc.mjs --mission=ID --only=ID` after art changes.
 - **Runtime**: `m_tarapaca` uses `intro-{quebrada,alturas,retirada,epilogo}`; `m_miraflores` uses
-  `intro-{lima,reductos,retirada,epilogo}`; `m_brena` uses `intro-{mantaro,galgas,huamachuco,epilogo}`.
+  `intro-{reductos,retirada,epilogo}`; `m_brena` uses `intro-{mantaro,galgas,huamachuco,epilogo}`.
 - **Content**: project-owned game renders (the reused Arica desert terrace, the Lima colonial kit at the
   `ciudad` phase and the Ayacucho chapel/camp, plus procedural units and camps). The sites are labelled
   abstractions where the repo has no surveyed heightfield (Tarapacá, La Breña); they are recreations of
@@ -803,9 +803,9 @@ slot is absent (offline / without assets).
 
 ### Cinema-intro stills (in-engine recreations)
 
-- **Location**: `public/media/<dir>/cine-*.webp` (1920x1080, WebP, ~76 KB target): `arica/cine-{linea,puerto}`; `brena/cine-{mantaro,paso}`; `caral/cine-{aspero,obra}`; `chanca/cine-{cusco,defensa}`; `chavin/cine-{plaza,valle}`; `chimu/cine-{costa,vanguardia}`; `cusco-1536/cine-{ciudad,fortaleza}`; `cusco-inca/cine-{cusco,quipaipan}`; `cusco/cine-{rebelion,valle}`; `independencia/cine-{ayacucho,junin}`; `junta/cine-{apacheta,cusco}`; `lima-1821/cine-{lima,lurin}`; `lima/cine-{ciudad,llano}`; `miraflores/cine-{lima,linea}`; `moche/cine-{huacas,plaza}`; `real-felipe/cine-{bastion,baterias}`; `tambotoco/cine-{cueva,partida}`; `tarapaca/cine-{linea,quebrada}`; `vilcabamba/cine-{pucara,selva}`; `wari/cine-{camino,complejo}`.
+- **Location**: `public/media/<dir>/cine-*.webp` (1920x1080, WebP, ~80 KB target): `arica/cine-{linea,puerto}`; `brena/cine-{mantaro,paso}`; `caral/cine-{aspero,obra}`; `chanca/cine-{cusco,defensa}`; `chavin/cine-{plaza,valle}`; `chimu/cine-{costa,vanguardia}`; `cusco-1536/cine-{ciudad,fortaleza}`; `cusco-inca/cine-{cusco,quipaipan}`; `cusco/cine-{rebelion,valle}`; `independencia/cine-{ayacucho,junin}`; `junta/cine-{apacheta,cusco}`; `lima-1821/cine-{lima,lurin}`; `lima/cine-{ciudad,llano}`; `miraflores/cine-{lima,linea}`; `moche/cine-{huacas,plaza}`; `real-felipe/cine-{bastion,baterias}`; `tambotoco/cine-{cueva,partida}`; `tarapaca/cine-{linea,quebrada}`; `vilcabamba/cine-{pucara,selva}`; `wari/cine-{camino,complejo}`.
 - **Source**: captured from the game itself by `scripts/capture_cinema.mjs` (shots in
-  `scripts/cinema-shots/<campaign>.mjs`), with staged troops, the site phase where noted and the world labels
+  `scripts/cinema-shots/<campaign>.mjs`), with staged troops and buildings, the site phase where noted, the apron fogged into the horizon and the world labels
   hidden. Regenerate with `node scripts/capture_cinema.mjs --mission=<id> [--only=<shot>] [--gpu]` after art
   changes. The Tarapacá pair was the pilot (#583); the other missions followed on 2026-11-22.
 - **Runtime**: every released mission's letterboxed intro (`introStyle: 'cinema'`), first and third beats; the
@@ -823,7 +823,7 @@ slot is absent (offline / without assets).
   road. Rendered without the HUD at 1600×900 and resized with `sharp`. Regenerate with
   `node scripts/capture_virreinato_arc.mjs --mission=ID --only=ID` after art changes.
 - **Runtime**: `m_cusco_1536` uses `intro-{ciudad,sacsay,retirada,epilogo}`; `m_vilcabamba` uses
-  `intro-{corte,pucara,captura,epilogo}`.
+  `intro-{pucara,captura,epilogo}`.
 - **Content**: project-owned game renders (the reused `cusco_inca_site` and `chanca_site` compositions,
   procedural units and camps). Vilcabamba is a labelled abstraction; the images are recreations of the
   game's own scenes, never historical photographs.
@@ -950,7 +950,7 @@ slot is absent (offline / without assets).
   committed; the game uses the project-owned low-poly interpretation.
 - **Review state**: every piece and capture starts `reviewed: false`; a human review must record
   `reviewer` and `reviewedAt` in the manifests before the Art gate is Met.
-- **Captures**: `public/media/chavin/intro-{valle,templo,peregrinos,nuevo,declive}.webp`, generated from
+- **Captures**: `public/media/chavin/intro-{templo,nuevo,declive}.webp`, generated from
   the running game by `scripts/capture_chavin_intro.mjs` (1600×900, resized to 800×450 WebP). They are
   in-engine recreations, **never historical photographs**; they are used by the narrated intro, the
   chapter cards and the epilogue.

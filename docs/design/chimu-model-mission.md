@@ -76,7 +76,7 @@ in the quality bar.
   `node scripts/capture_cinema.mjs --mission=m6_chimu_inca [--only=cine-vanguardia]`.
 - The three act cards captured in engine by
   [`scripts/capture_chimu_intro.mjs`](../../scripts/capture_chimu_intro.mjs): Paramonga, the canal and the
-  capitulation, plus a dusk epilogue; `intro-costa` is no longer referenced.
+  capitulation, plus a dusk epilogue.
 - `MISSION_ART` (`m6_chimu_inca` → `media/generated/campaigns/la-senda-del-sol/m6_chimu/intro.webp`) and the
   briefing use the approved Chan Chan render.
 - Victory: the canal is closed and Chan Chan holds the surrender; the Act III card uses the capitulation

@@ -86,12 +86,11 @@ recorded here and in the quality bar. The Morro is not invented as a new mesh.
   `ARICA_CUARTEL_LINE`/`ARICA_LAST_LINE` (the same constants the waves use); the garrison on the cuartel
   line facing the first column (`cine-linea`, pan). It states the mission, not the fall: the act cards and
   the epilogue tell it. Regenerate the two 1920x1080 stills with
-  `node scripts/capture_cinema.mjs --mission=m9_guerra_pacifico [--only=cine-linea]`; the older
-  `intro-cuartel`/`intro-bateria`/`intro-asalto` captures are no longer intro beats.
-- Three narrated intro beats captured in engine by [`scripts/capture_arica_intro.mjs`](../../scripts/capture_arica_intro.mjs):
-  the plaza and the summons, the battery with the Pacific behind it, and the assault.
+  `node scripts/capture_cinema.mjs --mission=m9_guerra_pacifico [--only=cine-linea]`. The older slide-intro
+  captures were removed; [`scripts/capture_arica_intro.mjs`](../../scripts/capture_arica_intro.mjs) keeps only the
+  epilogue.
 - `MISSION_ART` (`m9_guerra_pacifico` → `media/generated/campaigns/republica/m9_guerra_pacifico/intro.webp`)
-  and the briefing use the approved Blender render; the cuartel capture remains a chapter card.
+  and the briefing use the approved Blender render.
 - Victory: the last line holds for the documented fall; the epilogue (`media/arica/intro-epilogo.webp`)
   tells the fall, Bolognesi's death and the scuttling of the _Manco Cápac_.
 - Defeat: the fort falls before the final assault or Bolognesi dies during the bombardment.

@@ -90,7 +90,13 @@ export const REPUBLICA_SHOTS = [
       },
       {
         id: 'cine-linea',
-        // Reservists on the Miraflores line as the Chilean infantry comes up from San Juan.
+        // Reservists on the Miraflores line as the Chilean infantry comes up from San Juan, with the three
+        // redoubts the mission asks the player to raise (MIRAFLORES_REDOUBT_1..3).
+        buildings: [
+          { kind: 'fortress', owner: 0, at: [72, 190] },
+          { kind: 'fortress', owner: 0, at: [112, 190] },
+          { kind: 'fortress', owner: 0, at: [152, 190] },
+        ],
         center: [112, 197],
         eye: [36, 22, 12],
         look: [-8, 0, 0],
@@ -100,13 +106,13 @@ export const REPUBLICA_SHOTS = [
           {
             kind: 'republica_defensor',
             owner: 0,
-            from: [102, 188],
-            to: [122, 188],
+            from: [92, 198],
+            to: [104, 198],
             count: 10,
             rows: 2,
-            face: [112, 210],
+            face: [100, 216],
           },
-          { kind: 'chile_infante', owner: 1, from: [104, 207], to: [120, 209], count: 8, rows: 2, face: [112, 188] },
+          { kind: 'chile_infante', owner: 1, from: [106, 214], to: [120, 216], count: 8, rows: 2, face: [100, 198] },
         ],
       },
     ],

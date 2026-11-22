@@ -9,18 +9,12 @@ import { launchChromium, withViteServer, cliArg, waitForHighlandKits } from './l
  * detail shot of the Huanacaure monolith, a wide shot of the inhabited valley, the traced Inticancha and the
  * founded settlement at dusk. The three beats follow a hero/detail/wide grammar.
  *
- * Usage: node scripts/capture_tambotoco_intro.mjs [--only=cueva]
+ * Usage: node scripts/capture_tambotoco_intro.mjs [--only=huanacaure]
  */
 const OUT = path.join(process.cwd(), 'public', 'media', 'tambotoco');
 fs.mkdirSync(OUT, { recursive: true });
 
 const SHOTS = [
-  // Hero shot: the party leaves the cave mouth, the landmark the story starts from.
-  {
-    id: 'cueva',
-    cinematic: { center: [45, 63], eye: [-14, 6, 18], look: [0, 3, -6], fov: 42, time: 0.58 },
-    phase: 'cave',
-  },
   // Detail shot: the Huanacaure monolith and its carved niche, framed by the shrine's huts and path.
   {
     id: 'huanacaure',

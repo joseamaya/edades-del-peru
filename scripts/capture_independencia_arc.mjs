@@ -17,14 +17,6 @@ const SHOTS = [
   {
     mission: 'm_lima_1821',
     dir: 'lima-1821',
-    id: 'camino',
-    at: [154, 206],
-    height: 45,
-    time: 0.55,
-  },
-  {
-    mission: 'm_lima_1821',
-    dir: 'lima-1821',
     id: 'plaza',
     at: [90, 150],
     height: 38,
@@ -57,14 +49,6 @@ const SHOTS = [
     at: [140.8, 122.9],
     height: 44,
     time: 0.55,
-  },
-  {
-    mission: 'm_real_felipe',
-    dir: 'real-felipe',
-    id: 'sitio',
-    at: [87, 169],
-    height: 46,
-    time: 0.4,
   },
   {
     mission: 'm_real_felipe',

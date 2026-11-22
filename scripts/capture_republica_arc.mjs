@@ -45,14 +45,6 @@ const SHOTS = [
   {
     mission: 'm_miraflores',
     dir: 'miraflores',
-    id: 'lima',
-    at: [90, 150],
-    height: 38,
-    time: 0.62,
-  },
-  {
-    mission: 'm_miraflores',
-    dir: 'miraflores',
     id: 'reductos',
     at: [112, 190],
     height: 44,

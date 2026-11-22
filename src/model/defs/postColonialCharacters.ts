@@ -76,7 +76,9 @@ export const POST_COLONIAL_SPECS: Record<PostColonialCulture, PostColonialSpec> 
     civ: CivId.CHILE,
     coat: 0x1f3a6a,
     trim: 0xc8302a,
-    trousers: 0x8a2a2a,
+    // «Pantalón garance» (decree of 1878, atuendos.md §4): a bright madder red, not a dark wine. Both
+    // armies wear blue coats, so the trousers are what tells a Chilean column from a Peruvian one.
+    trousers: 0xb0282a,
     hat: 'kepi',
     hatColor: 0x2b2f36,
     weapon: 'rifle',

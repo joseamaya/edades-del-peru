@@ -10,16 +10,17 @@ import { CINEMA_SHOTS } from './cinema-shots/index.mjs';
  * public/media/<dir>/<id>.webp. The intro pans and zooms over them, so they keep their full resolution.
  *
  * The shots live in scripts/cinema-shots/<campaign>.mjs, one entry per mission:
- *   { mission, dir, shots: [{ id, center, eye, look, fov, time, phase?, stage }] }
+ *   { mission, dir, shots: [{ id, center, eye, look, fov, time, phase?, buildings?, stage }] }
  * `center` is the world point the camera is placed around; `eye` and `look` are offsets from it (y is height
- * above the ground). `phase` sets the site phase (`Game.setSitePhase`) before the shot. `stage` lists troops to place before the shot: `kind`, `owner`, a row from `from` to `to`
+ * above the ground). `phase` sets the site phase (`Game.setSitePhase`) before the shot; `buildings` places finished
+ * buildings (`{ kind, owner, at: [x, z] }`, e.g. the redoubts a mission asks the player to build). `stage` lists troops to place before the shot: `kind`, `owner`, a row from `from` to `to`
  * (world coordinates) with `count` units in `rows`, then a short march toward `face` so they turn to it.
  *
  * Usage: node scripts/capture_cinema.mjs [--mission=ID] [--only=SHOT_ID] [--gpu]
  */
 const only = cliArg('only', '');
 /** Byte target per still (the test allows 160 KB) and the lowest WebP quality used to reach it. */
-const TARGET_BYTES = 76 * 1024;
+const TARGET_BYTES = 80 * 1024;
 const MIN_QUALITY = 45;
 const onlyMission = cliArg('mission', '');
 
@@ -92,7 +93,8 @@ try {
               const len = Math.hypot(fx, fz) || 1;
               const x = row.from[0] + (row.to[0] - row.from[0]) * k - (fx / len) * r * 1.9;
               const z = row.from[1] + (row.to[1] - row.from[1]) * k - (fz / len) * r * 1.9;
-              ids.push(g.spawnScriptedUnit(row.kind, row.owner, x, z).id);
+              const unit = g.spawnScriptedUnit(row.kind, row.owner, x, z);
+              ids.push(unit.id);
             }
             g.executeCommand(
               {
@@ -115,6 +117,9 @@ try {
           g.camera.focusOn(lx, lz);
           tick(6);
           if (!g.getPaused()) g.togglePause();
+          // Buildings go in after the last tick: an armed redoubt would open fire on the staged column
+          // and paint impact discs on the ground.
+          for (const b of shot.buildings ?? []) g.spawnScriptedBuilding(b.kind, b.owner, b.at[0], b.at[1]);
           const c = g.camera.camera;
           const ey = g.terrain.getHeight(center[0] + eye[0], center[1] + eye[2]) + eye[1];
           const ly = g.terrain.getHeight(lx, lz) + look[1];
@@ -126,7 +131,40 @@ try {
           g.terrain.updateLod(c.position, true);
           g.runtime.frameShadows();
           g.trees.update(0, { x: lx, z: lz });
+          // The apron around the playable map is a dark frame for the RTS camera; at a still's low angle
+          // it reads as a grey band under the sky. Fade only the apron's vertex colours towards the
+          // horizon with the camera distance, like an exponential fog applied to it alone: the playable
+          // ground, the water and everything on the map keep their own look.
+          const apron = g.terrain.skirt;
+          if (apron) {
+            const horizon = g.sky.dome.material.uniforms.horizonColor.value;
+            const pos = apron.geometry.attributes.position;
+            const col = apron.geometry.attributes.color;
+            const world = apron.matrixWorld;
+            const v = c.position.clone();
+            for (let i = 0; i < pos.count; i++) {
+              v.fromBufferAttribute(pos, i).applyMatrix4(world);
+              const d = v.distanceTo(c.position) * 0.012;
+              const f = 1 - Math.exp(-d * d);
+              col.setXYZ(
+                i,
+                col.getX(i) + (horizon.r - col.getX(i)) * f,
+                col.getY(i) + (horizon.g - col.getY(i)) * f,
+                col.getZ(i) + (horizon.b - col.getZ(i)) * f,
+              );
+            }
+            col.needsUpdate = true;
+          }
           hideRings();
+          // Shots fired during the staging ticks leave tracer and impact glows (pooled spheres added to
+          // the scene by ProjectileView); an expanding impact reads as a translucent disc on a still.
+          for (const view of g.projectileViews.values()) view.dispose();
+          g.projectileViews.clear();
+          g.projectiles.length = 0;
+          for (const o of g.scene.children) {
+            const r = o.geometry?.type === 'SphereGeometry' ? o.geometry.parameters.radius : null;
+            if ((r === 0.06 || r === 0.5) && o.material?.transparent) o.visible = false;
+          }
           g.selection?.clear?.();
           g.runtime.render();
         },
@@ -135,13 +173,13 @@ try {
       await page.waitForTimeout(600);
       const png = await page.screenshot({ type: 'png' });
       const file = path.join(out, `${shot.id}.webp`);
-      // ADR 0008 fits forty stills in about 3 MB, so each aims at ~76 KB (the test allows 160 KB). Busy ground (forest,
+      // ADR 0008 fits forty stills in about 3 MB, so each aims at ~80 KB (the test allows 160 KB). Busy ground (forest,
       // grass) compresses badly, so the quality steps down until the still fits.
       let quality = 80;
-      let webp = await sharp(png).webp({ quality }).toBuffer();
+      let webp = await sharp(png).webp({ quality, effort: 6 }).toBuffer();
       while (webp.length > TARGET_BYTES && quality > MIN_QUALITY) {
         quality -= 5;
-        webp = await sharp(png).webp({ quality }).toBuffer();
+        webp = await sharp(png).webp({ quality, effort: 6 }).toBuffer();
       }
       fs.writeFileSync(file, webp);
       console.log(`captured ${path.relative(process.cwd(), file)} (${webp.length} bytes, q${quality})`);

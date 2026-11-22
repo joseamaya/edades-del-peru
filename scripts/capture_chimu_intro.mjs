@@ -16,10 +16,6 @@ fs.mkdirSync(OUT, { recursive: true });
 
 const SHOTS = [
   {
-    id: 'costa',
-    cinematic: { centre: 'player', eye: [-26, 15, 24], look: [0, 1, 0], fov: 52, time: 0.58 },
-  },
-  {
     id: 'paramonga',
     centre: 'paramonga',
     cinematic: { eye: [-28, 16, 22], look: [0, 3, 0], fov: 50, time: 0.5 },

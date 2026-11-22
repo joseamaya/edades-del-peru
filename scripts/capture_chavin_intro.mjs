@@ -5,9 +5,9 @@ import { launchChromium, withViteServer } from './lib.mjs';
 
 /**
  * Capture the Chavín intro, chapter-card and epilogue images from the game itself (an in-engine
- * recreation, never a historical photograph): the Mosna valley, the Old Temple, the pilgrimage, the
- * New Temple and the final decline. Staged through the debug harness, rendered without the HUD at
- * 1600x900 and stored as 800x450 WebP in public/media/chavin/.
+ * recreation, never a historical photograph): the Old Temple chapter card,
+ * the New Temple and the final decline (the intro beats are cinema stills now). Staged through the
+ * debug harness, rendered without the HUD at 1600x900 and stored as 800x450 WebP in public/media/chavin/.
  *
  * Usage: node scripts/capture_chavin_intro.mjs
  */
@@ -15,9 +15,7 @@ const OUT = path.join(process.cwd(), 'public', 'media', 'chavin');
 fs.mkdirSync(OUT, { recursive: true });
 
 const SHOTS = [
-  { id: 'intro-valle', phase: 'old_temple_foundation', at: [82.7, 160], height: 52, people: 0 },
   { id: 'intro-templo', phase: 'old_temple', at: [126, 127], height: 38, people: 5 },
-  { id: 'intro-peregrinos', phase: 'new_temple', at: [130, 132], height: 44, people: 12 },
   { id: 'intro-nuevo', phase: 'apogee', at: [132, 128], height: 40, people: 10 },
   { id: 'intro-declive', phase: 'apogee', at: [130, 126], height: 50, people: 2 },
 ];
