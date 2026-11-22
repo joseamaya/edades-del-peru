@@ -46,7 +46,14 @@ Optional: cut the city's supplies. The mission never stages the later «Santiago
 
 ## Opening and closing
 
-- Three beats: the rebellion, Sacsayhuamán, the withdrawal.
+- Cinema intro (`introStyle: 'cinema'`, as the Tarapacá pilot): the besieged plaza with Sacsayhuamán behind
+  it (`cine-ciudad`, push-in); a campaign map painted from this terrain where Manco's army marches from
+  `CUSCO_1536_CAMP` on Sacsayhuamán, the Spanish sally from the plaza against it and the Act II sortie enters
+  dashed from `CUSCO_1536_SORTIE` (constants shared with the objectives and waves); Manco's warriors on the
+  terraces as a Spanish sortie climbs from the plaza (`cine-fortaleza`, pan). It states the mission, not its
+  outcome: the withdrawal to Ollantaytambo is an Act III card and the epilogue closes it. Both stills are
+  dusk captures: Cusco's grass and forest are noisy and a brighter hour exceeds the 160 KB budget.
+  Regenerate with `node scripts/capture_cinema.mjs --mission=m_cusco_1536 [--only=cine-fortaleza]`.
 - Briefing art `media/cusco-1536/intro-ciudad.webp`; act cards `intro-sacsay` and `intro-retirada`;
   epilogue `intro-epilogo`.
 

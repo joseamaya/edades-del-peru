@@ -174,8 +174,13 @@ checks the panels geometrically at 1280x720, 1600x900 and 1920x1080. Captures:
   opaque landscape and site meshes then wrote alpha 0 and the post-processed SwiftShader frame showed
   white slabs. `applyFow` now dims colour only. The cave clearing is explored by the opening reveal;
   Huanacaure and the valley stay dark until reached or shown by the Act II–IV camera beats (`reveal: 45`).
-- Three narrated beats with a hero/detail/wide grammar: the cave (the party leaves the mouth), Huanacaure
-  (the monolith and its niche) and the valley (the inhabited hualla hamlet and its fields).
+- Cinema intro (`introStyle: 'cinema'`, as the Tarapacá pilot), told as legend: the cave mouth with the party
+  on the stony path (`cine-cueva`, push-in); a campaign map painted from this terrain where the pilgrimage
+  draws itself from `TAMBOTOCO_START` past `TAMBOTOCO_EXIT` to Huanacaure and on to Inticancha (dashed), and
+  the valley ayllus march from `TAMBOTOCO_WAVE` to `TAMBOTOCO_HOLD`; the pilgrimage on the road past Tambo
+  Quiro with Huanacaure ahead (`cine-partida`, pan). It does not tell how the valley yields. Regenerate with
+  `node scripts/capture_cinema.mjs --mission=m_tambotoco [--only=cine-partida]` (shots in
+  `scripts/cinema-shots/inca.mjs`). `intro-huanacaure`, `intro-valle` and `intro-traza` stay as act cards.
 - Three chapter cards open the act that follows: Ayar Uchu en Huanacaure, el agua de los alcabizas and
   Ayar Auca en Inticancha. The Act II/III/IV beats glide behind their cards to a framed shot (`zoom` 34/46/48, `reveal: 45`);
   after the wave the camera flies to the stone plug (zoom 36), not the field intake.

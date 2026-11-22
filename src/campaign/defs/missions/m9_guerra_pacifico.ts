@@ -17,6 +17,14 @@ const ARICA_BASE_ANCHOR = {
 } as const;
 const ARICA_MINES_WORLD = { dx: aricaLength(92), dz: aricaLength(104) } as const;
 const ARICA_CAMP_ANCHOR = { x: 0.78, z: 0.22 } as const;
+// The battery terrace (`arica_site`) and the Morro headland label, shared by the layout and the cinema map.
+const ARICA_SITE_ANCHOR = { x: 0.702, z: 0.38 } as const;
+const ARICA_MORRO_ANCHOR = { x: 0.16, z: 0.26 } as const;
+/** An anchor (0..1) as a world point on the cinema map. */
+const aricaMapPoint = (a: { x: number; z: number }) => ({ x: a.x * ARICA_MAP_SIZE, z: a.z * ARICA_MAP_SIZE });
+const ARICA_SITE_WORLD = aricaMapPoint(ARICA_SITE_ANCHOR);
+const ARICA_MORRO_WORLD = aricaMapPoint(ARICA_MORRO_ANCHOR);
+const ARICA_CAMP_WORLD = aricaMapPoint(ARICA_CAMP_ANCHOR);
 // The two lines the mission defends, north of the port terrace toward the Chilean camp. Authored world
 // points: anchored on `ref: 'player'` they followed the centre building, and the bombardment that razed
 // it silently moved both objectives mid-act. Each line sits outside the other's hold radius, so the
@@ -54,7 +62,7 @@ export const m9GuerraPacifico: MissionDef = {
     labels: [
       { text: 'Arica', x: ARICA_BASE_ANCHOR.x, z: ARICA_BASE_ANCHOR.z, kind: 'settlement' },
       // The Morro is the coastal headland that closes the bay: in-world it sat far inland.
-      { text: 'Morro de Arica', x: 0.16, z: 0.26, kind: 'region' },
+      { text: 'Morro de Arica', x: ARICA_MORRO_ANCHOR.x, z: ARICA_MORRO_ANCHOR.z, kind: 'region' },
       { text: 'Campamento chileno', x: ARICA_CAMP_ANCHOR.x, z: ARICA_CAMP_ANCHOR.z, kind: 'region' },
     ],
     base: ARICA_BASE_ANCHOR,
@@ -69,9 +77,9 @@ export const m9GuerraPacifico: MissionDef = {
     site: {
       id: 'arica_site',
       y: 4,
-      focus: { x: 0.702, z: 0.38 },
-      keepout: [{ x: 0.702, z: 0.38, rx: 0.09, rz: 0.08 }],
-      buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.08, rz: 0.07 }],
+      focus: ARICA_SITE_ANCHOR,
+      keepout: [{ x: ARICA_SITE_ANCHOR.x, z: ARICA_SITE_ANCHOR.z, rx: 0.09, rz: 0.08 }],
+      buildKeepout: [{ x: ARICA_SITE_ANCHOR.x, z: ARICA_SITE_ANCHOR.z, rx: 0.08, rz: 0.07 }],
     },
   },
   mapOverrides: { culturalLandscape: null, groundTint: '#e6cfa4' },
@@ -106,30 +114,84 @@ export const m9GuerraPacifico: MissionDef = {
   enemy: { active: true, difficulty: 'normal', aggression: 0.35, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map
+  // uses the mission's own geometry (the sappers' mines, the columns' entry points and the two lines they
+  // attack), so what the player sees here is what the mission will throw at them. It does not tell the fall
+  // of the plaza: the act cards and the epilogue do.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'ARICA · 5 DE JUNIO DE 1880',
+      kicker: 'Arica · 5 de junio de 1880',
       title: 'El parlamento',
-      text: 'El parlamento de Juan de la Cruz Salvo exige la rendición de la plaza. Bolognesi consulta a sus jefes y responde que defenderán Arica hasta quemar el último cartucho.',
-      seconds: 9,
+      text: 'Tras la derrota aliada en Tacna, Arica queda aislada. El parlamento de Juan de la Cruz Salvo exige la rendición de la plaza; Bolognesi consulta a sus jefes y responde que defenderán Arica hasta quemar el último cartucho.',
+      seconds: 13,
       source: 'docs/historia/campanas/guerra_del_pacifico.md',
-      image: 'media/arica/intro-cuartel.webp',
+      image: 'media/arica/cine-puerto.webp',
+      motion: 'push',
     },
     {
-      kicker: 'LA BATERÍA · 7 DE JUNIO DE 1880',
+      kicker: 'Arica · 7 de junio de 1880',
       title: 'El bombardeo',
-      text: 'Los zapadores de Elmore minan los accesos. La artillería chilena bate la plaza y la guarnición se aferra al fuerte y a la batería: la resistencia depende de sostener ambos.',
-      seconds: 9,
-      source: 'docs/historia/campanas/guerra_del_pacifico.md',
-      image: 'media/arica/intro-bateria.webp',
-    },
-    {
-      kicker: 'EL ASALTO · 7 DE JUNIO DE 1880',
-      title: 'La plaza cae',
-      text: 'La infantería chilena asalta Arica. La plaza cae ese día y Bolognesi muere en la defensa; la misión te pide cumplir la resistencia documentada, no cambiarla.',
+      text: 'Los zapadores de Elmore minan los accesos. La artillería chilena bate la plaza y las columnas bajan desde el norte sobre las líneas del cuartel.',
       seconds: 10,
       source: 'docs/historia/campanas/guerra_del_pacifico.md',
-      image: 'media/arica/intro-asalto.webp',
+      map: {
+        // The theatre from the Morro to the Chilean camp, wide enough to hold both entry points and the port.
+        view: { x: 28, z: 30, size: 184 },
+        marks: [
+          { x: ARICA_BASE_WORLD.x, z: ARICA_BASE_WORLD.z + 8, label: 'Arica', side: 'place' },
+          { x: ARICA_SITE_WORLD.x, z: ARICA_SITE_WORLD.z + 8, label: 'Batería', side: 'place' },
+          { x: ARICA_MORRO_WORLD.x + 4, z: ARICA_MORRO_WORLD.z, label: 'Morro de Arica', side: 'place' },
+          {
+            x: ARICA_MINES_WORLD.dx + 6,
+            z: ARICA_MINES_WORLD.dz + 6,
+            label: 'Minas de los zapadores',
+            side: 'place',
+            delay: 1.6,
+          },
+          { x: ARICA_BASE_WORLD.x - 6, z: ARICA_BASE_WORLD.z - 8, label: 'Perú', side: 'player', delay: 0.6 },
+          { x: ARICA_CAMP_WORLD.x, z: ARICA_CAMP_WORLD.z, label: 'Chile', side: 'enemy', delay: 0.9 },
+        ],
+        routes: [
+          {
+            // The sappers' road to the mines: the mark at its end names it, a second label would crowd it.
+            side: 'player',
+            dashed: true,
+            points: [
+              { x: ARICA_BASE_WORLD.x, z: ARICA_BASE_WORLD.z },
+              { x: ARICA_MINES_WORLD.dx, z: ARICA_MINES_WORLD.dz },
+            ],
+            delay: 1,
+          },
+          {
+            side: 'enemy',
+            label: '1.ª columna',
+            points: [
+              { x: ARICA_APPROACH_EAST.dx, z: ARICA_APPROACH_EAST.dz },
+              { x: ARICA_CUARTEL_LINE.dx, z: ARICA_CUARTEL_LINE.dz },
+            ],
+            delay: 3,
+          },
+          {
+            side: 'enemy',
+            label: '2.ª columna',
+            points: [
+              { x: ARICA_APPROACH_WEST.dx, z: ARICA_APPROACH_WEST.dz },
+              { x: ARICA_LAST_LINE.dx, z: ARICA_LAST_LINE.dz },
+            ],
+            delay: 5,
+          },
+        ],
+      },
+    },
+    {
+      kicker: 'Tu mando',
+      title: 'Sostén la plaza',
+      text: 'Bolognesi manda la guarnición a pie. Mina los accesos, aguanta el bombardeo en el cuartel y sostén la última línea cuando llegue el asalto: la defensa depende de que la línea no se rompa.',
+      seconds: 12,
+      source: 'docs/historia/campanas/guerra_del_pacifico.md',
+      image: 'media/arica/cine-linea.webp',
+      motion: 'pan-left',
     },
   ],
   epilogueImage: 'media/arica/intro-epilogo.webp',

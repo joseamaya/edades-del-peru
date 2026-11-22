@@ -8,6 +8,8 @@ const VILCABAMBA_TOWN = { x: 150, z: 132 } as const;
 const VILCABAMBA_CAMP = { x: 90, z: 166 } as const;
 const VILCABAMBA_ENEMY = { x: 198, z: 64 } as const;
 const VILCABAMBA_ESCAPE = { x: 54, z: 220 } as const;
+// Where the Cusco road leaves the valley, north-east of Arbieto's camp.
+const VILCABAMBA_CUSCO_ROAD = { x: 0.78 * 256, z: 0.22 * 256 } as const;
 const VILCABAMBA_FORT_POINT = { dx: VILCABAMBA_FORT.x, dz: VILCABAMBA_FORT.z } as const;
 // Where the Act III column meets the escape road, instead of the Spanish camp 200 m away.
 const VILCABAMBA_ESCAPE_ROAD = { dx: VILCABAMBA_ESCAPE.x + 55, dz: VILCABAMBA_ESCAPE.z - 45 } as const;
@@ -44,7 +46,7 @@ export const mVilcabamba: MissionDef = {
       { text: 'Huayna Pucará', x: VILCABAMBA_FORT.x / 256, z: VILCABAMBA_FORT.z / 256, kind: 'region' },
       { text: 'Río Urubamba', x: VILCABAMBA_RIVER[0] / 256, z: VILCABAMBA_RIVER[1] / 256, kind: 'water' },
       { text: 'Bajo Urubamba', x: VILCABAMBA_ESCAPE.x / 256, z: VILCABAMBA_ESCAPE.z / 256, kind: 'region' },
-      { text: 'Camino a Cusco', x: 0.78, z: 0.22, kind: 'region' },
+      { text: 'Camino a Cusco', x: VILCABAMBA_CUSCO_ROAD.x / 256, z: VILCABAMBA_CUSCO_ROAD.z / 256, kind: 'region' },
     ],
     base: { x: VILCABAMBA_CAMP.x / 256, z: VILCABAMBA_CAMP.z / 256 },
     opening: { x: 0.42, z: 0.6 },
@@ -123,30 +125,70 @@ export const mVilcabamba: MissionDef = {
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/vilcabamba/intro-epilogo.webp',
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map
+  // uses the mission's own geometry (the court's camp, Huayna Pucará, Vilcabamba and Arbieto's camp on the
+  // Cusco road), so what the player sees is what the expedition will throw at them. It does not tell the
+  // outcome: the evacuation and the escape to the lower Urubamba open as act cards, the capture in the epilogue.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'VILCABAMBA · 1572',
+      kicker: 'Vilcabamba · 1572',
       title: 'La última corte',
       text: 'El virrey Toledo declara la guerra al Estado neoinca. La expedición de Arbieto entra en la selva; Vilcabamba es el último refugio de la corte.',
-      seconds: 9,
-      source: 'docs/historia/campanas/vilcabamba.md',
-      image: 'media/vilcabamba/intro-corte.webp',
-    },
-    {
-      kicker: 'HUAYNA PUCARÁ · 1572',
-      title: 'La defensa',
-      text: 'La resistencia se apoya en Huayna Pucará y en los senderos de la selva. La defensa debe ganar tiempo para que la corte abandone Vilcabamba y salga hacia el bajo Urubamba.',
-      seconds: 9,
-      source: 'docs/historia/campanas/vilcabamba.md',
-      image: 'media/vilcabamba/intro-pucara.webp',
-    },
-    {
-      kicker: 'CUSCO · 24 DE SEPTIEMBRE DE 1572',
-      title: 'El último Inca',
-      text: 'Vilcabamba cae y Túpac Amaru I es capturado en la huida. El epílogo cuenta su ejecución en el Cusco: la resistencia armada termina, pero la memoria del Estado neoinca permanece.',
       seconds: 10,
       source: 'docs/historia/campanas/vilcabamba.md',
-      image: 'media/vilcabamba/intro-captura.webp',
+      image: 'media/vilcabamba/cine-selva.webp',
+      motion: 'push',
+    },
+    {
+      kicker: 'Huayna Pucará · 1572',
+      title: 'La defensa',
+      text: 'La expedición baja por el camino del Cusco. La resistencia se apoya en Huayna Pucará y en los senderos de la selva: la defensa debe ganar tiempo para la corte.',
+      seconds: 10,
+      source: 'docs/historia/campanas/vilcabamba.md',
+      map: {
+        // From the court's camp to the Cusco road beyond Arbieto's camp (z 56).
+        view: { x: 60, z: 36, size: 160 },
+        marks: [
+          { x: VILCABAMBA_FORT.x - 4, z: VILCABAMBA_FORT.z + 10, label: 'Huayna Pucará', side: 'place' },
+          { x: VILCABAMBA_TOWN.x - 6, z: VILCABAMBA_TOWN.z + 8, label: 'Vilcabamba', side: 'place' },
+          { x: VILCABAMBA_RIVER[0], z: VILCABAMBA_RIVER[1], label: 'Río Urubamba', side: 'place' },
+          { x: VILCABAMBA_CUSCO_ROAD.x - 4, z: VILCABAMBA_CUSCO_ROAD.z - 8, label: 'Camino a Cusco', side: 'place' },
+          { x: VILCABAMBA_CAMP.x, z: VILCABAMBA_CAMP.z + 9, label: 'Corte', side: 'player', delay: 0.6 },
+          { x: VILCABAMBA_ENEMY.x + 6, z: VILCABAMBA_ENEMY.z + 6, label: 'Arbieto', side: 'enemy', delay: 1 },
+        ],
+        routes: [
+          {
+            side: 'enemy',
+            label: 'Expedición de Toledo',
+            points: [
+              { x: VILCABAMBA_CUSCO_ROAD.x, z: VILCABAMBA_CUSCO_ROAD.z },
+              { x: VILCABAMBA_ENEMY.x, z: VILCABAMBA_ENEMY.z },
+              { x: VILCABAMBA_FORT.x + 6, z: VILCABAMBA_FORT.z - 6 },
+            ],
+            delay: 1.6,
+          },
+          {
+            side: 'player',
+            label: 'Guarnición',
+            points: [
+              { x: VILCABAMBA_CAMP.x, z: VILCABAMBA_CAMP.z },
+              { x: VILCABAMBA_TOWN.x, z: VILCABAMBA_TOWN.z },
+              { x: VILCABAMBA_FORT.x - 6, z: VILCABAMBA_FORT.z + 4 },
+            ],
+            delay: 4,
+          },
+        ],
+      },
+    },
+    {
+      kicker: 'Tu mando',
+      title: 'Defiende Huayna Pucará',
+      text: 'La guarnición sube al pucará con el capitán Curi Paucar. Sostén la posición ante la vanguardia española y protege al capitán: sin él, la corte queda indefensa.',
+      seconds: 10,
+      source: 'docs/historia/campanas/vilcabamba.md',
+      image: 'media/vilcabamba/cine-pucara.webp',
+      motion: 'pan-right',
     },
   ],
   allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.INCA_WARRIOR, UnitKind.SCOUT],

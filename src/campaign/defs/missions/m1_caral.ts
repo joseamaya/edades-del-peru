@@ -1,7 +1,37 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import type { MissionDef } from '../../types';
-import { CARAL_MAP_SIZE, CARAL_SITE_BUILD_KEEPOUT, CARAL_SITE_ORIGIN, caralKeepout } from '../../../model/defs/sites';
+import {
+  ASPERO_HERITAGE_PROXY,
+  CARAL_MAP_SIZE,
+  CARAL_SITE_BUILD_KEEPOUT,
+  CARAL_SITE_ORIGIN,
+  caralKeepout,
+} from '../../../model/defs/sites';
 import { CARAL_PLAZA_CENTER } from '../../../model/defs/caralCity';
+
+// The geography of the transect, in world metres: shared by the mission layout, its objectives and the cinema map.
+/** Act I base on Áspero's low coastal rise, north of the river mouth. */
+const ASPERO_BASE = { x: 42, z: 172 } as const;
+/** Opening focus between the base and the Huaca de los Ídolos. */
+const ASPERO_OPENING = { x: 42, z: 160 } as const;
+/** The communal canal's anchor, on the river's west bank where the lower valley opens to fields. */
+const CARAL_CANAL = { x: 52, z: 120 } as const;
+/** Intake at the Supe's west bank, then a contour trace past the valley fields (a game abstraction). */
+const CARAL_CANAL_PATH = [
+  { x: 68.5, z: 118 },
+  { x: 62, z: 118.6 },
+  { x: 57, z: 119.2 },
+  { x: 52, z: 120 },
+  { x: 48, z: 121.5 },
+  { x: 45, z: 125 },
+  { x: 43, z: 130 },
+  { x: 41, z: 136 },
+  { x: 41.5, z: 145 },
+] as const;
+/** Act I's valley goal, upriver from the canal. */
+const CARAL_VALLEY_REACH = { dx: 36, dz: -10 } as const;
+/** The Sacred City's site focus: the Pyramid Mayor's forecourt (what `ref: 'site'` resolves to). */
+const CARAL_SITE_FOCUS = { x: 163.84, z: 53.184 } as const;
 
 /** Caral's Act III work turns: a worker holds the site while the communal store feeds the crew. */
 const CARAL_WORK_TURN = {
@@ -34,30 +64,81 @@ export const m1Caral: MissionDef = {
   ],
   // In-engine recreations (scripts/capture_caral_intro.mjs), never historical photographs.
   epilogueImage: 'media/caral/intro-partida.webp',
+  // Played as a letterboxed film (scripts/capture_cinema.mjs): Áspero at dawn, a map of the transect drawn
+  // from this mission's own geometry (the base, the canal, the valley goal and the site), then the crew at
+  // the Pyramid Mayor. There is no documented war, so the map has no enemy: only the way up the valley and
+  // the water. It does not tell the drought or the departure: the act cards and the epilogue do.
+  introStyle: 'cinema',
   intro: [
     {
       kicker: 'VALLE DE SUPE · c. 3000 a.C.',
       title: 'Gente del mar',
       text: 'En Áspero, donde el río Supe llega al océano, los pescadores sacan anchoveta con redes de algodón y flotadores de mate. Pero el algodón y los mates no crecen en la playa.',
-      seconds: 9,
+      seconds: 11,
       source: 'docs/historia/campanas/caral.md',
-      image: 'media/caral/intro-aspero.webp',
+      image: 'media/caral/cine-aspero.webp',
+      motion: 'push',
     },
     {
       kicker: 'RÍO ARRIBA',
       title: 'El valle',
-      text: 'Tierra adentro, el río corre entre sauces y huarangos. Con canales, el valle puede dar algodón, mates, zapallos y frijoles: lo que la costa necesita.',
-      seconds: 9,
+      text: 'Tierra adentro, el río corre entre sauces y huarangos. Con canales, el valle puede dar algodón, mates, zapallos y frijoles: lo que la costa necesita. Más arriba, sobre una terraza del desierto, se levantará Caral.',
+      seconds: 12,
       source: 'docs/historia/campanas/caral.md',
-      image: 'media/caral/intro-valle.webp',
+      map: {
+        // The transect from the beach at Áspero to the Sacred City on its terrace.
+        view: { x: 16, z: 28, size: 168 },
+        marks: [
+          { x: ASPERO_HERITAGE_PROXY.x, z: ASPERO_HERITAGE_PROXY.z - 10, label: 'Áspero', side: 'place' },
+          {
+            x: CARAL_CANAL.x + CARAL_VALLEY_REACH.dx,
+            z: CARAL_CANAL.z + CARAL_VALLEY_REACH.dz - 6,
+            label: 'Valle de Supe',
+            side: 'place',
+          },
+          { x: CARAL_SITE_FOCUS.x, z: CARAL_SITE_FOCUS.z - 10, label: 'Caral', side: 'place' },
+          { x: ASPERO_BASE.x + 2, z: ASPERO_BASE.z + 8, label: 'Comunidad', side: 'player', delay: 0.6 },
+        ],
+        routes: [
+          {
+            side: 'player',
+            label: 'Río arriba',
+            points: [
+              { x: ASPERO_OPENING.x, z: ASPERO_OPENING.z },
+              CARAL_CANAL_PATH[CARAL_CANAL_PATH.length - 1],
+              { x: CARAL_CANAL.x, z: CARAL_CANAL.z },
+              { x: CARAL_CANAL.x + CARAL_VALLEY_REACH.dx, z: CARAL_CANAL.z + CARAL_VALLEY_REACH.dz },
+            ],
+            delay: 1.2,
+          },
+          {
+            side: 'player',
+            label: 'Canal',
+            dashed: true,
+            points: [...CARAL_CANAL_PATH],
+            delay: 3.6,
+            draw: 1.8,
+          },
+          {
+            side: 'player',
+            dashed: true,
+            points: [
+              { x: CARAL_CANAL.x + CARAL_VALLEY_REACH.dx, z: CARAL_CANAL.z + CARAL_VALLEY_REACH.dz },
+              { x: CARAL_SITE_FOCUS.x, z: CARAL_SITE_FOCUS.z + 6 },
+            ],
+            delay: 5.6,
+          },
+        ],
+      },
     },
     {
-      kicker: 'GENERACIONES',
+      kicker: 'TU COMUNIDAD',
       title: 'Una ciudad hecha por todos',
-      text: 'De ese intercambio nacerá, sobre una terraza del desierto, una de las ciudades más antiguas de América. No se conocen los nombres de sus autoridades; la levantó el trabajo organizado de generaciones, plataforma sobre plataforma.',
-      seconds: 10,
+      text: 'No se conocen los nombres de sus autoridades: la ciudad la levantó el trabajo organizado de generaciones. Pesca, abre el canal, guarda excedente y levanta la Pirámide Mayor, plataforma sobre plataforma.',
+      seconds: 11,
       source: 'docs/historia/campanas/caral.md',
-      image: 'media/caral/intro-ciudad.webp',
+      image: 'media/caral/cine-obra.webp',
+      motion: 'pan-right',
     },
   ],
   playerCiv: CivId.CARAL,
@@ -84,8 +165,8 @@ export const m1Caral: MissionDef = {
     ],
     // Act I starts at Áspero, on its low coastal rise north of the river mouth. The opening
     // focus sits between the base and the Huaca de los Ídolos so its summit reads from the start.
-    base: { x: 42 / CARAL_MAP_SIZE, z: 172 / CARAL_MAP_SIZE },
-    opening: { x: 42 / CARAL_MAP_SIZE, z: 160 / CARAL_MAP_SIZE },
+    base: { x: ASPERO_BASE.x / CARAL_MAP_SIZE, z: ASPERO_BASE.z / CARAL_MAP_SIZE },
+    opening: { x: ASPERO_OPENING.x / CARAL_MAP_SIZE, z: ASPERO_OPENING.z / CARAL_MAP_SIZE },
     // Anchoveta shoals off Áspero (sea, west) only: the Supe is dry most of the year, so the game
     // has no permanent river banks (docs/historia/campanas/caral.md). Sea anchors sit north of the
     // base so the opening camera shows them above the minimap (issue 378).
@@ -106,7 +187,7 @@ export const m1Caral: MissionDef = {
     site: {
       id: 'caral_site',
       y: 8,
-      focus: { x: 163.84 / CARAL_MAP_SIZE, z: 53.184 / CARAL_MAP_SIZE },
+      focus: { x: CARAL_SITE_FOCUS.x / CARAL_MAP_SIZE, z: CARAL_SITE_FOCUS.z / CARAL_MAP_SIZE },
       keepout: [caralKeepout({ x: 0.52, z: 0.45, rx: 0.27, rz: 0.43 })],
       buildKeepout: [...CARAL_SITE_BUILD_KEEPOUT],
       // The Pyramid Mayor starts as its earliest platform; act III builds the later phases.
@@ -115,22 +196,12 @@ export const m1Caral: MissionDef = {
     canal: {
       name: 'Canal comunal del valle',
       // On the river's west bank, where the lower valley opens to fields.
-      x: 52 / CARAL_MAP_SIZE,
-      z: 120 / CARAL_MAP_SIZE,
+      x: CARAL_CANAL.x / CARAL_MAP_SIZE,
+      z: CARAL_CANAL.z / CARAL_MAP_SIZE,
       length: 18,
       // Intake at the Supe's west bank, then a contour trace past the valley fields. The exact
       // trace is a game abstraction; the sources document irrigation canals without a mapped line.
-      path: [
-        { x: 68.5 / CARAL_MAP_SIZE, z: 118 / CARAL_MAP_SIZE },
-        { x: 62 / CARAL_MAP_SIZE, z: 118.6 / CARAL_MAP_SIZE },
-        { x: 57 / CARAL_MAP_SIZE, z: 119.2 / CARAL_MAP_SIZE },
-        { x: 52 / CARAL_MAP_SIZE, z: 120 / CARAL_MAP_SIZE },
-        { x: 48 / CARAL_MAP_SIZE, z: 121.5 / CARAL_MAP_SIZE },
-        { x: 45 / CARAL_MAP_SIZE, z: 125 / CARAL_MAP_SIZE },
-        { x: 43 / CARAL_MAP_SIZE, z: 130 / CARAL_MAP_SIZE },
-        { x: 41 / CARAL_MAP_SIZE, z: 136 / CARAL_MAP_SIZE },
-        { x: 41.5 / CARAL_MAP_SIZE, z: 145 / CARAL_MAP_SIZE },
-      ],
+      path: CARAL_CANAL_PATH.map((p) => ({ x: p.x / CARAL_MAP_SIZE, z: p.z / CARAL_MAP_SIZE })),
       width: 1.8,
       initiallyOpen: false,
       irrigation: true,
@@ -193,7 +264,7 @@ export const m1Caral: MissionDef = {
     {
       id: 'a1_valle',
       kind: 'reach',
-      pos: { ref: 'canal', dx: 36, dz: -10 },
+      pos: { ref: 'canal', ...CARAL_VALLEY_REACH },
       radius: 12,
       hidden: true,
       title: 'Acto I · Remonta el río Supe hasta el valle',

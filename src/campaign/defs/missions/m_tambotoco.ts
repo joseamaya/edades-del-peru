@@ -11,6 +11,11 @@ import { TAMBOTOCO_LANDSCAPE } from '../../../model/defs/landscape';
 
 // Los hijos de Tambotoco: the cave, the Huanacaure huaca, the valley and Inticancha.
 const TAMBOTOCO_TAMBO_QUIRO = { x: 70, z: 91 } as const;
+/** The party's start at the cave mouth (blocker z ≈ 50–60) and the Act I exit on the path. */
+const TAMBOTOCO_START = { x: 44, z: 65 } as const;
+const TAMBOTOCO_EXIT = { x: 60, z: 92 } as const;
+/** Where the valley road ends, past Inticancha. */
+const TAMBOTOCO_VALLEY_ROAD_END = { x: 186, z: 196 } as const;
 const TAMBOTOCO_ENEMY = { x: 212, z: 200 } as const;
 /** The stone plug sits at the canal's first point; the post-wave cue frames the gate, not the field intake. */
 export const TAMBOTOCO_CANAL_GATE = { x: 152, z: 160 } as const;
@@ -88,7 +93,7 @@ export const mTambotoco: MissionDef = {
       { text: 'Valle del Cusco', x: 196 / 256, z: 190 / 256, kind: 'region' },
     ],
     // Close to the cave mouth (blocker z ≈ 50–60): the party reads as just leaving Tambotoco.
-    base: { x: 44 / 256, z: 65 / 256 },
+    base: { x: TAMBOTOCO_START.x / 256, z: TAMBOTOCO_START.z / 256 },
     opening: { x: 41 / 256, z: 62 / 256 },
     enemyBase: { x: TAMBOTOCO_ENEMY.x / 256, z: TAMBOTOCO_ENEMY.z / 256 },
     discoveries: [{ heritageId: 'tambotoco_huanacaure' }],
@@ -140,16 +145,16 @@ export const mTambotoco: MissionDef = {
     roads: [
       // The path starts at the cave mouth and passes the Act I exit marker (a1_salida), so «sigue el camino»
       // has a camino to follow: a stony footpath, since worn dirt does not show on the dry cave flat.
-      { from: { dx: 42, dz: 61 }, to: { dx: 60, dz: 92 }, width: 5, stonePath: true },
+      { from: { dx: 42, dz: 61 }, to: { dx: TAMBOTOCO_EXIT.x, dz: TAMBOTOCO_EXIT.z }, width: 5, stonePath: true },
       {
-        from: { dx: 60, dz: 92 },
+        from: { dx: TAMBOTOCO_EXIT.x, dz: TAMBOTOCO_EXIT.z },
         to: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z },
         width: 5,
         stonePath: true,
       },
       {
         from: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z },
-        to: { dx: 186, dz: 196 },
+        to: { dx: TAMBOTOCO_VALLEY_ROAD_END.x, dz: TAMBOTOCO_VALLEY_ROAD_END.z },
         width: 5,
         stonePath: true,
       },
@@ -183,30 +188,85 @@ export const mTambotoco: MissionDef = {
   enemy: { active: true, difficulty: 'normal', aggression: 0.7 },
   tutorial: true,
   modelMission: true,
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map uses
+  // the mission's own geometry (the cave, the path, Huanacaure, the valley ayllus and Inticancha), so the route
+  // the player sees is the one they will walk. It is told as legend and does not tell how the valley yields.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'PACARITAMBO · TIEMPO DE LA LEYENDA',
+      kicker: 'Pacaritambo · Tiempo de la leyenda',
       title: 'La cueva de Tambotoco',
       text: 'Ocho hermanos salen de la cueva de Tambotoco: Manco, Auca, Cachi y Uchu, con Mama Ocllo, Mama Huaco, Mama Ipacura y Mama Raua. Buscan tierra fértil. La tradición no tiene fecha; el relato se cuenta como leyenda.',
-      seconds: 10,
+      seconds: 13,
       source: 'docs/historia/campanas/tambotoco.md',
-      image: 'media/tambotoco/intro-cueva.webp',
+      image: 'media/tambotoco/cine-cueva.webp',
+      motion: 'push',
     },
     {
-      kicker: 'HUANACAURE',
-      title: 'La huaca',
-      text: 'En el cerro de Huanacaure, Ayar Uchu se convierte en piedra y queda como huaca de la peregrinación. El episodio pertenece al mito; el juego lo escenifica sin presentarlo como un hecho comprobado.',
-      seconds: 9,
+      kicker: 'La peregrinación',
+      title: 'De Tambotoco al valle',
+      text: 'El camino pasa por Tambo Quiro y sube al cerro de Huanacaure, donde la tradición dice que Ayar Uchu se convierte en piedra. Abajo, el valle del Cusco ya está habitado por huallas, sauaseray y alcabizas.',
+      seconds: 13,
       source: 'docs/historia/campanas/tambotoco.md',
-      image: 'media/tambotoco/intro-huanacaure.webp',
+      map: {
+        // From the cave mouth to the valley ayllus' base: every point of the pilgrimage fits the crop.
+        view: { x: 24, z: 30, size: 204 },
+        marks: [
+          { x: TAMBOTOCO_CAVE.x, z: TAMBOTOCO_CAVE.z, label: 'Tambotoco', side: 'place' },
+          { x: TAMBOTOCO_TAMBO_QUIRO.x, z: TAMBOTOCO_TAMBO_QUIRO.z, label: 'Tambo Quiro', side: 'place' },
+          { x: TAMBOTOCO_HUANACAURE.x, z: TAMBOTOCO_HUANACAURE.z, label: 'Huanacaure', side: 'place' },
+          { x: TAMBOTOCO_INTICANCHA.x, z: TAMBOTOCO_INTICANCHA.z, label: 'Valle del Cusco', side: 'place' },
+          { x: TAMBOTOCO_START.x, z: TAMBOTOCO_START.z, label: 'Ayar', side: 'player', delay: 0.6 },
+          {
+            x: TAMBOTOCO_VILLAGES[0]!.x,
+            z: TAMBOTOCO_VILLAGES[0]!.z,
+            label: 'Huallas',
+            side: 'enemy',
+            delay: 5,
+          },
+          { x: TAMBOTOCO_ENEMY.x, z: TAMBOTOCO_ENEMY.z, label: 'Alcabizas', side: 'enemy', delay: 5.4 },
+        ],
+        routes: [
+          {
+            side: 'player',
+            label: 'Peregrinación',
+            points: [
+              { x: TAMBOTOCO_START.x, z: TAMBOTOCO_START.z },
+              { x: TAMBOTOCO_EXIT.x, z: TAMBOTOCO_EXIT.z },
+              { x: TAMBOTOCO_HUANACAURE.x, z: TAMBOTOCO_HUANACAURE.z },
+            ],
+            delay: 1.2,
+            draw: 3,
+          },
+          {
+            side: 'player',
+            dashed: true,
+            points: [
+              { x: TAMBOTOCO_HUANACAURE.x, z: TAMBOTOCO_HUANACAURE.z },
+              { x: TAMBOTOCO_INTICANCHA.x, z: TAMBOTOCO_INTICANCHA.z },
+            ],
+            delay: 4.4,
+          },
+          {
+            side: 'enemy',
+            label: 'Ayllus del valle',
+            points: [
+              { x: TAMBOTOCO_WAVE.x, z: TAMBOTOCO_WAVE.z },
+              { x: TAMBOTOCO_HOLD.x, z: TAMBOTOCO_HOLD.z },
+            ],
+            delay: 6.4,
+          },
+        ],
+      },
     },
     {
-      kicker: 'VALLE DEL CUSCO',
-      title: 'Inticancha',
-      text: 'El valle ya está habitado por huallas, sauaseray y alcabizas. Los recién llegados necesitan tierras y agua: la tradición cuenta que quitaron el agua a los alcabizas para forzar la cesión.',
-      seconds: 10,
+      kicker: 'Tu mando',
+      title: 'Tierra y agua',
+      text: 'Guía a los Ayar y a sus familias fuera de la cueva. Levanta el campamento, caza para sostenerlo y sigue el camino: la tradición cuenta que los recién llegados quitaron el agua a los alcabizas para forzar la cesión.',
+      seconds: 13,
       source: 'docs/historia/campanas/tambotoco.md',
-      image: 'media/tambotoco/intro-valle.webp',
+      image: 'media/tambotoco/cine-partida.webp',
+      motion: 'pan-right',
     },
   ],
   epilogueImage: 'media/tambotoco/intro-epilogo.webp',
@@ -225,7 +285,7 @@ export const mTambotoco: MissionDef = {
     {
       id: 'a1_salida',
       kind: 'reach',
-      pos: { dx: 60, dz: 92 },
+      pos: { dx: TAMBOTOCO_EXIT.x, dz: TAMBOTOCO_EXIT.z },
       radius: 9,
       title: 'Sal de Tambotoco y toma el camino',
     },

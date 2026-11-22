@@ -218,12 +218,14 @@ describe('campaign educational content', () => {
     // stack on top of it. Only the fort is authored.
     expect(m9.start.buildings?.some((b) => b.kind === BuildingKind.CENTER)).toBe(false);
     expect(m9.periodNote).toBeDefined();
-    // Model mission: 256 m, a three-beat in-engine intro and its own epilogue capture.
+    // Model mission: 256 m, a three-beat cinema intro and its own epilogue capture.
     expect(m9.modelMission).toBe(true);
     expect(m9.map.size).toBe(256);
     expect(m9.unitSpeedScale).toBe(0.75);
     expect(m9.intro?.length).toBe(3);
-    expect(m9.intro?.every((beat) => beat.image.startsWith('media/arica/'))).toBe(true);
+    // A cinema intro: two in-engine stills of Arica and one campaign map beat.
+    expect(m9.intro?.filter((beat) => beat.image).every((beat) => beat.image!.startsWith('media/arica/'))).toBe(true);
+    expect(m9.intro?.filter((beat) => beat.map).length).toBe(1);
     expect(m9.epilogueImage).toContain('media/arica/');
     // The defence is played, but its outcome is not rewritten: the final line ends the mission and the
     // epilogue tells the fall. No victory objective keeps Bolognesi alive for the whole mission and none
@@ -302,13 +304,17 @@ describe('campaign educational content', () => {
     expect(retreat.entityTag).toBe('tupac_amaru');
     expect(amaru.layout?.departure).toBeDefined();
     expect(amaru.periodNote).toBeDefined();
-    // Model mission: 256 m, a three-beat in-engine intro and its own epilogue capture.
+    // Model mission: 256 m, a three-beat cinema intro and its own epilogue capture.
     expect(amaru.modelMission).toBe(true);
     expect(amaru.map.size).toBe(256);
     expect(amaru.unitSpeedScale).toBe(0.75);
     expect(amaru.intro?.length).toBe(3);
-    expect(amaru.intro?.every((beat) => beat.image.startsWith('media/cusco/'))).toBe(true);
-    expect(new Set(amaru.intro?.map((beat) => beat.image)).size, 'three distinct intro captures').toBe(3);
+    // Cinema intro: two of its own stills around the campaign map.
+    expect(amaru.introStyle).toBe('cinema');
+    const stills = (amaru.intro ?? []).flatMap((beat) => (beat.image ? [beat.image] : []));
+    expect(stills.every((image) => image.startsWith('media/cusco/cine-'))).toBe(true);
+    expect(new Set(stills).size, 'two distinct intro captures').toBe(2);
+    expect(amaru.intro?.filter((beat) => beat.map).length).toBe(1);
     expect(amaru.epilogueImage).toContain('media/cusco/');
     // The 4/3 composition scale reaches the mission anchors and hold radii, not only the heightfield.
     const scale = COLONIAL_COMPOSITION_SCALE;
@@ -477,8 +483,12 @@ describe('campaign educational content', () => {
     expect(m3.map.size).toBe(256);
     expect(m3.unitSpeedScale).toBe(0.75);
     expect(m3.intro?.length).toBe(3);
-    expect(new Set(m3.intro?.map((beat) => beat.image)).size, 'three distinct intro captures').toBe(3);
-    expect(m3.intro?.every((beat) => beat.image.startsWith('media/moche/'))).toBe(true);
+    // Cinema intro: two in-engine stills of the mission and one campaign map.
+    expect(m3.introStyle).toBe('cinema');
+    expect(m3.intro?.filter((beat) => beat.map)).toHaveLength(1);
+    const m3Stills = m3.intro?.flatMap((beat) => (beat.image ? [beat.image] : [])) ?? [];
+    expect(new Set(m3Stills).size, 'two distinct cinema stills').toBe(2);
+    expect(m3Stills.every((image) => image.startsWith('media/moche/cine-'))).toBe(true);
     expect(m3.epilogueImage).toContain('media/moche/');
     for (const trigger of m3.triggers) {
       for (const effect of trigger.effects) {
@@ -511,8 +521,12 @@ describe('campaign educational content', () => {
     expect(m6.map.size).toBe(256);
     expect(m6.unitSpeedScale).toBe(0.75);
     expect(m6.intro?.length).toBe(3);
-    expect(new Set(m6.intro?.map((beat) => beat.image)).size, 'three distinct intro captures').toBe(3);
-    expect(m6.intro?.every((beat) => beat.image.startsWith('media/chimu/'))).toBe(true);
+    // Cinema intro: two in-engine stills of the mission and one campaign map.
+    expect(m6.introStyle).toBe('cinema');
+    expect(m6.intro?.filter((beat) => beat.map)).toHaveLength(1);
+    const m6Stills = m6.intro?.flatMap((beat) => (beat.image ? [beat.image] : [])) ?? [];
+    expect(new Set(m6Stills).size, 'two distinct cinema stills').toBe(2);
+    expect(m6Stills.every((image) => image.startsWith('media/chimu/cine-'))).toBe(true);
     expect(m6.epilogueImage).toContain('media/chimu/');
     const actTitles = m6.triggers.flatMap((t) => t.effects.flatMap((e) => (e.type === 'act' ? [e.title] : [])));
     expect(actTitles).toHaveLength(3);
@@ -547,8 +561,12 @@ describe('campaign educational content', () => {
     expect(m6b.map.size).toBe(256);
     expect(m6b.unitSpeedScale).toBe(0.75);
     expect(m6b.intro?.length).toBe(3);
-    expect(new Set(m6b.intro?.map((beat) => beat.image)).size, 'three distinct intro captures').toBe(3);
-    expect(m6b.intro?.every((beat) => beat.image.startsWith('media/cusco-inca/'))).toBe(true);
+    // Cinema intro: two in-engine stills of the mission and one campaign map.
+    expect(m6b.introStyle).toBe('cinema');
+    expect(m6b.intro?.filter((beat) => beat.map)).toHaveLength(1);
+    const m6bStills = m6b.intro?.flatMap((beat) => (beat.image ? [beat.image] : [])) ?? [];
+    expect(new Set(m6bStills).size, 'two distinct cinema stills').toBe(2);
+    expect(m6bStills.every((image) => image.startsWith('media/cusco-inca/cine-'))).toBe(true);
     expect(m6b.epilogueImage).toContain('media/cusco-inca/');
     const m6bActTitles = m6b.triggers.flatMap((t) => t.effects.flatMap((e) => (e.type === 'act' ? [e.title] : [])));
     expect(m6bActTitles).toHaveLength(3);
@@ -570,8 +588,12 @@ describe('campaign educational content', () => {
     expect(m4.map.size).toBe(256);
     expect(m4.unitSpeedScale).toBe(0.75);
     expect(m4.intro?.length).toBe(3);
-    expect(new Set(m4.intro?.map((beat) => beat.image)).size, 'three distinct intro captures').toBe(3);
-    expect(m4.intro?.every((beat) => beat.image.startsWith('media/wari/'))).toBe(true);
+    // Cinema intro: two in-engine stills of the mission and one campaign map.
+    expect(m4.introStyle).toBe('cinema');
+    expect(m4.intro?.filter((beat) => beat.map)).toHaveLength(1);
+    const m4Stills = m4.intro?.flatMap((beat) => (beat.image ? [beat.image] : [])) ?? [];
+    expect(new Set(m4Stills).size, 'two distinct cinema stills').toBe(2);
+    expect(m4Stills.every((image) => image.startsWith('media/wari/cine-'))).toBe(true);
     expect(m4.epilogueImage).toContain('media/wari/');
     const actTitles = m4.triggers.flatMap((t) => t.effects.flatMap((e) => (e.type === 'act' ? [e.title] : [])));
     expect(actTitles).toHaveLength(3);
@@ -588,8 +610,12 @@ describe('campaign educational content', () => {
     expect(m5.map.size).toBe(256);
     expect(m5.unitSpeedScale).toBe(0.75);
     expect(m5.intro?.length).toBe(3);
-    expect(new Set(m5.intro?.map((beat) => beat.image)).size, 'three distinct intro captures').toBe(3);
-    expect(m5.intro?.every((beat) => beat.image.startsWith('media/chanca/'))).toBe(true);
+    // Cinema intro: two in-engine stills of the mission and one campaign map.
+    expect(m5.introStyle).toBe('cinema');
+    expect(m5.intro?.filter((beat) => beat.map)).toHaveLength(1);
+    const m5Stills = m5.intro?.flatMap((beat) => (beat.image ? [beat.image] : [])) ?? [];
+    expect(new Set(m5Stills).size, 'two distinct cinema stills').toBe(2);
+    expect(m5Stills.every((image) => image.startsWith('media/chanca/cine-'))).toBe(true);
     expect(m5.epilogueImage).toContain('media/chanca/');
     const actTitles = m5.triggers.flatMap((t) => t.effects.flatMap((e) => (e.type === 'act' ? [e.title] : [])));
     expect(actTitles).toHaveLength(3);
@@ -624,8 +650,11 @@ describe('campaign educational content', () => {
     expect(m8.map.size).toBe(256);
     expect(m8.unitSpeedScale).toBe(0.75);
     expect(m8.intro?.length).toBe(3);
-    expect(new Set(m8.intro?.map((beat) => beat.image)).size, 'three distinct intro captures').toBe(3);
-    expect(m8.intro?.every((beat) => beat.image.startsWith('media/independencia/'))).toBe(true);
+    // Cinema intro: two distinct in-engine stills around the campaign map.
+    const stills = (m8.intro ?? []).flatMap((beat) => (beat.image ? [beat.image] : []));
+    expect(new Set(stills).size, 'two distinct intro captures').toBe(2);
+    expect(stills.every((image) => image.startsWith('media/independencia/'))).toBe(true);
+    expect(m8.intro?.filter((beat) => beat.map).length).toBe(1);
     expect(m8.epilogueImage).toContain('media/independencia/');
     const marcha = m8.objectives.find((o) => o.id === 'obj_marcha')!;
     expect(marcha.kind).toBe('reach');

@@ -60,7 +60,13 @@ The match is locked to `HistoricalPeriod.INDEPENDENCE` and `Era.REPUBLIC`:
 
 ## Opening and closing
 
-- Three narrated intro beats: the Junta, the four columns, Umachiri.
+- Cinema intro (`introStyle: 'cinema'`, see `src/ui/CinemaIntro.ts`): the Junta in Cusco (`cine-cusco`,
+  push-in); a campaign map painted from this terrain where Pumacahua's column runs Cusco → La Apacheta →
+  Umachiri and the royalist vanguard and Ramírez's division draw from their real wave entries
+  (`JUNTA_APACHETA_ENTRY`, `JUNTA_UMACHIRI_ENTRY`); the column facing the vanguard on the pass
+  (`cine-apacheta`, pan). It states the mission, not the defeat. Stills:
+  `node scripts/capture_cinema.mjs --mission=m_junta_cusco [--only=cine-apacheta]`
+  (shots in `scripts/cinema-shots/independencia.mjs`).
 - Two chapter cards (Act II and Act III) with the documented dates.
 - Victory: the royalist column is delayed and the leaders can withdraw; the epilogue states that the
   rebellion was defeated, Pumacahua was executed in Sicuani, the Angulo brothers and Béjar in Cusco, and

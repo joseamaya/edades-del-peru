@@ -46,7 +46,12 @@ Sources and certainty: [`docs/historia/campanas/lima_1821.md`](../historia/campa
 
 ## Opening and closing
 
-- Three narrated beats: expedition and blockade, the evacuated city, the proclamation.
+- Cinema intro (`introStyle: 'cinema'`, see `src/ui/CinemaIntro.ts`): Lima on the Rímac (`cine-lima`,
+  push-in); a campaign map painted from this terrain with the montoneras' cut at Lurín, the march on Lima, the
+  siege of the Callao (dashed) and the royalist relief from Carabayllo, all from the mission's own
+  `LIMA_1821_*` constants; the montoneras astride the road to Lima (`cine-lurin`, pan). The proclamation is
+  stated as the aim, not as done. Stills: `node scripts/capture_cinema.mjs --mission=m_lima_1821
+  [--only=cine-lurin]` (shots in `scripts/cinema-shots/independencia.mjs`).
 - Briefing art: `media/lima-1821/intro-plaza.webp`; chapter cards use `intro-plaza` and `intro-callao`;
   epilogue uses `intro-epilogo`.
 - The epilogue explains the "independencia concedida / conseguida" debate without resolving it.

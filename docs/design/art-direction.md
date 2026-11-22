@@ -319,7 +319,7 @@ Implementation rules:
   scene gate. New categories are added when a kit lands.
 - The structural bench runs on SwiftShader, which disables ground cover; `--gpu --frames` is the runtime
   check that includes ground cover, post-processing and refraction. Read both before claiming a cap is met.
-- `yarn dist:check` keeps `dist/` under 25 MB and the entry chunk under 600 KB gzip. New assets need a size
+- `yarn dist:check` keeps `dist/` under 28 MB (ADR 0008) and the entry chunk under 600 KB gzip. New assets need a size
   ledger with offsets, not just an addition.
 
 ## 8. Pipeline

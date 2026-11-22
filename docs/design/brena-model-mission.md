@@ -45,7 +45,14 @@ The executions and violence of Concepción/Huamachuco are told in the epilogue a
 
 ## Opening and closing
 
-- Three beats: the Mantaro, galgas and ambushes, Huamachuco and the escape.
+- Cinema intro (`introStyle: 'cinema'`, as the Tarapacá pilot): the Mantaro valley with the camp and
+  Huamachuco beyond (`cine-mantaro`, push-in); a campaign map painted from this terrain with the camp, the
+  three community nodes (`BRENA_COMMUNITY_1..3`) and the Chilean column from `BRENA_ENEMY` to `BRENA_PASS`
+  (the wave's own spawn and target); guerrillas and a Chilean column trading fire in the valley
+  (`cine-paso`, pan). The escape toward Ayacucho is not shown: the act cards and the epilogue tell it.
+  Regenerate the two 1920x1080 stills with `node scripts/capture_cinema.mjs --mission=m_brena
+  [--only=cine-paso]`. The paso shot is staged in the open valley north-west of the camp: staged on the pass
+  itself, live fire showed as yellow blast rings in the frame.
 - Briefing art `media/brena/intro-mantaro.webp`; act cards `intro-galgas` and `intro-huamachuco`;
   epilogue `intro-epilogo`.
 

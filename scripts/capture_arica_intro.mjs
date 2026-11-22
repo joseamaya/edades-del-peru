@@ -4,27 +4,21 @@ import sharp from 'sharp';
 import { launchChromium, withViteServer, cliArg } from './lib.mjs';
 
 /**
- * Capture the Arica intro, chapter-card and epilogue images from the game itself (an in-engine
- * recreation, never a historical photograph): the port terrace, the battery and the assault, plus the
- * epilogue over the Pacific. Rendered without the HUD at 1600x900 and stored as 960x540 WebP in
+ * Capture the Arica epilogue image from the game itself (an in-engine recreation, never a historical
+ * photograph): the epilogue over the Pacific. The intro beats are cinema stills
+ * (scripts/capture_cinema.mjs). Rendered without the HUD at 1600x900 and stored as 960x540 WebP in
  * public/media/arica/.
  *
- * Usage: node scripts/capture_arica_intro.mjs [--only=plaza]
+ * Usage: node scripts/capture_arica_intro.mjs [--only=epilogo]
  */
 const OUT = path.join(process.cwd(), 'public', 'media', 'arica');
 fs.mkdirSync(OUT, { recursive: true });
 
 const SCALE = 256 / 192;
 const SITE = { x: 134.8 * SCALE, z: 73 * SCALE };
-const BASE = { x: 73 * SCALE, z: 115 * SCALE };
 
 const SHOTS = [
-  { id: 'cuartel', at: [BASE.x, BASE.z], height: 42, time: 0.55 },
-  {
-    id: 'bateria',
-    cinematic: { center: [SITE.x, SITE.z], eye: [34, 12, 18], look: [0, 2, 0], fov: 55, time: 0.5 },
-  },
-  { id: 'asalto', at: [SITE.x, SITE.z], height: 64, time: 0.42 },
+  // The intro beats are cinema stills now (scripts/cinema-shots/republica.mjs); only the epilogue stays.
   // Eye and target relative to the battery, with the field of view and time of day.
   {
     id: 'epilogo',

@@ -10,6 +10,16 @@ const REAL_FELIPE_BATTERY_B = { x: 0.55, z: 0.48 } as const;
 // The bay's east shore beside the fortress: the squadron blockades the port in front of the Real Felipe,
 // not the Pacific shore 134 m away on the far side of the bay. Guarded by geographic-heightfields.
 const REAL_FELIPE_BLOCKADE = { x: 0.613, z: 0.4 } as const;
+const REAL_FELIPE_BAY = { x: 0.4, z: 0.34 } as const;
+
+/** A normalized point in world metres, for the cinema map. */
+const onMap = (p: { x: number; z: number }) => ({ x: p.x * 256, z: p.z * 256 });
+const MAP_FORT = onMap(REAL_FELIPE);
+const MAP_CAMP = onMap(REAL_FELIPE_CAMP);
+const MAP_BATTERY_A = onMap(REAL_FELIPE_BATTERY_A);
+const MAP_BATTERY_B = onMap(REAL_FELIPE_BATTERY_B);
+const MAP_BLOCKADE = onMap(REAL_FELIPE_BLOCKADE);
+const MAP_BAY = onMap(REAL_FELIPE_BAY);
 
 export const mRealFelipe: MissionDef = {
   id: 'm_real_felipe',
@@ -35,7 +45,7 @@ export const mRealFelipe: MissionDef = {
   layout: {
     labels: [
       { text: 'Mar del Sur', x: 0.12, z: 0.3, kind: 'water' },
-      { text: 'Bahía del Callao', x: 0.4, z: 0.34, kind: 'water' },
+      { text: 'Bahía del Callao', x: REAL_FELIPE_BAY.x, z: REAL_FELIPE_BAY.z, kind: 'water' },
       { text: 'Callao', x: REAL_FELIPE.x, z: REAL_FELIPE.z, kind: 'settlement' },
       { text: 'Real Felipe', x: REAL_FELIPE.x, z: REAL_FELIPE.z, kind: 'settlement' },
       { text: 'Campamento sitiador', x: REAL_FELIPE_CAMP.x, z: REAL_FELIPE_CAMP.z, kind: 'region' },
@@ -97,30 +107,78 @@ export const mRealFelipe: MissionDef = {
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/real-felipe/intro-epilogo.webp',
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map
+  // uses the mission's own geometry (the camp, the two battery nodes, the blockade shore and the sortie's
+  // origin and target), so it shows the siege the player will tighten. The capitulation is not told here.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'CALLAO · DESPUÉS DE AYACUCHO',
+      kicker: 'Callao · después de Ayacucho',
       title: 'El último bastión',
       text: 'La capitulación de Ayacucho no termina la guerra. José Ramón Rodil, ya al mando del Real Felipe, se niega a acogerse a ella y mantiene la fortaleza con los últimos realistas.',
-      seconds: 9,
+      seconds: 11,
       source: 'docs/historia/campanas/real_felipe.md',
-      image: 'media/real-felipe/intro-bastion.webp',
+      image: 'media/real-felipe/cine-bastion.webp',
+      motion: 'push',
     },
     {
-      kicker: 'CALLAO · 1824–1826',
+      kicker: 'Callao · 1824–1826',
       title: 'El cerco',
       text: 'Bartolomé Salom sitia la fortaleza por tierra y la escuadra patriota la bloquea por mar. Miles de civiles se refugian dentro; la comida y el agua se vuelven el problema central.',
-      seconds: 9,
+      seconds: 11,
       source: 'docs/historia/campanas/real_felipe.md',
-      image: 'media/real-felipe/intro-sitio.webp',
+      map: {
+        // From the siege camp (x 87, z 169) to the fortress on the bay (x 180, z 97).
+        view: { x: 64, z: 64, size: 136 },
+        marks: [
+          { x: MAP_BAY.x, z: MAP_BAY.z, label: 'Bahía del Callao', side: 'place' },
+          { x: MAP_FORT.x, z: MAP_FORT.z - 9, label: 'Real Felipe', side: 'enemy', delay: 0.4 },
+          { x: MAP_CAMP.x, z: MAP_CAMP.z + 9, label: 'Salom', side: 'player', delay: 0.8 },
+        ],
+        routes: [
+          {
+            side: 'player',
+            label: 'Baterías',
+            points: [
+              { x: MAP_CAMP.x + 4, z: MAP_CAMP.z - 4 },
+              { x: MAP_BATTERY_A.x, z: MAP_BATTERY_A.z },
+              { x: MAP_BATTERY_B.x, z: MAP_BATTERY_B.z },
+            ],
+            delay: 1.4,
+            draw: 2.8,
+          },
+          {
+            side: 'player',
+            label: 'Bloqueo',
+            dashed: true,
+            points: [
+              { x: MAP_BATTERY_B.x, z: MAP_BATTERY_B.z },
+              { x: MAP_BLOCKADE.x, z: MAP_BLOCKADE.z },
+            ],
+            delay: 4.4,
+          },
+          {
+            side: 'enemy',
+            label: 'Salidas',
+            points: [
+              { x: MAP_FORT.x - 2, z: MAP_FORT.z + 6 },
+              { x: MAP_BATTERY_B.x + 10, z: MAP_BATTERY_B.z + 14 },
+              { x: MAP_CAMP.x + 10, z: MAP_CAMP.z + 2 },
+            ],
+            delay: 6.4,
+            draw: 2.8,
+          },
+        ],
+      },
     },
     {
-      kicker: 'CALLAO · ENERO DE 1826',
-      title: 'El último invierno',
-      text: 'Tras más de un año de sitio, los víveres se agotan y las salidas fracasan. Rodil sostiene el Real Felipe con lo que le queda: forzar la capitulación es la última tarea del sitio.',
-      seconds: 10,
+      kicker: 'Tu mando',
+      title: 'Estrecha el cerco',
+      text: 'Salom manda el sitio. Levanta dos baterías en los accesos y cierra la costa: Rodil no se rendirá por palabras, y cada bote con víveres que entra alarga el sitio meses.',
+      seconds: 11,
       source: 'docs/historia/campanas/real_felipe.md',
-      image: 'media/real-felipe/intro-epilogo.webp',
+      image: 'media/real-felipe/cine-baterias.webp',
+      motion: 'pan-left',
     },
   ],
   allowedUnits: [

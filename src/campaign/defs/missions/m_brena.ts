@@ -14,6 +14,9 @@ const BRENA_PASS = { x: 0.6, z: 0.55 } as const;
 // overlapped and the hold contained the enemy base.
 const BRENA_HUAMACHUCO = { x: 0.6, z: 0.37 } as const;
 const BRENA_RETREAT = { x: 0.28, z: 0.78 } as const;
+const BRENA_CONCEPCION = { x: 0.62, z: 0.5 } as const;
+/** An anchor (0..1) as a world point on the 256 m map. */
+const brenaWorld = (a: { x: number; z: number }) => ({ x: a.x * 256, z: a.z * 256 });
 
 export const mBrena: MissionDef = {
   id: 'm_brena',
@@ -39,10 +42,10 @@ export const mBrena: MissionDef = {
   map: { seed: 1883, type: 'andes', size: 256 },
   layout: {
     labels: [
-      { text: 'Valle del Mantaro', x: 0.35, z: 0.63, kind: 'region' },
-      { text: 'Pucará', x: 0.46, z: 0.54, kind: 'region' },
-      { text: 'Marcavalle', x: 0.58, z: 0.42, kind: 'region' },
-      { text: 'Concepción', x: 0.62, z: 0.5, kind: 'region' },
+      { text: 'Valle del Mantaro', x: BRENA_CAMP.x, z: BRENA_CAMP.z, kind: 'region' },
+      { text: 'Pucará', x: BRENA_COMMUNITY_2.x, z: BRENA_COMMUNITY_2.z, kind: 'region' },
+      { text: 'Marcavalle', x: BRENA_COMMUNITY_3.x, z: BRENA_COMMUNITY_3.z, kind: 'region' },
+      { text: 'Concepción', x: BRENA_CONCEPCION.x, z: BRENA_CONCEPCION.z, kind: 'region' },
       { text: 'Huamachuco', x: BRENA_HUAMACHUCO.x, z: BRENA_HUAMACHUCO.z, kind: 'region' },
       { text: 'Camino a Ayacucho', x: BRENA_RETREAT.x, z: BRENA_RETREAT.z, kind: 'region' },
     ],
@@ -52,8 +55,8 @@ export const mBrena: MissionDef = {
     discoveries: [],
     terrain: {
       flats: [
-        { name: 'Valle del Mantaro', x: 0.35, z: 0.63, rx: 0.16, rz: 0.12 },
-        { name: 'Paso de Marcavalle', x: 0.58, z: 0.42, rx: 0.12, rz: 0.1 },
+        { name: 'Valle del Mantaro', x: BRENA_CAMP.x, z: BRENA_CAMP.z, rx: 0.16, rz: 0.12 },
+        { name: 'Paso de Marcavalle', x: BRENA_COMMUNITY_3.x, z: BRENA_COMMUNITY_3.z, rx: 0.12, rz: 0.1 },
         { name: 'Huamachuco', x: BRENA_HUAMACHUCO.x, z: BRENA_HUAMACHUCO.z, rx: 0.12, rz: 0.1 },
       ],
     },
@@ -66,15 +69,23 @@ export const mBrena: MissionDef = {
       buildKeepout: [{ x: BRENA_HUAMACHUCO.x, z: BRENA_HUAMACHUCO.z, rx: 0.065, rz: 0.065 }],
     },
     roads: [
-      { from: { dx: BRENA_CAMP.x * 256, dz: BRENA_CAMP.z * 256 }, to: { dx: 0.46 * 256, dz: 0.54 * 256 }, width: 3 },
-      { from: { dx: 0.46 * 256, dz: 0.54 * 256 }, to: { dx: 0.6 * 256, dz: 0.55 * 256 }, width: 3 },
       {
-        from: { dx: 0.6 * 256, dz: 0.55 * 256 },
+        from: { dx: BRENA_CAMP.x * 256, dz: BRENA_CAMP.z * 256 },
+        to: { dx: BRENA_COMMUNITY_2.x * 256, dz: BRENA_COMMUNITY_2.z * 256 },
+        width: 3,
+      },
+      {
+        from: { dx: BRENA_COMMUNITY_2.x * 256, dz: BRENA_COMMUNITY_2.z * 256 },
+        to: { dx: BRENA_PASS.x * 256, dz: BRENA_PASS.z * 256 },
+        width: 3,
+      },
+      {
+        from: { dx: BRENA_PASS.x * 256, dz: BRENA_PASS.z * 256 },
         to: { dx: BRENA_HUAMACHUCO.x * 256, dz: BRENA_HUAMACHUCO.z * 256 },
         width: 3,
       },
       {
-        from: { dx: 0.6 * 256, dz: 0.55 * 256 },
+        from: { dx: BRENA_PASS.x * 256, dz: BRENA_PASS.z * 256 },
         to: { dx: BRENA_RETREAT.x * 256, dz: BRENA_RETREAT.z * 256 },
         width: 3,
       },
@@ -109,30 +120,89 @@ export const mBrena: MissionDef = {
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/brena/intro-epilogo.webp',
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map
+  // uses the mission's own geometry (the camp, the three community nodes, the pass and the Chilean column's
+  // camp and target). It states the mission, not its outcome: the escape toward Ayacucho is not shown.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'SIERRA CENTRAL · 1882',
+      kicker: 'Sierra central · 1882',
       title: 'La Breña',
       text: 'Tras la caída de Lima, Cáceres organiza la resistencia en el valle del Mantaro. Las comunidades campesinas aportan guerrilleros, alimentos y conocimiento del terreno.',
       seconds: 9,
       source: 'docs/historia/campanas/brena.md',
-      image: 'media/brena/intro-mantaro.webp',
+      image: 'media/brena/cine-mantaro.webp',
+      motion: 'push',
     },
     {
-      kicker: 'MARGEN DEL MANTARO · 1882',
+      kicker: 'Margen del Mantaro · 1882',
       title: 'Galgas y emboscadas',
-      text: 'Galgas en los pasos, columnas móviles y las comunidades del Mantaro desgastan a las fuerzas chilenas. Cada comunidad protegida sostiene la red.',
-      seconds: 9,
-      source: 'docs/historia/campanas/brena.md',
-      image: 'media/brena/intro-galgas.webp',
-    },
-    {
-      kicker: 'HUAMACHUCO · 10 DE JULIO DE 1883',
-      title: 'La última batalla',
-      text: 'En Huamachuco la munición escasea y la columna chilena cierra el cerco. Cáceres necesita sostener el campo el tiempo suficiente para retirarse hacia Ayacucho.',
+      text: 'Galgas en los pasos, columnas móviles y las comunidades del Mantaro desgastan a las fuerzas chilenas. Desde el nordeste, una columna chilena baja hacia el paso.',
       seconds: 10,
       source: 'docs/historia/campanas/brena.md',
-      image: 'media/brena/intro-huamachuco.webp',
+      map: {
+        // The valley from the camp to the Chilean column's camp in the north-east.
+        view: { x: 48, z: 60, size: 168 },
+        marks: [
+          { x: brenaWorld(BRENA_CAMP).x, z: brenaWorld(BRENA_CAMP).z + 8, label: 'Valle del Mantaro', side: 'place' },
+          {
+            x: brenaWorld(BRENA_COMMUNITY_2).x,
+            z: brenaWorld(BRENA_COMMUNITY_2).z + 7,
+            label: 'Pucará',
+            side: 'place',
+          },
+          {
+            x: brenaWorld(BRENA_COMMUNITY_3).x - 4,
+            z: brenaWorld(BRENA_COMMUNITY_3).z - 7,
+            label: 'Marcavalle',
+            side: 'place',
+          },
+          {
+            x: brenaWorld(BRENA_HUAMACHUCO).x,
+            z: brenaWorld(BRENA_HUAMACHUCO).z - 8,
+            label: 'Huamachuco',
+            side: 'place',
+          },
+          {
+            x: brenaWorld(BRENA_CAMP).x - 6,
+            z: brenaWorld(BRENA_CAMP).z - 6,
+            label: 'Cáceres',
+            side: 'player',
+            delay: 0.6,
+          },
+          { x: brenaWorld(BRENA_ENEMY).x, z: brenaWorld(BRENA_ENEMY).z, label: 'Chile', side: 'enemy', delay: 1 },
+        ],
+        routes: [
+          {
+            side: 'player',
+            label: 'Comunidades',
+            dashed: true,
+            points: [brenaWorld(BRENA_CAMP), brenaWorld(BRENA_COMMUNITY_1)],
+            delay: 1.4,
+          },
+          {
+            side: 'player',
+            dashed: true,
+            points: [brenaWorld(BRENA_CAMP), brenaWorld(BRENA_COMMUNITY_2), brenaWorld(BRENA_COMMUNITY_3)],
+            delay: 1.8,
+          },
+          {
+            side: 'enemy',
+            label: 'Columna chilena',
+            points: [brenaWorld(BRENA_ENEMY), brenaWorld(BRENA_PASS)],
+            delay: 4,
+          },
+        ],
+      },
+    },
+    {
+      kicker: 'Tu mando',
+      title: 'La red de la sierra',
+      text: 'Cáceres manda la resistencia. Organiza la red de comunidades, embosca a la columna chilena en el paso y mantén con vida a tu jefe: la campaña seguirá hasta Huamachuco.',
+      seconds: 11,
+      source: 'docs/historia/campanas/brena.md',
+      image: 'media/brena/cine-paso.webp',
+      motion: 'pan-left',
     },
   ],
   allowedUnits: [

@@ -238,14 +238,18 @@ Definition of Done and the building audit see
   stylistic reconstructions; `fieldCommander: true` gives a tagged modern lead a battle marker without the
   Ayar hero attire.
 - **Cinema intro (UI only)**: a mission opts into a letterboxed film with `MissionDef.introStyle: 'cinema'`
-  (Tarapacá is the pilot; every other mission keeps `CinematicPlayer`). `src/ui/CinemaIntro.ts` plays the
+  (Tarapacá was the pilot; every released mission now uses it, and `CinematicPlayer` remains for the series
+  intro and the campaign prologues). Each intro has three beats: an establishing still, the campaign map and
+  a still of the player's command. The stills are 1920×1080 in-engine captures,
+  `node scripts/capture_cinema.mjs --mission=<id> [--only=<shot>] [--gpu]`, with the shots in
+  `scripts/cinema-shots/<campaign>.mjs`; ADR 0008 budgets them at ≤ 160 KB each. `src/ui/CinemaIntro.ts` plays the
   beats: full-bleed art with a slow motion, centred subtitles drawn with `textContent`, one advance per key
   (a focused button does not also fire), Escape to the briefing, a progress bar, a focus trap and reduced
   motion. A beat with `map` is drawn from the live terrain by `src/ui/cinemaMap.ts` (parchment height ramp,
-  north-west shading, contours on slopes, columns along their authored entry points, dashed reinforcements);
+  north-west shading, contours on slopes, columns along their authored entry points, dashed reinforcements, and labels placed by `layoutMapLabels` so none leaves the sheet or covers another);
   those canvases are painted once when the film opens, so a map beat does not open on black. The intro never
   plays headless, with `?intro=0` or with `?noloop=1`, and the mission clock stays paused behind it.
-  Guarded by `tests/cinema-intro.test.ts` (view crop, readable durations, escaped labels) and the `@smoke`
+  Guarded by `tests/cinema-intro.test.ts` (every released mission, one map and two 1920×1080 stills under 160 KB, view crop, readable durations, escaped labels) and the `@smoke`
   `tests/e2e/cinema-intro.spec.ts` (one advance per key, the map beat, Escape to the briefing).
 - **HUD right column** (issues 401–402): `#ed-objectives`, `#ed-tutorial` and `#ed-help` share one
   `#ed-right-column` flex stack whose bottom is the live command-bar height (`--ed-command-bar-h`), so the

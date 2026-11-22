@@ -8,6 +8,15 @@ const CHIMU_COUNTER_ENTRY = { dx: 150, dz: 110 } as const;
 // Paramonga is its own coastal point on the advance (world metres): as an offset from the enemy base the
 // objective sat inside the Chimú capital.
 const CHIMU_PARAMONGA_WORLD = { dx: 150, dz: 80 } as const;
+/** The Inca camp, the Chan Chan canal, the city and the Chimú centre (normalized). */
+const CHIMU_CAMP = { x: 0.35, z: 0.62 } as const;
+const CHIMU_CANAL = { x: 0.5, z: 0.5 } as const;
+const CHIMU_CHAN_CHAN = { x: 0.744, z: 0.339 } as const;
+const CHIMU_CITY = { x: 0.814, z: 0.339 } as const;
+
+/** A normalized layout point, or a world-metre offset, as a world point for the cinema map. */
+const world = (p: { x: number; z: number }) => ({ x: p.x * CHIMU_MAP_SIZE, z: p.z * CHIMU_MAP_SIZE });
+const at = (p: { dx: number; dz: number }) => ({ x: p.dx, z: p.dz });
 
 export const m6ChimuInca: MissionDef = {
   id: 'm6_chimu_inca',
@@ -24,30 +33,61 @@ export const m6ChimuInca: MissionDef = {
   tutorial: true,
   modelMission: true,
   narrator: 'Túpac Yupanqui',
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The advance,
+  // the counterattack from Paramonga and the canal are the mission's own points. The intro states the campaign,
+  // not its outcome: the capitulation and Minchancaman's fate belong to the act cards and the epilogue.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'COSTA NORTE · c. 1470',
+      kicker: 'Costa norte · c. 1470',
       title: 'La Guerra del Norte',
       text: 'El Tahuantinsuyo ya domina el Collao, Cajamarca y la costa sur. Solo falta el poderoso Reino Chimú de Minchancaman, con su capital en Chan Chan.',
-      seconds: 9,
-      source: 'docs/historia/campanas/chimu_inca.md',
-      image: 'media/chimu/intro-costa.webp',
-    },
-    {
-      kicker: 'PARAMONGA',
-      title: 'El primer choque',
-      text: 'La vanguardia inca choca en Paramonga y recibe refuerzos de los curacas. El camino sigue por Huarmey y el valle del Santa hacia el corazón chimú.',
-      seconds: 9,
-      source: 'docs/historia/campanas/chimu_inca.md',
-      image: 'media/chimu/intro-paramonga.webp',
-    },
-    {
-      kicker: 'EL CANAL DE CHAN CHAN',
-      title: 'El agua como poder',
-      text: 'Túpac Yupanqui seca el canal que abastece Chan Chan. La ciudad, en el desierto, capitula; Minchancaman es llevado al Cusco.',
       seconds: 10,
       source: 'docs/historia/campanas/chimu_inca.md',
-      image: 'media/chimu/intro-canal.webp',
+      image: 'media/chimu/cine-costa.webp',
+      motion: 'push',
+    },
+    {
+      kicker: 'Paramonga',
+      title: 'El camino a Chan Chan',
+      text: 'La vanguardia inca avanza hacia Paramonga con refuerzos de los curacas; desde allí, Querrotumi puede contraatacar. Más allá, por Huarmey y el valle del Santa, el canal que abastece Chan Chan: en el desierto, el agua es poder.',
+      seconds: 13,
+      source: 'docs/historia/campanas/chimu_inca.md',
+      map: {
+        // From the Inca camp to the Chimú capital, with Paramonga and the canal between them.
+        view: { x: 74, z: 50, size: 150 },
+        marks: [
+          { ...at(CHIMU_PARAMONGA_WORLD), label: 'Paramonga', side: 'place' },
+          { ...world(CHIMU_CANAL), label: 'Canal de Chan Chan', side: 'place' },
+          { ...world(CHIMU_CHAN_CHAN), label: 'Chan Chan', side: 'place' },
+          { ...world(CHIMU_CAMP), label: 'Túpac Yupanqui', side: 'player', delay: 0.6 },
+          { ...world(CHIMU_CITY), label: 'Minchancaman', side: 'enemy', delay: 1 },
+        ],
+        routes: [
+          {
+            side: 'player',
+            label: 'Avance',
+            points: [world(CHIMU_CAMP), at(CHIMU_PARAMONGA_WORLD)],
+            delay: 1.6,
+            draw: 2.6,
+          },
+          {
+            side: 'enemy',
+            label: 'Querrotumi',
+            points: [at(CHIMU_COUNTER_ENTRY), world(CHIMU_CAMP)],
+            delay: 4.6,
+          },
+        ],
+      },
+    },
+    {
+      kicker: 'Tu mando',
+      title: 'Avanza hasta Paramonga',
+      text: 'Túpac Yupanqui manda la vanguardia. Llévalo hasta Paramonga y mantenlo con vida: Minchancaman no se someterá, y el camino a Chan Chan empieza en la costa.',
+      seconds: 10,
+      source: 'docs/historia/campanas/chimu_inca.md',
+      image: 'media/chimu/cine-vanguardia.webp',
+      motion: 'pan-right',
     },
   ],
   epilogueImage: 'media/chimu/intro-epilogo.webp',
@@ -59,29 +99,29 @@ export const m6ChimuInca: MissionDef = {
   region: 'north_coast',
   layout: {
     labels: [
-      { text: 'Chan Chan', x: 0.744, z: 0.339, kind: 'settlement' },
+      { text: 'Chan Chan', x: CHIMU_CHAN_CHAN.x, z: CHIMU_CHAN_CHAN.z, kind: 'settlement' },
       {
         text: 'Paramonga',
         x: CHIMU_PARAMONGA_WORLD.dx / CHIMU_MAP_SIZE,
         z: CHIMU_PARAMONGA_WORLD.dz / CHIMU_MAP_SIZE,
         kind: 'region',
       },
-      { text: 'Canal de Chan Chan', x: 0.5, z: 0.5, kind: 'water' },
+      { text: 'Canal de Chan Chan', x: CHIMU_CANAL.x, z: CHIMU_CANAL.z, kind: 'water' },
     ],
-    base: { x: 0.35, z: 0.62 },
-    enemyBase: { x: 0.814, z: 0.339 },
+    base: { x: CHIMU_CAMP.x, z: CHIMU_CAMP.z },
+    enemyBase: { x: CHIMU_CITY.x, z: CHIMU_CITY.z },
     site: {
       id: 'chimu_site',
       y: 5,
-      focus: { x: 0.744, z: 0.339 },
-      keepout: [{ x: 0.744, z: 0.339, rx: 0.085, rz: 0.075 }],
-      buildKeepout: [{ x: 0.744, z: 0.339, rx: 0.075, rz: 0.065 }],
+      focus: { x: CHIMU_CHAN_CHAN.x, z: CHIMU_CHAN_CHAN.z },
+      keepout: [{ x: CHIMU_CHAN_CHAN.x, z: CHIMU_CHAN_CHAN.z, rx: 0.085, rz: 0.075 }],
+      buildKeepout: [{ x: CHIMU_CHAN_CHAN.x, z: CHIMU_CHAN_CHAN.z, rx: 0.075, rz: 0.065 }],
     },
     // The gate answers once Paramonga falls: closing it is the mission's own mechanic.
     canal: {
       name: 'Canal de Chan Chan',
-      x: 0.5,
-      z: 0.5,
+      x: CHIMU_CANAL.x,
+      z: CHIMU_CANAL.z,
       length: chimuLength(28),
       yaw: 0.2,
       initiallyOpen: true,
@@ -91,8 +131,8 @@ export const m6ChimuInca: MissionDef = {
     },
     terrain: {
       flats: [
-        { name: 'Canal de Chan Chan', x: 0.5, z: 0.5, rx: 0.14, rz: 0.09 },
-        { name: 'Costa de Chan Chan', x: 0.744, z: 0.339, rx: 0.085, rz: 0.075 },
+        { name: 'Canal de Chan Chan', x: CHIMU_CANAL.x, z: CHIMU_CANAL.z, rx: 0.14, rz: 0.09 },
+        { name: 'Costa de Chan Chan', x: CHIMU_CHAN_CHAN.x, z: CHIMU_CHAN_CHAN.z, rx: 0.085, rz: 0.075 },
       ],
     },
   },

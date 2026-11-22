@@ -110,30 +110,85 @@ export const mLima1821: MissionDef = {
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/lima-1821/intro-epilogo.webp',
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map
+  // uses the mission's own geometry (the camp, the Lurín cut, the capital, the Callao and the Carabayllo
+  // relief column), so it shows the cerco the player will close. It does not tell the outcome.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'COSTA PERUANA · 1820–1821',
+      kicker: 'Costa peruana · 1820–1821',
       title: 'La Expedición Libertadora',
-      text: 'San Martín desembarca en Paracas y extiende la campaña a la sierra. Cochrane bloquea el Callao y las montoneras cortan los caminos que abastecen Lima.',
-      seconds: 9,
-      source: 'docs/historia/campanas/lima_1821.md',
-      image: 'media/lima-1821/intro-camino.webp',
-    },
-    {
-      kicker: 'LIMA · JULIO DE 1821',
-      title: 'La ciudad evacuada',
-      text: 'El virrey La Serna abandona Lima y se repliega a la sierra. San Martín entra en la capital sin combatirla: la independencia se decide en la política y en el cerco, no en un asalto.',
-      seconds: 9,
-      source: 'docs/historia/campanas/lima_1821.md',
-      image: 'media/lima-1821/intro-callao.webp',
-    },
-    {
-      kicker: 'LIMA · 28 DE JULIO DE 1821',
-      title: 'La independencia proclamada',
-      text: 'En la Plaza Mayor, San Martín proclama la independencia del Perú. El primer sitio del Callao sigue hasta septiembre; la guerra continuará en la sierra.',
+      text: 'San Martín desembarca en Paracas y extiende la campaña a la sierra. Lima, la capital del virreinato, vive de los caminos que la abastecen y del puerto del Callao.',
       seconds: 10,
       source: 'docs/historia/campanas/lima_1821.md',
-      image: 'media/lima-1821/intro-plaza.webp',
+      image: 'media/lima-1821/cine-lima.webp',
+      motion: 'push',
+    },
+    {
+      kicker: 'Lima · julio de 1821',
+      title: 'El cerco',
+      text: 'Cochrane bloquea el Callao y las montoneras cortan los caminos que abastecen Lima. El virrey La Serna abandona la capital y se repliega a la sierra; las fortalezas del Callao siguen en manos realistas.',
+      seconds: 12,
+      source: 'docs/historia/campanas/lima_1821.md',
+      map: {
+        // The coast between the Callao (x 52) and the Lurín road (x 154), from Carabayllo (z 96) to the camp.
+        view: { x: 28, z: 80, size: 144 },
+        marks: [
+          { x: LIMA_1821_CITY.x + 4, z: LIMA_1821_CITY.z - 8, label: 'Lima', side: 'place' },
+          { x: LIMA_1821_LURIN.x, z: LIMA_1821_LURIN.z + 8, label: 'Lurín', side: 'place' },
+          { x: LIMA_1821_CARABAYLLO.x + 4, z: LIMA_1821_CARABAYLLO.z - 8, label: 'Carabayllo', side: 'place' },
+          { x: LIMA_1821_CALLAO.x, z: LIMA_1821_CALLAO.z - 8, label: 'Callao', side: 'enemy', delay: 0.4 },
+          { x: LIMA_1821_CAMP.x, z: LIMA_1821_CAMP.z + 8, label: 'San Martín', side: 'player', delay: 0.8 },
+        ],
+        routes: [
+          {
+            side: 'player',
+            label: 'Montoneras',
+            points: [
+              { x: LIMA_1821_CAMP.x, z: LIMA_1821_CAMP.z },
+              { x: LIMA_1821_LURIN.x - 6, z: LIMA_1821_LURIN.z },
+            ],
+            delay: 1.4,
+          },
+          {
+            side: 'player',
+            label: 'Expedición',
+            points: [
+              { x: LIMA_1821_CAMP.x, z: LIMA_1821_CAMP.z },
+              { x: LIMA_1821_CITY.x, z: LIMA_1821_CITY.z + 6 },
+            ],
+            delay: 3.4,
+          },
+          {
+            side: 'player',
+            label: 'Sitio',
+            dashed: true,
+            points: [
+              { x: LIMA_1821_CITY.x, z: LIMA_1821_CITY.z },
+              { x: LIMA_1821_CALLAO.x + 6, z: LIMA_1821_CALLAO.z + 4 },
+            ],
+            delay: 5.4,
+          },
+          {
+            side: 'enemy',
+            label: 'Socorro realista',
+            points: [
+              { x: LIMA_1821_CARABAYLLO.x, z: LIMA_1821_CARABAYLLO.z },
+              { x: LIMA_1821_CALLAO.x + 4, z: LIMA_1821_CALLAO.z - 4 },
+            ],
+            delay: 7.2,
+          },
+        ],
+      },
+    },
+    {
+      kicker: 'Tu mando',
+      title: 'Corta el camino de Lurín',
+      text: 'San Martín no viene a arrasar Lima. Lleva las montoneras al camino de Lurín y córtalo: cuando la capital sienta el cerco, la Expedición podrá entrar y proclamar la independencia en la Plaza Mayor.',
+      seconds: 12,
+      source: 'docs/historia/campanas/lima_1821.md',
+      image: 'media/lima-1821/cine-lurin.webp',
+      motion: 'pan-left',
     },
   ],
   allowedUnits: [

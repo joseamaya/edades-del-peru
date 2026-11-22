@@ -148,10 +148,15 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   `inspect`, `canal_open` and `research`. Trigger effects: `act` (a chapter card with an image; the mission
   clock and tutorial wait for it), `site_phase`, `ritual` (a presentation-only burial beat), `environment` (`event: 'drought'`) and
   `dialogue`. A loaded save restores the latest site phase and the drought without re-applying its losses.
-- **Intro and epilogue**: `MissionDef.intro` plays three narrated beats (Áspero, the valley, the city to
-  come) over a paused world; the Act II–IV cards and the victory epilogue carry images. All six are
-  in-engine recreations captured by `scripts/capture_caral_intro.mjs` and recorded in `PROVENANCE.md` as
-  game captures, never historical photographs. `?intro=0` and headless runs skip the intro.
+- **Intro and epilogue**: the intro is a cinema intro (`introStyle: 'cinema'`, see the Tarapacá pilot):
+  Áspero in the morning (`cine-aspero`, push-in); a campaign map painted from the transect where the way up
+  the river, the canal and the road to the terrace draw themselves from the mission's own constants
+  (`ASPERO_BASE`, `CARAL_CANAL_PATH`, `CARAL_VALLEY_REACH`, `CARAL_SITE_FOCUS`), with no enemy because there
+  is no documented war; the crew at the Pyramid Mayor's first platform (`cine-obra`, pan). It does not tell
+  the drought or the departure. Stills: `node scripts/capture_cinema.mjs --mission=m1_caral [--only=cine-obra]`.
+  The Act II–IV cards and the victory epilogue keep the `intro-*` images captured by
+  `scripts/capture_caral_intro.mjs`. All are in-engine recreations recorded in `PROVENANCE.md` as game
+  captures, never historical photographs. `?intro=0` and headless runs skip the intro.
 - **Áspero**: the `huaca_idolos` kit piece (three superposed terraces) and six fishing houses with net
   racks and gourd floats (`ASPERO_LAYOUT`), baked with the city in one `CaralCity`. Fishing grounds lie in
   the sea; a worker casts and drags a cotton net (`FishingNetFx`) and keeps fishing nearby grounds.

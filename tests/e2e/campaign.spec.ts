@@ -3,9 +3,9 @@ import { tutorialForMission } from '../../src/campaign/defs/tutorials';
 
 const tutorialSteps = (id: string): number => tutorialForMission(id)?.steps.length ?? 0;
 
-/** Missions with a narrated intro open with the cinematic before the briefing; skip it. */
+/** Missions with a narrated intro open with the cinematic (or the cinema intro) before the briefing; skip it. */
 async function skipMissionIntro(page: import('@playwright/test').Page): Promise<void> {
-  const skip = page.locator('.ed-cinematic-skip');
+  const skip = page.locator('.ed-cinematic-skip, .ed-cine button.skip');
   await skip.waitFor({ state: 'visible', timeout: 30_000 });
   await skip.click();
 }
@@ -17,7 +17,7 @@ test('starting a campaign from the menu launches the selected mission', { tag: '
   });
   await page.getByRole('button', { name: /Campañas/ }).click();
   await page.getByRole('button', { name: /Jugar La Ciudad Sagrada/ }).click();
-  await expect(page.locator('.ed-cinematic', { hasText: 'Gente del mar' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.ed-cine', { hasText: 'Gente del mar' })).toBeVisible({ timeout: 30_000 });
   await skipMissionIntro(page);
   await expect(page.locator('.ed-briefing', { hasText: 'La Ciudad Sagrada' })).toBeVisible({ timeout: 30_000 });
   const url = new URL(page.url());
@@ -250,7 +250,7 @@ test('chapter II tutorials open with their first step', async ({ page }) => {
 
 test('the chapter III tutorial opens with its first step', async ({ page }) => {
   test.setTimeout(180_000);
-  await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1');
+  await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1&intro=0');
   const overlay = page.locator('.ed-overlay', { hasText: 'La Gran Rebelión' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();

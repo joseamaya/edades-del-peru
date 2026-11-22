@@ -7,6 +7,10 @@ const LIMA_CITY = LIMA_SITE_ORIGIN;
 const LIMA_BRIDGE = { x: 120, z: 124 } as const;
 const LIMA_ENEMY = { x: 205, z: 70 } as const;
 const LIMA_CURACAS = { x: 55, z: 200 } as const;
+const LIMA_SEA = { x: 24, z: 150 } as const;
+// The hueste's camp on the llano south-west of the traza, and where the opening crew stands.
+const LIMA_BASE = { x: 70, z: 170 } as const;
+const LIMA_OPENING = { x: 96, z: 150 } as const;
 
 // The relief column musters outside its camp instead of inside it.
 const LIMA_RELIEF_ENTRY = { dx: LIMA_ENEMY.x + 30, dz: LIMA_ENEMY.z } as const;
@@ -33,14 +37,14 @@ export const mLima: MissionDef = {
   map: { seed: 1535, type: 'coast', size: 256 },
   layout: {
     labels: [
-      { text: 'Mar del Sur', x: 24 / 256, z: 150 / 256, kind: 'water' },
+      { text: 'Mar del Sur', x: LIMA_SEA.x / 256, z: LIMA_SEA.z / 256, kind: 'water' },
       { text: 'Río Rímac', x: LIMA_BRIDGE.x / 256, z: LIMA_BRIDGE.z / 256, kind: 'water' },
       { text: 'Ciudad de los Reyes', x: LIMA_CITY.x / 256, z: LIMA_CITY.z / 256, kind: 'settlement' },
       { text: 'Cerros de Quizu', x: LIMA_ENEMY.x / 256, z: LIMA_ENEMY.z / 256, kind: 'region' },
       { text: 'Curacazgo de Lima', x: LIMA_CURACAS.x / 256, z: LIMA_CURACAS.z / 256, kind: 'region' },
     ],
-    base: { x: 70 / 256, z: 170 / 256 },
-    opening: { x: 96 / 256, z: 150 / 256 },
+    base: { x: LIMA_BASE.x / 256, z: LIMA_BASE.z / 256 },
+    opening: { x: LIMA_OPENING.x / 256, z: LIMA_OPENING.z / 256 },
     enemyBase: { x: LIMA_ENEMY.x / 256, z: LIMA_ENEMY.z / 256 },
     discoveries: [{ heritageId: 'lima_plaza' }],
     terrain: {
@@ -58,7 +62,7 @@ export const mLima: MissionDef = {
       buildKeepout: [{ x: LIMA_CITY.x / 256, z: LIMA_CITY.z / 256, rx: 0.04, rz: 0.04 }],
     },
     roads: [
-      { from: { dx: 70, dz: 170 }, to: { dx: LIMA_CITY.x, dz: LIMA_CITY.z }, width: 3 },
+      { from: { dx: LIMA_BASE.x, dz: LIMA_BASE.z }, to: { dx: LIMA_CITY.x, dz: LIMA_CITY.z }, width: 3 },
       { from: { dx: LIMA_CITY.x, dz: LIMA_CITY.z }, to: { dx: LIMA_BRIDGE.x, dz: LIMA_BRIDGE.z }, width: 3 },
       { from: { dx: LIMA_BRIDGE.x, dz: LIMA_BRIDGE.z }, to: { dx: LIMA_ENEMY.x, dz: LIMA_ENEMY.z }, width: 3 },
     ],
@@ -86,30 +90,80 @@ export const mLima: MissionDef = {
   modelMission: true,
   epilogueImage: 'media/lima/intro-epilogo.webp',
   buildingNames: { [BuildingKind.MARKET]: 'Cabildo y plaza' },
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map
+  // uses the mission's own geometry (the traza, the Rímac bridge, Quizu's camp and the relief columns'
+  // entry), so what the player sees is what the siege will throw at Lima. It does not tell the outcome.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'RÍMAC · 18 DE ENERO DE 1535',
+      kicker: 'Rímac · 18 de enero de 1535',
       title: 'La Ciudad de los Reyes',
       text: 'Pizarro funda Lima junto al Rímac, en tierras del curacazgo de Lima. La ciudad se levanta con aliados andinos: sin ellos no hay defensa posible.',
       seconds: 10,
       source: 'docs/historia/campanas/lima.md',
-      image: 'media/lima/intro-ciudad.webp',
+      image: 'media/lima/cine-ciudad.webp',
+      motion: 'push',
     },
     {
-      kicker: 'AGOSTO DE 1536',
+      kicker: 'Agosto de 1536',
       title: 'El cerco',
-      text: 'Manco Inca envía a Quizu Yupanqui contra Lima. Sus columnas destruyen los socorros que Pizarro manda al Cusco y el ejército baja de los cerros.',
-      seconds: 9,
+      text: 'Manco Inca envía a Quizu Yupanqui contra Lima. Sus columnas destruyen los socorros que Pizarro manda al Cusco y el ejército baja de los cerros hacia el Rímac.',
+      seconds: 11,
       source: 'docs/historia/campanas/lima.md',
-      image: 'media/lima/intro-rimac.webp',
+      map: {
+        // From the sea to the relief columns' entry east of Quizu's camp (x 235).
+        view: { x: 16, z: 40, size: 226 },
+        marks: [
+          { x: LIMA_CITY.x, z: LIMA_CITY.z - 9, label: 'Ciudad de los Reyes', side: 'place' },
+          { x: LIMA_BRIDGE.x + 6, z: LIMA_BRIDGE.z - 6, label: 'Río Rímac', side: 'place' },
+          { x: LIMA_ENEMY.x, z: LIMA_ENEMY.z - 9, label: 'Cerros de Quizu', side: 'place' },
+          { x: LIMA_CURACAS.x, z: LIMA_CURACAS.z + 8, label: 'Curacazgo de Lima', side: 'place' },
+          { x: LIMA_SEA.x + 4, z: LIMA_SEA.z, label: 'Mar del Sur', side: 'place' },
+          { x: LIMA_BASE.x - 4, z: LIMA_BASE.z + 8, label: 'Hueste', side: 'player', delay: 0.6 },
+          { x: LIMA_ENEMY.x + 4, z: LIMA_ENEMY.z + 8, label: 'Quizu', side: 'enemy', delay: 1 },
+        ],
+        routes: [
+          {
+            side: 'enemy',
+            label: 'Ejército de Quizu',
+            points: [
+              { x: LIMA_ENEMY.x, z: LIMA_ENEMY.z },
+              { x: LIMA_BRIDGE.x, z: LIMA_BRIDGE.z },
+              { x: LIMA_CITY.x + 8, z: LIMA_CITY.z - 6 },
+            ],
+            delay: 1.6,
+          },
+          {
+            side: 'enemy',
+            label: 'Refuerzos',
+            dashed: true,
+            points: [
+              { x: LIMA_RELIEF_ENTRY.dx, z: LIMA_RELIEF_ENTRY.dz },
+              { x: LIMA_ENEMY.x + 8, z: LIMA_ENEMY.z },
+            ],
+            delay: 4.2,
+          },
+          {
+            side: 'player',
+            label: 'Aliados andinos',
+            dashed: true,
+            points: [
+              { x: LIMA_CURACAS.x, z: LIMA_CURACAS.z },
+              { x: LIMA_CITY.x - 6, z: LIMA_CITY.z + 6 },
+            ],
+            delay: 5.6,
+          },
+        ],
+      },
     },
     {
-      kicker: 'EL LLANO',
-      title: 'La defensa',
-      text: 'En el llano, la caballería y los aliados andinos rompen el asalto. Quizu muere y el cerco se levanta; el Cusco sigue cercado.',
-      seconds: 10,
+      kicker: 'Tu mando',
+      title: 'Sostén Lima',
+      text: 'Pizarro manda la hueste. Traza la plaza, levanta el cabildo y prepara el llano: cuando el ejército baje de los cerros, la caballería y los aliados andinos deberán sostener la ciudad.',
+      seconds: 11,
       source: 'docs/historia/campanas/lima.md',
-      image: 'media/lima/intro-cerco.webp',
+      image: 'media/lima/cine-llano.webp',
+      motion: 'pan-right',
     },
   ],
   allowedUnits: [

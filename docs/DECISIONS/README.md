@@ -17,6 +17,7 @@ and mark the old one `Superseded by NNNN`.
 | 0005 | [Blender render provenance gate](./0005-blender-provenance-gate.md) | Accepted |
 | 0006 | [The model-mission standard](./0006-model-mission-standard.md) | Accepted |
 | 0007 | [Local authoring tools, not CI dependencies](./0007-local-authoring-tools.md) | Accepted |
+| 0008 | [A 28 MB `dist/` budget for the cinema intros](./0008-dist-budget-28mb.md) | Accepted |
 
 ## Writing a new record
 

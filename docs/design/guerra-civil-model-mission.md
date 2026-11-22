@@ -66,7 +66,12 @@ builds; the exception is recorded here and in the quality bar.
 
 ## Opening and closing
 
-- Three narrated intro beats and the three act cards captured in engine by
+- Cinema intro (`introStyle: 'cinema'`, as the Tarapacá pilot): the Quipaipan enclosure with Huáscar's
+  headquarters (`cine-cusco`, push-in); a campaign map with the march from `QUIPAIPAN_BASE` to
+  `QUIPAIPAN_FIELD`, Huáscar at `QUIPAIPAN_HQ` and the rear column (dashed) from `QUIPAIPAN_REAR_COLUMN` to the
+  camp; Atahualpa's line facing Huáscar's army (`cine-quipaipan`, pan). It states the battle, not the capture
+  or Cajamarca. Regenerate with `node scripts/capture_cinema.mjs --mission=m6b_guerra_civil [--only=cine-quipaipan]`.
+- The three act cards captured in engine by
   [`scripts/capture_cusco_inca_intro.mjs`](../../scripts/capture_cusco_inca_intro.mjs): the Quito camp,
   Quipaipan and the capture, plus a dusk epilogue.
 - `MISSION_ART` (`m6b_guerra_civil` → `media/generated/campaigns/la-senda-del-sol/m6b_guerra_civil/intro.webp`)

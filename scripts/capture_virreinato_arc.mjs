@@ -27,7 +27,6 @@ const SHOTS = [
     id: 'epilogo',
     cinematic: { center: [100, 190], eye: [28, 18, -34], look: [0, 3, 0], fov: 50, time: 0.26 },
   },
-  { mission: 'm_vilcabamba', dir: 'vilcabamba', id: 'corte', at: [90, 166], height: 46, time: 0.4 },
   { mission: 'm_vilcabamba', dir: 'vilcabamba', id: 'pucara', at: [180, 97], height: 42, time: 0.35 },
   {
     mission: 'm_vilcabamba',

@@ -57,9 +57,15 @@ here and in the quality bar. The Sangarará chapel is a separate typological `co
 
 ## Opening and closing
 
-- Three narrated intro beats captured in engine by
-  [`scripts/capture_colonial_intro.mjs`](../../scripts/capture_colonial_intro.mjs): the valley and the
-  rebellion, Sangarará and the Cusco siege.
+- Cinema intro (`introStyle: 'cinema'`, as the Tarapacá pilot): the valley from Tinta toward Sangarará
+  (`cine-valle`, push-in); a campaign map painted from this terrain where the rebellion marches from the
+  Tinta camp to Tungasuca and on to Sangarará, the royalist column enters Sangarará from
+  `TUPAC_SANGARARA_GARRISON` and the Cusco militias sally dashed from `TUPAC_CUSCO_SORTIE` onto the siege
+  slopes (constants shared with the layout, objectives and waves); the rebel army mustered at the camp
+  (`cine-rebelion`, pan). It states the mission, not its outcome: Sangarará, the relief and the retreat
+  open as act cards, the capture and execution in the epilogue. Regenerate with
+  `node scripts/capture_cinema.mjs --mission=m7_tupac_amaru [--only=cine-rebelion]`. The older
+  `scripts/capture_colonial_intro.mjs` captures stay as briefing art and act cards.
 - `MISSION_ART` (`m7_tupac_amaru` → `media/cusco/intro-valle.webp`) and the briefing use the valley capture in normal play; the draft `m7_colonial-intro` record was retired on 2026-11-16.
 - Victory: the army and Túpac withdraw when the relief breaks the siege; the epilogue
   (`media/cusco/intro-epilogo.webp`) tells the capture at Langui and the execution of 18 May 1781.

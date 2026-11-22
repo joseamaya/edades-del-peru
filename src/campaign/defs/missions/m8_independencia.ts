@@ -2,6 +2,9 @@ import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../c
 import type { MissionDef } from '../../types';
 import { INDEPENDENCE_MAP_SIZE, independenceLength } from '../../../model/defs/independenceSite';
 
+// The patriot camp (west) and the royalist centre at Ayacucho (east), normalized over the map.
+const INDEPENDENCE_CAMP = { x: 0.35, z: 0.63 } as const;
+const INDEPENDENCE_ROYALIST = { x: 0.772, z: 0.37 } as const;
 // Each royalist column enters from its own side of the field.
 const INDEPENDENCE_JUNIN_ENTRY = { ref: 'enemy' as const, dx: 0, dz: 0 };
 // Junín is the patriot approach on its own pampa, Ayacucho the royalist field: anchored to the enemy base it
@@ -11,6 +14,18 @@ const INDEPENDENCE_JUNIN_ENTRY = { ref: 'enemy' as const, dx: 0, dz: 0 };
 const INDEPENDENCE_JUNIN = { ref: 'player' as const, dx: independenceLength(32), dz: 0 };
 const INDEPENDENCE_MARCH = { ref: 'enemy' as const, dx: -independenceLength(45), dz: 0 };
 const INDEPENDENCE_AYACUCHO_ENTRY = { ref: 'enemy' as const, dx: 0, dz: -independenceLength(20) };
+
+/** A mission point on the cinema map. The camp and the royalist centre stand on their layout anchors. */
+function onMap(p: { ref: 'player' | 'enemy'; dx: number; dz: number }): { x: number; z: number } {
+  const anchor = p.ref === 'player' ? INDEPENDENCE_CAMP : INDEPENDENCE_ROYALIST;
+  return { x: anchor.x * INDEPENDENCE_MAP_SIZE + p.dx, z: anchor.z * INDEPENDENCE_MAP_SIZE + p.dz };
+}
+const MAP_CAMP = onMap({ ref: 'player', dx: 0, dz: 0 });
+const MAP_AYACUCHO = onMap({ ref: 'enemy', dx: 0, dz: 0 });
+const MAP_JUNIN = onMap(INDEPENDENCE_JUNIN);
+const MAP_JUNIN_ENTRY = onMap(INDEPENDENCE_JUNIN_ENTRY);
+const MAP_MARCH = onMap(INDEPENDENCE_MARCH);
+const MAP_AYACUCHO_ENTRY = onMap(INDEPENDENCE_AYACUCHO_ENTRY);
 
 export const m8Independencia: MissionDef = {
   id: 'm8_independencia',
@@ -31,16 +46,16 @@ export const m8Independencia: MissionDef = {
   unitSpeedScale: 0.75,
   layout: {
     labels: [
-      { text: 'Junín', x: 0.35, z: 0.63, kind: 'settlement' },
+      { text: 'Junín', x: INDEPENDENCE_CAMP.x, z: INDEPENDENCE_CAMP.z, kind: 'settlement' },
       { text: 'Ayacucho', x: 0.702, z: 0.37, kind: 'settlement' },
       { text: 'Pampa de Quinua', x: 0.65, z: 0.37, kind: 'region' },
     ],
-    base: { x: 0.35, z: 0.63 },
-    enemyBase: { x: 0.772, z: 0.37 },
+    base: INDEPENDENCE_CAMP,
+    enemyBase: INDEPENDENCE_ROYALIST,
     terrain: {
       // Junín and Ayacucho as high pampas connected by the campaign route.
       flats: [
-        { name: 'Pampa de Junín', x: 0.35, z: 0.63, rx: 0.16, rz: 0.12 },
+        { name: 'Pampa de Junín', x: INDEPENDENCE_CAMP.x, z: INDEPENDENCE_CAMP.z, rx: 0.16, rz: 0.12 },
         { name: 'Pampa de Ayacucho', x: 0.65, z: 0.37, rx: 0.14, rz: 0.1 },
       ],
     },
@@ -75,30 +90,88 @@ export const m8Independencia: MissionDef = {
   tutorial: true,
   modelMission: true,
   narrator: 'Antonio José de Sucre',
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map
+  // resolves the mission's own points (camp, Junín hold, march, Ayacucho hold and the royalist columns'
+  // entries) from the layout anchors, so it shows the two fields the player will fight. It does not tell the
+  // outcome: the act cards and the epilogue do.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'LIMA · 28 DE JULIO DE 1821',
-      title: 'La independencia',
-      text: 'San Martín proclama la independencia en Lima. La campaña final se decide en la sierra, con Bolívar y Sucre al mando de los ejércitos libertadores.',
-      seconds: 9,
+      kicker: 'Sierra del Perú · 1824',
+      title: 'La campaña final',
+      text: 'San Martín proclamó la independencia en Lima en 1821, pero la sierra sigue en manos realistas. La campaña final se decide allí, con Bolívar y Sucre al mando de los ejércitos libertadores.',
+      seconds: 11,
       source: 'docs/historia/campanas/independencia.md',
-      image: 'media/independencia/intro-lima.webp',
+      image: 'media/independencia/cine-ayacucho.webp',
+      motion: 'push',
     },
     {
-      kicker: 'JUNÍN · 6 DE AGOSTO DE 1824',
-      title: 'La caballería',
-      text: 'En la pampa de Junín, la caballería patriota —con montoneras— sostiene el choque contra los dragones realistas. La campaña sigue hacia el sur.',
-      seconds: 9,
+      kicker: 'Junín y Ayacucho · 1824',
+      title: 'Dos campos',
+      text: 'El 6 de agosto, en la pampa de Junín, la caballería patriota —con montoneras— enfrenta a los dragones realistas. Después, el ejército de Sucre marcha al sur, hacia el campo de Ayacucho.',
+      seconds: 11,
       source: 'docs/historia/campanas/independencia.md',
-      image: 'media/independencia/intro-junin.webp',
+      map: {
+        // The transect between the patriot camp (x 90) and the royalist centre (x 198, z 95).
+        view: { x: 64, z: 48, size: 152 },
+        marks: [
+          { x: MAP_JUNIN.x, z: MAP_JUNIN.z + 10, label: 'Junín', side: 'place' },
+          { x: MAP_AYACUCHO.x - 4, z: MAP_AYACUCHO.z + 10, label: 'Ayacucho', side: 'place' },
+          { x: MAP_CAMP.x, z: MAP_CAMP.z + 9, label: 'Sucre', side: 'player', delay: 0.6 },
+          { x: MAP_AYACUCHO.x, z: MAP_AYACUCHO.z - 9, label: 'Realistas', side: 'enemy', delay: 1 },
+        ],
+        routes: [
+          {
+            side: 'player',
+            label: 'Caballería',
+            points: [
+              { x: MAP_CAMP.x + 6, z: MAP_CAMP.z },
+              { x: MAP_JUNIN.x - 4, z: MAP_JUNIN.z },
+            ],
+            delay: 1.4,
+          },
+          {
+            side: 'enemy',
+            label: 'Carga realista',
+            points: [
+              { x: MAP_JUNIN_ENTRY.x - 4, z: MAP_JUNIN_ENTRY.z + 4 },
+              { x: MAP_JUNIN.x + 6, z: MAP_JUNIN.z - 4 },
+            ],
+            delay: 3,
+          },
+          {
+            side: 'player',
+            label: 'Marcha',
+            dashed: true,
+            points: [
+              { x: MAP_JUNIN.x, z: MAP_JUNIN.z - 6 },
+              { x: MAP_MARCH.x, z: MAP_MARCH.z },
+              { x: MAP_AYACUCHO.x - 12, z: MAP_AYACUCHO.z },
+            ],
+            delay: 5,
+            draw: 3,
+          },
+          {
+            side: 'enemy',
+            label: 'Refuerzo',
+            dashed: true,
+            points: [
+              { x: MAP_AYACUCHO_ENTRY.x, z: MAP_AYACUCHO_ENTRY.z },
+              { x: MAP_AYACUCHO.x, z: MAP_AYACUCHO.z - 4 },
+            ],
+            delay: 7.4,
+          },
+        ],
+      },
     },
     {
-      kicker: 'AYACUCHO · 9 DE DICIEMBRE DE 1824',
-      title: 'La rendición realista',
-      text: 'El ejército de Sucre resiste en Ayacucho hasta la rendición realista. La victoria sella la independencia; el Callao resistirá hasta 1826.',
+      kicker: 'Tu mando',
+      title: 'Sostén Junín',
+      text: 'Sucre manda el ejército patriota. Sostén Junín con la caballería y mantén vivo a Sucre: sin caballería no hay ejército, y sin Sucre no hay campaña.',
       seconds: 10,
       source: 'docs/historia/campanas/independencia.md',
-      image: 'media/independencia/intro-ayacucho.webp',
+      image: 'media/independencia/cine-junin.webp',
+      motion: 'pan-right',
     },
   ],
   epilogueImage: 'media/independencia/intro-epilogo.webp',
