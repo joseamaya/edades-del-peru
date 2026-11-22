@@ -101,6 +101,9 @@ export const m6bGuerraCivil: MissionDef = {
     ],
   },
   // Huáscar's field headquarters, not a town: its pressure is the Quipaipan waves and its guard.
+  // Huáscar's field command: the guard opens at the headquarters and the AI keeps its strategic offensive,
+  // which can pull it toward the player's base after its authored move. The capture is contested while it
+  // stands.
   enemy: { active: true, difficulty: 'normal', aggression: 0.6, economy: false },
   buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
   objectives: [
@@ -139,8 +142,8 @@ export const m6bGuerraCivil: MissionDef = {
   ],
   triggers: [
     {
-      // The capture target is Huáscar's own headquarters: a guard mans it from the opening, so Act III is a
-      // fight and not a walk-in after the pampa.
+      // The capture target is Huáscar's own headquarters: a guard opens at it, so the capture is contested
+      // while the guard still stands; the field battle's own offensive may have drawn it out.
       id: 't_guarnicion',
       condition: { type: 'time', seconds: 0.5 },
       effects: [
@@ -153,7 +156,8 @@ export const m6bGuerraCivil: MissionDef = {
           ],
           pos: { ref: 'enemy', dx: 0, dz: 0 },
           radius: cuscoIncaLength(4),
-          // `reinforce` defaults to an attack-move on the player's camp; a garrison must hold its post.
+          // `reinforce` defaults to an attack-move on the player's camp; this garrison opens holding its post,
+          // but the AI's strategic offensive can later pull it toward the player's base.
           objective: 'position',
         },
       ],

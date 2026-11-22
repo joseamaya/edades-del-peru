@@ -59,9 +59,12 @@ in the quality bar.
   of the documented cut, not a reconstructed canal trace.
 - Chan Chan keeps its centre and houses — the capital is not a camp — but it does not run the generic
   economy: `enemy.economy: false` and `start.enemyOpeningUnits: false` remove the peasant crew, sawmill and
-  mill. A token watch stands in the city, outside the 24 m surrender circle, so the optional «take Chan Chan
-  if it resists» is a fight and the capital is not empty; the other pressure is the timed counterattack from
-  Paramonga. The surrender stays the victory.
+  mill. `enemy.attacks: false` keeps the authored counterattack on its authored target instead of letting
+  the AI re-issue it at a building of its choosing, and leaves the token watch on its post (it still presses
+  enemies within 20 m); the opening before the Paramonga column is deliberately quiet. The watch is outside the 24 m
+  surrender circle, so
+  the optional «take Chan Chan if it resists» is a fight and the capital is not empty, and the other pressure
+  is the timed counterattack from Paramonga. The surrender stays the victory.
 - The narrator is **Túpac Yupanqui**, a documented commander.
 
 ## Opening and closing

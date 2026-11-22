@@ -101,6 +101,8 @@ export const m5YahuarPampa: MissionDef = {
     { tag: 'centro_chanca', kind: BuildingKind.CENTER, owner: 1 },
   ],
   // The Chanca host is a marching army: its camp and a scripted city garrison, no peasant economy.
+  // A field battle: the garrison opens at the centre and the host keeps the AI's own attacks, which can
+  // pull it and the columns toward the player's base after their authored move.
   enemy: { active: true, difficulty: 'hard', aggression: 1.3, economy: false },
   buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
   objectives: [
@@ -126,8 +128,9 @@ export const m5YahuarPampa: MissionDef = {
   ],
   triggers: [
     {
-      // The city is not empty: with no peasant economy the Chanca host still mans Cusco. This garrison
-      // holds the centre from the opening, so `obj_kill` is a fight and not a walk-in.
+      // The Chanca centre is not empty: with no peasant economy the host still garrisons it. The guard
+      // opens on the centre, so `obj_kill` is contested while it stands; the AI's own offensive can pull
+      // it away later.
       id: 't_guarnicion',
       condition: { type: 'time', seconds: 0.5 },
       effects: [
@@ -140,7 +143,8 @@ export const m5YahuarPampa: MissionDef = {
           ],
           pos: { dx: CHANCA_CITY.x * CHANCA_MAP_SIZE, dz: CHANCA_CITY.z * CHANCA_MAP_SIZE },
           radius: chancaLength(4),
-          // `reinforce` defaults to an attack-move on the player's camp; a garrison must hold its post.
+          // `reinforce` defaults to an attack-move on the player's camp; this garrison opens holding its post,
+          // but the AI's strategic offensive can later pull it toward the player's base.
           objective: 'position',
         },
       ],

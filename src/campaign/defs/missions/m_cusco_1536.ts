@@ -113,7 +113,7 @@ export const mCusco1536: MissionDef = {
   },
   // A besieged city, not a skirmish player: the Spanish sortie is the authored pressure, so the
   // centre and houses stay but no peasant economy runs inside the walls.
-  enemy: { active: true, difficulty: 'normal', aggression: 0.8, economy: false },
+  enemy: { active: true, difficulty: 'normal', aggression: 0.8, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/cusco-1536/intro-epilogo.webp',

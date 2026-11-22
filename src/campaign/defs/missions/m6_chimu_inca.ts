@@ -113,7 +113,7 @@ export const m6ChimuInca: MissionDef = {
   mark: [{ tag: 'chan_chan', kind: BuildingKind.CENTER, owner: 1 }],
   // Chan Chan keeps its centre and houses (a capital, not a camp), but it does not play the skirmish
   // economy: its defence is the authored counterattack from Paramonga.
-  enemy: { active: true, difficulty: 'hard', aggression: 1.2, economy: false },
+  enemy: { active: true, difficulty: 'hard', aggression: 1.2, economy: false, attacks: false },
   buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
   objectives: [
     {
