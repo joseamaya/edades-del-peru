@@ -87,10 +87,10 @@ siege, take the camp.
 
 1. In-engine captures and `MISSION_ART` are shipped; regenerate them with `scripts/capture_lima_intro.mjs` after art changes.
 2. Performance: software `bench:check` opening ~645k triangles (627–664k observed, the vegetation kit varies
-   between runs) / 624 draw calls and the city with the siege crowd 927,198 / 928, under the
-   800k/860 and 1.1M/1,250 regression caps. Hardware high (`--gpu`, Intel iGPU) ~874k / 627 and
-   1,134,038 / 931, against 974,062 / 832 and 1,267,920 / 1,226 with VSM on the same scene. Both views
-   remain over art-direction §11's 600k/200 target; the hardware/LOD pass is still open.
+   between runs) / 624 draw calls and the city with the siege crowd 1,121,008 / 841 (the 2026-11-16 pass read
+   927,198 / 928), under the 800k/860 and 1.2M/1,250 regression caps. Hardware high (`--gpu`, Intel iGPU)
+   ~874k / 627 and 1,134,038 / 931, against 974,062 / 832 and 1,267,920 / 1,226 with VSM on the same scene.
+   Both views remain over art-direction §7's 600k/200 target; the hardware/LOD pass is still open.
 3. The approved intro render is a first pass: a future revision can extend it to the 1536 siege and solve the
    Rímac/bridge composition.
 4. A manual 30–40 minute playtest.

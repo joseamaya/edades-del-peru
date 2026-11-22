@@ -13,7 +13,7 @@ import {
 } from './lib.mjs';
 
 /**
- * Scene budget for a mission's opening view (docs/design/art-direction.md §11): one plain scene render
+ * Scene budget for a mission's opening view (docs/design/art-direction.md §7): one plain scene render
  * (shadow pass included, post-processing excluded) at 1600x900 and zoom 54, plus the Blender
  * vegetation/fauna kit isolated by hiding it. `--frames` additionally samples the shipped frame, so the
  * structural pass and the player-visible frame are reported side by side. Triangle and draw-call counts are machine-independent,
@@ -54,7 +54,7 @@ if (!Number.isFinite(viewWidth) || !Number.isFinite(viewHeight) || viewWidth < 3
   throw new Error(`invalid --viewport=${viewport}; expected WIDTHxHEIGHT`);
 }
 
-// Ratchet: §11 targets 600k triangles and 200 draw calls per frame. m1 measured 877k / 441 before the
+// Ratchet: §7 targets 600k triangles and 200 draw calls per frame. m1 measured 877k / 441 before the
 // tree-instance, water and flier-shadow cuts, ~685k / 413 after them, ~497k / 414 with the terrain
 // LOD, ~477k / 271 after batching resource nodes, the site and the fauna, ~477k / 228 with the
 // consolidated workers and ~467k / 203 after the heritage proxies and house materials, ~332k / 204
@@ -71,7 +71,7 @@ const BUDGETS = {
   // started complexes at foundation add ~25k tris and the Act III valley groves add ~9-17k more,
   // depending on which clusters fall inside the 30 m LOD0 ring. Cap keeps ~7 % headroom.
   m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 120_000, kitDrawCalls: 56 },
-  // End game over the city with 35 workers in view: art-direction §11 (600k triangles). It measured
+  // End game over the city with 35 workers in view: art-direction §7 (600k triangles). It measured
   // 1.57M / 396 before the worker cuts and ~582k / 261 after. Skinned workers cannot be instanced, so
   // each one in view is ~6 draws (body, hair, garments, tool, team ring, body shadow) on top of the
   // opening's scene: the call budget allows that crowd over the opening's 230.
@@ -97,21 +97,21 @@ const BUDGETS = {
   m_tambotoco_late: { sceneTriangles: 660_000, sceneDrawCalls: 360, kitTriangles: 42_000, kitDrawCalls: 14 },
   // Lima opening: the hueste with horses and artillery. Software ~645k/624 (627–664k observed, the vegetation
   // kit varies between runs) after the PCF shadow pass and the rig silhouette rule (under the
-  // 800k/860 cap, over art-direction §11's 600k/200 target). Hardware high ~874k/627 (974,062/832 with VSM
+  // 800k/860 cap, over art-direction §7's 600k/200 target). Hardware high ~874k/627 (974,062/832 with VSM
   // on the same scene): ~100k triangles and 205 calls off.
   m_lima: { sceneTriangles: 800_000, sceneDrawCalls: 860, kitTriangles: 140_000, kitDrawCalls: 25 },
   // Lima in use: the colonial city and the siege crowd. Software 1,121,008/841 after the mission-scoped
   // Rímac field (the 2026-11-16 pass measured 927,198/928); hardware high 1,134,038/931 (1,267,920/1,226
-  // with VSM), over §11's target. The 1.2M cap gives the field's groves ~6% headroom over both.
+  // with VSM), over §7's target. The 1.2M cap gives the field's groves ~6% headroom over both.
   m_lima_late: { sceneTriangles: 1_200_000, sceneDrawCalls: 1_250, kitTriangles: 140_000, kitDrawCalls: 25 },
-  // La Junta's opening army is large; a regression cap, still over §11's target. Measured 673,132 / 669
+  // La Junta's opening army is large; a regression cap, still over §7's target. Measured 673,132 / 669
   // with 14,334 / 12 kit after the highland pack.
   m_junta_cusco: { sceneTriangles: 780_000, sceneDrawCalls: 1000, kitTriangles: 20_000, kitDrawCalls: 14 },
   // Moche valley opening on the 256 m transect: the canal, the huacas and the starting column. Measured
   // ~550k / 332; first-pass cap with ~6 % headroom.
   m3_moche_recuay: { sceneTriangles: 590_000, sceneDrawCalls: 372, kitTriangles: 12_000, kitDrawCalls: 4 },
   // Wari highland opening: the basin, the andenes, the complex and the highland kit. Measured
-  // 402,889 / 194 with 93,738 / 12 kit; the scene stays under §11's 200-call target.
+  // 402,889 / 194 with 93,738 / 12 kit; the scene stays under §7's 200-call target.
   m4_wari: { sceneTriangles: 445_000, sceneDrawCalls: 211, kitTriangles: 100_000, kitDrawCalls: 14 },
   // Yahuar Pampa opening: Cusco, the pampa and the Chanca heights. Measured ~682k / 362; over the 600k target.
   m5_yahuar_pampa: { sceneTriangles: 725_000, sceneDrawCalls: 378, kitTriangles: 0, kitDrawCalls: 0 },
@@ -148,10 +148,11 @@ const BUDGETS = {
   // (244 gatherable + 400 decorative). The cap is raised for the selva pilot only (roadmap §10).
   m_vilcabamba: { sceneTriangles: 700_000, sceneDrawCalls: 540, kitTriangles: 5_000, kitDrawCalls: 2 },
   // Túpac Amaru opening on the 256 m valley: the camp, the chapel, the starting column and the highland
-  // kit. The mission-scoped valley field raised it from 521,318/491 to 575,288/456 (18,644/12 kit) at the
-  // 2026-11-22 measurement; still under §11's 600k target. The call count is over §11's 200 target.
-  m7_tupac_amaru: { sceneTriangles: 590_000, sceneDrawCalls: 710, kitTriangles: 30_000, kitDrawCalls: 14 },
-  // The huacas plaza under Recuay pressure: measured ~721k / 568; still over art-direction §11's 600k target.
+  // kit. Measured 521,318/491 before the late-era site/kit rebuild (621e3fae) and 573,562-575,966/455-458
+  // after it (18,644/12 kit); 595k gives 3.3% headroom and stays under §7's 600k target. The call count is
+  // over §7's 200 target.
+  m7_tupac_amaru: { sceneTriangles: 595_000, sceneDrawCalls: 710, kitTriangles: 30_000, kitDrawCalls: 14 },
+  // The huacas plaza under Recuay pressure: measured ~721k / 568; still over art-direction §7's 600k target.
   m3_moche_recuay_late: { sceneTriangles: 770_000, sceneDrawCalls: 600, kitTriangles: 12_000, kitDrawCalls: 4 },
   // The Wari frontier with its line and Tiahuanaco influence: measured 510,340 / 337 with 93,798 / 6 kit.
   m4_wari_late: { sceneTriangles: 525_000, sceneDrawCalls: 365, kitTriangles: 100_000, kitDrawCalls: 10 },
@@ -159,16 +160,17 @@ const BUDGETS = {
   m5_yahuar_pampa_late: { sceneTriangles: 810_000, sceneDrawCalls: 548, kitTriangles: 0, kitDrawCalls: 0 },
   // The surrender of Chan Chan: measured ~765k / 516; over the 600k target.
   m6_chimu_inca_late: { sceneTriangles: 815_000, sceneDrawCalls: 550, kitTriangles: 15_000, kitDrawCalls: 3 },
-  // The battle of Quipaipan: measured ~967k / 673 before the mission-scoped arroyo and field. The late
-  // load now settles between 948k / 663 and 1,011k / 722 as the crowd attaches, so the 760 draw cap covers
-  // the high end and the 1,025k triangle cap covers 1,011k; over the 600k target.
+  // The battle of Quipaipan: measured ~967k / 673 before the mission-scoped arroyo and field. The late load
+  // is bimodal: 947,943/663 with 2,010 meshes, or 1,011,049/722 with 2,184, because the crowd can still be
+  // attaching when the probe reads it. 760 is a stop-gap for the high end until the harness waits for the
+  // crowd (issue 601); the 1,025k triangle cap covers 1,011k. Over the 600k target.
   m6b_guerra_civil_late: { sceneTriangles: 1_025_000, sceneDrawCalls: 760, kitTriangles: 0, kitDrawCalls: 0 },
   // Ayacucho: measured ~867k / 1246; over the 600k/200 targets.
   m8_independencia_late: { sceneTriangles: 920_000, sceneDrawCalls: 1_325, kitTriangles: 0, kitDrawCalls: 0 },
-  // The siege/retreat crowd at Cusco: measured 838,094 / 746 with 24,050 / 12 kit; over §11's 600k target.
+  // The siege/retreat crowd at Cusco: measured 838,094 / 746 with 24,050 / 12 kit; over §7's 600k target.
   m7_tupac_amaru_late: { sceneTriangles: 860_000, sceneDrawCalls: 1_140, kitTriangles: 30_000, kitDrawCalls: 14 },
   // Arica opening on the 256 m terrace: the fort, the cuartel and the garrison. Measured ~535k / 600;
-  // first-pass cap with ~6 % headroom (the call count is over art-direction §11's 200 target, as Lima and the Junta).
+  // first-pass cap with ~6 % headroom (the call count is over art-direction §7's 200 target, as Lima and the Junta).
   m9_guerra_pacifico: { sceneTriangles: 570_000, sceneDrawCalls: 640, kitTriangles: 20_000, kitDrawCalls: 5 },
   // The assault crowd at the battery: measured ~813k / 782; the fall is the heaviest view.
   m9_guerra_pacifico_late: {
