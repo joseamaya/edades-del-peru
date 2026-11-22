@@ -295,6 +295,10 @@ export function unitModelAsset(
 ): RigModelChoice | null {
   // A named commander passes its declared gender; anonymous units keep the deterministic id split.
   const unitGender = gender ?? genderForId(id);
+  // The hueste's Andean allies are scripted, not trained: keep the Inca rig instead of the Spanish one.
+  if (civ === CivId.HUESTE_INDIANA && kind === UnitKind.INCA_WARRIOR) {
+    return unitModelAsset(kind, era, CivId.INCA, id, gender, tag, missionId);
+  }
   const baseKind = unitBaseKind(kind);
   if (baseKind !== kind) return unitModelAsset(baseKind, era, civ, id, gender, tag, missionId);
   // 1535/1536/1572 keep the morion; the 1780 and Independence realistas wear the bicorn.

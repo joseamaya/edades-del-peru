@@ -138,8 +138,8 @@ export const mCusco1536: MissionDef = {
     {
       kicker: 'Sacsayhuamán · mayo–junio',
       title: 'La fortaleza',
-      text: 'La lucha por Sacsayhuamán decide el cerco. Los incas ocupan la fortaleza y los españoles salen de la plaza para recuperarla; Juan Pizarro muere en el asalto.',
-      seconds: 10,
+      text: 'La lucha por Sacsayhuamán decide el cerco. Los incas ocupan la fortaleza y los españoles salen de la plaza para recuperarla; Juan Pizarro es herido de muerte en el asalto y muere días después.',
+      seconds: 12,
       source: 'docs/historia/campanas/cusco_1536.md',
       map: {
         // From Manco's camp to the eastern outskirts the sortie enters from (x 206).

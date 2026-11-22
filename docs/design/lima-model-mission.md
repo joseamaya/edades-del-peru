@@ -43,13 +43,16 @@ and people) when the cabildo is completed. The plaza card (`lima_plaza`) represe
 first church; the church GLB is hidden until the `ciudad` phase.
 
 - **Hueste indiana**: a new VICEROYALTY civilization (pizarristas and allies), with rodeleros, arcabuces
-  escasos, jinetes and light artillery. It shares the realista outfit kit.
+  escasos, jinetes and Andean allied warriors. It shares the realista outfit kit. The light artillery
+  (falconetes) joins with the 1536 siege, not with the 1535 foundation.
 - **Inca de Quizu**: the Inca civilization, with the historical `minPeriod` units of the conquest.
 
 ## Economy
 
-Workers, rodeleros, arcabuces, cavalry, artillery, a missionary and a scout. Buildings: town economy,
-barracks, arsenal, stable, artillery workshop, fortress, walls, gate, tower and market. No modern units.
+Workers, rodeleros, arcabuces, cavalry, Andean allied warriors, a missionary and a scout. A pair of
+falconetes reinforces the defence when the 1536 siege begins. Buildings: town economy, barracks, arsenal,
+stable, fortress, walls, gate, tower and market. No modern units and no artillery workshop: the falconetes
+are a scripted reinforcement, not a trainable unit.
 
 ## Opening and closing
 

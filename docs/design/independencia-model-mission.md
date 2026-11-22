@@ -17,7 +17,7 @@ hold Junín, march south, and hold Ayacucho while Sucre lives.
 
 | Act            | Place               | Player action                                                | Historical idea                                       |
 | -------------- | ------------------- | ------------------------------------------------------------ | ----------------------------------------------------- |
-| I · Junín      | Pampa de Junín      | Hold Junín 90 s with the patriot cavalry, Sucre protected    | The cavalry action opens the final campaign           |
+| I · Junín      | Pampa de Junín      | Hold Junín 90 s with the patriot cavalry, Sucre protected    | The cavalry action opens the final campaign; no firearms |
 | II · La marcha | Junín–Ayacucho road | March to Ayacucho with the army                              | The campaign moves south to the decisive field        |
 | III · Ayacucho | Pampa de Ayacucho   | Hold Ayacucho 90 s until the royalist surrender; Sucre alive | The victory seals independence and ends Spanish power |
 
@@ -36,7 +36,7 @@ former 192 m composition 4/3 larger:
 Painted ground uses `INDEPENDENCE_GROUND` (pampa grass, terrace dirt, quebrada sand, ridge rock) sampled at
 128 × 128 over 256 m. The worker crosses in ≈2:22 (`unitSpeedScale: 0.75`), inside the model-mission band.
 The horizontal composition scales 4/3 (start offsets, hold radii and wave centres included; each royalist
-column now enters from its own side and marches to Junín or Ayacucho; Junín sits on its own pampa ~43 m east of the patriot camp and about 100 m from Ayacucho (the hold asks for three riders there, so no cavalryman starts inside it; the army concentrates at Junín, with a scripted reinforcement when the march ends),
+column now enters from its own side and marches to Junín or Ayacucho; Junín sits on its own pampa ~43 m east of the patriot camp and about 100 m from Ayacucho (the hold asks for three riders there, so no cavalryman starts inside it; the cavalry opens at Junín and the infantry/artillery reinforcement joins when the hold is completed),
 so the march between the two fields is a real displacement). The heightfield
 keeps the 192 m vertical amplitude, so slopes read gentler; the site GLB scales uniformly with the terrace.
 Both are presentation trade-offs, not a survey.
@@ -50,9 +50,12 @@ recorded here and in the quality bar.
 
 ## Economy and units
 
-- Patriot riflemen, cavalry, montoneras and artillery against royalist soldiers, cavalry and dragoons. This is
-  1824: firearms and horses are period-correct.
-- Sucre is a protected named commander; the royalist centre is an optional destruction target, not the goal.
+- Junín is cavalry-only, as documented: no riflemen, montoneras or artillery take part in the charge. The
+  player roster is workers, cavalry and scouts; the patriot riflemen, montoneras and artillery are scripted
+  reinforcements that join for the march and Ayacucho. Against royalist cavalry, dragoons and the Ayacucho
+  garrison. This is 1824: firearms and horses are period-correct.
+- Sucre rides with the cavalry as a protected named commander; the royalist centre is an optional
+  destruction target, not the goal.
 - The narrator is **Antonio José de Sucre**, a documented commander.
 
 - The royalist army is a **scripted force**: `enemy.economy: false` and `start.enemyOpeningUnits: false`

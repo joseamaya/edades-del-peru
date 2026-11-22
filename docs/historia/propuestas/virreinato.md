@@ -125,7 +125,7 @@ facciones que faltan y los riesgos.
      - Manco huyó del Cusco y reunió un gran ejército.
      - El incendio de los techos de la ciudad con proyectiles encendidos.
      - Los españoles, encerrados en dos edificios de la plaza, contraatacaron para tomar Sacsayhuamán.
-     - **Juan Pizarro** murió de una pedrada en la cabeza durante el asalto.
+     - **Juan Pizarro** fue herido de muerte por una pedrada en la cabeza durante el asalto y murió días después.
      - Manco no logró tomar la ciudad.
    - *Interpretación*:
      - El episodio del capitán orejón que se arrojó de la torre antes que rendirse, al que la tradición

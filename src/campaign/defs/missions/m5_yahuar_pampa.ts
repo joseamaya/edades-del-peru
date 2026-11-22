@@ -140,7 +140,7 @@ export const m5YahuarPampa: MissionDef = {
       { kind: BuildingKind.FORTRESS, dx: chancaLength(9), dz: chancaLength(7) },
     ],
     units: [
-      { kind: UnitKind.RIFLEMAN, dx: -chancaLength(8), dz: chancaLength(8), tag: 'cusi_yupanqui', count: 1 },
+      { kind: UnitKind.INCA_WARRIOR, dx: -chancaLength(8), dz: chancaLength(8), tag: 'cusi_yupanqui', count: 1 },
       { kind: UnitKind.SOLDIER, dx: -chancaLength(6), dz: chancaLength(10), count: 6 },
       { kind: UnitKind.MUSKETEER, dx: -chancaLength(10), dz: chancaLength(10), count: 2 },
     ],

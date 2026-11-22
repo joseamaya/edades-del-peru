@@ -144,10 +144,10 @@ export const m6ChimuInca: MissionDef = {
   start: {
     enemyOpeningUnits: false,
     units: [
-      { kind: UnitKind.RIFLEMAN, dx: chimuLength(10), dz: -chimuLength(4), count: 1, tag: 'tupac_yupanqui' },
-      { kind: UnitKind.RIFLEMAN, dx: chimuLength(12), dz: -chimuLength(8), count: 1 },
+      { kind: UnitKind.INCA_WARRIOR, dx: chimuLength(10), dz: -chimuLength(4), count: 1, tag: 'tupac_yupanqui' },
+      { kind: UnitKind.MUSKETEER, dx: chimuLength(12), dz: -chimuLength(8), count: 1 },
       { kind: UnitKind.MUSKETEER, dx: chimuLength(6), dz: chimuLength(10), count: 2 },
-      { kind: UnitKind.RIFLEMAN, dx: chimuLength(4), dz: -chimuLength(6), count: 4 },
+      { kind: UnitKind.MUSKETEER, dx: chimuLength(4), dz: -chimuLength(6), count: 4 },
     ],
   },
   mark: [{ tag: 'chan_chan', kind: BuildingKind.CENTER, owner: 1 }],
