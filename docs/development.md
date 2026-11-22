@@ -677,6 +677,15 @@ Definition of Done and the building audit see
   Vilcabamba's 45 s hold from unravelling when a stray enemy worker enters the aggro radius. Guarded by
   `tests/geographic-heightfields.test.ts`, the mission E2E specs and `bench_scene --assert` (the Vilcabamba
   cap is the documented `selva` exception).
+- **Withdrawal releases and the enemy economy** (2026-11-22): the release autopilot parks protected
+  commanders with a valid `MissionPoint`, and a `retirada` mission now survives the loss of its camp while
+  it still has units (its required objectives decide; the last unit, or a required build/network goal with
+  no camp and no worker, still ends it). Vilcabamba sets `enemy.attacks: false` and its two columns shrink
+  (5 soldiers + 2 cavalry + 1 arcabucero; 4 soldiers + 1 cavalry); Miraflores' line core is six and its
+  assault column is six infantry + two riflemen without the siege battery. These change the simulation of
+  m_vilcabamba and m_miraflores, so `REPLAY_VERSION` is 42 (it rejects every stored replay). Guarded by the
+  seven `release-playtest` missions, the three mission specs, `campaign-completable` and
+  `tests/campaign-forces.test.ts` (the Miraflores infantry-only guard).
 - **Caral objective flow** (issue 390): `obj_complejos` activates on `t_a3_obra_muros` (all six monuments
   stand) and gates each visit on `ObjectiveDef.inspectRadius` (a player unit within 8 m of the card's footprint);
   `obj_asamblea` is announced with Act III (`awaitsCall`: listed but pending until the player calls it); the Act III camera reveal is a `reveal` trigger effect that plays

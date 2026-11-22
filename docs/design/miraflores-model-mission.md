@@ -38,7 +38,9 @@ The sack of Chorrillos and the occupation of Lima are stated in the epilogue, ne
   a competing settlement. The assault column is six line infantry and two riflemen, without the siege
   battery: its long-range shells one-shot the reservist line, and the real-order hold needed eight units to
   advance. The line's core is six (`minUnits: 6`); the redoubts are its fortifications, and the withdrawal
-  survives the fall of the camp because the mission is a `retirada`.
+  survives the fall of the camp because the mission is a `retirada`. The historical Chilean expedition did
+  field artillery; the model records that arm but keeps it out of the four-minute assault because the
+  howitzer's 56 m envelope one-shots the reservists (same abstraction as Huamachuco and Arica).
 
 ## Opening and closing
 

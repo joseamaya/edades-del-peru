@@ -3,7 +3,7 @@ import type { Resources } from '../core/types';
 import type { BuildingKind, CombatStance, Order, OrderTarget, UnitKind } from '../core/types';
 
 /** Bump when the replay schema or the simulation changes in a breaking way (32: m9, 33: m7, 34: m3, 35: m4, 36: m5, 37: m6, 38: m6b and 39: m8 moved to 256 m; 40: Tambotoco E3b ground paint; 41: Vilcabamba's Urubamba and ford, Callao's bay and Quipaipan's arroyo). */
-export const REPLAY_VERSION = 41;
+export const REPLAY_VERSION = 42;
 
 /** Stable localStorage key (see AGENTS: keep storage keys stable). */
 const STORAGE_KEY = 'peru-replay';

@@ -189,6 +189,32 @@ describe('campaign force contract', () => {
     expect(artillery).toHaveLength(0);
   });
 
+  it('lets a withdrawal survive a lost camp, not a wiped army', () => {
+    const game = headlessMission('m_vilcabamba');
+    try {
+      for (const b of [...game.buildings.values()]) if (b.owner === 0) game.buildings.delete(b.id);
+      game.update(1 / 60, 0);
+      expect(game.mission.ended, 'a lost camp alone ends the withdrawal').toBe(false);
+      // Curi Paucar is the protect commander: keep him alive for the camp-only step, then wipe the army.
+      for (const u of [...game.units.values()]) if (u.owner === 0) u.dead = true;
+      game.update(1 / 60, 0.1);
+      expect(game.mission.ended, 'a wiped withdrawal never ends').toBe(true);
+      expect(game.mission.won).toBe(false);
+    } finally {
+      game.destroy();
+      setAutoStart(true);
+    }
+  });
+
+  it('keeps the Miraflores assault infantry-only and the line at six', () => {
+    // The siege battery one-shots the reservist line; the hold's core is six after the real-order pass.
+    const miraflores = MISSIONS.find((m) => m.id === 'm_miraflores')!;
+    const waves = miraflores.triggers.flatMap((t) => t.effects).filter((e) => e.type === 'wave');
+    const artillery = waves.flatMap((w) => w.units).filter((u) => u.kind === UnitKind.ARTILLERY);
+    expect(artillery).toHaveLength(0);
+    expect(miraflores.objectives.find((o) => o.id === 'a2_linea')!.minUnits).toBe(6);
+  });
+
   it('keeps a documented scripted defence without an enemy economy', () => {
     const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
     // Its dossier says the enemy runs no economy; the pressure is the authored bombardment and assault.
@@ -214,7 +240,7 @@ describe('campaign force contract', () => {
       const lines = holds.filter((o) => o.id !== 'a1_minas');
       const before = lines.map((o) => game.resolveMissionPoint(o.pos!));
       // The bombardment can raze the town; a line anchored on the centre would move with the rubble.
-      for (const b of [...game.buildings.values()]) if (b.owner === 0) b.dead = true;
+      for (const b of [...game.buildings.values()]) if (b.owner === 0) game.buildings.delete(b.id);
       lines.forEach((o, i) => expect(game.resolveMissionPoint(o.pos!)).toEqual(before[i]));
 
       const waves = m9.triggers.flatMap((t) => t.effects).filter((e) => e.type === 'wave');
