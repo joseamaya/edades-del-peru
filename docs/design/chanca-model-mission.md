@@ -51,8 +51,9 @@ in the quality bar.
 ## Economy and units
 
 - The Chanca host is a marching army: `enemy.economy: false` and `start.enemyOpeningUnits: false`
-  keep its camp but skip the peasant economy; the scripted columns carry the attack, and a garrison of five
-  warriors and two honderos mans Cusco from the opening so the kill objective is a fight.
+  keep its camp but skip the peasant economy; a garrison of five warriors and two honderos opens at the
+  centre and then sallies with the scripted columns, so the mission keeps the AI's own attacks (the
+  real-order playtest relies on that pressure) and the kill objective is a fight.
 
 - Inca workers, warriors, riflemen and honderos; the Chanca side fields warriors and honderos.
   `UnitKind.MUSKETEER` is the legacy ranged id: in this era it renders as a hondero, not a firearm.

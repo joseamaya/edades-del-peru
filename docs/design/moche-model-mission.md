@@ -16,11 +16,11 @@ exchange that keeps the frontier open.
 
 ## Acts
 
-| Act                       | Place                     | Player action                                                     | Historical idea                                                       |
-| ------------------------- | ------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| I · El valle (c. 300–800) | Moche valley and canal    | Open the canal gate; the fields and huacas recover                | Water is the valley's power and the canal is its infrastructure       |
-| II · La frontera          | Huacas plaza              | Hold the plaza 90 s against Recuay waves                          | The conflict is attested, but as frontier pressure, not one battle    |
-| III · El intercambio      | Huaca de la Luna          | Deliver 250 silver in the elite exchange (400 optional)           | Moche and Recuay kept long-distance elite exchange through the frontier|
+| Act                       | Place                  | Player action                                           | Historical idea                                                         |
+| ------------------------- | ---------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------- |
+| I · El valle (c. 300–800) | Moche valley and canal | Open the canal gate; the fields and huacas recover      | Water is the valley's power and the canal is its infrastructure         |
+| II · La frontera          | Huacas plaza           | Hold the plaza 90 s against Recuay waves                | The conflict is attested, but as frontier pressure, not one battle      |
+| III · El intercambio      | Huaca de la Luna       | Deliver 250 silver in the elite exchange (400 optional) | Moche and Recuay kept long-distance elite exchange through the frontier |
 
 Optional: complete 400 silver (elite exchange). The epilogue narrates the Moche fragmentation toward 800 AD.
 
@@ -50,7 +50,8 @@ builds; the exception is recorded here and in the quality bar.
 ## Economy and units
 
 - The Recuay camp is a scripted force: `enemy.economy: false` and `start.enemyOpeningUnits: false`
-  leave its centre and houses but no peasant economy; its warriors and hondero waves carry the pressure.
+  leave its centre and houses but no peasant economy. It is a field battle, not a held garrison, so the camp
+  keeps the AI's own attacks: its watch and hondero waves sally alongside the three authored columns.
 
 - Moche workers, warriors and hondero (ranged) units; the Recuay side fields warrior and hondero waves.
   `UnitKind.MUSKETEER` is the project's legacy ranged id: at this period it renders as a hondero with a

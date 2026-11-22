@@ -114,6 +114,8 @@ export const m3MocheRecuay: MissionDef = {
   mark: [],
   // A Recuay camp under pressure, not a skirmish player: no peasant economy behind the waves (its centre
   // and houses remain).
+  // A field battle on the valley: the Recuay watch and columns sally with the AI's attacks, and the
+  // real-order playtest's escort relies on that pressure, so the camp keeps its own attacks.
   enemy: { active: true, difficulty: 'normal', aggression: 1, economy: false },
   buildingNames: { [BuildingKind.INSTITUTE]: 'Casa de los ancestros' },
   objectives: [

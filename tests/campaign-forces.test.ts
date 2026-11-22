@@ -84,6 +84,11 @@ describe('campaign force contract', () => {
         expect(crew(UnitKind.SCOUT), `${id} still fields the generic enemy scout`).toHaveLength(0);
         const def = MISSIONS.find((m) => m.id === id)!;
         expect(def.enemy.economy, `${id} runs a generic enemy economy`).toBe(false);
+        // Chimú and Cusco 1536 must not let launchAttack override their held garrisons; Moche, Yahuar
+        // Pampa and the Inca civil war are field battles whose watch or garrison sallies with the columns.
+        const sally = new Set(['m3_moche_recuay', 'm5_yahuar_pampa', 'm6b_guerra_civil']);
+        if (sally.has(id)) expect(def.enemy.attacks ?? true, `${id} must sally`).toBe(true);
+        else expect(def.enemy.attacks, `${id} must hold its garrison`).toBe(false);
         const centre = [...game.buildings.values()].find((b) => b.owner === 1 && b.kind === BuildingKind.CENTER);
         expect(centre, `${id} lost the enemy town it keeps around the scripted force`).toBeDefined();
         expect(centre!.dead).toBeFalsy();

@@ -101,6 +101,8 @@ export const m5YahuarPampa: MissionDef = {
     { tag: 'centro_chanca', kind: BuildingKind.CENTER, owner: 1 },
   ],
   // The Chanca host is a marching army: its camp and a scripted city garrison, no peasant economy.
+  // A field battle: the garrison opens at the centre and sallies with the columns, and the real-order
+  // playtest relies on that pressure, so the host keeps its own attacks.
   enemy: { active: true, difficulty: 'hard', aggression: 1.3, economy: false },
   buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
   objectives: [

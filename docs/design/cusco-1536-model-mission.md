@@ -36,9 +36,9 @@ Optional: cut the city's supplies. The mission never stages the later «Santiago
 - `INCA` vs `HUESTE_INDIANA`; period-locked Viceroyalty.
 - Units: workers, Inca warriors, soldiers and scouts; no horses or firearms for the player.
 - The Spanish city is a **besieged garrison**: `enemy.economy: false` and `start.enemyOpeningUnits: false`
-  keep its centre and houses but stop the peasant economy, sawmill and mill. The pressure is authored: a
-  probe inside Act I, the counterattack after Sacsayhuamán and the sortie that contests the siege, so the
-  mission is a siege of the city, not a skirmish beside it. The sortie enters from the city outskirts, clear
+  keep its centre and houses but stop the peasant economy, sawmill and mill. The pressure is authored:
+  `enemy.attacks: false`, and the probe inside Act I, the counterattack after Sacsayhuamán and the sortie that
+  contests the siege carry it, so the mission is a siege of the city, not a skirmish beside it. The sortie enters from the city outskirts, clear
   of both the siege ring and its own spawn spread.
 - Manco Inca is a protected commander card; no invented likeness.
 

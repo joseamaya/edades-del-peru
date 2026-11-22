@@ -101,6 +101,8 @@ export const m6bGuerraCivil: MissionDef = {
     ],
   },
   // Huáscar's field headquarters, not a town: its pressure is the Quipaipan waves and its guard.
+  // Huáscar's field command: the guard opens at the headquarters and joins the battle, and the capture
+  // comes after the pampa. The real-order playtest relies on that sally, so the AI keeps its attacks.
   enemy: { active: true, difficulty: 'normal', aggression: 0.6, economy: false },
   buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
   objectives: [

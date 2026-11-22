@@ -677,6 +677,14 @@ Definition of Done and the building audit see
   Vilcabamba's 45 s hold from unravelling when a stray enemy worker enters the aggro radius. Guarded by
   `tests/geographic-heightfields.test.ts`, the mission E2E specs and `bench_scene --assert` (the Vilcabamba
   cap is the documented `selva` exception).
+- **Scripted offensives** (2026-11-22): Chimú and Cusco 1536 declare `enemy.attacks: false`.
+  `AI.launchAttack` sends every soldier on its 30–60 s timer, so their authored garrisons walked off the
+  `objective: 'position'` posts and the AI overrode the columns; the flag leaves combat micro and defense
+  intact. Moche, Yahuar Pampa and the Inca civil war are field battles whose watch or garrison opens at the
+  post and then sallies with the columns, so they keep the AI's attacks and record the exception. This
+  changes the simulation of the two flagged missions, so `REPLAY_VERSION` is 44 (it rejects every stored
+  replay). Guarded by `tests/campaign-forces.test.ts`, their `campaign-completable` entries and the mission
+  E2E specs.
 - **No army, no production** (issue 596): a mission whose player has no living units and no completed
   building that can train a period-legal worker or soldier (a centre, barracks, arsenal, stable or factory;
   a market's caravan does not count) is lost even if a house or a farm still stands; the check only asks
