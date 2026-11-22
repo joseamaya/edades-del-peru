@@ -59,6 +59,7 @@ export const m8Independencia: MissionDef = {
   startingEra: Era.REPUBLIC,
   startingResources: { food: 1200, wood: 800, silver: 1200, stone: 500 },
   start: {
+    enemyOpeningUnits: false,
     units: [
       { kind: UnitKind.RIFLEMAN, dx: independenceLength(6), dz: -independenceLength(6), count: 1, tag: 'sucre' },
       { kind: UnitKind.RIFLEMAN, dx: independenceLength(6), dz: -independenceLength(6), count: 10 },
@@ -68,7 +69,9 @@ export const m8Independencia: MissionDef = {
     ],
   },
   mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
-  enemy: { active: true, difficulty: 'normal', aggression: 1.0 },
+  // The royalist army is a scripted force: it keeps its centre and houses but no peasant economy, and its
+  // pressure is the Junín charge, the Ayacucho garrison and the surrender hold.
+  enemy: { active: true, difficulty: 'normal', aggression: 1.0, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
   narrator: 'Antonio José de Sucre',
@@ -196,9 +199,9 @@ export const m8Independencia: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [
-            { kind: UnitKind.CAVALRY, count: 2 },
+            { kind: UnitKind.CAVALRY, count: 1 },
             { kind: UnitKind.REALISTA_DRAGON, count: 1 },
-            { kind: UnitKind.SOLDIER, count: 4 },
+            { kind: UnitKind.SOLDIER, count: 3 },
           ],
           spawn: INDEPENDENCE_JUNIN_ENTRY,
           // The charge defends the Junín hold: sharing its constant is what keeps the two in step.
@@ -229,8 +232,8 @@ export const m8Independencia: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [
-            { kind: UnitKind.SOLDIER, count: 5 },
-            { kind: UnitKind.CAVALRY, count: 3 },
+            { kind: UnitKind.SOLDIER, count: 3 },
+            { kind: UnitKind.CAVALRY, count: 2 },
           ],
           spawn: INDEPENDENCE_AYACUCHO_ENTRY,
           pos: { ref: 'enemy', dx: 0, dz: 0 },

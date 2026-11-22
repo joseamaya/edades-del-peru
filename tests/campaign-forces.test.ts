@@ -8,7 +8,8 @@ import { headlessMission } from './headless';
  * Missions whose enemy is a scripted force or a garrison that keeps a town: they keep their centre and
  * houses but must not run the generic peasant economy (no opening crew, sawmill or mill). Tambotoco stays out because its
  * third-act test measures the AI's units against the player's hold; base-less battles (Tarapacá, Arica)
- * are out because they have no centre or houses to keep and are pinned by their own tests.
+ * are out because they have no centre or houses to keep and are pinned by their own tests; m_lima (the
+ * 1535 besieging camp) is the deliberate control that keeps its economy.
  */
 const SCRIPTED_ENEMY = [
   'm3_moche_recuay',
@@ -20,6 +21,9 @@ const SCRIPTED_ENEMY = [
   'm_real_felipe',
   'm_miraflores',
   'm_brena',
+  'm_junta_cusco',
+  'm_lima_1821',
+  'm8_independencia',
 ] as const;
 
 describe('campaign force contract', () => {
@@ -133,6 +137,15 @@ describe('campaign force contract', () => {
           (b) => b.owner === 1 && !b.dead && (b.kind === BuildingKind.SAWMILL || b.kind === BuildingKind.MILL),
         );
         expect(industry, `${id} built a sawmill or mill`).toHaveLength(0);
+        const standing = [...game.buildings.values()].filter((b) => b.owner === 1 && !b.dead);
+        expect(
+          standing.some((b) => b.kind === BuildingKind.CENTER),
+          `${id} lost its centre`,
+        ).toBe(true);
+        expect(
+          standing.some((b) => b.kind === BuildingKind.HOUSE),
+          `${id} lost its houses`,
+        ).toBe(true);
       } finally {
         game.destroy();
         setAutoStart(true);

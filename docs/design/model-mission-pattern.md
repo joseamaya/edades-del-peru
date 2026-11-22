@@ -122,10 +122,10 @@ A battle scenario is not a skirmish with a smaller build menu. Declare the force
   without the AI's units), so that is its own pass, not a flag.
   Wire the mission's `enemy.difficulty`/`aggression` — they are not the menu difficulty. Drop the generic
   economy only when the design says so **and** the pressure is already authored (Arica, Tarapacá, the Inca,
-  viceroyalty and republican missions): removing it without re-authoring the waves leaves the map empty. A capital or a field
+  viceroyalty, independence and republican missions): removing it without re-authoring the waves leaves the map empty. A capital or a field
   headquarters may keep its centre and houses without running a peasant economy; only a besieging army that
-  feeds the siege (Lima) keeps it, and an already inactive enemy (Túpac Amaru's royalist city) has none to
-  strip.
+  feeds the siege (`m_lima`, the 1535 siege, not `m_lima_1821`, whose Callao is the besieged fortress) keeps
+  it, and an already inactive enemy (Túpac Amaru's royalist city) has none to strip.
 - A scripted enemy (`attacks: false`) presses any reachable enemy within 20 m once its authored
   attack-move ends. Without this the wave stops at the edge of its firing envelope and the battle freezes;
   `tests/tarapaca-battle.test.ts` and the release playtest guard it.
