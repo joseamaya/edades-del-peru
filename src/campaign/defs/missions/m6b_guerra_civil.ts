@@ -155,7 +155,8 @@ export const m6bGuerraCivil: MissionDef = {
           ],
           pos: { ref: 'enemy', dx: 0, dz: 0 },
           radius: cuscoIncaLength(4),
-          // `reinforce` defaults to an attack-move on the player's camp; a garrison must hold its post.
+          // `reinforce` defaults to an attack-move on the player's camp; this garrison opens holding its post,
+          // but the field battle's own attacks may later call it out with the columns.
           objective: 'position',
         },
       ],
