@@ -17,8 +17,12 @@ test('m_vilcabamba holds Huayna Pucará with real move orders', async ({ page })
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
+    // The Inca warriors alone lose the exchange with the probing column (their defensive stance keeps
+    // them from closing), and that also killed Curi Paucar, the required protect objective. The
+    // garrison's soldiers hold the line with them; Curi stays at the camp.
     const units = [...g.units.values()].filter(
-      (u: any) => u.owner === 0 && u.kind === 'inca_warrior' && !u.dead,
+      (u: any) =>
+        u.owner === 0 && (u.kind === 'inca_warrior' || u.kind === 'soldier') && u.tag !== 'curi_paucar' && !u.dead,
     ) as any[];
     const target = { x: 180, z: 97 };
     for (const unit of units) {
@@ -33,6 +37,7 @@ test('m_vilcabamba holds Huayna Pucará with real move orders', async ({ page })
     return {
       units: units.length,
       huayna: g.mission.getObjectiveState('a1_huayna') as string,
+      curi: g.mission.getObjectiveState('a2_curi') as string,
       evacua: g.mission.getObjectiveState('a2_evacua') as string,
       huida: g.mission.getObjectiveState('a3_huida') as string,
       ended: g.mission.ended as boolean,
@@ -41,6 +46,7 @@ test('m_vilcabamba holds Huayna Pucará with real move orders', async ({ page })
 
   expect(out.units).toBeGreaterThanOrEqual(5);
   expect(out.huayna, 'Huayna Pucará was not held after real move orders').toBe('completed');
+  expect(out.curi, 'Curi Paucar survived the hold').not.toBe('failed');
   expect(out.evacua, 'the evacuation did not open after the fortress').toBe('activo');
   expect(out.huida, 'the escape opened before the evacuation').toBe('pendiente');
   expect(out.ended).toBe(false);
