@@ -18,8 +18,9 @@ import { BuildingKind, OrderKind, Resources, UnitKind } from '../core/types';
 import { distance2D } from '../util/math';
 import { t } from '../i18n';
 import { commanderFor } from '../model/defs/commanders';
+import { BUILDING_DEFS } from '../model/defs/buildings';
 import { splitSpeaker } from './dialogueLine';
-import { unitBaseKind, unitClassFor } from '../model/defs/units';
+import { unitBaseKind, unitClassFor, unitTrainableInPeriod } from '../model/defs/units';
 import { phaseOrder } from '../model/defs/sitePhases';
 import type { MissionSave } from '../game/saveTypes';
 import { CAMERA_PITCH } from '../core/cameraMath';
@@ -464,9 +465,15 @@ export class Mission {
   }
 
   private checkBaseLost(): void {
-    if (this.game.hasBuildings(0)) return;
     const units = [...this.game.units.values()].filter((u) => u.owner === 0 && !u.dead);
     const hasUnits = units.length > 0;
+    if (this.game.hasBuildings(0)) {
+      // A standing house is not an army: with no unit and nothing left that can train one, the mission
+      // can never advance (issue 596).
+      if (hasUnits || this.canStillTrain()) return;
+      this.defeat();
+      return;
+    }
     // A party that starts with no base (Tambotoco, Tarapacá) is lost only when no one of it is left.
     if (!seatStartsWithBase(this.def.start, 0) && hasUnits) return;
     if (this.def.outcome === 'retirada' && hasUnits) {
@@ -484,6 +491,22 @@ export class Mission {
       if (!stuck) return;
     }
     this.defeat();
+  }
+
+  /** True while a completed building of the player can still train a period-legal army or worker. */
+  private canStillTrain(): boolean {
+    const civ = this.game.players[0]?.civ;
+    for (const b of this.game.buildings.values()) {
+      if (b.owner !== 0 || b.dead || !b.constructionComplete) continue;
+      for (const kind of BUILDING_DEFS[b.kind].trainable ?? []) {
+        // A market's caravan cannot gather or fight, and a roster outside this period or mission
+        // cannot rebuild the party either: only a trainable unit counts.
+        if (kind === UnitKind.CARAVAN) continue;
+        if (this.def.allowedUnits && !this.def.allowedUnits.includes(kind)) continue;
+        if (unitTrainableInPeriod(kind, this.def.period, civ)) return true;
+      }
+    }
+    return false;
   }
 
   // --- triggers ---
