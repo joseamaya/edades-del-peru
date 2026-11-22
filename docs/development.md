@@ -679,7 +679,8 @@ Definition of Done and the building audit see
   cap is the documented `selva` exception).
 - **No army, no production** (issue 596): a mission whose player has no living units and no completed
   building that can train a period-legal worker or soldier (a centre, barracks, arsenal, stable or factory;
-  a market's caravan does not count) is lost even if a house or a farm still stands;
+  a market's caravan does not count) is lost even if a house or a farm still stands; the check only asks
+  whether the roster is period-legal, so an unresearched tech or an empty stockpile never invents a defeat;
   the previous rule only checked for buildings, so an empty camp with one house stalled. The rule changes
   when a mission ends, so `REPLAY_VERSION` is 43 (it rejects every stored replay). Guarded by
   `tests/campaign-forces.test.ts`.

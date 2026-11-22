@@ -211,7 +211,8 @@ describe('campaign force contract', () => {
     const game = headlessMission('m3_moche_recuay');
     try {
       for (const b of [...game.buildings.values()]) if (b.owner === 0) game.buildings.delete(b.id);
-      // The artillery workshop only fields post-1532 guns; in the Moche period it cannot train anyone.
+      // The workshop is not buildable in this era; it is here to pin the predicate: its whole roster is
+      // post-1532, so it is not a production path in the Moche period.
       game.spawnScriptedBuilding(BuildingKind.FACTORY, 0, 120, 120);
       for (const u of [...game.units.values()]) if (u.owner === 0) game.units.delete(u.id);
       game.update(1 / 60, 0);
