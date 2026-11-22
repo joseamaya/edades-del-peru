@@ -156,7 +156,7 @@ describe('campaign force contract', () => {
         setAutoStart(true);
       }
     }
-  });
+  }, 30_000); // 60 s of simulation over twelve missions; the default 5 s is too tight on CI.
 
   it('keeps a scripted garrison at its post', () => {
     // `reinforce` defaults to an attack-move on the player's camp (a relief column); a garrison has to say
