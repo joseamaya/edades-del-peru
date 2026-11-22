@@ -91,6 +91,7 @@ export const mBrena: MissionDef = {
   unitSpeedScale: 0.75,
   startingResources: { food: 1400, wood: 900, silver: 1000, stone: 700 },
   start: {
+    enemyOpeningUnits: false,
     units: [
       { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 4 },
       { kind: UnitKind.REPUBLICA_DEFENSOR, dx: 8, dz: 0, count: 8 },
@@ -103,7 +104,8 @@ export const mBrena: MissionDef = {
   },
   // The mission's aggression is wired to the AI now; 1.0 keeps the pre-wiring cadence until a dedicated
   // balance pass (0.8 let the AI grow a larger army before committing and broke the real-order playtest).
-  enemy: { active: true, difficulty: 'normal', aggression: 1.0 },
+  // A counter-guerrilla column, not a town: it keeps its camp, its pressure is the authored columns.
+  enemy: { active: true, difficulty: 'normal', aggression: 1.0, economy: false },
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/brena/intro-epilogo.webp',
@@ -277,7 +279,6 @@ export const mBrena: MissionDef = {
           units: [
             { kind: UnitKind.CHILE_INFANTE, count: 10 },
             { kind: UnitKind.RIFLEMAN, count: 3 },
-            { kind: UnitKind.ARTILLERY, count: 1 },
           ],
           pos: { dx: BRENA_ENEMY.x * 256, dz: BRENA_ENEMY.z * 256 },
           radius: 14,

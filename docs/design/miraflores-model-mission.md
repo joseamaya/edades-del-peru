@@ -33,6 +33,10 @@ The sack of Chorrillos and the occupation of Lima are stated in the epilogue, ne
 - Units: workers, republican defenders (reservists), riflemen, cavalry, hussars, artillery and scouts.
 - Cáceres is a protected commander card; no invented likeness.
 
+- The Chilean army is a **field force**: `enemy.economy: false` and `start.enemyOpeningUnits: false` keep
+  its camp but stop the peasant economy, sawmill and mill. Its pressure is the authored redoubt waves and
+  their artillery, not a competing settlement.
+
 ## Opening and closing
 
 - Three beats: Lima, the redoubts, the withdrawal.
