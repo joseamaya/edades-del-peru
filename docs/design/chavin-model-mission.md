@@ -79,7 +79,13 @@ building exists. The hidden source GLB keeps the click proxies; the kit draws th
 
 ## Opening, briefing and closing
 
-- Three narrated intro beats with in-engine captures: the valley, the Old Temple and the pilgrimage.
+- Cinema intro (`introStyle: 'cinema'`, see the Tarapacá pilot): the ceremonial terrace by the Mosna
+  (`cine-valle`, push-in); a campaign map painted from this terrain where the pilgrims' road to the temple
+  and the Mosna road from the ford draw themselves from the mission's constants (`CHAVIN_BASE`,
+  `CHAVIN_SITE_FOCUS`, `CHAVIN_RIVER_Z`, `CHAVIN_FORD_X`), with no enemy; pilgrims arriving at the Old
+  Temple (`cine-plaza`, pan). It does not tell the decline. Stills:
+  `node scripts/capture_cinema.mjs --mission=m2_chavin [--only=cine-plaza]`. The capture cannot set the
+  site phase, so both stills show the opening `old_temple_foundation` slabs.
 - `MISSION_ART.m2_chavin` registers the mission's own art; the briefing never borrows another mission's
   image.
 - Chapter cards use `intro-templo`, `intro-nuevo` and `intro-declive`; the epilogue uses `intro-declive`.

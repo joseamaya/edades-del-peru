@@ -130,7 +130,7 @@ camera, scale, terrain, materials, vegetation and light rules are in
 | Runtime | Three.js + Vite + TypeScript, strict mode, browser |
 | Package manager | Yarn 1 (`yarn.lock`; never a `package-lock.json`) |
 | Node | ≥ 20.19 (CI uses 22) |
-| Build budget | `dist/` < 25 MB and the entry chunk < 600 KB gzip |
+| Build budget | `dist/` < 28 MB (ADR 0008) and the entry chunk < 600 KB gzip |
 | Data | Definitions in `src/model/defs/*`; missions in `src/campaign/defs/missions/*` |
 | Determinism | Seeded RNG; no `Math.random()` in simulation code |
 | Events | Typed `GameEvents` on the `EventBus` |

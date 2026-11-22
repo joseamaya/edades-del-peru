@@ -65,7 +65,14 @@ recorded here and in the quality bar.
 
 ## Opening and closing
 
-- Three narrated intro beats and the three act cards captured in engine by
+- Cinema intro (`introStyle: 'cinema'`, see `src/ui/CinemaIntro.ts`): the Ayacucho pampa and its chapel
+  (`cine-ayacucho`, push-in); a campaign map painted from this terrain that resolves the mission's own points
+  (`INDEPENDENCE_JUNIN`, `INDEPENDENCE_MARCH`, both wave entries) from the layout anchors: the cavalry to
+  Junín, the royalist charge, the march to Ayacucho (dashed) and the Ayacucho column; the patriot cavalry on
+  the Junín pampa facing the dragoons (`cine-junin`, pan). It does not tell the surrender. Stills:
+  `node scripts/capture_cinema.mjs --mission=m8_independencia [--only=cine-junin]` (shots in
+  `scripts/cinema-shots/independencia.mjs`); offline captures, so the triangle cap does not apply.
+- The three act cards and the epilogue are captured in engine by
   [`scripts/capture_independencia_intro.mjs`](../../scripts/capture_independencia_intro.mjs): the Lima
   campaign camp, Junín, the march and Ayacucho, plus a dusk epilogue.
 - `MISSION_ART` (`m8_independencia` → `media/independencia/intro-lima.webp`) and the briefing use the Lima

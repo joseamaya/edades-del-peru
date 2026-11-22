@@ -11,6 +11,9 @@ const CUSCO_1536_CAMP = { x: 77, z: 77 } as const;
 const CUSCO_1536_RETREAT = { x: 100, z: 60 } as const;
 // The road bends west of Sacsayhuamán instead of crossing its tiered footprint.
 const CUSCO_1536_ROAD_BEND = { x: 135, z: 150 } as const;
+// The Act II sortie enters from the city outskirts, clear of both the 24 m siege ring and the spread it
+// spawns over (40 m > 4√2 + 10, and 40 - 4√2 > 24), then marches on the closing ring.
+const CUSCO_1536_SORTIE = { dx: CUSCO_1536_CITY.x + 40, dz: CUSCO_1536_CITY.z } as const;
 
 export const mCusco1536: MissionDef = {
   id: 'm_cusco_1536',
@@ -117,30 +120,76 @@ export const mCusco1536: MissionDef = {
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/cusco-1536/intro-epilogo.webp',
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map
+  // uses the mission's own geometry (Manco's camp, Sacsayhuamán, the plaza and the Spanish sorties), so what
+  // the player sees is what the siege will throw at them. It does not tell the outcome: the withdrawal to
+  // Ollantaytambo is an Act III card, and the epilogue closes it.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'CUSCO · 1536',
+      kicker: 'Cusco · 1536',
       title: 'La rebelión',
       text: 'Manco Inca se alza contra los Pizarro y reúne un gran ejército. Los españoles quedan encerrados en la plaza; los combates se extienden a Sacsayhuamán.',
-      seconds: 9,
-      source: 'docs/historia/campanas/cusco_1536.md',
-      image: 'media/cusco-1536/intro-ciudad.webp',
-    },
-    {
-      kicker: 'SACSAYHUAMÁN · MAYO–JUNIO',
-      title: 'La fortaleza',
-      text: 'La lucha por Sacsayhuamán decide el cerco. Los incas ocupan la fortaleza y los españoles contraatacan para recuperarla; Juan Pizarro muere en el asalto.',
-      seconds: 9,
-      source: 'docs/historia/campanas/cusco_1536.md',
-      image: 'media/cusco-1536/intro-sacsay.webp',
-    },
-    {
-      kicker: 'LA SIEMBRA · 1536',
-      title: 'La retirada',
-      text: 'El ejército debe volver a sembrar o la economía colapsa. Manco no toma el Cusco: se retira a Ollantaytambo y la resistencia continúa en Vilcabamba.',
       seconds: 10,
       source: 'docs/historia/campanas/cusco_1536.md',
-      image: 'media/cusco-1536/intro-retirada.webp',
+      image: 'media/cusco-1536/cine-ciudad.webp',
+      motion: 'push',
+    },
+    {
+      kicker: 'Sacsayhuamán · mayo–junio',
+      title: 'La fortaleza',
+      text: 'La lucha por Sacsayhuamán decide el cerco. Los incas ocupan la fortaleza y los españoles salen de la plaza para recuperarla; Juan Pizarro muere en el asalto.',
+      seconds: 10,
+      source: 'docs/historia/campanas/cusco_1536.md',
+      map: {
+        // From Manco's camp to the eastern outskirts the sortie enters from (x 206).
+        view: { x: 60, z: 52, size: 160 },
+        marks: [
+          { x: CUSCO_1536_CITY.x, z: CUSCO_1536_CITY.z + 10, label: 'Cusco', side: 'place' },
+          { x: CUSCO_1536_SACSAY.x, z: CUSCO_1536_SACSAY.z - 9, label: 'Sacsayhuamán', side: 'place' },
+          { x: CUSCO_1536_CAMP.x + 4, z: CUSCO_1536_CAMP.z - 8, label: 'Campamento inca', side: 'place' },
+          { x: CUSCO_1536_CAMP.x - 2, z: CUSCO_1536_CAMP.z + 8, label: 'Manco Inca', side: 'player', delay: 0.6 },
+          { x: CUSCO_1536_CITY.x + 6, z: CUSCO_1536_CITY.z - 6, label: 'Pizarros', side: 'enemy', delay: 1 },
+        ],
+        routes: [
+          {
+            side: 'player',
+            label: 'Ejército de Manco',
+            points: [
+              { x: CUSCO_1536_CAMP.x, z: CUSCO_1536_CAMP.z },
+              { x: CUSCO_1536_SACSAY.x - 8, z: CUSCO_1536_SACSAY.z - 6 },
+            ],
+            delay: 1.6,
+          },
+          {
+            side: 'enemy',
+            label: 'Salidas',
+            points: [
+              { x: CUSCO_1536_CITY.x, z: CUSCO_1536_CITY.z },
+              { x: CUSCO_1536_SACSAY.x + 4, z: CUSCO_1536_SACSAY.z + 6 },
+            ],
+            delay: 4,
+          },
+          {
+            side: 'enemy',
+            dashed: true,
+            points: [
+              { x: CUSCO_1536_SORTIE.dx, z: CUSCO_1536_SORTIE.dz },
+              { x: CUSCO_1536_CITY.x + 8, z: CUSCO_1536_CITY.z },
+            ],
+            delay: 5.6,
+          },
+        ],
+      },
+    },
+    {
+      kicker: 'Tu mando',
+      title: 'Toma la fortaleza',
+      text: 'Manco Inca manda el ejército desde su campamento. Ocupa Sacsayhuamán y resiste las salidas de la plaza; luego el cerco se cierra sobre la ciudad. Si Manco cae, la rebelión pierde a su jefe.',
+      seconds: 12,
+      source: 'docs/historia/campanas/cusco_1536.md',
+      image: 'media/cusco-1536/cine-fortaleza.webp',
+      motion: 'pan-left',
     },
   ],
   allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.INCA_WARRIOR, UnitKind.SCOUT],
@@ -281,9 +330,7 @@ export const mCusco1536: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 2 },
             { kind: UnitKind.CAVALRY, count: 1 },
           ],
-          // It enters from the city outskirts, clear of both the 24 m siege ring and the spread it
-          // spawns over (40 m > 4√2 + 10, and 40 - 4√2 > 24), then marches on the closing ring.
-          spawn: { dx: CUSCO_1536_CITY.x + 40, dz: CUSCO_1536_CITY.z },
+          spawn: CUSCO_1536_SORTIE,
           pos: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
           target: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
           radius: 4,

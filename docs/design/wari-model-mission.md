@@ -64,7 +64,13 @@ recorded here and in the quality bar.
 
 ## Opening and closing
 
-- Three narrated intro beats and the three act cards captured in engine by
+- Cinema intro (`introStyle: 'cinema'`, see the Tarapacá pilot): the Wari complex (`cine-complejo`,
+  push-in); a campaign map where the roads from Ayacucho to the junction and the two provincial nodes, and
+  the dashed optional third centre, draw themselves from the mission's constants (`WARI_BASE`,
+  `WARI_JUNCTION`, `WARI_NODE_A`, `WARI_NODE_B`, `WARI_BONUS_NODE`); Tiahuanaco is the frontier, a place,
+  not an army; a crew on the road toward the complex (`cine-camino`, pan). It does not tell the outcome.
+  Stills: `node scripts/capture_cinema.mjs --mission=m4_wari [--only=cine-camino]`.
+- The three act cards captured in engine by
   [`scripts/capture_wari_intro.mjs`](../../scripts/capture_wari_intro.mjs): the Ayacucho basin, the Wari
   complex and the highland frontier, plus a dusk epilogue.
 - `MISSION_ART` (`m4_wari` → `media/wari/intro-ayacucho.webp`) and the briefing use the basin capture.

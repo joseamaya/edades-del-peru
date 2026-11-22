@@ -70,7 +70,13 @@ builds; the exception is recorded here and in the quality bar.
 
 ## Opening and closing
 
-- Three narrated intro beats and the three act cards captured in engine by
+- Cinema intro (`introStyle: 'cinema'`, see the Tarapacá pilot): the huacas at dusk (`cine-huacas`,
+  push-in); a campaign map where the Moche road to the plaza and the three Recuay columns draw themselves
+  from the waves' real entry points (`MOCHE_COLUMN_NORTHWEST`, `MOCHE_COLUMN_NORTH`, `MOCHE_COLUMN_EAST`,
+  all aimed at `MOCHE_PLAZA`); the Moche line on the plaza as the first column comes through the gap
+  between the huacas (`cine-plaza`, pan). It does not tell the outcome. Stills:
+  `node scripts/capture_cinema.mjs --mission=m3_moche_recuay [--only=cine-plaza]`.
+- The three act cards captured in engine by
   [`scripts/capture_moche_intro.mjs`](../../scripts/capture_moche_intro.mjs): the valley and canal, the
   huacas terrace and the Recuay foothills, plus a dusk epilogue.
 - `MISSION_ART` (`m3_moche_recuay` → `media/moche/intro-valle.webp`) and the briefing use the valley capture.

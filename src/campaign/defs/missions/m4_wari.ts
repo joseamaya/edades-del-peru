@@ -3,9 +3,26 @@ import { highValleyVegetation } from '../../../model/defs/profiles';
 import type { MissionDef } from '../../types';
 import { WARI_MAP_SIZE, wariLength } from '../../../model/defs/wariSite';
 
+// The Ayacucho base, the Wari complex and the high frontier (map fractions): shared by the layout and the cinema map.
+const WARI_BASE = { x: 0.3, z: 0.66 } as const;
+const WARI_SITE_FOCUS = { x: 0.56, z: 0.45 } as const;
+const WARI_FRONTIER = { x: 0.72, z: 0.35 } as const;
+// The provincial nodes of the network, relative to the complex, and the road junction south of it.
 const WARI_NODE_A = { ref: 'site' as const, dx: wariLength(40), dz: -wariLength(32) };
 const WARI_NODE_B = { ref: 'site' as const, dx: wariLength(38), dz: wariLength(34) };
 const WARI_BONUS_NODE = { ref: 'site' as const, dx: -wariLength(40), dz: 0 };
+const WARI_JUNCTION = { ref: 'site' as const, dx: 0, dz: wariLength(14) };
+
+/** World metres of a map fraction or of a point relative to the complex, for the cinema map. */
+const world = (p: { x: number; z: number }) => ({ x: p.x * WARI_MAP_SIZE, z: p.z * WARI_MAP_SIZE });
+const WARI_SITE_AT = world(WARI_SITE_FOCUS);
+const atSite = (p: { dx: number; dz: number }) => ({ x: WARI_SITE_AT.x + p.dx, z: WARI_SITE_AT.z + p.dz });
+const WARI_BASE_AT = world(WARI_BASE);
+const WARI_FRONTIER_AT = world(WARI_FRONTIER);
+const WARI_NODE_A_AT = atSite(WARI_NODE_A);
+const WARI_NODE_B_AT = atSite(WARI_NODE_B);
+const WARI_BONUS_AT = atSite(WARI_BONUS_NODE);
+const WARI_JUNCTION_AT = atSite(WARI_JUNCTION);
 
 export const m4Wari: MissionDef = {
   id: 'm4_wari',
@@ -20,22 +37,20 @@ export const m4Wari: MissionDef = {
   tutorial: true,
   modelMission: true,
   narrator: 'Voz de los Andes',
+  // Played as a letterboxed film (scripts/capture_cinema.mjs): the Wari complex, a map drawn from this
+  // mission's own geometry (the base, the roads and the provincial nodes the network must connect), then a
+  // crew on the road. There is no enemy on the map, so the map draws roads, not armies; Tiahuanaco is the
+  // frontier, a place. It does not tell the outcome: the act cards and the epilogue do.
+  introStyle: 'cinema',
   intro: [
     {
       kicker: 'AYACUCHO · c. 600–1000 d.C.',
       title: 'El Horizonte Medio',
-      text: 'Wari construye el primer estado expansivo de los Andes: ciudades planificadas, caminos y una religión estatal. No hay una guerra única documentada: su arma es la red de centros y andenes.',
-      seconds: 9,
+      text: 'Wari construye el primer estado expansivo de los Andes: ciudades planificadas, caminos y una religión estatal. El templo en D, la plaza y las galerías articulan administración, culto y almacenamiento.',
+      seconds: 11,
       source: 'docs/historia/campanas/wari_tiahuanaco.md',
-      image: 'media/wari/intro-ayacucho.webp',
-    },
-    {
-      kicker: 'COMPLEJO WARI',
-      title: 'La ciudad y el estado',
-      text: 'El templo en D, la plaza y las galerías articulan administración, culto y almacenamiento. Extender la red es extender el estado.',
-      seconds: 9,
-      source: 'docs/historia/campanas/wari_tiahuanaco.md',
-      image: 'media/wari/intro-complejo.webp',
+      image: 'media/wari/cine-complejo.webp',
+      motion: 'push',
     },
     {
       kicker: 'LA FRONTERA ALTA',
@@ -43,7 +58,43 @@ export const m4Wari: MissionDef = {
       text: 'Tiahuanaco comparte el culto del dios de los báculos y compite por influencia; no hay una guerra única documentada. La frontera se mide en presencia, caminos y andenes.',
       seconds: 10,
       source: 'docs/historia/campanas/wari_tiahuanaco.md',
-      image: 'media/wari/intro-frontera.webp',
+      map: {
+        // From the Ayacucho base to the provincial nodes and the high frontier.
+        view: { x: 56, z: 40, size: 160 },
+        marks: [
+          { x: WARI_SITE_AT.x, z: WARI_SITE_AT.z - 10, label: 'Complejo Wari', side: 'place' },
+          { x: WARI_FRONTIER_AT.x - 20, z: WARI_FRONTIER_AT.z, label: 'Frontera alta', side: 'place' },
+          { x: WARI_NODE_A_AT.x - 6, z: WARI_NODE_A_AT.z, label: 'Centro fronterizo', side: 'place', delay: 3.4 },
+          { x: WARI_NODE_B_AT.x - 6, z: WARI_NODE_B_AT.z, label: 'Centro provincial', side: 'place', delay: 4.6 },
+          { x: WARI_BASE_AT.x, z: WARI_BASE_AT.z + 8, label: 'Ayacucho', side: 'player', delay: 0.6 },
+        ],
+        routes: [
+          {
+            side: 'player',
+            label: 'Camino',
+            points: [{ x: WARI_BASE_AT.x + 4, z: WARI_BASE_AT.z - 4 }, WARI_JUNCTION_AT],
+            delay: 1.2,
+          },
+          { side: 'player', points: [WARI_JUNCTION_AT, WARI_NODE_A_AT], delay: 2.6 },
+          { side: 'player', points: [WARI_JUNCTION_AT, WARI_NODE_B_AT], delay: 3.8 },
+          {
+            side: 'player',
+            label: 'Tercer centro',
+            dashed: true,
+            points: [{ x: WARI_SITE_AT.x - 8, z: WARI_SITE_AT.z }, WARI_BONUS_AT],
+            delay: 5.6,
+          },
+        ],
+      },
+    },
+    {
+      kicker: 'TU RED',
+      title: 'La ciudad y el estado',
+      text: 'Extender la red es extender el estado. Reúne suministros, acondiciona andenes y levanta centros administrativos en los nodos de la frontera: tu arma son los caminos, no una guerra.',
+      seconds: 11,
+      source: 'docs/historia/campanas/wari_tiahuanaco.md',
+      image: 'media/wari/cine-camino.webp',
+      motion: 'pan-right',
     },
   ],
   epilogueImage: 'media/wari/intro-epilogo.webp',
@@ -55,29 +106,29 @@ export const m4Wari: MissionDef = {
   unitSpeedScale: 0.75,
   layout: {
     labels: [
-      { text: 'Ayacucho', x: 0.3, z: 0.66, kind: 'settlement' },
-      { text: 'Complejo Wari', x: 0.56, z: 0.45, kind: 'settlement' },
-      { text: 'Frontera alta', x: 0.72, z: 0.35, kind: 'region' },
+      { text: 'Ayacucho', ...WARI_BASE, kind: 'settlement' },
+      { text: 'Complejo Wari', ...WARI_SITE_FOCUS, kind: 'settlement' },
+      { text: 'Frontera alta', ...WARI_FRONTIER, kind: 'region' },
     ],
-    base: { x: 0.3, z: 0.66 },
+    base: { ...WARI_BASE },
     site: {
       id: 'wari_site',
       y: 5.0,
-      focus: { x: 0.56, z: 0.45 },
-      keepout: [{ x: 0.56, z: 0.45, rx: 0.2, rz: 0.17 }],
+      focus: { ...WARI_SITE_FOCUS },
+      keepout: [{ ...WARI_SITE_FOCUS, rx: 0.2, rz: 0.17 }],
     },
     terrain: {
       flats: [
-        { name: 'Andenes de Ayacucho', x: 0.3, z: 0.66, rx: 0.16, rz: 0.12 },
-        { name: 'Complejo Wari', x: 0.56, z: 0.45, rx: 0.2, rz: 0.17 },
-        { name: 'Frontera provincial', x: 0.72, z: 0.35, rx: 0.13, rz: 0.1 },
+        { name: 'Andenes de Ayacucho', ...WARI_BASE, rx: 0.16, rz: 0.12 },
+        { name: 'Complejo Wari', ...WARI_SITE_FOCUS, rx: 0.2, rz: 0.17 },
+        { name: 'Frontera provincial', ...WARI_FRONTIER, rx: 0.13, rz: 0.1 },
         { name: 'Terraza provincial wari', x: 0.7, z: 0.58, rx: 0.12, rz: 0.09 },
       ],
     },
     roads: [
-      { from: { ref: 'player', dx: 0, dz: 0 }, to: { ref: 'site', dx: 0, dz: wariLength(14) }, width: wariLength(2.5) },
-      { from: { ref: 'site', dx: 0, dz: wariLength(14) }, to: WARI_NODE_A, width: wariLength(2.5) },
-      { from: { ref: 'site', dx: 0, dz: wariLength(14) }, to: WARI_NODE_B, width: wariLength(2.5) },
+      { from: { ref: 'player', dx: 0, dz: 0 }, to: WARI_JUNCTION, width: wariLength(2.5) },
+      { from: WARI_JUNCTION, to: WARI_NODE_A, width: wariLength(2.5) },
+      { from: WARI_JUNCTION, to: WARI_NODE_B, width: wariLength(2.5) },
       { from: WARI_NODE_A, to: WARI_NODE_B, width: wariLength(2) },
     ],
   },

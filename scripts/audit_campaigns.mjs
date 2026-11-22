@@ -146,7 +146,7 @@ async function auditChapterCard(browser, base) {
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(`console: ${m.text()}`);
   });
-  await page.goto(`${base}/?mission=m1_caral&seed=777&fog=0&low=1&art=all`, { waitUntil: 'networkidle' });
+  await page.goto(`${base}/?mission=m1_caral&seed=777&fog=0&low=1&intro=0&art=all`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.game?.mission !== undefined, null, { timeout: 60_000 });
   const start = page.getByRole('button', { name: /COMENZAR MISIÓN/ });
   await start.waitFor({ state: 'visible', timeout: 30_000 });

@@ -69,11 +69,16 @@ in the quality bar.
 
 ## Opening and closing
 
-- Three narrated intro beats and the three act cards captured in engine by
-  [`scripts/capture_chimu_intro.mjs`](../../scripts/capture_chimu_intro.mjs): the north coast, Paramonga, the
-  canal and the capitulation, plus a dusk epilogue.
+- Cinema intro (`introStyle: 'cinema'`, as the Tarapacá pilot): the Chan Chan enclosures on the coast
+  (`cine-costa`, push-in); a campaign map with the advance from `CHIMU_CAMP` to `CHIMU_PARAMONGA_WORLD`, the
+  canal and Querrotumi's counterattack from `CHIMU_COUNTER_ENTRY`; the Inca vanguard leaving the camp with the
+  canal ahead (`cine-vanguardia`, pan). It states the campaign, not the capitulation. Regenerate with
+  `node scripts/capture_cinema.mjs --mission=m6_chimu_inca [--only=cine-vanguardia]`.
+- The three act cards captured in engine by
+  [`scripts/capture_chimu_intro.mjs`](../../scripts/capture_chimu_intro.mjs): Paramonga, the canal and the
+  capitulation, plus a dusk epilogue; `intro-costa` is no longer referenced.
 - `MISSION_ART` (`m6_chimu_inca` → `media/generated/campaigns/la-senda-del-sol/m6_chimu/intro.webp`) and the
-  briefing use the approved Chan Chan render; `intro-costa` remains a chapter card.
+  briefing use the approved Chan Chan render.
 - Victory: the canal is closed and Chan Chan holds the surrender; the Act III card uses the capitulation
   capture. The epilogue (`media/chimu/intro-epilogo.webp`) narrates Minchancaman's transfer and
   Querrotumi's revolt. Defeat: the

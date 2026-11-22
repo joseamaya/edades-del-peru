@@ -801,18 +801,19 @@ slot is absent (offline / without assets).
 - **Review**: no human art-review gate applies to in-engine captures; the reused `arica_site`,
   `colonial_site` and `independence_site` GLBs keep their own review status (#343).
 
-### Tarapacá cinema-intro stills (in-engine recreations)
+### Cinema-intro stills (in-engine recreations)
 
-- **Location**: `public/media/tarapaca/cine-{quebrada,linea}.webp` (1920x1080, WebP).
-- **Source**: captured from the game itself by `scripts/capture_tarapaca_cinema.mjs`, with staged troops and
-  the world labels hidden. Regenerate with `node scripts/capture_tarapaca_cinema.mjs [--only=cine-linea]
-  [--gpu]` after art changes.
-- **Runtime**: `m_tarapaca`'s letterboxed intro (`introStyle: 'cinema'`), first and third beats; the middle
-  beat is the campaign map painted from the live mission terrain by `src/ui/cinemaMap.ts`.
-- **Content**: project-owned game renders of the Tarapacá quebrada and the Peruvian line. They are
-  recreations of the game's own scenes, never historical photographs.
+- **Location**: `public/media/<dir>/cine-*.webp` (1920x1080, WebP, ~76 KB target): `arica/cine-{linea,puerto}`; `brena/cine-{mantaro,paso}`; `caral/cine-{aspero,obra}`; `chanca/cine-{cusco,defensa}`; `chavin/cine-{plaza,valle}`; `chimu/cine-{costa,vanguardia}`; `cusco-1536/cine-{ciudad,fortaleza}`; `cusco-inca/cine-{cusco,quipaipan}`; `cusco/cine-{rebelion,valle}`; `independencia/cine-{ayacucho,junin}`; `junta/cine-{apacheta,cusco}`; `lima-1821/cine-{lima,lurin}`; `lima/cine-{ciudad,llano}`; `miraflores/cine-{lima,linea}`; `moche/cine-{huacas,plaza}`; `real-felipe/cine-{bastion,baterias}`; `tambotoco/cine-{cueva,partida}`; `tarapaca/cine-{linea,quebrada}`; `vilcabamba/cine-{pucara,selva}`; `wari/cine-{camino,complejo}`.
+- **Source**: captured from the game itself by `scripts/capture_cinema.mjs` (shots in
+  `scripts/cinema-shots/<campaign>.mjs`), with staged troops, the site phase where noted and the world labels
+  hidden. Regenerate with `node scripts/capture_cinema.mjs --mission=<id> [--only=<shot>] [--gpu]` after art
+  changes. The Tarapacá pair was the pilot (#583); the other missions followed on 2026-11-22.
+- **Runtime**: every released mission's letterboxed intro (`introStyle: 'cinema'`), first and third beats; the
+  middle beat is the campaign map painted from the live mission terrain by `src/ui/cinemaMap.ts`.
+- **Content**: project-owned game renders of each mission's site and forces. They are recreations of the
+  game's own scenes, never historical photographs.
 - **Review**: no human art-review gate applies to in-engine captures; the reused site GLBs keep their own
-  review status (#343).
+  review status (#343). Size budget: ADR 0008.
 
 ### Cusco 1536 and Vilcabamba intro/epilogue images (in-engine recreations)
 

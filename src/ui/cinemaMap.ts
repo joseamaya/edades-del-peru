@@ -135,13 +135,116 @@ function pathData(points: CinematicMapPoint[]): string {
   return d;
 }
 
-function routeLabel(route: CinematicMapRoute, size: number, delay: number, draw: number): string {
-  if (!route.label || route.points.length < 2) return '';
-  const start = route.points[0]!;
-  const fs = size * 0.026;
-  return `<text class="cine-map-route-label" x="${start.x}" y="${start.z - fs * 0.9}" text-anchor="middle"
-    font-size="${fs.toFixed(2)}" fill="${CINEMA_SIDE_COLORS[route.side]}"
-    style="animation-delay:${(delay + draw * 0.3).toFixed(2)}s">${escapeHtml(route.label)}</text>`;
+/** A placed label: its baseline anchor and the box it covers, in world units. */
+export interface MapLabel {
+  text: string;
+  x: number;
+  y: number;
+  anchor: 'start' | 'middle' | 'end';
+  fontSize: number;
+  box: { x0: number; y0: number; x1: number; y1: number };
+}
+
+/** Width of bold italic Georgia, per character and em: a conservative estimate (no DOM to measure). */
+const CHAR_EM = 0.56;
+
+function labelBox(text: string, x: number, y: number, anchor: MapLabel['anchor'], fs: number): MapLabel['box'] {
+  const w = text.length * fs * CHAR_EM;
+  const x0 = anchor === 'start' ? x : anchor === 'end' ? x - w : x - w / 2;
+  return { x0, y0: y - fs * 0.8, x1: x0 + w, y1: y + fs * 0.25 };
+}
+
+function overlap(a: MapLabel['box'], b: MapLabel['box']): number {
+  const w = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0);
+  const h = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0);
+  return w > 0 && h > 0 ? w * h : 0;
+}
+
+/**
+ * Place every label of a map so none leaves the view or covers another label or marker. Each label tries a
+ * few spots around its point (the authored one first) and takes the first that is clear; if none is, the
+ * least crowded one, nudged inside the view. Marks are placed before route labels: towns matter more.
+ */
+export function layoutMapLabels(
+  map: CinematicMap,
+  view: CinematicMapView,
+): { marks: MapLabel[]; routes: (MapLabel | null)[] } {
+  const size = view.size;
+  const margin = size * 0.012;
+  const placed: MapLabel['box'][] = [];
+  // The glyphs themselves are obstacles: a label must not sit on a town dot or a force marker.
+  for (const mark of map.marks) {
+    const r = mark.side === 'place' ? size * 0.01 : size * 0.024;
+    placed.push({ x0: mark.x - r, y0: mark.z - r * 0.7, x1: mark.x + r, y1: mark.z + r * 0.7 });
+  }
+  const inside = (b: MapLabel['box']) =>
+    b.x0 >= view.x + margin &&
+    b.x1 <= view.x + size - margin &&
+    b.y0 >= view.z + margin &&
+    b.y1 <= view.z + size - margin;
+  const place = (text: string, fs: number, candidates: [number, number, MapLabel['anchor']][]): MapLabel => {
+    let best: MapLabel | null = null;
+    let bestCost = Infinity;
+    for (const [x, y, anchor] of candidates) {
+      let box = labelBox(text, x, y, anchor, fs);
+      let cx = x;
+      let cy = y;
+      // Nudge into the view rather than discarding a spot that only grazes the frame.
+      const dx = Math.max(0, view.x + margin - box.x0) - Math.max(0, box.x1 - (view.x + size - margin));
+      const dy = Math.max(0, view.z + margin - box.y0) - Math.max(0, box.y1 - (view.z + size - margin));
+      cx += dx;
+      cy += dy;
+      box = labelBox(text, cx, cy, anchor, fs);
+      // Labels keep a gap of about a letter between them: touching words read as one.
+      const padded = { x0: box.x0 - fs * 0.35, y0: box.y0 - fs * 0.15, x1: box.x1 + fs * 0.35, y1: box.y1 + fs * 0.15 };
+      const crowd = placed.reduce((sum, other) => sum + overlap(padded, other), 0);
+      // Prefer the authored spot, then spots that did not need a nudge.
+      const cost = crowd * 100 + Math.hypot(dx, dy) + (inside(box) ? 0 : 1e6);
+      if (cost < bestCost) {
+        bestCost = cost;
+        best = { text, x: cx, y: cy, anchor, fontSize: fs, box };
+      }
+      if (crowd === 0 && dx === 0 && dy === 0) break;
+    }
+    placed.push(best!.box);
+    return best!;
+  };
+  const marks = map.marks.map((mark) => {
+    const fs = size * (mark.side === 'place' ? 0.03 : 0.026);
+    const gap = mark.side === 'place' ? size * 0.014 : size * 0.03;
+    const above: [number, number, MapLabel['anchor']] = [mark.x, mark.z - fs * 0.7, 'middle'];
+    const below: [number, number, MapLabel['anchor']] = [mark.x, mark.z + size * 0.014 + fs * 1.05, 'middle'];
+    const right: [number, number, MapLabel['anchor']] = [mark.x + gap, mark.z + fs * 0.3, 'start'];
+    const left: [number, number, MapLabel['anchor']] = [mark.x - gap, mark.z + fs * 0.3, 'end'];
+    return place(mark.label, fs, mark.side === 'place' ? [above, right, left, below] : [below, right, left, above]);
+  });
+  const routes = map.routes.map((route) => {
+    if (!route.label || route.points.length < 2) return null;
+    const fs = size * 0.026;
+    const start = route.points[0]!;
+    const next = route.points[1]!;
+    const mid = { x: (start.x + next.x) / 2, z: (start.z + next.z) / 2 };
+    return place(route.label, fs, [
+      [start.x, start.z - fs * 0.9, 'middle'],
+      [start.x, start.z + fs * 1.4, 'middle'],
+      [start.x + size * 0.02, start.z + fs * 0.3, 'start'],
+      [start.x - size * 0.02, start.z + fs * 0.3, 'end'],
+      [mid.x + size * 0.02, mid.z, 'start'],
+      [mid.x - size * 0.02, mid.z, 'end'],
+      [start.x + size * 0.02, start.z - fs * 0.9, 'start'],
+      [start.x - size * 0.02, start.z - fs * 0.9, 'end'],
+      [start.x + size * 0.02, start.z + fs * 1.4, 'start'],
+      [start.x - size * 0.02, start.z + fs * 1.4, 'end'],
+    ]);
+  });
+  return { marks, routes };
+}
+
+function routeLabel(route: CinematicMapRoute, label: MapLabel | null, delay: number, draw: number): string {
+  if (!label) return '';
+  return `<text class="cine-map-route-label" x="${label.x.toFixed(2)}" y="${label.y.toFixed(2)}" text-anchor="${label.anchor}"
+    font-size="${label.fontSize.toFixed(2)}" fill="${CINEMA_SIDE_COLORS[route.side]}"
+    style="animation-delay:${(delay + draw * 0.3).toFixed(2)}s">${escapeHtml(label.text)}</text>`;
 }
 
 /** Each map gets its own id prefix: two maps can share the DOM while they cross-fade. */
@@ -156,6 +259,7 @@ let mapSerial = 0;
 export function campaignMapSvg(map: CinematicMap, view: CinematicMapView): string {
   const prefix = `cine-map-${++mapSerial}`;
   const size = view.size;
+  const labels = layoutMapLabels(map, view);
   const stroke = size * 0.011;
   const markers = (['player', 'enemy'] as const)
     .map(
@@ -181,13 +285,13 @@ export function campaignMapSvg(map: CinematicMap, view: CinematicMapView): strin
           ${dash} mask="url(#${id})"/>
         <path d="${d}" fill="none" stroke="transparent" stroke-width="${stroke.toFixed(2)}" class="cine-map-head"
           marker-end="url(#${prefix}-head-${route.side})" style="animation-delay:${(delay + draw * 0.92).toFixed(2)}s"/>
-        ${routeLabel(route, size, delay, draw)}`;
+        ${routeLabel(route, labels.routes[index] ?? null, delay, draw)}`;
     })
     .join('');
   const marks = map.marks
-    .map((mark) => {
+    .map((mark, index) => {
       const delay = mark.delay ?? 0;
-      const fs = size * (mark.side === 'place' ? 0.03 : 0.026);
+      const label = labels.marks[index]!;
       const color = CINEMA_SIDE_COLORS[mark.side];
       const glyph =
         mark.side === 'place'
@@ -197,9 +301,9 @@ export function campaignMapSvg(map: CinematicMap, view: CinematicMapView): strin
              <path d="M${mark.x - size * 0.022},${mark.z - size * 0.014} L${mark.x + size * 0.022},${mark.z + size * 0.014}
                M${mark.x + size * 0.022},${mark.z - size * 0.014} L${mark.x - size * 0.022},${mark.z + size * 0.014}"
                stroke="#f3e6c8" stroke-width="${(size * 0.0025).toFixed(2)}"/>`;
-      const labelY = mark.side === 'place' ? mark.z - fs * 0.7 : mark.z + size * 0.014 + fs * 1.05;
       return `<g class="cine-map-mark cine-map-${mark.side}" style="animation-delay:${delay}s">${glyph}
-        <text x="${mark.x}" y="${labelY}" text-anchor="middle" font-size="${fs.toFixed(2)}" fill="${color}">${escapeHtml(mark.label)}</text></g>`;
+        <text x="${label.x.toFixed(2)}" y="${label.y.toFixed(2)}" text-anchor="${label.anchor}" font-size="${label.fontSize.toFixed(2)}"
+          fill="${color}">${escapeHtml(label.text)}</text></g>`;
     })
     .join('');
   return `<svg class="cine-map-svg" viewBox="${view.x} ${view.z} ${size} ${size}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

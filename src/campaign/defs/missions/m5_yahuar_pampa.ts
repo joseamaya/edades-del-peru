@@ -6,6 +6,20 @@ import { CHANCA_MAP_SIZE, chancaLength } from '../../../model/defs/chancaSite';
 const CHANCA_CAMP_STAND = { ref: 'player' as const, dx: chancaLength(6), dz: chancaLength(4) };
 /** The Chanca camp at Cusco (normalized); its centre is tagged `centro_chanca`. */
 const CHANCA_CITY = { x: 0.7725, z: 0.38 } as const;
+/** Cusco and the player's base, the pampa between the armies and the Chanca heights (normalized). */
+const CHANCA_CUSCO = { x: 0.36, z: 0.62 } as const;
+const CHANCA_PAMPA = { x: 0.5, z: 0.5 } as const;
+const CHANCA_HEIGHTS = { x: 0.7025, z: 0.38 } as const;
+// The two columns' entries: the first «por el norte», the second from the east, both off the player's base.
+const CHANCA_WAVE_NORTH = { ref: 'player' as const, dx: chancaLength(34), dz: -chancaLength(20) };
+const CHANCA_WAVE_EAST = { ref: 'player' as const, dx: chancaLength(40), dz: chancaLength(4) };
+
+/** A normalized layout point, or an offset from the player's base, in world metres for the cinema map. */
+const world = (p: { x: number; z: number }) => ({ x: p.x * CHANCA_MAP_SIZE, z: p.z * CHANCA_MAP_SIZE });
+const fromCusco = (p: { dx: number; dz: number }) => ({
+  x: CHANCA_CUSCO.x * CHANCA_MAP_SIZE + p.dx,
+  z: CHANCA_CUSCO.z * CHANCA_MAP_SIZE + p.dz,
+});
 
 export const m5YahuarPampa: MissionDef = {
   id: 'm5_yahuar_pampa',
@@ -22,30 +36,65 @@ export const m5YahuarPampa: MissionDef = {
   tutorial: true,
   modelMission: true,
   narrator: 'Cusi Yupanqui',
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The columns
+  // on the map enter where the mission's waves spawn and march on the stand they target. The intro states the
+  // siege, not its outcome: the counterattack and Pachacútec belong to the act cards and the epilogue.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'CUSCO · 1438',
+      kicker: 'Cusco · 1438',
       title: 'La amenaza chanca',
       text: 'La confederación Chanca, al mando de Anccu Hualloc, marcha sobre el Cusco. El inca Viracocha y su heredero huyen; el príncipe Cusi Yupanqui organiza la defensa.',
-      seconds: 9,
-      source: 'docs/historia/campanas/yahuar_pampa.md',
-      image: 'media/chanca/intro-cusco.webp',
-    },
-    {
-      kicker: 'YAHUAR PAMPA',
-      title: 'La pampa de sangre',
-      text: 'Cusi resiste con los cusqueños y sus aliados. La tradición de los pururaucas convierte la defensa en leyenda; el resultado documentado es la victoria cusqueña.',
-      seconds: 9,
-      source: 'docs/historia/campanas/yahuar_pampa.md',
-      image: 'media/chanca/intro-pampa.webp',
-    },
-    {
-      kicker: 'ANDAHUAYLAS',
-      title: 'El camino a Pachacútec',
-      text: 'Los chancas se rinden y luego se integran como aliados militares. Cusi Yupanqui asume el poder como Pachacútec e inicia la expansión del Tahuantinsuyo.',
       seconds: 10,
       source: 'docs/historia/campanas/yahuar_pampa.md',
-      image: 'media/chanca/intro-andahuaylas.webp',
+      image: 'media/chanca/cine-cusco.webp',
+      motion: 'push',
+    },
+    {
+      kicker: 'Yahuar Pampa',
+      title: 'La pampa de sangre',
+      text: 'Desde su campamento en las alturas, las columnas chancas cruzan la pampa hacia el Cusco: primero por el norte, luego por el este. Cusi resiste con los cusqueños y sus aliados; de esta defensa nace la tradición de los pururaucas.',
+      seconds: 14,
+      source: 'docs/historia/campanas/yahuar_pampa.md',
+      map: {
+        // From the Cusco pucarás to the Chanca camp on the heights.
+        view: { x: 66, z: 56, size: 156 },
+        marks: [
+          { ...world(CHANCA_CUSCO), label: 'Cusco', side: 'place' },
+          { ...world(CHANCA_PAMPA), label: 'Pampa de Yahuar', side: 'place' },
+          { ...world(CHANCA_HEIGHTS), label: 'Alturas chancas', side: 'place' },
+          {
+            ...fromCusco({ dx: -chancaLength(8), dz: chancaLength(8) }),
+            label: 'Cusi Yupanqui',
+            side: 'player',
+            delay: 0.6,
+          },
+          { ...world(CHANCA_CITY), label: 'Anccu Hualloc', side: 'enemy', delay: 1 },
+        ],
+        routes: [
+          {
+            side: 'enemy',
+            label: '1.ª columna',
+            points: [fromCusco(CHANCA_WAVE_NORTH), fromCusco(CHANCA_CAMP_STAND)],
+            delay: 1.8,
+          },
+          {
+            side: 'enemy',
+            label: '2.ª columna',
+            points: [fromCusco(CHANCA_WAVE_EAST), fromCusco(CHANCA_CAMP_STAND)],
+            delay: 4.4,
+          },
+        ],
+      },
+    },
+    {
+      kicker: 'Tu mando',
+      title: 'Defiende el Cusco',
+      text: 'Cusi Yupanqui manda la defensa desde los pucarás. Sostén el Cusco ocho minutos frente a las columnas chancas y mantén con vida al príncipe: sin él, la defensa se deshace.',
+      seconds: 11,
+      source: 'docs/historia/campanas/yahuar_pampa.md',
+      image: 'media/chanca/cine-defensa.webp',
+      motion: 'pan-right',
     },
   ],
   epilogueImage: 'media/chanca/intro-epilogo.webp',
@@ -57,23 +106,23 @@ export const m5YahuarPampa: MissionDef = {
   unitSpeedScale: 0.75,
   layout: {
     labels: [
-      { text: 'Cusco', x: 0.36, z: 0.62, kind: 'settlement' },
-      { text: 'Pampa de Yahuar', x: 0.5, z: 0.5, kind: 'region' },
-      { text: 'Camino a Andahuaylas', x: 0.7725, z: 0.38, kind: 'region' },
+      { text: 'Cusco', x: CHANCA_CUSCO.x, z: CHANCA_CUSCO.z, kind: 'settlement' },
+      { text: 'Pampa de Yahuar', x: CHANCA_PAMPA.x, z: CHANCA_PAMPA.z, kind: 'region' },
+      { text: 'Camino a Andahuaylas', x: CHANCA_CITY.x, z: CHANCA_CITY.z, kind: 'region' },
     ],
-    base: { x: 0.36, z: 0.62 },
+    base: { x: CHANCA_CUSCO.x, z: CHANCA_CUSCO.z },
     enemyBase: { x: CHANCA_CITY.x, z: CHANCA_CITY.z },
     site: {
       id: 'chanca_site',
       y: 5,
-      focus: { x: 0.7025, z: 0.38 },
-      keepout: [{ x: 0.7025, z: 0.38, rx: 0.1, rz: 0.09 }],
-      buildKeepout: [{ x: 0.7025, z: 0.38, rx: 0.085, rz: 0.075 }],
+      focus: { x: CHANCA_HEIGHTS.x, z: CHANCA_HEIGHTS.z },
+      keepout: [{ x: CHANCA_HEIGHTS.x, z: CHANCA_HEIGHTS.z, rx: 0.1, rz: 0.09 }],
+      buildKeepout: [{ x: CHANCA_HEIGHTS.x, z: CHANCA_HEIGHTS.z, rx: 0.085, rz: 0.075 }],
     },
     terrain: {
       flats: [
-        { name: 'Pampa de Yahuar', x: 0.36, z: 0.62, rx: 0.15, rz: 0.12 },
-        { name: 'Alturas del Cusco', x: 0.7025, z: 0.38, rx: 0.1, rz: 0.09 },
+        { name: 'Pampa de Yahuar', x: CHANCA_CUSCO.x, z: CHANCA_CUSCO.z, rx: 0.15, rz: 0.12 },
+        { name: 'Alturas del Cusco', x: CHANCA_HEIGHTS.x, z: CHANCA_HEIGHTS.z, rx: 0.1, rz: 0.09 },
       ],
     },
   },
@@ -175,7 +224,7 @@ export const m5YahuarPampa: MissionDef = {
           owner: 1,
           units: [{ kind: UnitKind.SOLDIER, count: 6 }],
           // The line says «por el norte»: enter from the north instead of materialising south-east.
-          spawn: { ref: 'player', dx: chancaLength(34), dz: -chancaLength(20) },
+          spawn: CHANCA_WAVE_NORTH,
           pos: CHANCA_CAMP_STAND,
           target: CHANCA_CAMP_STAND,
           radius: chancaLength(6),
@@ -226,7 +275,7 @@ export const m5YahuarPampa: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 5 },
             { kind: UnitKind.MUSKETEER, count: 2 },
           ],
-          spawn: { ref: 'player', dx: chancaLength(40), dz: chancaLength(4) },
+          spawn: CHANCA_WAVE_EAST,
           pos: CHANCA_CAMP_STAND,
           target: CHANCA_CAMP_STAND,
           radius: chancaLength(6),

@@ -96,7 +96,7 @@ Arica. Sources and certainty: [`docs/historia/campanas/tarapaca.md`](../historia
   facing the first column (`cine-linea`, pan). The intro states the mission, not its outcome: the tactical
   victory and the retreat belong to the act cards and the epilogue.
 - The two stills are 1920x1080 in-engine captures with staged troops and the world labels hidden:
-  `node scripts/capture_tarapaca_cinema.mjs [--only=cine-linea] [--gpu]`. Close ground-level cameras were
+  `node scripts/capture_cinema.mjs --mission=m_tarapaca [--only=cine-linea] [--gpu]`. Close ground-level cameras were
   tried and dropped: the unit and building models do not hold up that close; illustrated art would.
 - Briefing art `media/tarapaca/intro-quebrada.webp`; act cards `intro-alturas` and `intro-retirada`;
   epilogue `intro-epilogo`. Regenerated after the Atacama pass with
@@ -125,7 +125,7 @@ Arica. Sources and certainty: [`docs/historia/campanas/tarapaca.md`](../historia
   “Unidad bajo ataque”), not a silent stand-off.
 - Briefing, act-card and epilogue art: `node scripts/capture_republica_arc.mjs --mission=m_tarapaca` rewrites
   the four `public/media/tarapaca/intro-*.webp` images from the current desert scene; the cinema stills use
-  `scripts/capture_tarapaca_cinema.mjs`.
+  `scripts/capture_cinema.mjs`.
 - Cinema intro: `tests/cinema-intro.test.ts` (map marks inside the crop, readable subtitle timing, escaped
   labels, per-map SVG ids).
 - Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in

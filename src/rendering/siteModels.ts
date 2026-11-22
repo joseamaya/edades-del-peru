@@ -22,7 +22,7 @@ import type { AuthoredSiteId } from '../model/defs/sites';
 
 const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: string }>> = {
   // The release bundle ships LOD1 only: Caral's 3.3 MB LOD0 preview stays in the repo for authoring
-  // but would eat the 25 MB dist budget. `?lod=0` falls back to LOD1 for this site.
+  // but would eat the dist budget (28 MB, ADR 0008). `?lod=0` falls back to LOD1 for this site.
   caral_site: { lod0: siteLod1Url, lod1: siteLod1Url },
   // The phased kit draws the visible temple; the source GLB is only the hidden click-proxy fallback.
   chavin_site: { lod0: chavinLod1Url, lod1: chavinLod1Url },

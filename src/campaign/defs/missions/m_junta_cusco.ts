@@ -5,6 +5,8 @@ import { CUSCO_COLONIAL } from '../../../model/defs/colonialLayout';
 
 // La Junta del Cusco: the Cusco cabildo, the Apacheta pass, Umachiri and the royalist base.
 const JUNTA_CUSCO = CUSCO_COLONIAL.center;
+// The Junta's base west of the city: the opening army and the cuartel start here.
+const JUNTA_BASE = { x: 52, z: 96 } as const;
 const JUNTA_APACHETA = { x: 140, z: 168 } as const;
 const JUNTA_UMACHIRI = { x: 198, z: 214 } as const;
 // The royalist columns enter on the roads and then occupy each point.
@@ -43,7 +45,7 @@ export const mJuntaCusco: MissionDef = {
       { text: 'Río Lalli', x: 178 / 256, z: 200 / 256, kind: 'water' },
       { text: 'Altiplano de Puno', x: 210 / 256, z: 240 / 256, kind: 'region' },
     ],
-    base: { x: 52 / 256, z: 96 / 256 },
+    base: { x: JUNTA_BASE.x / 256, z: JUNTA_BASE.z / 256 },
     opening: { x: 66 / 256, z: 80 / 256 },
     enemyBase: { x: JUNTA_ENEMY.x / 256, z: JUNTA_ENEMY.z / 256 },
     discoveries: [{ heritageId: 'colonial_church', initial: true }],
@@ -105,30 +107,78 @@ export const mJuntaCusco: MissionDef = {
   enemy: { active: true, difficulty: 'normal', aggression: 0.6, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map
+  // uses the mission's own geometry (the base, the Cabildo, the Apacheta and Umachiri holds and the royalist
+  // entry points), so it shows the road the player will march. It does not tell the outcome: the act cards
+  // and the epilogue do.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'CUSCO · 3 DE AGOSTO DE 1814',
+      kicker: 'Cusco · 3 de agosto de 1814',
       title: 'La Junta',
       text: 'El cabildo constitucional de Cádiz y la Real Audiencia chocan en el Cusco. Los hermanos Angulo toman el gobierno y nombran capitán general a José Angulo; Mateo García Pumacahua, cacique de Chinchero, dirige la fuerza militar.',
-      seconds: 9,
+      seconds: 13,
       source: 'docs/historia/campanas/junta_cusco.md',
-      image: 'media/junta/intro-cabildo.webp',
+      image: 'media/junta/cine-cusco.webp',
+      motion: 'push',
     },
     {
-      kicker: 'EXPEDICIONES · 1814',
+      kicker: 'Expediciones · 1814–1815',
       title: 'Cuatro columnas',
-      text: 'La Junta envía columnas a Puno, La Paz, Huamanga y Arequipa. Con pocos fusiles y mucha gente, la causa se juega en la sierra y en el altiplano.',
-      seconds: 9,
+      text: 'La Junta envía columnas a Puno, La Paz, Huamanga y Arequipa. Desde el Alto Perú baja la división de Ramírez: tropa veterana, con artillería y caballería, frente a miles de hombres mal armados.',
+      seconds: 12,
       source: 'docs/historia/campanas/junta_cusco.md',
-      image: 'media/junta/intro-apacheta.webp',
+      map: {
+        // From the Junta's base in the north-west to the royalist camp in the south-east corner (z 238).
+        view: { x: 36, z: 44, size: 200 },
+        marks: [
+          { x: JUNTA_CUSCO.x, z: JUNTA_CUSCO.z - 8, label: 'Cusco', side: 'place' },
+          { x: JUNTA_APACHETA.x - 6, z: JUNTA_APACHETA.z - 8, label: 'La Apacheta', side: 'place' },
+          { x: JUNTA_UMACHIRI.x - 10, z: JUNTA_UMACHIRI.z - 6, label: 'Umachiri', side: 'place' },
+          { x: JUNTA_BASE.x, z: JUNTA_BASE.z + 8, label: 'Junta', side: 'player', delay: 0.6 },
+          { x: JUNTA_ENEMY.x - 8, z: JUNTA_ENEMY.z - 2, label: 'Ramírez', side: 'enemy', delay: 1 },
+        ],
+        routes: [
+          {
+            side: 'player',
+            label: 'Pumacahua',
+            points: [
+              { x: JUNTA_CUSCO.x, z: JUNTA_CUSCO.z },
+              { x: JUNTA_APACHETA.x, z: JUNTA_APACHETA.z },
+              { x: JUNTA_UMACHIRI.x, z: JUNTA_UMACHIRI.z },
+            ],
+            delay: 1.4,
+            draw: 3.2,
+          },
+          {
+            side: 'enemy',
+            label: 'Vanguardia',
+            points: [
+              { x: JUNTA_APACHETA_ENTRY.dx, z: JUNTA_APACHETA_ENTRY.dz },
+              { x: JUNTA_APACHETA.x + 4, z: JUNTA_APACHETA.z + 4 },
+            ],
+            delay: 4.6,
+          },
+          {
+            side: 'enemy',
+            label: 'División de Ramírez',
+            points: [
+              { x: JUNTA_UMACHIRI_ENTRY.dx, z: JUNTA_UMACHIRI_ENTRY.dz },
+              { x: JUNTA_UMACHIRI.x + 4, z: JUNTA_UMACHIRI.z + 4 },
+            ],
+            delay: 6.4,
+          },
+        ],
+      },
     },
     {
-      kicker: 'UMACHIRI · 11 DE MARZO DE 1815',
-      title: 'La última resistencia',
-      text: 'La división de Ramírez baja del Alto Perú. En Umachiri, la Junta presenta batalla con miles de hombres mal armados frente a una tropa veterana con artillería y caballería.',
+      kicker: 'Tu mando',
+      title: 'Reúne la Junta',
+      text: 'Reúne la Junta en el Cabildo y levanta el cuartel. Pumacahua manda la columna: con pocos fusiles, cada hombre cuenta, y si él cae, la Junta se deshace.',
       seconds: 10,
       source: 'docs/historia/campanas/junta_cusco.md',
-      image: 'media/junta/intro-umachiri.webp',
+      image: 'media/junta/cine-apacheta.webp',
+      motion: 'pan-right',
     },
   ],
   epilogueImage: 'media/junta/intro-epilogo.webp',

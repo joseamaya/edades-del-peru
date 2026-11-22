@@ -11,6 +11,10 @@ const MIRAFLORES_REDOUBT_1 = { x: 72, z: 190 } as const;
 const MIRAFLORES_REDOUBT_2 = { x: 112, z: 190 } as const;
 const MIRAFLORES_REDOUBT_3 = { x: 152, z: 190 } as const;
 const MIRAFLORES_RETREAT = { x: 230, z: 150 } as const;
+// The line's centre (the Miraflores label, flat and road hub) and the San Juan and Chorrillos fields south of it.
+const MIRAFLORES_LINE = { x: 112, z: 190 } as const;
+const MIRAFLORES_SAN_JUAN = { x: 168, z: 214 } as const;
+const MIRAFLORES_CHORRILLOS = { x: 40, z: 236 } as const;
 // The camp plus its front rank: the settled camera frames the reservists, not the redoubts 30 m south.
 const MIRAFLORES_OPENING = { x: MIRAFLORES_CAMP.x, z: MIRAFLORES_CAMP.z + 3 } as const;
 
@@ -39,9 +43,9 @@ export const mMiraflores: MissionDef = {
   layout: {
     labels: [
       { text: 'Lima', x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256, kind: 'settlement' },
-      { text: 'Miraflores', x: 112 / 256, z: 190 / 256, kind: 'region' },
-      { text: 'San Juan', x: 168 / 256, z: 214 / 256, kind: 'region' },
-      { text: 'Chorrillos', x: 40 / 256, z: 236 / 256, kind: 'region' },
+      { text: 'Miraflores', x: MIRAFLORES_LINE.x / 256, z: MIRAFLORES_LINE.z / 256, kind: 'region' },
+      { text: 'San Juan', x: MIRAFLORES_SAN_JUAN.x / 256, z: MIRAFLORES_SAN_JUAN.z / 256, kind: 'region' },
+      { text: 'Chorrillos', x: MIRAFLORES_CHORRILLOS.x / 256, z: MIRAFLORES_CHORRILLOS.z / 256, kind: 'region' },
       { text: 'Camino a la sierra', x: MIRAFLORES_RETREAT.x / 256, z: MIRAFLORES_RETREAT.z / 256, kind: 'region' },
     ],
     base: { x: MIRAFLORES_CAMP.x / 256, z: MIRAFLORES_CAMP.z / 256 },
@@ -54,8 +58,8 @@ export const mMiraflores: MissionDef = {
     terrain: {
       flats: [
         { name: 'Lima', x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256, rx: 0.18, rz: 0.14 },
-        { name: 'Línea de Miraflores', x: 112 / 256, z: 190 / 256, rx: 0.22, rz: 0.06 },
-        { name: 'San Juan', x: 168 / 256, z: 214 / 256, rx: 0.12, rz: 0.08 },
+        { name: 'Línea de Miraflores', x: MIRAFLORES_LINE.x / 256, z: MIRAFLORES_LINE.z / 256, rx: 0.22, rz: 0.06 },
+        { name: 'San Juan', x: MIRAFLORES_SAN_JUAN.x / 256, z: MIRAFLORES_SAN_JUAN.z / 256, rx: 0.12, rz: 0.08 },
       ],
     },
     site: {
@@ -73,9 +77,21 @@ export const mMiraflores: MissionDef = {
       buildKeepout: [{ x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256, rx: 0.04, rz: 0.04 }],
     },
     roads: [
-      { from: { dx: MIRAFLORES_LIMA.x, dz: MIRAFLORES_LIMA.z }, to: { dx: 112, dz: 190 }, width: 3 },
-      { from: { dx: 112, dz: 190 }, to: { dx: MIRAFLORES_RETREAT.x, dz: MIRAFLORES_RETREAT.z }, width: 3 },
-      { from: { dx: 112, dz: 190 }, to: { dx: MIRAFLORES_ENEMY.x, dz: MIRAFLORES_ENEMY.z }, width: 3 },
+      {
+        from: { dx: MIRAFLORES_LIMA.x, dz: MIRAFLORES_LIMA.z },
+        to: { dx: MIRAFLORES_LINE.x, dz: MIRAFLORES_LINE.z },
+        width: 3,
+      },
+      {
+        from: { dx: MIRAFLORES_LINE.x, dz: MIRAFLORES_LINE.z },
+        to: { dx: MIRAFLORES_RETREAT.x, dz: MIRAFLORES_RETREAT.z },
+        width: 3,
+      },
+      {
+        from: { dx: MIRAFLORES_LINE.x, dz: MIRAFLORES_LINE.z },
+        to: { dx: MIRAFLORES_ENEMY.x, dz: MIRAFLORES_ENEMY.z },
+        width: 3,
+      },
     ],
   },
   atmosphere: { fogDensity: 0.0018, sunWarmth: 1.02, skyTint: '#deddd2' },
@@ -99,30 +115,73 @@ export const mMiraflores: MissionDef = {
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/miraflores/intro-epilogo.webp',
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map
+  // uses the mission's own geometry (Lima, the camp, the three redoubt nodes and the Chilean column's camp and
+  // target). It states the mission, not its outcome: the withdrawal to the sierra and the optional fourth
+  // redoubt are not shown; the act cards and the epilogue tell them.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'LIMA · ENERO DE 1881',
+      kicker: 'Lima · enero de 1881',
       title: 'La defensa de Lima',
       text: 'Tras San Juan y Chorrillos, la defensa se organiza en Miraflores. Una línea de reductos cruza el sur de Lima; muchos defensores son reservistas de la ciudad.',
-      seconds: 9,
-      source: 'docs/historia/campanas/miraflores.md',
-      image: 'media/miraflores/intro-lima.webp',
-    },
-    {
-      kicker: 'MIRAFLORES · 15 DE ENERO',
-      title: 'Los reductos',
-      text: 'La línea de Miraflores contará con diez reductos; los primeros tres deben quedar en pie antes del ataque. Cáceres manda el sector derecho; la resistencia depende de sostener los reductos y de retirar a los jefes antes de que la ciudad caiga.',
-      seconds: 9,
-      source: 'docs/historia/campanas/miraflores.md',
-      image: 'media/miraflores/intro-reductos.webp',
-    },
-    {
-      kicker: 'LIMA · 17 DE ENERO DE 1881',
-      title: 'La retirada',
-      text: 'Lima cae y la guerra continúa en la sierra. La resistencia de Cáceres en la Breña empieza con esta retirada: la capital se pierde, pero se gana tiempo para seguir luchando.',
       seconds: 10,
       source: 'docs/historia/campanas/miraflores.md',
-      image: 'media/miraflores/intro-retirada.webp',
+      image: 'media/miraflores/cine-lima.webp',
+      motion: 'push',
+    },
+    {
+      kicker: 'Miraflores · 15 de enero de 1881',
+      title: 'Los reductos',
+      text: 'La línea de Miraflores contará con diez reductos; los primeros tres deben quedar en pie antes del ataque. El ejército chileno avanza desde San Juan sobre el centro de la línea.',
+      seconds: 11,
+      source: 'docs/historia/campanas/miraflores.md',
+      map: {
+        // South Lima from the city to Chorrillos and the Chilean camp beyond San Juan, down to the map's edge.
+        view: { x: 28, z: 76, size: 180 },
+        marks: [
+          { x: MIRAFLORES_LIMA.x, z: MIRAFLORES_LIMA.z - 8, label: 'Lima', side: 'place' },
+          { x: MIRAFLORES_SAN_JUAN.x, z: MIRAFLORES_SAN_JUAN.z - 8, label: 'San Juan', side: 'place' },
+          { x: MIRAFLORES_CHORRILLOS.x + 6, z: MIRAFLORES_CHORRILLOS.z - 6, label: 'Chorrillos', side: 'place' },
+          { x: MIRAFLORES_CAMP.x, z: MIRAFLORES_CAMP.z - 6, label: 'Perú', side: 'player', delay: 0.6 },
+          { x: MIRAFLORES_REDOUBT_1.x, z: MIRAFLORES_REDOUBT_1.z, label: 'Reducto 1', side: 'player', delay: 1.2 },
+          { x: MIRAFLORES_REDOUBT_2.x, z: MIRAFLORES_REDOUBT_2.z, label: 'Reducto 2', side: 'player', delay: 1.6 },
+          { x: MIRAFLORES_REDOUBT_3.x, z: MIRAFLORES_REDOUBT_3.z, label: 'Reducto 3', side: 'player', delay: 2 },
+          { x: MIRAFLORES_ENEMY.x, z: MIRAFLORES_ENEMY.z + 6, label: 'Chile', side: 'enemy', delay: 2.6 },
+        ],
+        routes: [
+          {
+            side: 'player',
+            label: 'Reservistas',
+            dashed: true,
+            points: [
+              { x: MIRAFLORES_LIMA.x, z: MIRAFLORES_LIMA.z },
+              { x: MIRAFLORES_CAMP.x, z: MIRAFLORES_CAMP.z },
+              { x: MIRAFLORES_LINE.x, z: MIRAFLORES_LINE.z - 6 },
+            ],
+            delay: 0.8,
+          },
+          {
+            side: 'enemy',
+            label: 'Ejército de Chile',
+            points: [
+              { x: MIRAFLORES_ENEMY.x, z: MIRAFLORES_ENEMY.z },
+              { x: MIRAFLORES_SAN_JUAN.x, z: MIRAFLORES_SAN_JUAN.z },
+              { x: MIRAFLORES_REDOUBT_2.x + 8, z: MIRAFLORES_REDOUBT_2.z + 6 },
+            ],
+            delay: 3.4,
+          },
+        ],
+      },
+    },
+    {
+      kicker: 'Tu mando',
+      title: 'Sostén la línea',
+      text: 'Cáceres manda el sector derecho. Levanta los reductos, sostén la línea con los reservistas y mantén con vida a Cáceres: la línea debe resistir el asalto.',
+      seconds: 10,
+      source: 'docs/historia/campanas/miraflores.md',
+      image: 'media/miraflores/cine-linea.webp',
+      motion: 'pan-left',
     },
   ],
   allowedUnits: [

@@ -249,7 +249,7 @@ never gates the rest of the tutorial.
   triangles; the opening also within its draw-call budget).
 - Known costs from Caral: skinned units cannot be instanced (about six draws per unit in view), so keep
   rigs simplified (`scripts/simplify_caral_worker.mjs`) and only the body in the shadow pass; ground cover
-  draws the whole map; the `dist/` budget is 25 MB (Caral left ~0.4 MB).
+  draws the whole map; the `dist/` budget is 28 MB since ADR 0008 (25 MB before; Caral left ~0.4 MB of it).
 
 ## 10. Tests
 
@@ -276,6 +276,6 @@ never gates the rest of the tutorial.
 | Tutorial    | Step list for the new actions, non-blocking                                                            |
 | Cast        | Story characters tagged as units, named in the world and in the briefing; losses staged                |
 | Art         | Manifests with `confidence`, human review recorded, PROVENANCE updated                                 |
-| Performance | Opening (and late) view in `bench_scene.mjs`, budgets pass, dist under 25 MB                           |
+| Performance | Opening (and late) view in `bench_scene.mjs`, budgets pass, dist under 28 MB                           |
 | Tests       | Data, E2E and playtest; `verify:fast` and the mission's E2E green                                      |
 | Quality bar | Its gold-master table in `campaign-quality-bar.md` filled with evidence                                |

@@ -3,6 +3,21 @@ import { highValleyVegetation } from '../../../model/defs/profiles';
 import type { MissionDef } from '../../types';
 import { chavinKeepout } from '../../../model/defs/chavinCity';
 
+// The geography of the Mosna valley, shared by the layout, the objectives and the cinema map (map fractions).
+const CHAVIN_MAP_SIZE = 256;
+/** The pilgrims' camp in the Callejón de Conchucos, where the mission starts. */
+const CHAVIN_BASE = { x: 0.3, z: 0.61 } as const;
+/** The ceremonial terrace: the Old Temple's forecourt (what `ref: 'site'` resolves to). */
+const CHAVIN_SITE_FOCUS = { x: 0.51, z: 0.456 } as const;
+/** The Mosna's course across the map, and its ford. */
+const CHAVIN_RIVER_Z = 0.2;
+const CHAVIN_FORD_X = 0.36;
+/** World metres of a map fraction, for the cinema map. */
+const world = (p: { x: number; z: number }) => ({ x: p.x * CHAVIN_MAP_SIZE, z: p.z * CHAVIN_MAP_SIZE });
+const CHAVIN_BASE_AT = world(CHAVIN_BASE);
+const CHAVIN_SITE_AT = world(CHAVIN_SITE_FOCUS);
+const CHAVIN_FORD_AT = world({ x: CHAVIN_FORD_X, z: CHAVIN_RIVER_Z });
+
 export const m2Chavin: MissionDef = {
   id: 'm2_chavin',
   title: 'El Oráculo de Chavín',
@@ -17,30 +32,66 @@ export const m2Chavin: MissionDef = {
   period: HistoricalPeriod.EARLY_HORIZON,
   narrator: 'Voz de los peregrinos',
   epilogueImage: 'media/chavin/intro-declive.webp',
+  // Played as a letterboxed film (scripts/capture_cinema.mjs): the temple in the Mosna valley, a map drawn
+  // from this mission's own geometry (the pilgrims' camp, the ford and the ceremonial terrace), then the
+  // pilgrims at the plaza. There is no documented war, so the map has no enemy. It does not tell the
+  // decline: the act cards and the epilogue do.
+  introStyle: 'cinema',
   intro: [
     {
       kicker: 'CALLEJÓN DE CONCHUCOS · c. 900 a.C.',
       title: 'Entre el río y las alturas',
       text: 'A 3180 msnm, el río Mosna cruza un valle estrecho entre montañas. Allí, donde se cruzan los caminos de la sierra y la costa, crece un centro ceremonial.',
-      seconds: 9,
+      seconds: 10,
       source: 'docs/historia/campanas/chavin.md',
-      image: 'media/chavin/intro-valle.webp',
+      image: 'media/chavin/cine-valle.webp',
+      motion: 'push',
     },
     {
       kicker: 'EL ORÁCULO',
       title: 'Peregrinos y ofrendas',
       text: 'El oráculo de Chavín atrae a peregrinos de lejos. Traen plata, conchas y obsidiana; a cambio buscan consejo y participación en un culto que se extiende por los Andes.',
-      seconds: 9,
+      seconds: 11,
       source: 'docs/historia/civilizaciones/chavin.md',
-      image: 'media/chavin/intro-templo.webp',
+      map: {
+        // The valley between the pilgrims' camp, the Mosna and the ceremonial terrace.
+        view: { x: 40, z: 30, size: 144 },
+        marks: [
+          { x: CHAVIN_SITE_AT.x, z: CHAVIN_SITE_AT.z - 12, label: 'Chavín de Huántar', side: 'place' },
+          { x: CHAVIN_SITE_AT.x - 2, z: CHAVIN_RIVER_Z * CHAVIN_MAP_SIZE - 8, label: 'Río Mosna', side: 'place' },
+          { x: CHAVIN_BASE_AT.x, z: CHAVIN_BASE_AT.z + 8, label: 'Peregrinos', side: 'player', delay: 0.6 },
+        ],
+        routes: [
+          {
+            side: 'player',
+            label: 'Al templo',
+            points: [
+              { x: CHAVIN_BASE_AT.x + 4, z: CHAVIN_BASE_AT.z - 4 },
+              { x: CHAVIN_SITE_AT.x - 8, z: CHAVIN_SITE_AT.z + 8 },
+            ],
+            delay: 1.2,
+          },
+          {
+            side: 'player',
+            label: 'Camino del Mosna',
+            dashed: true,
+            points: [
+              { x: CHAVIN_FORD_AT.x, z: CHAVIN_FORD_AT.z },
+              { x: CHAVIN_SITE_AT.x - 6, z: CHAVIN_SITE_AT.z - 8 },
+            ],
+            delay: 3.6,
+          },
+        ],
+      },
     },
     {
-      kicker: 'GENERACIONES',
+      kicker: 'TU PEREGRINACIÓN',
       title: 'Un templo que crece por fases',
-      text: 'El Templo Viejo y luego el Templo Nuevo se levantan con trabajo comunal. Cada ampliación exige piedra, alimentos y prestigio: el centro ceremonial es una obra de generaciones.',
+      text: 'El Templo Viejo y luego el Templo Nuevo se levantan con trabajo comunal. Llega al centro ceremonial y entrega tus ofrendas: cada ampliación exige piedra, alimentos y prestigio.',
       seconds: 10,
       source: 'docs/historia/campanas/chavin.md',
-      image: 'media/chavin/intro-peregrinos.webp',
+      image: 'media/chavin/cine-plaza.webp',
+      motion: 'pan-left',
     },
   ],
   tutorial: true,
@@ -54,17 +105,17 @@ export const m2Chavin: MissionDef = {
   atmosphere: { fogDensity: 0.0042, skyTint: '#c8d6d0', sunWarmth: 0.9 },
   layout: {
     labels: [
-      { text: 'Chavín de Huántar', x: 0.51, z: 0.456, kind: 'settlement' },
-      { text: 'Callejón de Conchucos', x: 0.3, z: 0.61, kind: 'region' },
-      { text: 'Río Mosna', x: 0.5, z: 0.2, kind: 'water' },
+      { text: 'Chavín de Huántar', ...CHAVIN_SITE_FOCUS, kind: 'settlement' },
+      { text: 'Callejón de Conchucos', ...CHAVIN_BASE, kind: 'region' },
+      { text: 'Río Mosna', x: 0.5, z: CHAVIN_RIVER_Z, kind: 'water' },
     ],
-    base: { x: 0.3, z: 0.61 },
+    base: { ...CHAVIN_BASE },
     site: {
       id: 'chavin_site',
       y: 4.6,
-      focus: { x: 0.51, z: 0.456 },
-      keepout: [chavinKeepout({ x: 0.51, z: 0.456, rx: 0.19, rz: 0.17 })],
-      buildKeepout: [chavinKeepout({ x: 0.51, z: 0.456, rx: 0.17, rz: 0.14 })],
+      focus: { ...CHAVIN_SITE_FOCUS },
+      keepout: [chavinKeepout({ ...CHAVIN_SITE_FOCUS, rx: 0.19, rz: 0.17 })],
+      buildKeepout: [chavinKeepout({ ...CHAVIN_SITE_FOCUS, rx: 0.17, rz: 0.14 })],
       // The Old Temple starts as a foundation; acts II and III complete it and raise the New Temple.
       phase: 'old_temple_foundation',
     },
@@ -72,14 +123,14 @@ export const m2Chavin: MissionDef = {
       // The Mosna valley and the flat ceremonial terrace.
       river: {
         name: 'Valle del Mosna',
-        z: 0.2,
+        z: CHAVIN_RIVER_Z,
         width: 0.035,
         valleyWidth: 0.13,
         amplitude: 0.008,
         phase: 0.4,
-        fords: [{ x: 0.36, width: 0.08 }],
+        fords: [{ x: CHAVIN_FORD_X, width: 0.08 }],
       },
-      flats: [{ name: 'Terraza ceremonial de Chavín', x: 0.51, z: 0.456, rx: 0.2, rz: 0.17 }],
+      flats: [{ name: 'Terraza ceremonial de Chavín', ...CHAVIN_SITE_FOCUS, rx: 0.2, rz: 0.17 }],
     },
   },
   mapOverrides: {

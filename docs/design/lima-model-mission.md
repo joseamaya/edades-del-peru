@@ -53,7 +53,14 @@ barracks, arsenal, stable, artillery workshop, fortress, walls, gate, tower and 
 
 ## Opening and closing
 
-- Three narrated beats: the founding, the siege, the plain.
+- Cinema intro (`introStyle: 'cinema'`, as the Tarapacá pilot): the traza beside the Rímac at dusk
+  (`cine-ciudad`, push-in); a campaign map painted from this terrain where Quizu's army comes down from its
+  camp over the Rímac bridge onto the city, the relief columns arrive dashed from `LIMA_RELIEF_ENTRY` and the
+  valley curacas' allies come in from `LIMA_CURACAS` (every point is a named constant shared with the
+  mission's layout, objectives and waves); the hueste on the llano facing Quizu's warriors (`cine-llano`,
+  pan). It states the mission, not its outcome: Quizu's death and the lifted siege belong to the act cards
+  and the epilogue. Regenerate the stills with `node scripts/capture_cinema.mjs --mission=m_lima
+  [--only=cine-llano]`; `intro-*` stay as briefing art and act cards.
 - Two chapter cards (Acts II and III).
 - Victory: the camp falls, Quizu dies and the siege lifts; the epilogue states that Cusco remains besieged.
 - Defeat: Lima falls.

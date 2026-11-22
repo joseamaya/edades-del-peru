@@ -5,6 +5,19 @@ import { CUSCO_INCA_MAP_SIZE, cuscoIncaLength } from '../../../model/defs/cuscoI
 
 // The army's camp on the Quito road: the relief column cuts it off and marches on it.
 const QUIPAIPAN_CAMP = { ref: 'player' as const, dx: 0, dz: 0 };
+/** Atahualpa's camp on the Quito road, the Quipaipan pampa and Huáscar's headquarters (normalized). */
+const QUIPAIPAN_BASE = { x: 0.35, z: 0.3 } as const;
+const QUIPAIPAN_FIELD = { x: 0.65, z: 0.68 } as const;
+const QUIPAIPAN_HQ = { x: 0.71, z: 0.68 } as const;
+// Behind the line, on the Quito road: the column that was following the army cuts the camp off.
+const QUIPAIPAN_REAR_COLUMN = { ref: 'player' as const, dx: -cuscoIncaLength(26), dz: -cuscoIncaLength(22) };
+
+/** A normalized layout point, or an offset from the camp, in world metres for the cinema map. */
+const world = (p: { x: number; z: number }) => ({ x: p.x * CUSCO_INCA_MAP_SIZE, z: p.z * CUSCO_INCA_MAP_SIZE });
+const fromCamp = (p: { dx: number; dz: number }) => ({
+  x: QUIPAIPAN_BASE.x * CUSCO_INCA_MAP_SIZE + p.dx,
+  z: QUIPAIPAN_BASE.z * CUSCO_INCA_MAP_SIZE + p.dz,
+});
 
 export const m6bGuerraCivil: MissionDef = {
   id: 'm6b_guerra_civil',
@@ -21,30 +34,61 @@ export const m6bGuerraCivil: MissionDef = {
   tutorial: true,
   modelMission: true,
   narrator: 'Atahualpa',
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The march,
+  // Huáscar's headquarters and the column that cuts the Quito road are the mission's own points. The intro states
+  // the battle, not its outcome: the capture of Huáscar and Cajamarca belong to the act cards and the epilogue.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'CUSCO–QUITO · 1529–1532',
+      kicker: 'Cusco–Quito · 1529–1532',
       title: 'La Guerra Civil',
       text: 'Tras la muerte de Huayna Cápac, el Tahuantinsuyo se divide entre Huáscar, en el Cusco, y Atahualpa, en Quito. La guerra civil enfrenta a los dos ejércitos incas por el trono.',
-      seconds: 9,
+      seconds: 11,
       source: 'docs/historia/campanas/guerra_civil_inca.md',
-      image: 'media/cusco-inca/intro-guerra.webp',
+      image: 'media/cusco-inca/cine-cusco.webp',
+      motion: 'push',
     },
     {
-      kicker: 'QUIPAIPAN · 1532',
+      kicker: 'Quipaipan · 1532',
       title: 'La batalla',
-      text: 'Los generales de Atahualpa derrotan al ejército de Huáscar en Quipaipan. La pampa se sostiene con la línea de guerreros; el centro del Cusco no es el objetivo.',
-      seconds: 9,
+      text: 'Los generales de Atahualpa bajan por la ruta de Quito hacia Quipaipan, donde Huáscar ha reunido su ejército. A la retaguardia, sus columnas pueden cortar el camino. La pampa es el objetivo; el centro del Cusco, no.',
+      seconds: 13,
       source: 'docs/historia/campanas/guerra_civil_inca.md',
-      image: 'media/cusco-inca/intro-quipaipan.webp',
+      map: {
+        // From the camp on the Quito road to Huáscar's headquarters beyond the pampa.
+        view: { x: 44, z: 40, size: 152 },
+        marks: [
+          { ...world(QUIPAIPAN_BASE), label: 'Ruta de Quito', side: 'place' },
+          { ...world(QUIPAIPAN_FIELD), label: 'Quipaipan', side: 'place' },
+          { ...world(QUIPAIPAN_BASE), label: 'Quizquiz', side: 'player', delay: 0.6 },
+          { ...world(QUIPAIPAN_HQ), label: 'Huáscar', side: 'enemy', delay: 1 },
+        ],
+        routes: [
+          {
+            side: 'player',
+            label: 'Ejército de Atahualpa',
+            points: [world(QUIPAIPAN_BASE), world(QUIPAIPAN_FIELD)],
+            delay: 1.6,
+            draw: 2.8,
+          },
+          {
+            side: 'enemy',
+            label: 'Columna del Cusco',
+            dashed: true,
+            points: [fromCamp(QUIPAIPAN_REAR_COLUMN), fromCamp(QUIPAIPAN_CAMP)],
+            delay: 5,
+          },
+        ],
+      },
     },
     {
-      kicker: 'LA CAPTURA',
-      title: 'El trono y Cajamarca',
-      text: 'Huáscar es capturado en Quipaipan. Atahualpa gana la guerra, pero los españoles lo capturan en Cajamarca en 1532: el imperio queda debilitado justo antes de la conquista.',
-      seconds: 10,
+      kicker: 'Tu mando',
+      title: 'Presenta batalla',
+      text: 'Quizquiz manda la vanguardia. Avanza hacia Quipaipan, sostén la pampa con la línea de guerreros y mantén con vida al general: el Cusco no reconocerá a Atahualpa mientras Huáscar resista.',
+      seconds: 11,
       source: 'docs/historia/campanas/guerra_civil_inca.md',
-      image: 'media/cusco-inca/intro-captura.webp',
+      image: 'media/cusco-inca/cine-quipaipan.webp',
+      motion: 'pan-right',
     },
   ],
   epilogueImage: 'media/cusco-inca/intro-epilogo.webp',
@@ -60,24 +104,24 @@ export const m6bGuerraCivil: MissionDef = {
   region: 'high_andes',
   layout: {
     labels: [
-      { text: 'Quipaipan', x: 0.65, z: 0.68, kind: 'region' },
-      { text: 'Ejército de Huáscar', x: 0.71, z: 0.68, kind: 'region' },
-      { text: 'Ruta de Quito', x: 0.35, z: 0.3, kind: 'region' },
+      { text: 'Quipaipan', x: QUIPAIPAN_FIELD.x, z: QUIPAIPAN_FIELD.z, kind: 'region' },
+      { text: 'Ejército de Huáscar', x: QUIPAIPAN_HQ.x, z: QUIPAIPAN_HQ.z, kind: 'region' },
+      { text: 'Ruta de Quito', x: QUIPAIPAN_BASE.x, z: QUIPAIPAN_BASE.z, kind: 'region' },
     ],
-    base: { x: 0.35, z: 0.3 },
-    enemyBase: { x: 0.71, z: 0.68 },
+    base: { x: QUIPAIPAN_BASE.x, z: QUIPAIPAN_BASE.z },
+    enemyBase: { x: QUIPAIPAN_HQ.x, z: QUIPAIPAN_HQ.z },
     site: {
       id: 'cusco_inca_site',
       y: 5,
       heightField: QUIPAIPAN_HEIGHTFIELD,
-      focus: { x: 0.65, z: 0.68 },
-      keepout: [{ x: 0.65, z: 0.68, rx: 0.09, rz: 0.08 }],
-      buildKeepout: [{ x: 0.65, z: 0.68, rx: 0.08, rz: 0.07 }],
+      focus: { x: QUIPAIPAN_FIELD.x, z: QUIPAIPAN_FIELD.z },
+      keepout: [{ x: QUIPAIPAN_FIELD.x, z: QUIPAIPAN_FIELD.z, rx: 0.09, rz: 0.08 }],
+      buildKeepout: [{ x: QUIPAIPAN_FIELD.x, z: QUIPAIPAN_FIELD.z, rx: 0.08, rz: 0.07 }],
     },
     terrain: {
       flats: [
-        { name: 'Ruta de Quito al Cusco', x: 0.35, z: 0.3, rx: 0.16, rz: 0.12 },
-        { name: 'Pampa de Quipaipan', x: 0.65, z: 0.68, rx: 0.09, rz: 0.08 },
+        { name: 'Ruta de Quito al Cusco', x: QUIPAIPAN_BASE.x, z: QUIPAIPAN_BASE.z, rx: 0.16, rz: 0.12 },
+        { name: 'Pampa de Quipaipan', x: QUIPAIPAN_FIELD.x, z: QUIPAIPAN_FIELD.z, rx: 0.09, rz: 0.08 },
       ],
     },
   },
@@ -256,8 +300,7 @@ export const m6bGuerraCivil: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 5 },
             { kind: UnitKind.MUSKETEER, count: 2 },
           ],
-          // Behind the line, on the Quito road: the column that was following the army cuts the camp off.
-          spawn: { ref: 'player', dx: -cuscoIncaLength(26), dz: -cuscoIncaLength(22) },
+          spawn: QUIPAIPAN_REAR_COLUMN,
           pos: QUIPAIPAN_CAMP,
           target: QUIPAIPAN_CAMP,
           radius: cuscoIncaLength(7),

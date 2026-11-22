@@ -44,7 +44,14 @@ The sack of Chorrillos and the occupation of Lima are stated in the epilogue, ne
 
 ## Opening and closing
 
-- Three beats: Lima, the redoubts, the withdrawal.
+- Cinema intro (`introStyle: 'cinema'`, as the Tarapacá pilot): Lima and the open ground south of it
+  (`cine-lima`, push-in); a campaign map painted from this terrain with the three redoubt nodes
+  (`MIRAFLORES_REDOUBT_1..3`), the reservists' road from Lima and the Chilean column from its camp through
+  San Juan to `MIRAFLORES_REDOUBT_2` (the wave's own spawn and target); the reservists on the line facing
+  the Chilean infantry (`cine-linea`, pan). The withdrawal and the optional fourth redoubt are not shown: the
+  act cards and the epilogue tell them. Regenerate the two 1920x1080 stills with
+  `node scripts/capture_cinema.mjs --mission=m_miraflores [--only=cine-linea]`. The capture cannot stage
+  buildings, so the redoubts are not in the stills.
 - Briefing art `media/miraflores/intro-reductos.webp`; act cards `intro-reductos` and `intro-retirada`;
   epilogue `intro-epilogo`.
 

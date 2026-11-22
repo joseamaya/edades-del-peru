@@ -46,7 +46,13 @@ The Inca's capture and execution are narrated in the epilogue; no counterfactual
 
 ## Opening and closing
 
-- Three beats: the last court, Huayna Pucará, the capture.
+- Cinema intro (`introStyle: 'cinema'`, as the Tarapacá pilot): Huayna Pucará in the cloud forest at dusk
+  (`cine-selva`, push-in); a campaign map painted from this terrain where Toledo's expedition comes down the
+  Cusco road (`VILCABAMBA_CUSCO_ROAD`) past Arbieto's camp onto the pucará while the garrison climbs from the
+  court's camp (constants shared with the layout, objectives and waves); the garrison facing Arbieto's
+  vanguard (`cine-pucara`, pan). It states the mission, not its outcome: the evacuation and the escape to the
+  lower Urubamba open as act cards, the capture and execution in the epilogue. Regenerate with
+  `node scripts/capture_cinema.mjs --mission=m_vilcabamba [--only=cine-pucara]`.
 - Briefing art `media/vilcabamba/intro-pucara.webp`; act cards `intro-pucara` and `intro-captura`;
   epilogue `intro-epilogo`.
 

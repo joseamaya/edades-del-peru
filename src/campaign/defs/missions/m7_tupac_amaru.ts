@@ -21,6 +21,14 @@ const TUPAC_SIEGE_ANCHOR = {
   x: TUPAC_SIEGE.dx / TUPAC_MAP_SIZE,
   z: TUPAC_SIEGE.dz / TUPAC_MAP_SIZE,
 } as const;
+// The rebel camp at Tinta and the Cusco site (map fractions, as the layout takes them).
+const TUPAC_CAMP_ANCHOR = { x: 0.36, z: 0.62 } as const;
+const TUPAC_CUSCO_ANCHOR = { x: 0.702, z: 0.38 } as const;
+// The Sangarará garrison enters from the far side of the town, so it does not materialise on top of the
+// column that has just marched there.
+const TUPAC_SANGARARA_GARRISON = { dx: TUPAC_SANGARARA.dx, dz: TUPAC_SANGARARA.dz - colonialLength(32) } as const;
+// The Cusco sortie musters east of the city before marching on the siege line.
+const TUPAC_CUSCO_SORTIE = { dx: colonialLength(160), dz: colonialLength(80) } as const;
 const ROYALIST_COLUMN = [
   { kind: UnitKind.SOLDIER, count: 3 },
   { kind: UnitKind.RIFLEMAN, count: 1 },
@@ -51,13 +59,13 @@ export const m7TupacAmaru: MissionDef = {
   map: { seed: 1780, type: 'andes', size: TUPAC_MAP_SIZE },
   layout: {
     labels: [
-      { text: 'Tinta–Tungasuca', x: 0.36, z: 0.62, kind: 'region' },
+      { text: 'Tinta–Tungasuca', x: TUPAC_CAMP_ANCHOR.x, z: TUPAC_CAMP_ANCHOR.z, kind: 'region' },
       { text: 'Tungasuca', x: TUPAC_TUNGASUCA_ANCHOR.x, z: TUPAC_TUNGASUCA_ANCHOR.z, kind: 'settlement' },
       { text: 'Sangarará', x: TUPAC_SANGARARA_ANCHOR.x, z: TUPAC_SANGARARA_ANCHOR.z, kind: 'region' },
-      { text: 'Cusco', x: 0.702, z: 0.38, kind: 'settlement' },
+      { text: 'Cusco', x: TUPAC_CUSCO_ANCHOR.x, z: TUPAC_CUSCO_ANCHOR.z, kind: 'settlement' },
       { text: 'Camino a Langui', x: 0.2, z: 0.78, kind: 'region' },
     ],
-    base: { x: 0.36, z: 0.62 },
+    base: { x: TUPAC_CAMP_ANCHOR.x, z: TUPAC_CAMP_ANCHOR.z },
     departure: { x: 0.2, z: 0.78 },
     enemyBase: { x: 0.772, z: 0.38 },
     discoveries: [{ heritageId: 'colonial_church', initial: true }],
@@ -115,30 +123,103 @@ export const m7TupacAmaru: MissionDef = {
   enemy: { active: false, difficulty: 'normal', aggression: 0 },
   tutorial: true,
   modelMission: true,
+  // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map
+  // uses the mission's own geometry (the Tinta camp, Tungasuca, Sangarará, the Cusco slopes and the royalist
+  // columns' entry points), so what the player sees is the campaign they will march. It does not tell the
+  // outcome: Sangarará, the relief and the retreat open as act cards, the capture in the epilogue.
+  introStyle: 'cinema',
   intro: [
     {
-      kicker: 'VALLE DEL CUSCO · 1780',
+      kicker: 'Valle del Cusco · 1780',
       title: 'La Gran Rebelión',
       text: 'José Gabriel Condorcanqui, Túpac Amaru II, se alza contra el reparto, la mita y los obrajes. Micaela Bastidas organiza el avituallamiento y la red de comunidades del sur andino.',
-      seconds: 9,
-      source: 'docs/historia/campanas/tupac_amaru.md',
-      image: 'media/cusco/intro-valle.webp',
-    },
-    {
-      kicker: 'SANGARARÁ · 18 DE NOVIEMBRE DE 1780',
-      title: 'La victoria',
-      text: 'La columna realista se refugia en el pueblo. La rebelión la cerca y la vence: es la gran victoria de la campaña, pero no abre el Cusco.',
-      seconds: 9,
-      source: 'docs/historia/campanas/tupac_amaru.md',
-      image: 'media/cusco/intro-sangarara.webp',
-    },
-    {
-      kicker: 'EL CERCO · ENERO DE 1781',
-      title: 'El Cusco no cae',
-      text: 'La rebelión pone cerco a la capital. El socorro realista rompe el cerco y la campaña termina con la retirada; el epílogo cuenta la captura y la ejecución.',
       seconds: 10,
       source: 'docs/historia/campanas/tupac_amaru.md',
-      image: 'media/cusco/intro-cusco.webp',
+      image: 'media/cusco/cine-valle.webp',
+      motion: 'push',
+    },
+    {
+      kicker: 'Noviembre de 1780',
+      title: 'El camino del Cusco',
+      text: 'Desde Tinta, la rebelión reúne a las comunidades en Tungasuca. Una columna realista sale hacia Sangarará; más allá, la capital espera con sus milicias.',
+      seconds: 10,
+      source: 'docs/historia/campanas/tupac_amaru.md',
+      map: {
+        // From Tungasuca (z 184) to the sortie's muster east of the city (x 213).
+        view: { x: 44, z: 36, size: 196 },
+        marks: [
+          { x: TUPAC_TUNGASUCA.dx, z: TUPAC_TUNGASUCA.dz + 9, label: 'Tungasuca', side: 'place' },
+          {
+            x: TUPAC_CAMP_ANCHOR.x * TUPAC_MAP_SIZE + 6,
+            z: TUPAC_CAMP_ANCHOR.z * TUPAC_MAP_SIZE - 9,
+            label: 'Tinta',
+            side: 'place',
+          },
+          { x: TUPAC_SANGARARA.dx - 6, z: TUPAC_SANGARARA.dz + 9, label: 'Sangarará', side: 'place' },
+          {
+            x: TUPAC_CUSCO_ANCHOR.x * TUPAC_MAP_SIZE,
+            z: TUPAC_CUSCO_ANCHOR.z * TUPAC_MAP_SIZE - 10,
+            label: 'Cusco',
+            side: 'place',
+          },
+          {
+            x: TUPAC_CAMP_ANCHOR.x * TUPAC_MAP_SIZE - 4,
+            z: TUPAC_CAMP_ANCHOR.z * TUPAC_MAP_SIZE + 8,
+            label: 'Rebelión',
+            side: 'player',
+            delay: 0.6,
+          },
+        ],
+        routes: [
+          {
+            side: 'player',
+            points: [
+              { x: TUPAC_CAMP_ANCHOR.x * TUPAC_MAP_SIZE, z: TUPAC_CAMP_ANCHOR.z * TUPAC_MAP_SIZE },
+              { x: TUPAC_TUNGASUCA.dx + 4, z: TUPAC_TUNGASUCA.dz - 4 },
+            ],
+            delay: 1.2,
+            draw: 1.4,
+          },
+          {
+            side: 'player',
+            label: 'La rebelión',
+            points: [
+              { x: TUPAC_TUNGASUCA.dx, z: TUPAC_TUNGASUCA.dz },
+              { x: TUPAC_CAMP_ANCHOR.x * TUPAC_MAP_SIZE + 8, z: TUPAC_CAMP_ANCHOR.z * TUPAC_MAP_SIZE - 4 },
+              { x: TUPAC_SANGARARA.dx - 6, z: TUPAC_SANGARARA.dz + 6 },
+            ],
+            delay: 2.8,
+          },
+          {
+            side: 'enemy',
+            label: 'Columna realista',
+            points: [
+              { x: TUPAC_SANGARARA_GARRISON.dx, z: TUPAC_SANGARARA_GARRISON.dz },
+              { x: TUPAC_SANGARARA.dx, z: TUPAC_SANGARARA.dz - 6 },
+            ],
+            delay: 4.4,
+          },
+          {
+            side: 'enemy',
+            label: 'Milicias del Cusco',
+            dashed: true,
+            points: [
+              { x: TUPAC_CUSCO_SORTIE.dx, z: TUPAC_CUSCO_SORTIE.dz },
+              { x: TUPAC_SIEGE.dx + 6, z: TUPAC_SIEGE.dz },
+            ],
+            delay: 6,
+          },
+        ],
+      },
+    },
+    {
+      kicker: 'Tu mando',
+      title: 'Levanta la rebelión',
+      text: 'Túpac Amaru II manda el ejército y Micaela Bastidas, el avituallamiento. Levanta el cuartel, reúne las provisiones en el campamento y prepara la marcha: las comunidades esperan.',
+      seconds: 11,
+      source: 'docs/historia/campanas/tupac_amaru.md',
+      image: 'media/cusco/cine-rebelion.webp',
+      motion: 'pan-right',
     },
   ],
   epilogueImage: 'media/cusco/intro-epilogo.webp',
@@ -313,9 +394,7 @@ export const m7TupacAmaru: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [...ROYALIST_COLUMN],
-          // The garrison is inside the town; it enters from the far side so it does not materialise on top
-          // of the column that has just marched there.
-          spawn: { dx: TUPAC_SANGARARA.dx, dz: TUPAC_SANGARARA.dz - colonialLength(32) },
+          spawn: TUPAC_SANGARARA_GARRISON,
           pos: TUPAC_SANGARARA,
           radius: colonialLength(10),
           objective: 'position',
@@ -370,7 +449,7 @@ export const m7TupacAmaru: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [...ROYALIST_COLUMN],
-          pos: { dx: colonialLength(160), dz: colonialLength(80) },
+          pos: TUPAC_CUSCO_SORTIE,
           radius: colonialLength(8),
           target: TUPAC_SIEGE,
         },

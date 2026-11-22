@@ -4,8 +4,27 @@ import { MOCHE_MAP_SIZE, mocheLength } from '../../../model/defs/mocheSite';
 
 // Recuay's camp, its label and its terrain pad sit on the same anchor so they cannot drift apart.
 const MOCHE_ENEMY_ANCHOR = { x: 0.78, z: 0.28 } as const;
+// The Moche valley base and the huacas' site focus (map fractions), shared by the layout and the cinema map.
+const MOCHE_BASE = { x: 0.3, z: 0.66 } as const;
+const MOCHE_SITE_FOCUS = { x: 0.62, z: 0.38 } as const;
+const MOCHE_CANAL = { x: 0.45, z: 0.56 } as const;
 // The plaza the columns must reach: the same point the huacas hold defends.
 const MOCHE_PLAZA = { ref: 'site' as const, dx: mocheLength(4), dz: mocheLength(8) };
+// The Huaca de la Luna, where the exchange is delivered.
+const MOCHE_LUNA = { ref: 'site' as const, dx: mocheLength(13.5), dz: -mocheLength(2) };
+// Where the three Recuay columns come down from the sierra (north of the huacas).
+const MOCHE_COLUMN_NORTHWEST = { ref: 'site' as const, dx: -mocheLength(20), dz: -mocheLength(26) };
+const MOCHE_COLUMN_EAST = { ref: 'site' as const, dx: mocheLength(22), dz: -mocheLength(24) };
+const MOCHE_COLUMN_NORTH = { ref: 'site' as const, dx: 0, dz: -mocheLength(30) };
+
+/** World metres of a map fraction or of a point relative to the site, for the cinema map. */
+const world = (p: { x: number; z: number }) => ({ x: p.x * MOCHE_MAP_SIZE, z: p.z * MOCHE_MAP_SIZE });
+const MOCHE_SITE_AT = world(MOCHE_SITE_FOCUS);
+const atSite = (p: { dx: number; dz: number }) => ({ x: MOCHE_SITE_AT.x + p.dx, z: MOCHE_SITE_AT.z + p.dz });
+const MOCHE_BASE_AT = world(MOCHE_BASE);
+const MOCHE_ENEMY_AT = world(MOCHE_ENEMY_ANCHOR);
+const MOCHE_CANAL_AT = world(MOCHE_CANAL);
+const MOCHE_PLAZA_AT = atSite(MOCHE_PLAZA);
 
 export const m3MocheRecuay: MissionDef = {
   id: 'm3_moche_recuay',
@@ -21,22 +40,19 @@ export const m3MocheRecuay: MissionDef = {
   tutorial: true,
   modelMission: true,
   narrator: 'Voz de los valles moche',
+  // Played as a letterboxed film (scripts/capture_cinema.mjs): the huacas at dusk, a map drawn from this
+  // mission's own geometry (the base, the canal, the plaza and the three Recuay columns' real entry points),
+  // then the Moche line at the plaza. It does not tell the outcome: the act cards and the epilogue do.
+  introStyle: 'cinema',
   intro: [
     {
       kicker: 'VALLE DE MOCHE · c. 300–800 d.C.',
       title: 'La Frontera de los Valles',
       text: 'Los señores de Moche dominan los valles de Chicama, Moche y Virú. El agua de los canales sostiene los campos, las huacas y el poder del valle.',
-      seconds: 9,
+      seconds: 10,
       source: 'docs/historia/campanas/moche_recuay.md',
-      image: 'media/moche/intro-valle.webp',
-    },
-    {
-      kicker: 'HUACAS DEL SOL Y DE LA LUNA',
-      title: 'El centro del valle',
-      text: 'Las huacas reúnen la plaza, los templos y el intercambio. Sostener la plaza es sostener el orden del valle frente a la sierra.',
-      seconds: 9,
-      source: 'docs/historia/campanas/moche_recuay.md',
-      image: 'media/moche/intro-huacas.webp',
+      image: 'media/moche/cine-huacas.webp',
+      motion: 'push',
     },
     {
       kicker: 'CALLEJÓN DE HUAYLAS',
@@ -44,7 +60,56 @@ export const m3MocheRecuay: MissionDef = {
       text: 'Desde la sierra, los Recuay presionan la frontera. La guerra no es una batalla única: es defender los valles y mantener abierto el intercambio de élite.',
       seconds: 10,
       source: 'docs/historia/campanas/moche_recuay.md',
-      image: 'media/moche/intro-sierra.webp',
+      map: {
+        // From the valley base to the Recuay sierra, wide enough for the three columns' entry points.
+        view: { x: 56, z: 36, size: 164 },
+        marks: [
+          { x: MOCHE_SITE_AT.x - 14, z: MOCHE_SITE_AT.z + 16, label: 'Huacas', side: 'place' },
+          { x: MOCHE_CANAL_AT.x, z: MOCHE_CANAL_AT.z + 8, label: 'Canal', side: 'place' },
+          { x: MOCHE_BASE_AT.x, z: MOCHE_BASE_AT.z + 8, label: 'Moche', side: 'player', delay: 0.6 },
+          { x: MOCHE_ENEMY_AT.x, z: MOCHE_ENEMY_AT.z, label: 'Recuay', side: 'enemy', delay: 0.9 },
+        ],
+        routes: [
+          {
+            side: 'player',
+            label: 'Al valle',
+            points: [
+              { x: MOCHE_BASE_AT.x + 6, z: MOCHE_BASE_AT.z - 4 },
+              { x: MOCHE_CANAL_AT.x, z: MOCHE_CANAL_AT.z },
+              { x: MOCHE_PLAZA_AT.x - 6, z: MOCHE_PLAZA_AT.z + 6 },
+            ],
+            delay: 1.2,
+          },
+          {
+            side: 'enemy',
+            label: 'Quebrada norte',
+            points: [atSite(MOCHE_COLUMN_NORTHWEST), MOCHE_PLAZA_AT],
+            delay: 3,
+          },
+          {
+            side: 'enemy',
+            points: [atSite(MOCHE_COLUMN_NORTH), MOCHE_PLAZA_AT],
+            delay: 4.4,
+            dashed: true,
+          },
+          {
+            side: 'enemy',
+            label: 'Flanco este',
+            points: [atSite(MOCHE_COLUMN_EAST), MOCHE_PLAZA_AT],
+            delay: 5.4,
+            dashed: true,
+          },
+        ],
+      },
+    },
+    {
+      kicker: 'TU MANDO',
+      title: 'El centro del valle',
+      text: 'Las huacas reúnen la plaza, los templos y el intercambio. Abre el canal y sostén la plaza: sostenerla es sostener el orden del valle frente a la sierra.',
+      seconds: 10,
+      source: 'docs/historia/campanas/moche_recuay.md',
+      image: 'media/moche/cine-plaza.webp',
+      motion: 'pan-right',
     },
   ],
   epilogueImage: 'media/moche/intro-epilogo.webp',
@@ -56,24 +121,23 @@ export const m3MocheRecuay: MissionDef = {
   unitSpeedScale: 0.75,
   layout: {
     labels: [
-      { text: 'Valle de Moche', x: 0.3, z: 0.66, kind: 'settlement' },
-      { text: 'Huacas del Sol y de la Luna', x: 0.62, z: 0.38, kind: 'region' },
+      { text: 'Valle de Moche', ...MOCHE_BASE, kind: 'settlement' },
+      { text: 'Huacas del Sol y de la Luna', ...MOCHE_SITE_FOCUS, kind: 'region' },
       { text: 'Sierra recuay', x: MOCHE_ENEMY_ANCHOR.x, z: MOCHE_ENEMY_ANCHOR.z, kind: 'region' },
     ],
-    base: { x: 0.3, z: 0.66 },
+    base: { ...MOCHE_BASE },
     // Recuay sits in its own sierra, under the authored label; without this the AI camp landed at random
     // and could appear next to the huacas.
     enemyBase: { x: MOCHE_ENEMY_ANCHOR.x, z: MOCHE_ENEMY_ANCHOR.z },
     site: {
       id: 'moche_site',
       y: 6,
-      focus: { x: 0.62, z: 0.38 },
-      keepout: [{ x: 0.62, z: 0.38, rx: 0.2, rz: 0.17 }],
+      focus: { ...MOCHE_SITE_FOCUS },
+      keepout: [{ ...MOCHE_SITE_FOCUS, rx: 0.2, rz: 0.17 }],
     },
     canal: {
       name: 'Canal del valle de Moche',
-      x: 0.45,
-      z: 0.56,
+      ...MOCHE_CANAL,
       length: mocheLength(36),
       yaw: 0.08,
       initiallyOpen: false,
@@ -82,8 +146,8 @@ export const m3MocheRecuay: MissionDef = {
     },
     terrain: {
       flats: [
-        { name: 'Valles de Moche y Chicama', x: 0.3, z: 0.66, rx: 0.18, rz: 0.14 },
-        { name: 'Huacas de Moche', x: 0.62, z: 0.38, rx: 0.2, rz: 0.17 },
+        { name: 'Valles de Moche y Chicama', ...MOCHE_BASE, rx: 0.18, rz: 0.14 },
+        { name: 'Huacas de Moche', ...MOCHE_SITE_FOCUS, rx: 0.2, rz: 0.17 },
         { name: 'Sierra recuay', x: MOCHE_ENEMY_ANCHOR.x, z: MOCHE_ENEMY_ANCHOR.z, rx: 0.1, rz: 0.08 },
       ],
     },
@@ -138,7 +202,7 @@ export const m3MocheRecuay: MissionDef = {
       id: 'obj_intercambio',
       kind: 'deliver',
       heritageId: 'moche_huaca_luna',
-      pos: { ref: 'site', dx: mocheLength(13.5), dz: -mocheLength(2) },
+      pos: MOCHE_LUNA,
       resource: 'silver',
       count: 250,
       hidden: true,
@@ -195,7 +259,7 @@ export const m3MocheRecuay: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [{ kind: UnitKind.SOLDIER, count: 5 }],
-          spawn: { ref: 'site', dx: -mocheLength(20), dz: -mocheLength(26) },
+          spawn: MOCHE_COLUMN_NORTHWEST,
           pos: MOCHE_PLAZA,
           target: MOCHE_PLAZA,
           radius: mocheLength(6),
@@ -229,7 +293,7 @@ export const m3MocheRecuay: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 4 },
             { kind: UnitKind.MUSKETEER, count: 2 },
           ],
-          spawn: { ref: 'site', dx: mocheLength(22), dz: -mocheLength(24) },
+          spawn: MOCHE_COLUMN_EAST,
           pos: MOCHE_PLAZA,
           target: MOCHE_PLAZA,
           radius: mocheLength(6),
@@ -239,7 +303,7 @@ export const m3MocheRecuay: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [{ kind: UnitKind.SOLDIER, count: 6 }],
-          spawn: { ref: 'site', dx: 0, dz: -mocheLength(30) },
+          spawn: MOCHE_COLUMN_NORTH,
           pos: MOCHE_PLAZA,
           target: MOCHE_PLAZA,
           radius: mocheLength(6),

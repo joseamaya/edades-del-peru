@@ -60,7 +60,12 @@ Optional/failure: if Salom dies or the camp falls, the mission is lost.
 
 ## Opening and closing
 
-- Three narrated beats: the last bastion after Ayacucho, the siege and civilian crisis, the capitulation.
+- Cinema intro (`introStyle: 'cinema'`, see `src/ui/CinemaIntro.ts`): the Real Felipe on the bay at dusk
+  (`cine-bastion`, push-in); a campaign map painted from this terrain with the camp, the two battery nodes,
+  the blockade shore (dashed) and Rodil's sortie toward the camp, all from the `REAL_FELIPE_*` constants; a
+  siege battery with its guns on the fortress (`cine-baterias`, pan). The hunger and the capitulation stay
+  for the act cards and the epilogue. Stills: `node scripts/capture_cinema.mjs --mission=m_real_felipe
+  [--only=cine-baterias]` (shots in `scripts/cinema-shots/independencia.mjs`).
 - Briefing art: `media/real-felipe/intro-bastion.webp`; chapter cards use `intro-baterias` and
   `intro-epilogo`; epilogue uses `intro-epilogo`.
 - The epilogue states the civilian deaths and Rodil's honours without turning the siege into a heroic

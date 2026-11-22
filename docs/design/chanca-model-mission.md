@@ -66,7 +66,12 @@ in the quality bar.
 
 ## Opening and closing
 
-- Three narrated intro beats and the three act cards captured in engine by
+- Cinema intro (`introStyle: 'cinema'`, as the Tarapacá pilot): Cusco and its pucarás with the Chanca camp
+  on the heights (`cine-cusco`, push-in); a campaign map where the two Chanca columns draw themselves from the
+  waves' real spawns (`CHANCA_WAVE_NORTH`, `CHANCA_WAVE_EAST`) to `CHANCA_CAMP_STAND`; the Cusco line facing
+  the first column on the pampa (`cine-defensa`, pan). It states the siege, not the counterattack or
+  Pachacútec. Regenerate with `node scripts/capture_cinema.mjs --mission=m5_yahuar_pampa [--only=cine-defensa]`.
+- The three act cards captured in engine by
   [`scripts/capture_chanca_intro.mjs`](../../scripts/capture_chanca_intro.mjs): Cusco and the pampa, the
   Chanca pucará and the Andahuaylas road, plus a dusk epilogue.
 - `MISSION_ART` (`m5_yahuar_pampa` → `media/generated/campaigns/la-senda-del-sol/m5_yahuar/intro.webp`) uses the approved

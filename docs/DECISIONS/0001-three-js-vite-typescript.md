@@ -1,6 +1,6 @@
 # 0001 · Three.js, Vite and TypeScript
 
-**Status:** Accepted · **Date:** 2026-11-14 (records a decision taken before the repository had an ADR log)
+**Status:** Accepted · **Date:** 2026-11-14 (records a decision taken before the repository had an ADR log) · Size budget amended by [0008](./0008-dist-budget-28mb.md)
 
 ## Context
 
