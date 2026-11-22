@@ -20,7 +20,7 @@ import { t } from '../i18n';
 import { commanderFor } from '../model/defs/commanders';
 import { BUILDING_DEFS } from '../model/defs/buildings';
 import { splitSpeaker } from './dialogueLine';
-import { unitBaseKind, unitClassFor } from '../model/defs/units';
+import { unitBaseKind, unitClassFor, unitTrainableInPeriod } from '../model/defs/units';
 import { phaseOrder } from '../model/defs/sitePhases';
 import type { MissionSave } from '../game/saveTypes';
 import { CAMERA_PITCH } from '../core/cameraMath';
@@ -493,12 +493,18 @@ export class Mission {
     this.defeat();
   }
 
-  /** True while a completed building of the player can still train an army or a worker. */
+  /** True while a completed building of the player can still train a period-legal army or worker. */
   private canStillTrain(): boolean {
+    const civ = this.game.players[0]?.civ;
     for (const b of this.game.buildings.values()) {
       if (b.owner !== 0 || b.dead || !b.constructionComplete) continue;
-      // A market's caravan cannot gather or fight: alone it cannot rebuild a lost party.
-      if (BUILDING_DEFS[b.kind].trainable?.some((kind) => kind !== UnitKind.CARAVAN)) return true;
+      for (const kind of BUILDING_DEFS[b.kind].trainable ?? []) {
+        // A market's caravan cannot gather or fight, and a roster outside this period or mission
+        // cannot rebuild the party either: only a trainable unit counts.
+        if (kind === UnitKind.CARAVAN) continue;
+        if (this.def.allowedUnits && !this.def.allowedUnits.includes(kind)) continue;
+        if (unitTrainableInPeriod(kind, this.def.period, civ)) return true;
+      }
     }
     return false;
   }

@@ -199,7 +199,23 @@ describe('campaign force contract', () => {
       for (const u of [...game.units.values()]) if (u.owner === 0) game.units.delete(u.id);
       game.update(1 / 60, 0);
       // A standing house cannot rebuild the army: without units or a training building the mission is lost.
-      expect(game.mission.ended, 'a house without an army never ends the mission').toBe(true);
+      expect(game.mission.ended, 'a house without an army must end the mission').toBe(true);
+      expect(game.mission.won).toBe(false);
+    } finally {
+      game.destroy();
+      setAutoStart(true);
+    }
+  });
+
+  it('does not take a training building whose roster is barred in this period for an army', () => {
+    const game = headlessMission('m3_moche_recuay');
+    try {
+      for (const b of [...game.buildings.values()]) if (b.owner === 0) game.buildings.delete(b.id);
+      // The artillery workshop only fields post-1532 guns; in the Moche period it cannot train anyone.
+      game.spawnScriptedBuilding(BuildingKind.FACTORY, 0, 120, 120);
+      for (const u of [...game.units.values()]) if (u.owner === 0) game.units.delete(u.id);
+      game.update(1 / 60, 0);
+      expect(game.mission.ended, 'a period-locked workshop cannot rebuild the army').toBe(true);
       expect(game.mission.won).toBe(false);
     } finally {
       game.destroy();
