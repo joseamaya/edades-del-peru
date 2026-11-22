@@ -57,12 +57,12 @@ Scale: 0 = no identity, 1 = labels/palette only, 2 = one strong cue but generic 
 
 | Mission              | Opening cap (triangles / calls) |     Late cap |
 | -------------------- | ------------------------------: | -----------: |
-| `m_lima`             |                      800k / 860 | 1.1M / 1,250 |
+| `m_lima`             |                      800k / 860 | 1.2M / 1,250 |
 | `m_junta_cusco`      |                    780k / 1,000 |            — |
 | `m8_independencia`   |                      625k / 660 | 920k / 1,325 |
-| `m7_tupac_amaru`     |                      575k / 710 | 860k / 1,140 |
+| `m7_tupac_amaru`     |                      595k / 710 | 860k / 1,140 |
 | `m9_guerra_pacifico` |                      570k / 640 | 860k / 1,160 |
-| `m6b_guerra_civil`   |                      745k / 465 | 1.025M / 715 |
+| `m6b_guerra_civil`   |                      745k / 465 | 1.025M / 760 |
 | `m6_chimu_inca`      |                      530k / 290 |   815k / 550 |
 
 This is the hard constraint: geographic identity must be bought with relief, distribution and merging, not
