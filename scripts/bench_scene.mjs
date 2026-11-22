@@ -100,10 +100,9 @@ const BUDGETS = {
   // 800k/860 cap, over art-direction §11's 600k/200 target). Hardware high ~874k/627 (974,062/832 with VSM
   // on the same scene): ~100k triangles and 205 calls off.
   m_lima: { sceneTriangles: 800_000, sceneDrawCalls: 860, kitTriangles: 140_000, kitDrawCalls: 25 },
-  // Lima in use: the colonial city and the siege crowd. Software 1,121,008/841 after the mission-scoped
-  // Rímac field (the 2026-11-16 pass measured 927,198/928); hardware high 1,134,038/931 (1,267,920/1,226
-  // with VSM), over §11's target. The 1.2M cap gives the field's groves ~6% headroom over both.
-  m_lima_late: { sceneTriangles: 1_200_000, sceneDrawCalls: 1_250, kitTriangles: 140_000, kitDrawCalls: 25 },
+  // Lima in use: the colonial city and the siege crowd. Software 927,198/928 (under the 1.1M/1,250 cap);
+  // hardware high 1,134,038/931 (1,267,920/1,226 with VSM), over §11's target.
+  m_lima_late: { sceneTriangles: 1_100_000, sceneDrawCalls: 1_250, kitTriangles: 140_000, kitDrawCalls: 25 },
   // La Junta's opening army is large; a regression cap, still over §11's target. Measured 673,132 / 669
   // with 14,334 / 12 kit after the highland pack.
   m_junta_cusco: { sceneTriangles: 780_000, sceneDrawCalls: 1000, kitTriangles: 20_000, kitDrawCalls: 14 },
@@ -148,9 +147,8 @@ const BUDGETS = {
   // (244 gatherable + 400 decorative). The cap is raised for the selva pilot only (roadmap §10).
   m_vilcabamba: { sceneTriangles: 700_000, sceneDrawCalls: 540, kitTriangles: 5_000, kitDrawCalls: 2 },
   // Túpac Amaru opening on the 256 m valley: the camp, the chapel, the starting column and the highland
-  // kit. The mission-scoped valley field raised it from 521,318/491 to 575,288/456 (18,644/12 kit) at the
-  // 2026-11-22 measurement; still under §11's 600k target. The call count is over §11's 200 target.
-  m7_tupac_amaru: { sceneTriangles: 590_000, sceneDrawCalls: 710, kitTriangles: 30_000, kitDrawCalls: 14 },
+  // kit. Measured 521,318 / 491 with 18,974 / 12 kit; the call count is over §11's 200 target.
+  m7_tupac_amaru: { sceneTriangles: 575_000, sceneDrawCalls: 710, kitTriangles: 30_000, kitDrawCalls: 14 },
   // The huacas plaza under Recuay pressure: measured ~721k / 568; still over art-direction §11's 600k target.
   m3_moche_recuay_late: { sceneTriangles: 770_000, sceneDrawCalls: 600, kitTriangles: 12_000, kitDrawCalls: 4 },
   // The Wari frontier with its line and Tiahuanaco influence: measured 510,340 / 337 with 93,798 / 6 kit.
@@ -159,9 +157,8 @@ const BUDGETS = {
   m5_yahuar_pampa_late: { sceneTriangles: 810_000, sceneDrawCalls: 548, kitTriangles: 0, kitDrawCalls: 0 },
   // The surrender of Chan Chan: measured ~765k / 516; over the 600k target.
   m6_chimu_inca_late: { sceneTriangles: 815_000, sceneDrawCalls: 550, kitTriangles: 15_000, kitDrawCalls: 3 },
-  // The battle of Quipaipan: the mission-scoped arroyo and field raised it from ~967k / 673 to
-  // 1,011,049 / 722; over the 600k target, but still under the 1,025k triangle cap.
-  m6b_guerra_civil_late: { sceneTriangles: 1_025_000, sceneDrawCalls: 760, kitTriangles: 0, kitDrawCalls: 0 },
+  // The battle of Quipaipan: measured ~967k / 673; over the 600k target.
+  m6b_guerra_civil_late: { sceneTriangles: 1_025_000, sceneDrawCalls: 715, kitTriangles: 0, kitDrawCalls: 0 },
   // Ayacucho: measured ~867k / 1246; over the 600k/200 targets.
   m8_independencia_late: { sceneTriangles: 920_000, sceneDrawCalls: 1_325, kitTriangles: 0, kitDrawCalls: 0 },
   // The siege/retreat crowd at Cusco: measured 838,094 / 746 with 24,050 / 12 kit; over §11's 600k target.
