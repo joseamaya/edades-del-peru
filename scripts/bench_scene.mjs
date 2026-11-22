@@ -100,9 +100,9 @@ const BUDGETS = {
   // 800k/860 cap, over art-direction §7's 600k/200 target). Hardware high ~874k/627 (974,062/832 with VSM
   // on the same scene): ~100k triangles and 205 calls off.
   m_lima: { sceneTriangles: 800_000, sceneDrawCalls: 860, kitTriangles: 140_000, kitDrawCalls: 25 },
-  // Lima in use: the colonial city and the siege crowd. Software 1,121,008/841 after the mission-scoped
-  // Rímac field (the 2026-11-16 pass measured 927,198/928); hardware high 1,134,038/931 (1,267,920/1,226
-  // with VSM), over §7's target. The 1.2M cap gives the field's groves ~6% headroom over both.
+  // Lima in use: the colonial city and the siege crowd. Software 1,121,008/841 after the painted Rímac
+  // ground (the 2026-11-16 pass measured 927,198/928); hardware high 1,134,038/931 (1,267,920/1,226 with
+  // VSM), over §7's target. The 1.2M cap gives the groves ~6% headroom over both.
   m_lima_late: { sceneTriangles: 1_200_000, sceneDrawCalls: 1_250, kitTriangles: 140_000, kitDrawCalls: 25 },
   // La Junta's opening army is large; a regression cap, still over §7's target. Measured 673,132 / 669
   // with 14,334 / 12 kit after the highland pack.
