@@ -215,39 +215,38 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
     const center = g.playerCenter(0) as { x: number; z: number };
     const sucre = [...g.units.values()].find((u: any) => u.tag === 'sucre') as any;
     const cavalry = [...g.units.values()]
-      .filter((u: any) => u.owner === 0 && !u.dead && (u.kind === 'cavalry' || u.kind === 'patriota_montonera'))
-      .map((u: any) => u.id);
-    const rifles = [...g.units.values()]
-      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'rifleman' && u.tag !== 'sucre')
-      .map((u: any) => u.id);
-    const artillery = [...g.units.values()]
-      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'artillery')
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'cavalry' && u.tag !== 'sucre')
       .map((u: any) => u.id);
     const move = (ids: number[], x: number, z: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
     const dt = 1 / 60;
     let t = 0;
+    // Junín is cavalry-only: the infantry, montoneras and artillery join after the hold.
     move([sucre.id], g.settings.mapSize * 0.1, g.settings.mapSize * 0.9);
-    move(artillery, center.x, center.z + 15);
-    // A home guard keeps the base alive while the field army marches; the rest holds Junín.
-    const homeGuard = rifles.slice(0, 3);
-    const field = rifles.slice(3);
-    move(homeGuard, center.x, center.z + 8);
     const junin = m.getObjectiveAnchor('obj_junin') as { x: number; z: number };
-    move([...cavalry, ...field], junin.x, junin.z);
+    move(cavalry, junin.x, junin.z);
     for (let i = 0; i < Math.ceil(140 / dt) && !m.ended; i++) {
-      if (i % Math.ceil(20 / dt) === 0) {
-        move([...cavalry, ...field], junin.x, junin.z);
-        move(homeGuard, center.x, center.z + 8);
-      }
+      if (i % Math.ceil(20 / dt) === 0) move(cavalry, junin.x, junin.z);
       if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       g.update(dt, t);
       t += dt;
     }
     const juninState = m.getObjectiveState('obj_junin') as string;
+    // The infantry, montoneras and artillery join after the cavalry action, for the march and Ayacucho.
+    const joinedRifles = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'rifleman' && u.tag !== 'sucre')
+      .map((u: any) => u.id);
+    const joinedMontoneras = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'patriota_montonera')
+      .map((u: any) => u.id);
+    const joinedArtillery = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'artillery')
+      .map((u: any) => u.id);
+    const homeGuard = joinedRifles.slice(0, 3);
+    const field = joinedRifles.slice(3);
     // Act II: march to the Ayacucho marker before the final hold.
     const marcha = m.getObjectiveAnchor('obj_marcha') as { x: number; z: number };
-    move([...cavalry, ...field, ...artillery], marcha.x, marcha.z);
+    move([...cavalry, ...joinedMontoneras, ...field, ...joinedArtillery], marcha.x, marcha.z);
     for (let i = 0; i < Math.ceil(20 / dt) && !m.ended; i++) {
       if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       g.update(dt, t);
@@ -258,7 +257,7 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
     for (let i = 0; i < Math.ceil(360 / dt) && !m.ended; i++) {
       if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       if (i % Math.ceil(20 / dt) === 0) {
-        move([...cavalry, ...artillery], enemy.pos.x, enemy.pos.z);
+        move([...cavalry, ...joinedMontoneras, ...joinedArtillery], enemy.pos.x, enemy.pos.z);
         move(field, enemy.pos.x - 12, enemy.pos.z + 10);
         move(homeGuard, center.x, center.z + 8);
       }
@@ -1674,9 +1673,13 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
     const cerco = m.getObjectiveState('a2_cerco') as string;
 
     const camp = [...g.buildings.values()].find((b: any) => b.tag === 'campamento_quizu' && !b.dead) as any;
+    // The falconete joins when the cabildo is completed; query again so the assault includes it.
+    const assault = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker')
+      .map((u: any) => u.id);
     if (camp) {
       g.executeCommand(
-        { kind: 'order', unitIds: army, order: { kind: 'attack', entityId: camp.id }, clear: true },
+        { kind: 'order', unitIds: assault, order: { kind: 'attack', entityId: camp.id }, clear: true },
         false,
       );
     }

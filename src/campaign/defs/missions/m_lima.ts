@@ -80,7 +80,7 @@ export const mLima: MissionDef = {
       { kind: UnitKind.MUSKETEER, dx: 10, dz: 2, count: 3 },
       { kind: UnitKind.CAVALRY, dx: 12, dz: -2, count: 2 },
       { kind: UnitKind.CAVALRY, dx: 6, dz: 0, count: 1, tag: 'pizarro' },
-      { kind: UnitKind.ARTILLERY, dx: 6, dz: 8, count: 1 },
+      { kind: UnitKind.INCA_WARRIOR, dx: 2, dz: 6, count: 2 },
       { kind: UnitKind.MISSIONARY, dx: 8, dz: 8, count: 1 },
     ],
   },
@@ -90,6 +90,8 @@ export const mLima: MissionDef = {
   modelMission: true,
   epilogueImage: 'media/lima/intro-epilogo.webp',
   buildingNames: { [BuildingKind.MARKET]: 'Cabildo y plaza' },
+  // The Spanish used light pieces (falconetes) in the conquest; the generic siege model is only a stand-in.
+  unitNames: { [UnitKind.ARTILLERY]: 'Falconete', [UnitKind.INCA_WARRIOR]: 'Aliado andino' },
   // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map
   // uses the mission's own geometry (the traza, the Rímac bridge, Quizu's camp and the relief columns'
   // entry), so what the player sees is what the siege will throw at Lima. It does not tell the outcome.
@@ -171,7 +173,6 @@ export const mLima: MissionDef = {
     UnitKind.SOLDIER,
     UnitKind.MUSKETEER,
     UnitKind.CAVALRY,
-    UnitKind.ARTILLERY,
     UnitKind.SCOUT,
     UnitKind.MISSIONARY,
   ],
@@ -184,7 +185,6 @@ export const mLima: MissionDef = {
     BuildingKind.BARRACKS,
     BuildingKind.ARSENAL,
     BuildingKind.STABLE,
-    BuildingKind.FACTORY,
     BuildingKind.FORTRESS,
     BuildingKind.WALL,
     BuildingKind.GATE,
@@ -278,11 +278,19 @@ export const mLima: MissionDef = {
           kicker: 'Acto II · Agosto de 1536',
           title: 'El cerco',
           image: 'media/lima/intro-rimac.webp',
-          text: 'Las columnas de socorro al Cusco se pierden en la sierra. Quizu Yupanqui baja de los cerros con el ejército de Manco Inca. Lima debe resistir.',
+          text: 'Las columnas de socorro al Cusco se pierden en la sierra. Quizu Yupanqui baja de los cerros con el ejército de Manco Inca. Lima debe resistir. Los falconetes de la hueste se suman a la defensa del llano.',
         },
         { type: 'site_phase', phase: 'ciudad' },
         { type: 'objective', objectiveId: 'a2_cerco', state: 'activate', announce: true },
         { type: 'objective', objectiveId: 'a2_curacas', state: 'activate', announce: true },
+        // The artillery is documented for the 1536 siege, not for the 1535 foundation: it joins with Act II.
+        {
+          type: 'reinforce',
+          owner: 0,
+          units: [{ kind: UnitKind.ARTILLERY, count: 2 }],
+          pos: { dx: LIMA_BASE.x, dz: LIMA_BASE.z },
+          radius: 10,
+        },
         {
           type: 'wave',
           owner: 1,
@@ -321,10 +329,9 @@ export const mLima: MissionDef = {
         {
           type: 'reinforce',
           owner: 0,
-          units: [{ kind: UnitKind.SOLDIER, count: 3 }],
+          units: [{ kind: UnitKind.INCA_WARRIOR, count: 3 }],
           pos: { dx: LIMA_CITY.x, dz: LIMA_CITY.z },
           radius: 10,
-          objective: 'position',
         },
       ],
     },

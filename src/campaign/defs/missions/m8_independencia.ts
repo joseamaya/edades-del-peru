@@ -10,7 +10,7 @@ const INDEPENDENCE_JUNIN_ENTRY = { ref: 'enemy' as const, dx: 0, dz: 0 };
 // Junín is the patriot approach on its own pampa, Ayacucho the royalist field: anchored to the enemy base it
 // sat 22 m from Ayacucho and was the same place.
 // Far enough from the opening line that no rider starts inside the hold: at 25 m the hold's near edge sat
-// 14.6 m from the camp, where the cavalry opens at 13.3 m plus dispersion (and the montoneras counted too).
+// 14.6 m from the camp, where the cavalry opens at 13.3 m plus dispersion.
 const INDEPENDENCE_JUNIN = { ref: 'player' as const, dx: independenceLength(32), dz: 0 };
 const INDEPENDENCE_MARCH = { ref: 'enemy' as const, dx: -independenceLength(45), dz: 0 };
 const INDEPENDENCE_AYACUCHO_ENTRY = { ref: 'enemy' as const, dx: 0, dz: -independenceLength(20) };
@@ -76,13 +76,27 @@ export const m8Independencia: MissionDef = {
   start: {
     enemyOpeningUnits: false,
     units: [
-      { kind: UnitKind.RIFLEMAN, dx: independenceLength(6), dz: -independenceLength(6), count: 1, tag: 'sucre' },
-      { kind: UnitKind.RIFLEMAN, dx: independenceLength(6), dz: -independenceLength(6), count: 10 },
-      { kind: UnitKind.CAVALRY, dx: independenceLength(10), dz: -independenceLength(2), count: 5 },
-      { kind: UnitKind.PATRIOTA_MONTONERA, dx: independenceLength(12), dz: -independenceLength(2), count: 2 },
-      { kind: UnitKind.ARTILLERY, dx: independenceLength(4), dz: independenceLength(8), count: 2 },
+      // Junín was a cavalry action with no firearms: Sucre rides with the cavalry and the infantry only joins afterwards.
+      {
+        kind: UnitKind.CAVALRY,
+        dx: independenceLength(6),
+        dz: -independenceLength(6),
+        count: 1,
+        tag: 'sucre',
+        stance: 'defensivo',
+      },
+      {
+        kind: UnitKind.CAVALRY,
+        dx: independenceLength(10),
+        dz: -independenceLength(2),
+        count: 5,
+        stance: 'defensivo',
+      },
     ],
   },
+  // The player's roster is the cavalry arm of Junín; the infantry, montoneras and artillery are scripted
+  // reinforcements for the march and Ayacucho.
+  allowedUnits: [UnitKind.WORKER, UnitKind.CAVALRY, UnitKind.SCOUT],
   mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
   // The royalist army is a scripted force: it keeps its centre and houses but no peasant economy, and its
   // pressure is the Junín charge, the Ayacucho garrison and the surrender hold.
@@ -108,8 +122,8 @@ export const m8Independencia: MissionDef = {
     {
       kicker: 'Junín y Ayacucho · 1824',
       title: 'Dos campos',
-      text: 'El 6 de agosto, en la pampa de Junín, la caballería patriota —con montoneras— enfrenta a los dragones realistas. Después, el ejército de Sucre marcha al sur, hacia el campo de Ayacucho.',
-      seconds: 11,
+      text: 'El 6 de agosto, en la pampa de Junín, la caballería patriota de Necochea enfrenta a los dragones realistas: no se dispara un solo tiro. Después, el ejército de Sucre marcha al sur, hacia el campo de Ayacucho.',
+      seconds: 13,
       source: 'docs/historia/campanas/independencia.md',
       map: {
         // The transect between the patriot camp (x 90) and the royalist centre (x 198, z 95).
@@ -167,7 +181,7 @@ export const m8Independencia: MissionDef = {
     {
       kicker: 'Tu mando',
       title: 'Sostén Junín',
-      text: 'Sucre manda el ejército patriota. Sostén Junín con la caballería y mantén vivo a Sucre: sin caballería no hay ejército, y sin Sucre no hay campaña.',
+      text: 'La caballería de Necochea sostiene Junín; Sucre manda el ejército que marchará a Ayacucho. Mantén vivo a Sucre: sin él no hay campaña.',
       seconds: 10,
       source: 'docs/historia/campanas/independencia.md',
       image: 'media/independencia/cine-junin.webp',
@@ -274,7 +288,6 @@ export const m8Independencia: MissionDef = {
           units: [
             { kind: UnitKind.CAVALRY, count: 1 },
             { kind: UnitKind.REALISTA_DRAGON, count: 1 },
-            { kind: UnitKind.SOLDIER, count: 3 },
           ],
           spawn: INDEPENDENCE_JUNIN_ENTRY,
           // The charge defends the Junín hold: sharing its constant is what keeps the two in step.
@@ -301,6 +314,18 @@ export const m8Independencia: MissionDef = {
           text: '—Junín resiste. Ahora, a Ayacucho: la decisión final está allí.',
         },
         { type: 'objective', objectiveId: 'obj_marcha', state: 'activate' },
+        // Junín was cavalry-only. The infantry, the montoneras and the artillery join the army for Ayacucho.
+        {
+          type: 'reinforce',
+          owner: 0,
+          units: [
+            { kind: UnitKind.RIFLEMAN, count: 10 },
+            { kind: UnitKind.PATRIOTA_MONTONERA, count: 2 },
+            { kind: UnitKind.ARTILLERY, count: 2 },
+          ],
+          pos: { ref: 'player', dx: 0, dz: 0 },
+          radius: 10,
+        },
         {
           type: 'wave',
           owner: 1,

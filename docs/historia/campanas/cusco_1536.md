@@ -11,7 +11,7 @@
     cañaris y chachapoyas; nobles incas colaboracionistas como **Paullu Inca**.
 - **Contexto histórico**: Manco Inca huyó del Cusco y reunió un gran ejército. Los incas incendiaron los
   techos de la ciudad con proyectiles encendidos y encerraron a los españoles en dos edificios de la
-  plaza. Los combates se extendieron a Sacsayhuamán, donde murió Juan Pizarro. Manco no logró tomar la
+  plaza. Los combates se extendieron a Sacsayhuamán, donde Juan Pizarro fue herido de muerte. Manco no logró tomar la
   ciudad: la logística agrícola y los contraataques lo obligaron a retirarse a Ollantaytambo.
 - **Hitos**: cerco del Cusco; incendio de los techos; asalto y defensa de Sacsayhuamán; muerte de Juan
   Pizarro; retirada a Ollantaytambo; continuación de la resistencia en Vilcabamba.
@@ -30,7 +30,7 @@
 | Cerco del Cusco y encierro en la plaza | Documentado | Relación del sitio del Cuzco; bibliografía. |
 | Incendio de los techos | Documentado | Crónicas y bibliografía. |
 | Lucha por Sacsayhuamán | Documentado | Bibliografía; la cronología exacta varía. |
-| Muerte de Juan Pizarro | Documentado | Crónicas; herido en el asalto. |
+| Muerte de Juan Pizarro | Documentado | Crónicas; herido de muerte en el asalto, murió días después. |
 | Manco no toma la ciudad | Documentado | La retirada a Ollantaytambo es parte del desenlace. |
 | Cifras del ejército inca | Aproximado | Las crónicas dan cifras exageradas; no se muestran como dato duro. |
 | Cahuide | Tradición | Procede sobre todo de Garcilaso y relatos tardíos; no se escenifica. |

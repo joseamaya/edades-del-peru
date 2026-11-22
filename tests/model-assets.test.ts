@@ -302,6 +302,11 @@ describe('rigged model assets', () => {
       asset: 'mounted_rig',
       variant: 'mounted_rebelde',
     });
+    // The hueste's scripted Andean allies keep the Inca rig, not the Spanish one.
+    expect(unitModelAsset(UnitKind.INCA_WARRIOR, Era.VICEROYALTY, CivId.HUESTE_INDIANA, 8)).toEqual({
+      asset: 'caral_worker',
+      variant: 'inca_soldier_f',
+    });
     expect(unitModelAsset(UnitKind.CAVALRY, Era.CONTEMPORARY, CivId.REPUBLIC)).toEqual({
       asset: 'siege_rig',
       variant: 'siege_tank_republica',

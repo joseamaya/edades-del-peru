@@ -16,7 +16,8 @@
 - **Mapa**: `andes` (sierra) con núcleo en Lima.
 - **En el juego**: dos fases de posición, Junín y Ayacucho, con Sucre protegido y oleadas realistas. Las
   batallas se abstraen como “sostener” el campo durante un tiempo; no se inventan unidades, generales ni
-  hechos. La caballería patriota incluye **montoneras** y las oleadas realistas, **dragones**. El mapa fija
+  hechos. Junín es solo de caballería, sin armas de fuego; la infantería, las **montoneras** y la artillería
+  se suman después, para la marcha y Ayacucho. Las oleadas realistas de Junín son **dragones**. El mapa fija
   dos pampas de altura y una iglesia realista como referencia visual.
 
 ## Certeza
@@ -25,6 +26,7 @@
 | --- | --- | --- |
 | San Martín proclama la independencia en Lima (1821) | Documentado | Actas y crónicas |
 | Batalla de Junín (6 de agosto de 1824) | Documentado | Basadre y fuentes contemporáneas |
+| Junín: solo caballería, sin armas de fuego | Documentado | Parte de Junín; la infantería y la artillería estaban a dos leguas. |
 | Batalla de Ayacucho y rendición realista (9 de diciembre de 1824) | Documentado | Basadre y fuentes contemporáneas |
 | Sucre al mando del ejército patriota en Ayacucho | Documentado | Basadre |
 | Las cifras de efectivos | Tradicional, no verificable | Crónicas |

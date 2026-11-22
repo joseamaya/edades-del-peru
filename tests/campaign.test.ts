@@ -175,14 +175,30 @@ describe('campaign educational content', () => {
     const m7 = MISSIONS.find((m) => m.id === 'm7_tupac_amaru')!;
     const m8 = MISSIONS.find((m) => m.id === 'm8_independencia')!;
     const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
-    const waveKinds = (mission: (typeof MISSIONS)[number]): UnitKind[] =>
-      mission.triggers.flatMap((t) => t.effects).flatMap((e) => (e.type === 'wave' ? e.units.map((u) => u.kind) : []));
-    expect(m8.start.units?.some((u) => u.kind === UnitKind.PATRIOTA_MONTONERA)).toBe(true);
+    const effectKinds = (mission: (typeof MISSIONS)[number], type: 'wave' | 'reinforce'): UnitKind[] =>
+      mission.triggers.flatMap((t) => t.effects).flatMap((e) => (e.type === type ? e.units.map((u) => u.kind) : []));
+    const waveKinds = (mission: (typeof MISSIONS)[number]): UnitKind[] => effectKinds(mission, 'wave');
+    const reinforceKinds = (mission: (typeof MISSIONS)[number]): UnitKind[] => effectKinds(mission, 'reinforce');
+    expect(reinforceKinds(m8)).toContain(UnitKind.PATRIOTA_MONTONERA);
     expect(m9.start.units?.some((u) => u.kind === UnitKind.REPUBLICA_DEFENSOR)).toBe(true);
     expect(m9.allowedUnits?.includes(UnitKind.REPUBLICA_DEFENSOR)).toBe(true);
     expect(waveKinds(m7)).toContain(UnitKind.REALISTA_DRAGON);
     expect(waveKinds(m8)).toContain(UnitKind.REALISTA_DRAGON);
     expect(waveKinds(m9)).toContain(UnitKind.CHILE_INFANTE);
+  });
+
+  it('keeps the Inca commanders and their ranged line documented', () => {
+    for (const [id, tag] of [
+      ['m5_yahuar_pampa', 'cusi_yupanqui'],
+      ['m6_chimu_inca', 'tupac_yupanqui'],
+    ] as const) {
+      const mission = MISSIONS.find((m) => m.id === id)!;
+      const commander = mission.start.units?.find((u) => u.tag === tag);
+      expect(commander?.kind, `${id} commander`).toBe(UnitKind.INCA_WARRIOR);
+      const kinds = mission.start.units?.map((u) => u.kind) ?? [];
+      expect(kinds, `${id} bows`).not.toContain(UnitKind.RIFLEMAN);
+      expect(kinds.filter((k) => k === UnitKind.MUSKETEER).length, `${id} slings`).toBeGreaterThan(0);
+    }
   });
 
   it('keeps documented unique units available and named in chapter I-II campaign missions', () => {
@@ -679,6 +695,34 @@ describe('campaign educational content', () => {
     expect(actTitles).toHaveLength(3);
     expect(actTitles).toContain('Hacia Ayacucho');
     expect(actTitles).toContain('La rendición realista');
+  });
+
+  it('keeps Junín cavalry-only and joins the infantry for Ayacucho', () => {
+    const m8 = MISSIONS.find((m) => m.id === 'm8_independencia')!;
+    // Junín was a cavalry action with no firearms: no infantry, artillery or montoneras open the mission.
+    const openingKinds = m8.start.units?.map((u) => u.kind) ?? [];
+    expect(openingKinds).not.toContain(UnitKind.SOLDIER);
+    expect(openingKinds).not.toContain(UnitKind.RIFLEMAN);
+    expect(openingKinds).not.toContain(UnitKind.ARTILLERY);
+    expect(openingKinds).not.toContain(UnitKind.PATRIOTA_MONTONERA);
+    expect(openingKinds.filter((k) => k === UnitKind.CAVALRY).length).toBeGreaterThanOrEqual(1);
+    // The royalist charge is cavalry too; the infantry only appears at Ayacucho.
+    const juninWave = m8.triggers
+      .flatMap((t) => t.effects)
+      .find((e) => e.type === 'wave' && e.units.some((u) => u.kind === UnitKind.REALISTA_DRAGON));
+    expect(juninWave?.type).toBe('wave');
+    if (juninWave?.type === 'wave') {
+      expect(juninWave.units.map((u) => u.kind)).not.toContain(UnitKind.SOLDIER);
+      expect(juninWave.units.map((u) => u.kind)).not.toContain(UnitKind.ARTILLERY);
+    }
+    // The infantry, montoneras and artillery join after the hold, for the march and Ayacucho.
+    const joined = m8.triggers
+      .find((t) => t.id === 't_junin')!
+      .effects.filter((e) => e.type === 'reinforce')
+      .flatMap((e) => (e.type === 'reinforce' ? e.units.map((u) => u.kind) : []));
+    expect(joined).toEqual(
+      expect.arrayContaining([UnitKind.RIFLEMAN, UnitKind.PATRIOTA_MONTONERA, UnitKind.ARTILLERY]),
+    );
   });
 
   it('hold objectives declare a position, radius and positive time', () => {

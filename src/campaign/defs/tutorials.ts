@@ -155,7 +155,7 @@ export const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'montoneras',
-        text: 'Las montoneras son caballería ligera: hostigan y persiguen, pero no aguantan un choque frontal. Úsalas para flanquear.',
+        text: 'Junín es solo de caballería y sin disparos: sostén la carga. La infantería, las montoneras y la artillería se suman después, para la marcha y Ayacucho.',
         check: { type: 'elapsed', seconds: 12 },
       },
       {

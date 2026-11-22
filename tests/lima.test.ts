@@ -64,6 +64,26 @@ describe('La Ciudad de los Reyes', () => {
     expect(LIMA.allowedUnits).not.toContain(UnitKind.TANK);
   });
 
+  it('brings the falconete with the 1536 siege, not the 1535 foundation', () => {
+    expect(LIMA.start.units?.some((u) => u.kind === UnitKind.ARTILLERY)).toBe(false);
+    expect(LIMA.allowedUnits).not.toContain(UnitKind.ARTILLERY);
+    expect(LIMA.allowedBuildings).not.toContain(BuildingKind.FACTORY);
+    expect(LIMA.unitNames?.[UnitKind.ARTILLERY]).toBe('Falconete');
+    const cabildo = LIMA.triggers.find((t) => t.id === 't_cabildo')!;
+    expect(
+      cabildo.effects.some((e) => e.type === 'reinforce' && e.units.some((u) => u.kind === UnitKind.ARTILLERY)),
+    ).toBe(true);
+  });
+
+  it('fields the Andean allies as Andean units, not as Spanish soldiers', () => {
+    expect(LIMA.start.units?.some((u) => u.kind === UnitKind.INCA_WARRIOR)).toBe(true);
+    expect(LIMA.unitNames?.[UnitKind.INCA_WARRIOR]).toBe('Aliado andino');
+    const curacas = LIMA.triggers.find((t) => t.id === 't_curacas')!;
+    expect(
+      curacas.effects.some((e) => e.type === 'reinforce' && e.units.some((u) => u.kind === UnitKind.INCA_WARRIOR)),
+    ).toBe(true);
+  });
+
   it('ships a tutorial and an epilogue that leaves Cusco besieged', () => {
     const tutorial = tutorialForMission('m_lima')!;
     expect(tutorial.steps.map((s) => s.id)).toEqual(expect.arrayContaining(['traza', 'cabildo', 'cerco', 'ruptura']));

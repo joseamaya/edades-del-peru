@@ -428,8 +428,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'Sacsayhuamán; cuando el ejército debe volver a sembrar, el cerco se debilita y Manco se retira.',
     context:
       'La rebelión de Manco Inca estalló en 1536. El ejército inca cercó el Cusco y los españoles quedaron ' +
-      'encerrados en dos edificios de la plaza; la lucha por Sacsayhuamán fue decisiva y Juan Pizarro murió ' +
-      'en el asalto. Manco no logró tomar la ciudad: la logística agrícola y los contraataques lo obligaron a ' +
+      'encerrados en dos edificios de la plaza; la lucha por Sacsayhuamán fue decisiva y Juan Pizarro fue herido ' +
+      'de muerte en el asalto, aunque murió días después. Manco no logró tomar la ciudad: la logística agrícola y los contraataques lo obligaron a ' +
       'retirarse a Ollantaytambo. La resistencia continuó en Vilcabamba. La «aparición» de Santiago es ' +
       'hagiografía colonial, no un hecho militar.',
     didYouKnow:
