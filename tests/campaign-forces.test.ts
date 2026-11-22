@@ -20,6 +20,9 @@ const SCRIPTED_ENEMY = [
   'm_real_felipe',
   'm_miraflores',
   'm_brena',
+  'm_junta_cusco',
+  'm_lima_1821',
+  'm8_independencia',
 ] as const;
 
 describe('campaign force contract', () => {

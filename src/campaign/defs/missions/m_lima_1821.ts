@@ -91,6 +91,7 @@ export const mLima1821: MissionDef = {
   unitSpeedScale: 0.75,
   startingResources: { food: 1100, wood: 800, silver: 900, stone: 500 },
   start: {
+    enemyOpeningUnits: false,
     units: [
       { kind: UnitKind.WORKER, dx: 5, dz: 4, count: 5 },
       { kind: UnitKind.SOLDIER, dx: 9, dz: 0, count: 10 },
@@ -103,7 +104,9 @@ export const mLima1821: MissionDef = {
     ],
   },
   mark: [{ tag: 'callao_realista', kind: BuildingKind.CENTER, owner: 1 }],
-  enemy: { active: true, difficulty: 'normal', aggression: 0.7 },
+  // Callao is a besieged fortress, not a town: its centre and houses stay, its pressure is the relief
+  // column from Carabayllo and the capitulation clock.
+  enemy: { active: true, difficulty: 'normal', aggression: 0.7, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/lima-1821/intro-epilogo.webp',

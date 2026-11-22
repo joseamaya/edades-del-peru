@@ -21,7 +21,6 @@ Sources and certainty: [`docs/historia/campanas/lima_1821.md`](../historia/campa
    column from Carabayllo marches on the siege line. Victory ends with La Mar's capitulation; the epilogue
    states that the war continues in the sierra.
 
-
 ## Map and site
 
 - 256 m coast transect, painted ground every 2 m, worker crossing ≈2:22 (`unitSpeedScale: 0.75`).
@@ -39,6 +38,11 @@ Sources and certainty: [`docs/historia/campanas/lima_1821.md`](../historia/campa
   missionary. Buildings follow the late-colonial roster.
 - San Martín is a tagged rifleman with a commander card; the mission protects him. No invented likeness:
   the portrait is the existing stylized abstraction.
+
+- Callao is a **besieged fortress**: `enemy.economy: false` and `start.enemyOpeningUnits: false` keep its
+  centre and houses but stop the peasant economy, sawmill and mill. Its pressure is the authored relief
+  column from Carabayllo and the capitulation clock; `enemy.attacks: false` keeps the fortress from marching
+  out on its own.
 
 ## Opening and closing
 

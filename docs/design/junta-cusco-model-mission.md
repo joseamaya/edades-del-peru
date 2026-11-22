@@ -54,6 +54,10 @@ The match is locked to `HistoricalPeriod.INDEPENDENCE` and `Era.REPUBLIC`:
 - The montonera is the mission's light unit: it flanks and harasses, but does not hold a line. The tutorial
   says so explicitly.
 
+- The royalist division is a **scripted force**: `enemy.economy: false` and `start.enemyOpeningUnits: false`
+  keep its centre and houses but stop the peasant economy, sawmill and mill; `enemy.attacks: false` leaves the
+  offensive to the Apacheta and Umachiri waves.
+
 ## Opening and closing
 
 - Three narrated intro beats: the Junta, the four columns, Umachiri.

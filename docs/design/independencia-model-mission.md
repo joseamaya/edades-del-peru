@@ -55,6 +55,13 @@ recorded here and in the quality bar.
 - Sucre is a protected named commander; the royalist centre is an optional destruction target, not the goal.
 - The narrator is **Antonio José de Sucre**, a documented commander.
 
+- The royalist army is a **scripted force**: `enemy.economy: false` and `start.enemyOpeningUnits: false`
+  keep its centre and houses but stop the peasant economy, sawmill and mill. Its pressure is the Junín
+  charge, the Ayacucho garrison (which mans the capture point) and the surrender hold; `attacks: false`
+  leaves the offensive to those authored waves. Both waves are sized to their 90 s holds: with the scripted
+  AI no part of the garrison marches on the camp, and the original counts made the final hold a wipe in the
+  real-order playtest.
+
 ## Opening and closing
 
 - Three narrated intro beats and the three act cards captured in engine by

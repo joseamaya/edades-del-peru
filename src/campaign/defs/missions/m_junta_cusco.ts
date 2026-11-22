@@ -87,6 +87,7 @@ export const mJuntaCusco: MissionDef = {
   unitSpeedScale: 0.75,
   startingResources: { food: 900, wood: 600, silver: 800, stone: 400 },
   start: {
+    enemyOpeningUnits: false,
     units: [
       { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 5 },
       { kind: UnitKind.SOLDIER, dx: 8, dz: 0, count: 14 },
@@ -99,7 +100,9 @@ export const mJuntaCusco: MissionDef = {
     ],
   },
   mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
-  enemy: { active: true, difficulty: 'normal', aggression: 0.6 },
+  // The royalist division is a scripted force: it keeps its centre and houses but no peasant economy,
+  // and its offensive is the Apacheta/Umachiri waves.
+  enemy: { active: true, difficulty: 'normal', aggression: 0.6, economy: false, attacks: false },
   tutorial: true,
   modelMission: true,
   intro: [
