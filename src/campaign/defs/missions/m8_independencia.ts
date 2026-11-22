@@ -199,9 +199,9 @@ export const m8Independencia: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [
-            { kind: UnitKind.CAVALRY, count: 2 },
+            { kind: UnitKind.CAVALRY, count: 1 },
             { kind: UnitKind.REALISTA_DRAGON, count: 1 },
-            { kind: UnitKind.SOLDIER, count: 4 },
+            { kind: UnitKind.SOLDIER, count: 3 },
           ],
           spawn: INDEPENDENCE_JUNIN_ENTRY,
           // The charge defends the Junín hold: sharing its constant is what keeps the two in step.
@@ -232,8 +232,8 @@ export const m8Independencia: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [
-            { kind: UnitKind.SOLDIER, count: 5 },
-            { kind: UnitKind.CAVALRY, count: 3 },
+            { kind: UnitKind.SOLDIER, count: 3 },
+            { kind: UnitKind.CAVALRY, count: 2 },
           ],
           spawn: INDEPENDENCE_AYACUCHO_ENTRY,
           pos: { ref: 'enemy', dx: 0, dz: 0 },
