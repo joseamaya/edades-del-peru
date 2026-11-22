@@ -62,7 +62,7 @@ Scale: 0 = no identity, 1 = labels/palette only, 2 = one strong cue but generic 
 | `m8_independencia`   |                      625k / 660 | 920k / 1,325 |
 | `m7_tupac_amaru`     |                      595k / 710 | 860k / 1,140 |
 | `m9_guerra_pacifico` |                      570k / 640 | 860k / 1,160 |
-| `m6b_guerra_civil`   |                      745k / 465 | 1.025M / 760 |
+| `m6b_guerra_civil`   |                      745k / 465 | 1.025M / 740 |
 | `m6_chimu_inca`      |                      530k / 290 |   815k / 550 |
 
 This is the hard constraint: geographic identity must be bought with relief, distribution and merging, not

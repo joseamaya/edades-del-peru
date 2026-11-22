@@ -91,7 +91,9 @@ The 2026-11-19 closeout re-ran the two tightest SwiftShader rows on `main`:
 - `m8_independencia` opening: **618,602 / 597** against **625,000 / 660**. The row is green, but the
   margin is ~1 %; an earlier run measured 626,265 and the vegetation mix varies a few thousand triangles
   between runs. Do not add scene weight to m8 without re-measuring.
-- `m6b_guerra_civil` late: **1,015,103 / 672** against **1,025,000 / 715** (~1 % margin).
+- `m6b_guerra_civil` late: **1,011,049 / 722** on idle runs (724–726 under load) against **1,025,000 / 740**
+  (~2 % call margin). The 2026-11-22 pass made the 0.5 s opening garrison deterministic: the probe disables
+  the intro guard so the settle updates advance the clock and `t_guarnicion` fires.
 
 This document's 17 rows cover m3–m9, m6b and La Junta. The seven missions added on 2026-11-18
 (`m_cusco_1536`, `m_vilcabamba`, `m_lima_1821`, `m_real_felipe`, `m_tarapaca`, `m_miraflores`, `m_brena`)

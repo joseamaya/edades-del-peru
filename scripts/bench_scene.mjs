@@ -160,11 +160,12 @@ const BUDGETS = {
   m5_yahuar_pampa_late: { sceneTriangles: 810_000, sceneDrawCalls: 548, kitTriangles: 0, kitDrawCalls: 0 },
   // The surrender of Chan Chan: measured ~765k / 516; over the 600k target.
   m6_chimu_inca_late: { sceneTriangles: 815_000, sceneDrawCalls: 550, kitTriangles: 15_000, kitDrawCalls: 3 },
-  // The battle of Quipaipan: measured ~967k / 673 before the mission-scoped arroyo and field. The late load
-  // is bimodal: 947,943/663 with 2,010 meshes, or 1,011,049/722 with 2,184, because the crowd can still be
-  // attaching when the probe reads it. 760 is a stop-gap for the high end until the harness waits for the
-  // crowd (issue 601); the 1,025k triangle cap covers 1,011k. Over the 600k target.
-  m6b_guerra_civil_late: { sceneTriangles: 1_025_000, sceneDrawCalls: 760, kitTriangles: 0, kitDrawCalls: 0 },
+  // The battle of Quipaipan: measured ~967k / 673 before the mission-scoped arroyo and field. The late scene
+  // includes the 0.5 s opening garrison (`t_guarnicion`); the probe disables the intro guard so the settle
+  // updates advance the mission and it is always present. Idle runs measure 1,011,049 / 722 (five runs);
+  // under load the row stays at 724-726, so the 740 draw cap keeps ~2% headroom. The 1,025k triangle cap
+  // covers 1,011k. Over 600k.
+  m6b_guerra_civil_late: { sceneTriangles: 1_025_000, sceneDrawCalls: 740, kitTriangles: 0, kitDrawCalls: 0 },
   // Ayacucho: measured ~867k / 1246; over the 600k/200 targets.
   m8_independencia_late: { sceneTriangles: 920_000, sceneDrawCalls: 1_325, kitTriangles: 0, kitDrawCalls: 0 },
   // The siege/retreat crowd at Cusco: measured 838,094 / 746 with 24,050 / 12 kit; over §7's 600k target.
@@ -300,6 +301,11 @@ try {
       g.qualityGovernor.setUserQuality(quality);
       g.qualityGovernor.update = () => {};
       let p = g.playerCenter(0);
+      // The Quipaipan late scene includes the opening garrison (`t_guarnicion`, 0.5 s). The clock is held
+      // by the opening flight or the mission card (`camera.isOpeningFlight() || hud.isMissionCardOpen()`),
+      // so without this the 100 settle updates below never fire it and the scene measures 177 meshes
+      // short (issue 601).
+      if (stage === 'late' && mission === 'm6b_guerra_civil') g.isCinematicActive = () => false;
       if (stage === 'camp') {
         g.setSitePhase('foundation');
         const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
