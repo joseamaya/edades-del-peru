@@ -47,6 +47,9 @@ export interface DeathFx {
 
 /** Simulation/render loop, save mission and combat plumbing. Transitional host. */
 export class RuntimeController {
+  /** Frames drawn since the match started; the water refraction re-uses every other one. */
+  private refractionFrame = 0;
+
   constructor(private readonly game: Game) {}
 
   applyMissionSetup(mis: MissionDef): void {
@@ -1201,10 +1204,18 @@ export class RuntimeController {
    * Screen-space refraction source: render the scene with the water hidden into
    * the water's target, so its shader can sample the (distorted) seabed. Only
    * when the cinematic effects are on — it costs an extra scene pass.
+   *
+   * The pass is the most expensive thing in a late-view frame (~9 ms of 36 on the reference iGPU) and
+   * the surface it feeds is a rippling, screen-distorted reflection, so it is re-drawn every second
+   * frame instead of every frame: the reflection lags the scene by one frame at 60 Hz, which the water
+   * shader's own distortion hides completely, and the frame gets the pass back.
    */
   renderWaterRefraction(): void {
     // extra full-scene pass: off in classic mode and once the preset drops to low
     if (!this.syncWaterRefraction()) return;
+    // Frames 1, 3, 5…: the first frame primes the target, the rest reuse the previous reflection.
+    this.refractionFrame += 1;
+    if (this.refractionFrame > 1 && this.refractionFrame % 2 === 0) return;
     const prev = this.game.renderer.getRenderTarget();
     this.game.water.mesh.visible = false;
     this.game.renderer.setRenderTarget(this.game.water.refractionRT);
@@ -1216,6 +1227,8 @@ export class RuntimeController {
   /** Apply the refraction gate to the water material; returns whether it is on. */
   syncWaterRefraction(): boolean {
     const on = this.game.shouldRenderWaterRefraction();
+    // While the pass is off the target goes stale: restart the cadence so the first frame back redraws it.
+    if (!on) this.refractionFrame = 0;
     this.game.water.setRefraction(on);
     return on;
   }

@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
-import { createRigAttireTools, showSharedHumanoidBody } from './rigAttire';
+import { bodyOnlyShadows, createRigAttireTools, mergePieces, showSharedHumanoidBody } from './rigAttire';
+import { consolidateRig } from './modelConsolidation';
 import {
   MODERN_SPECS,
   isModernVariant,
@@ -56,40 +57,34 @@ export function dressModern(rig: RigInstance, variant: RigVariant): RigVariantHa
   }
 
   if (hand && armed) {
+    // One merged mesh per material: the barrel, receiver, scope and magazine are the same steel, and the
+    // stock keeps the leather response. The whole group still toggles visibility as `attire_modern_weapon`.
+    const isSniper = role === 'sniper';
+    const steel = [
+      new THREE.CylinderGeometry(0.012, 0.014, isSniper ? 0.78 : 0.62, 6)
+        .rotateX(Math.PI / 2)
+        .translate(0, 0.04, isSniper ? -0.32 : -0.24),
+      new THREE.BoxGeometry(0.06, 0.08, 0.3).translate(0, 0, 0.1),
+      new THREE.BoxGeometry(0.035, 0.16, 0.07).rotateX(0.25).translate(0, -0.1, 0.06),
+    ];
+    if (isSniper) {
+      steel.push(new THREE.CylinderGeometry(0.018, 0.018, 0.16, 6).rotateX(Math.PI / 2).translate(0, 0.1, 0.02));
+    }
     const weapon = new THREE.Group();
     weapon.name = 'attire_modern_weapon';
-    const isSniper = role === 'sniper';
-    const barrel = new THREE.Mesh(track(new THREE.CylinderGeometry(0.012, 0.014, isSniper ? 0.78 : 0.62, 6)), metalMat);
-    barrel.rotation.x = Math.PI / 2;
-    barrel.position.set(0, 0.04, isSniper ? -0.32 : -0.24);
-    weapon.add(barrel);
-    if (isSniper) {
-      const scope = new THREE.Mesh(track(new THREE.CylinderGeometry(0.018, 0.018, 0.16, 6)), metalMat);
-      scope.rotation.x = Math.PI / 2;
-      scope.position.set(0, 0.1, 0.02);
-      weapon.add(scope);
-    }
-    const receiver = new THREE.Mesh(track(new THREE.BoxGeometry(0.06, 0.08, 0.3)), metalMat);
-    receiver.position.set(0, 0, 0.1);
-    weapon.add(receiver);
-    const magazine = new THREE.Mesh(track(new THREE.BoxGeometry(0.035, 0.16, 0.07)), metalMat);
-    magazine.position.set(0, -0.1, 0.06);
-    magazine.rotation.x = 0.25;
-    weapon.add(magazine);
-    const stock = new THREE.Mesh(track(new THREE.BoxGeometry(0.05, 0.09, 0.22)), leatherMat);
-    stock.position.set(0, -0.01, 0.34);
-    weapon.add(stock);
+    const steelGeometry = mergePieces(steel);
+    if (steelGeometry) weapon.add(new THREE.Mesh(track(steelGeometry), metalMat));
+    const stock = mergePieces([new THREE.BoxGeometry(0.05, 0.09, 0.22).translate(0, -0.01, 0.34)]);
+    if (stock) weapon.add(new THREE.Mesh(track(stock), leatherMat));
     weapon.rotation.set(-0.2, 0, 0);
     attach('hand_r', weapon, hand.clone());
   }
 
   if (role === 'missionary' && spine) {
     const crossMat = material(0xc8a040, 0.5, 0.4);
-    for (const [w, h] of [
-      [0.035, 0.16],
-      [0.12, 0.035],
-    ]) {
-      const bar = new THREE.Mesh(track(new THREE.BoxGeometry(w, h, 0.015)), crossMat);
+    const cross = mergePieces([new THREE.BoxGeometry(0.035, 0.16, 0.015), new THREE.BoxGeometry(0.12, 0.035, 0.015)]);
+    if (cross) {
+      const bar = new THREE.Mesh(track(cross), crossMat);
       bar.name = 'attire_modern_cross';
       attach('spine_03', bar, new THREE.Vector3(spine.x, spine.y + 0.06, spine.z + 0.17));
     }
@@ -109,6 +104,15 @@ export function dressModern(rig: RigInstance, variant: RigVariant): RigVariantHa
     carry.add(flap);
     attach('spine_03', carry, new THREE.Vector3(spine.x, spine.y - 0.02, spine.z - 0.17));
   }
+
+  // The weapon and the carry bundle toggle visibility with the task; everything else is static gear.
+  const consolidated = consolidateRig(root, {
+    dynamic: ['attire_modern_weapon', 'attire_modern_carry'],
+    cacheKey: `modern:${root.name}:${variant}`,
+  });
+  tools.ownedGeometries.push(...consolidated.geometries);
+  tools.ownedMaterials.push(...consolidated.materials);
+  bodyOnlyShadows(root);
 
   let task: RigClipState = 'idle';
   return {

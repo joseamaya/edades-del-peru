@@ -5,7 +5,14 @@ import { applyGeneratedPbr } from './Biomes';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
-import { createRigAttireTools, extrudedPlate, latheProfile, mergeColoredGeometry, mergePieces } from './rigAttire';
+import {
+  bodyOnlyShadows,
+  createRigAttireTools,
+  extrudedPlate,
+  latheProfile,
+  mergeColoredGeometry,
+  mergePieces,
+} from './rigAttire';
 import { consolidateRig } from './modelConsolidation';
 import {
   ANDEAN_SPECS,
@@ -90,6 +97,20 @@ function rodela(): THREE.BufferGeometry {
     20,
   );
 }
+
+/** Gear that toggles visibility after dressing, so `consolidateRig` must leave it as its own draw. */
+const WORKER_DYNAMIC_PARTS = [
+  'attire_headband',
+  'attire_tool',
+  'attire_carry',
+  'attire_net',
+  'attire_andean_face_paint',
+  'attire_andean_shield',
+  'attire_andean_belt',
+  'attire_andean_manta',
+  'attire_andean_macana',
+  'attire_andean_macana_head',
+] as const;
 
 /**
  * Project-authored accessories on the finished Caral worker GLB. The body,
@@ -494,24 +515,15 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     }
   }
 
-  // The variant is final: merge the static body parts into a few skinned meshes (hair, eyebrows, sash
-  // and headband in one draw call, the garments in another). The tool and the carry bundle toggle
-  // their visibility at runtime, so they stay separate.
-  const consolidated = consolidateRig(root, ['attire_headband'], variant);
+  // The variant is final: merge the static body parts and the rigid gear into a few skinned draws.
+  // Anything whose visibility changes at runtime (the tool, the net, the carry bundle and the pieces
+  // the hero hides or re-shows) keeps its own draw.
+  const consolidated = consolidateRig(root, { dynamic: WORKER_DYNAMIC_PARTS, cacheKey: variant });
   tools.ownedGeometries.push(...consolidated.geometries);
   tools.ownedMaterials.push(...consolidated.materials);
-  // Only the body is in the shadow pass: from the RTS camera the hair and garments add nothing to its
-  // shadow, and skinned meshes cannot be instanced, so each part was a shadow-pass draw per unit. Both
-  // flags go so the part stays out of the caster pass (and the old VSM receiver pass).
-  const isBody = (o: THREE.Object3D): boolean => /^Body_[fm]$/.test(o.name);
-  // Only for the Caral worker GLB: a rig without its base bodies keeps its shadows.
-  if (root.getObjectByName('Body_f') || root.getObjectByName('Body_m')) {
-    root.traverse((child) => {
-      if (!(child as THREE.Mesh).isMesh || isBody(child)) return;
-      child.castShadow = false;
-      child.receiveShadow = false;
-    });
-  }
+  // Only the body is in the shadow pass: from the RTS camera the hair, garments and gear add nothing to its
+  // shadow, and skinned meshes cannot be instanced, so each part was a shadow-pass draw per unit.
+  bodyOnlyShadows(root);
 
   return {
     setCarrying(next: boolean, color?: number): void {

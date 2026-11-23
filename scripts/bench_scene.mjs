@@ -34,6 +34,8 @@ const mission = cliArg('mission') ?? 'm1_caral';
 const stage = cliArg('stage') ?? 'opening';
 const assert = process.argv.includes('--assert');
 const frames = process.argv.includes('--frames');
+// Splits the scene cost by groups (units, unit shadows, landmark, terrain) instead of guessing.
+const attribute = process.argv.includes('--attribute');
 const quality = String(cliArg('quality', 'high'));
 if (!['high', 'medium', 'low'].includes(quality)) {
   console.error(`invalid --quality "${quality}" (use high|medium|low)`);
@@ -47,6 +49,8 @@ if ((direct || process.argv.includes('--no-refraction')) && !frames) {
 // Keeps post-processing but skips the extra full-scene refraction pass.
 const noRefraction = process.argv.includes('--no-refraction');
 const outFile = cliArg('out') ?? 'review/bench-scene.json';
+// Optional PNG of the measured frame, for PR evidence (same camera, same stage as the numbers).
+const shotFile = cliArg('shot');
 // The roadmap's site-view pass records 1280x800 and 1600x900; the default stays the historical 1600x900.
 const viewport = String(cliArg('viewport', '1600x900'));
 const [viewWidth, viewHeight] = viewport.split('x').map((n) => Number.parseInt(n, 10));
@@ -292,7 +296,7 @@ try {
   }
   await page.waitForTimeout(2000);
   const result = await page.evaluate(
-    ({ kitPattern, stage, mission, quality }) => {
+    ({ kitPattern, stage, mission, quality, attribute }) => {
       const g = window.game;
       const kit = new RegExp(kitPattern);
       // Pin the requested preset (same call as bench.mjs: it does not persist the choice) and freeze the
@@ -484,14 +488,50 @@ try {
       kitObjects.forEach((o) => (o.visible = false));
       const withoutKit = measure();
       kitObjects.forEach((o) => (o.visible = true));
+      let attribution = null;
+      if (attribute) {
+        const units = [...g.units.values()];
+        const unitGroups = units.map((u) => u.unitView?.view.group).filter(Boolean);
+        const rigRoots = units.map((u) => u.rig?.root).filter(Boolean);
+        const delta = (name, objects) => {
+          const prev = objects.map((o) => o.visible);
+          for (const o of objects) o.visible = false;
+          const off = measure();
+          objects.forEach((o, i) => (o.visible = prev[i]));
+          return { name, calls: scene.calls - off.calls, triangles: scene.triangles - off.triangles };
+        };
+        const rows = [delta('units', unitGroups), delta('landmark', g.landmark ? [g.landmark] : [])];
+        if (g.terrain?.group) rows.push(delta('terrain', [g.terrain.group]));
+        // The shadow pass draws each caster again: turn them off instead of hiding the units.
+        const casters = [];
+        for (const root of rigRoots) {
+          root.traverse((o) => {
+            if (o.isMesh && o.castShadow) casters.push(o);
+          });
+        }
+        for (const m of casters) m.castShadow = false;
+        const noUnitShadow = measure();
+        for (const m of casters) m.castShadow = true;
+        rows.push({
+          name: 'unit-shadow',
+          calls: scene.calls - noUnitShadow.calls,
+          triangles: scene.triangles - noUnitShadow.triangles,
+        });
+        attribution = { rows, units: units.length, rigged: rigRoots.length };
+      }
       return {
         scene,
         kit: { calls: scene.calls - withoutKit.calls, triangles: scene.triangles - withoutKit.triangles },
         kitObjects: kitObjects.length,
+        attribution,
       };
     },
-    { kitPattern: KIT_NAMES.source, stage, mission, quality },
+    { kitPattern: KIT_NAMES.source, stage, mission, quality, attribute },
   );
+  if (shotFile) {
+    fs.mkdirSync(path.dirname(path.resolve(shotFile)), { recursive: true });
+    await page.screenshot({ path: path.resolve(shotFile) });
+  }
   const sceneStats = await readSceneStats(page);
   const frame = frames
     ? await page.evaluate(
@@ -594,6 +634,17 @@ try {
       `${sceneStats.uniqueGeometries} geometries, ${sceneStats.uniqueMaterials} materials`,
   );
   console.log(`renderer: ${gpuInfo.renderer} (${gpuInfo.software ? 'software' : 'hardware'})`);
+  if (result.attribution) {
+    const { rows, units, rigged } = result.attribution;
+    console.log(`attribution: ${units} units (${rigged} rigged)`);
+    for (const row of rows) {
+      const perUnit = row.name === 'units' && units > 0 ? ` (${(row.calls / units).toFixed(1)} calls/unit)` : '';
+      console.log(
+        `  ${row.name}: -${row.calls} calls / -${row.triangles} tris${perUnit} ` +
+          `(${((row.calls / Math.max(1, result.scene.calls)) * 100).toFixed(0)}% of calls)`,
+      );
+    }
+  }
   if (frame) {
     console.log(
       `frame: p50/p95/p99 ${frame.frameMsP50.toFixed(1)}/${frame.frameMsP95.toFixed(1)}/${frame.frameMsP99.toFixed(1)} ms ` +

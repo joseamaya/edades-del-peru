@@ -92,6 +92,21 @@ export function showSharedHumanoidBody(root: THREE.Object3D, male: boolean): voi
   show('attire_tool', false);
 }
 
+/**
+ * Keep only the body in a unit's shadow pass: from the RTS camera the hair, garments and gear add nothing
+ * to its silhouette, and each part is a shadow-pass draw per unit. Both flags go, so the part stays out of
+ * the caster pass and the receiver pass. A rig without a base body keeps whatever it had.
+ */
+export function bodyOnlyShadows(root: THREE.Object3D): boolean {
+  if (!root.getObjectByName('Body_f') && !root.getObjectByName('Body_m')) return false;
+  root.traverse((child) => {
+    if (!(child as THREE.Mesh).isMesh || /^Body_[fm]$/.test(child.name)) return;
+    child.castShadow = false;
+    child.receiveShadow = false;
+  });
+  return true;
+}
+
 export function createRigAttireTools(root: THREE.Object3D): RigAttireTools {
   const ownedGeometries: THREE.BufferGeometry[] = [];
   const ownedMaterials: THREE.Material[] = [];

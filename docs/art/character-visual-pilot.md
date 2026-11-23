@@ -174,15 +174,16 @@ column uses `Death01`; the firearm attack is the shared one-handed pistol clip, 
 | `yarn test` | 129 files, 1,091 tests, pass |
 | `yarn build` | pass |
 | `yarn dist:check` | 27.61 MiB / 28 MiB; first play 1.88 MiB gzip; loader 2 KB gzip |
-| `yarn bench:characters` | Inca 14 / 10.7k; Spanish 22 / 14.2k; Republican 20 / 11.7k; Moche 12 / 9.4k; Wari 13 / 10.1k; Chimú 10 / 9.1k; late realista 22 / 12.7k (draws / triangles) |
+| `yarn bench:characters` | Inca 9 / 10.7k; Spanish 6 / 10.5k; Republican 6 / 9.5k; Moche 9 / 9.4k; Wari 9 / 10.1k; Chimú 9 / 9.1k; late realista 6 / 9.7k (draws / triangles) |
 
 The measurement is the isolated unit cost (main + shadow pass) in its mission or skirmish, using the same
-shown/hidden delta as the rig bench. The old primitive gear measured ~8–9 draws for the shared worker;
-the new gear stays at or below the 25-draw common-unit target and 9.1–14.2k triangles, below the 25k
-common-unit target. A 12-unit formation measures 168 / 264 / 246 / 144 / 156 / 120 / 264 draws and
-0.12–0.14 ms/frame of mixer work for the twelve units; the Spanish and late-realista formations stay under
-the 280-draw scene cap. The Spanish and the late realista are at 22 draws, so a third accessory per bone
-should be merged into an existing draw.
+shown/hidden delta as the rig bench. `consolidateRig` merges the rigid bone-attached gear (morion, backplate,
+breeches, boots, sleeves, sandals) into the same skinned draws as the body and the garments, and only the
+body silhouette casts a shadow, so the numbers are 6–9 draws for every unit — the primitive-gear baseline was
+~8–9 — and 9.1–10.7k triangles, below the 25k common-unit target. A 12-unit formation measures
+108 / 72 / 72 / 108 / 108 / 108 / 72 draws and 0.13–0.14 ms/frame of mixer work; the previous
+168 / 264 / 246 / 144 / 156 / 120 / 264 was the unmerged gear. Parts whose visibility changes at runtime (tool, net, carry bundle, weapon, and the pieces the hero
+hides) deliberately keep their own draw: ~15 gear meshes per post-colonial soldier collapsed into three.
 
 **LOD, instancing and memory.** The rig has no LOD or instancing: every unit owns a skeleton and mixer, while
 geometry, materials and clips are shared by the asset cache. The pilot adds no game asset or texture, so GPU
@@ -225,9 +226,8 @@ git checkout HEAD -- src/rendering/workerAttire.ts src/rendering/uniformAttire.t
 
 ### Costs and testing
 
-Per-unit cost is in the §7 table. All seven units are inside the 25-draw / 25k common-unit ceiling; the Moche,
-Wari and Chimú gear is also cheaper than the primitive version because the ear spools, the shield boss and the
-Wari straps are merged per bone (14 / 16 / 12 draws before).
+Per-unit cost is in the §7 table. All seven units are inside the 25-draw / 25k common-unit ceiling, and the
+merged gear path (see §7) is what brought the post-colonial soldier from 22 draws to 6.
 
 `tests/model-assets.test.ts` now covers the shaped bicorn (wider than deep) and the Moche trapezoid (wider at
 the bottom); the existing Moche/Wari/Chimú E2E specs keep asserting the documented gear names.
@@ -325,8 +325,9 @@ the silhouette change alone.
    Andean cultures inherit the shared rodela and star macana but not their own culture-specific gear, and the
    m7 rebels and modern roles are still unreviewed; the captures cover seven units, not every variant. Where
    the dossier says «no documentado», the shared base stays and no garment is invented.
-6. **Draw-call headroom.** The Spanish and the late realista are at 22 draws. A third accessory per bone
-   should be merged into an existing gear draw, not added as a new mesh.
+6. **Draw-call headroom.** Every unit now measures 6–9 draws, so a third accessory per bone is not a draw-call
+   risk. Keep new gear on `attach()` and add its name to the attire's `dynamic` list only if it toggles
+   visibility, or it will be merged into the shared draw.
 
 ## 12. Recommendation
 
@@ -345,8 +346,9 @@ standard.**
   and a before/after that proves the animation did not stretch.
 - The 28 MiB budget is untouched because the gear is runtime geometry; that is the strongest argument for the
   runtime path until the export problem is solved.
-- If a future pass adds headwear or a cuirass to the remaining cultures, merge it into an existing bone draw
-  first: the Spanish and the late realista are already at 22 of the 25 available draws.
+- New headwear or a cuirass can go straight onto `attach()`: `consolidateRig` now merges the static gear into
+  the shared skinned draws, so a unit costs 8–9 draws with or without it (list it in `dynamic` only if it
+  toggles visibility).
 
 ## See also
 

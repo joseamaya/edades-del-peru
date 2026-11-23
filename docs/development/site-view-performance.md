@@ -99,3 +99,71 @@ This document's 17 rows cover m3–m9, m6b and La Junta. The seven missions adde
 (`m_cusco_1536`, `m_vilcabamba`, `m_lima_1821`, `m_real_felipe`, `m_tarapaca`, `m_miraflores`, `m_brena`)
 have SwiftShader rows in `bench_scene.mjs` / `yarn bench:check` but **no real-GPU frame time** yet; the
 0.2.0 release records that as a known limitation, not as a measured 28–38 FPS claim.
+
+## B13 follow-up: where the late-view frame actually goes (2026-11-23)
+
+![The two tightest late views before and after the pass](../media/late-view-before-after.webp)
+
+`bench_scene.mjs --attribute` was added for this pass: it measures the scene once, then hides the unit
+rigs, the landmark and the terrain and turns every unit caster off, reporting each delta. On the two
+tightest views it says the crowd owns the draw calls but **not** the frame:
+
+| View | Units | Unit calls | Unit shadows | Unit triangles | FPS p50 |
+| --- | --- | ---: | ---: | ---: | ---: |
+| m6b late | 70 | 694 (77 % of 898) | 70 | 665k (50 %) | 27.0 |
+| m8 late | 36 | 687 (75 % of 912) | 114 | 420k (42 %) | 28.8 |
+
+### What was measured
+
+1. **Material consolidation of the character rigs** (`consolidateRig` now merges the rigid bone-attached
+   gear — morion, backplate, breeches, boots, sleeves, sandals — into the same skinned draws as the body
+   and garments, keeping only the parts that toggle visibility at runtime). Per-unit draws from
+   `yarn bench:characters`: Inca 14 → **9**, Spanish 22 → **8**, 1879 fusilier 20 → **6**, Moche 12 → **9**,
+   Wari 13 → **9**, Chimú 10 → **9**, late realista 22 → **6**.
+2. **The result on the scene:** m6b late 898 → **615** calls (−31 %), m8 late 912 → **593** (−35 %).
+3. **The result on the frame at 1600×900:** m6b 36.4 → 36.9 ms p50 (27 FPS both, three interleaved runs
+   per build) and m8 32.2 → 32.2 ms. A quarter of the draw calls bought nothing: the late view is not
+   draw-bound on this iGPU.
+4. **Per-pass attribution** (`--frames --no-refraction` / `--direct`): the water refraction re-render costs
+   **9.6 ms of 36.5** on m6b, 8.4 ms on m8 and 9.2 ms on m_lima; post-processing costs ~4 ms. That extra
+   full-scene pass was the single biggest item in the late frame, so it now runs every **second** frame
+   (`RuntimeController.renderWaterRefraction`, refreshed at 30 Hz into a half-resolution target that the
+   water shader already distorts).
+5. **Cull the merged rig draws.** The merged garments/gear were `frustumCulled = false` (a skinned mesh with
+   an unreliable bound), so an off-screen unit still paid for all of its equipment — 26.7k triangles of gear
+   for units outside the late m6b view alone. The merged geometry now gets a bind-pose bounding sphere with a
+   35 % margin (computed once per variant and handed to the mesh, because `Frustum` prefers a `SkinnedMesh`'s
+   own sphere) and culls again.
+6. **Only the body casts a unit's shadow.** `bodyOnlyShadows` (the rule the worker already had) now applies to
+   the post-colonial and modern rigs too: the merged garments and gear are one skinned draw in the main pass,
+   not a second copy in the shadow pass.
+
+### After
+
+`yarn bench:site-views --only=m6b_guerra_civil,m8_independencia --stages=late`, before and after on the same
+host. The FPS columns are the median of three 2 s samples (the pass itself is one sample and already shows
+the spread; see `review/b13-final2/`).
+
+| View | Viewport | Draw calls | FPS p50 before | FPS p50 after |
+| --- | --- | ---: | ---: | ---: |
+| m6b late | 1280×800 | 883 → 600 | 31.3 | **40.0** |
+| m6b late | 1600×900 | 898 → **615** | 27.0 | **34** |
+| m8 late | 1280×800 | 910 → 590 | 33.8 | **41.7** |
+| m8 late | 1600×900 | 912 → **593** | 28.8 | **34** |
+
+(`m_lima` late, measured ad hoc for the refraction lever alone: 36.6 → 31.0 ms, 27 → 32 FPS.)
+
+The local `yarn bench:check` ratchet was **already red on `main`** when this pass started: the character
+equipment shipped in #609–#613 raised the late m6b row from the recorded 1,011,049 triangles to **1,053,169**
+(and 722 → 894 calls), because every soldier's new gear is one more draw and a few hundred more triangles. No
+cap was raised; the culling lever brought both tight rows back under their budgets:
+
+| Row | Cap | `main` before this PR | After |
+| --- | ---: | ---: | ---: |
+| m6b late | 1,025,000 / 740 | 1,053,169 / 894 | **951,678 / 611** |
+| m8 late | 920,000 / 1,325 | 753,947 / 906 | **669,488 / 589** |
+
+**Decision:** B13 is closed with a measured win, not a reject. Three levers were kept (rig consolidation, the
+refraction cadence and the culling of merged rig draws) and one was rejected: a view-dependent refraction gate
+(skip the pass when no water is on screen) would save the same ~9 ms on inland views — m6b's late frame has no
+water at all — but it pops the reflection on and off while panning, which the art direction does not accept.
