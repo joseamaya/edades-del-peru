@@ -333,33 +333,37 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   if (andeanCulture === 'inca' && palette && (role === 'soldier' || role === 'ranged')) {
     const headBone = bonePosition('Head');
     const spineBone = bonePosition('spine_03');
-    const cottonHelmetMat = makeMaterial(0xe0d2b4, 0.95);
+    const cream = new THREE.Color(0xe0d2b4);
     if (headBone) {
-      const cap = new THREE.Mesh(
-        trackGeometry(new THREE.SphereGeometry(0.145, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.52)),
-        cottonHelmetMat,
-      );
-      cap.name = 'attire_andean_padded_helmet';
-      enableShadows(cap);
-      attach('Head', cap, new THREE.Vector3(headBone.x, headBone.y + 0.13, headBone.z));
-      for (const y of [0.07, 0.12, 0.17]) {
-        const band = new THREE.Mesh(trackGeometry(new THREE.TorusGeometry(0.132, 0.012, 5, 18)), cottonHelmetMat);
-        band.name = 'attire_andean_helmet_band';
-        band.rotation.x = Math.PI / 2;
-        enableShadows(band);
-        attach('Head', band, new THREE.Vector3(headBone.x, headBone.y + y, headBone.z));
+      const helmet = mergeColoredGeometry([
+        [new THREE.SphereGeometry(0.145, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.52).translate(0, 0.13, 0), cream],
+        ...[0.07, 0.12, 0.17].map((y): [THREE.BufferGeometry, THREE.Color] => [
+          new THREE.TorusGeometry(0.132, 0.012, 5, 18).rotateX(Math.PI / 2).translate(0, y, 0),
+          cream,
+        ]),
+      ]);
+      if (helmet) {
+        const mat = makeMaterial(0xffffff, 0.95);
+        mat.vertexColors = true;
+        const mesh = new THREE.Mesh(trackGeometry(helmet), mat);
+        mesh.name = 'attire_andean_padded_helmet';
+        enableShadows(mesh);
+        attach('Head', mesh, headBone);
       }
     }
     if (spineBone) {
-      for (const side of [-1, 1]) {
-        const panel = new THREE.Mesh(
-          trackGeometry(new THREE.BoxGeometry(0.075, 0.32, 0.012)),
-          makeMaterial(palette.secondary, 0.95),
-        );
-        panel.name = 'attire_andean_yoke';
-        panel.rotation.z = side * 0.38;
-        enableShadows(panel);
-        attach('spine_03', panel, new THREE.Vector3(spineBone.x + side * 0.06, spineBone.y, spineBone.z + 0.16));
+      const red = new THREE.Color(palette.secondary);
+      const yoke = mergeColoredGeometry([
+        [new THREE.BoxGeometry(0.075, 0.32, 0.012).rotateZ(0.38).translate(-0.06, 0, 0.16), red],
+        [new THREE.BoxGeometry(0.075, 0.32, 0.012).rotateZ(-0.38).translate(0.06, 0, 0.16), red],
+      ]);
+      if (yoke) {
+        const mat = makeMaterial(0xffffff, 0.95);
+        mat.vertexColors = true;
+        const mesh = new THREE.Mesh(trackGeometry(yoke), mat);
+        mesh.name = 'attire_andean_yoke';
+        enableShadows(mesh);
+        attach('spine_03', mesh, spineBone);
       }
     }
     for (const [side, foot] of [
@@ -368,13 +372,18 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     ]) {
       const footPos = bonePosition(foot);
       if (!footPos) continue;
-      const sole = new THREE.Mesh(
-        trackGeometry(new THREE.BoxGeometry(0.11, 0.025, 0.24)),
-        makeMaterial(0x2a1e16, 0.92),
-      );
-      sole.name = `attire_andean_sandal_${side}`;
-      enableShadows(sole);
-      attach(foot, sole, new THREE.Vector3(footPos.x, footPos.y - 0.02, footPos.z + 0.04));
+      const leatherColor = new THREE.Color(0x2a1e16);
+      const sandal = mergeColoredGeometry([
+        [new THREE.BoxGeometry(0.11, 0.025, 0.24).translate(0, -0.02, 0.04), leatherColor],
+        [new THREE.BoxGeometry(0.12, 0.018, 0.035).translate(0, 0.035, -0.02), leatherColor],
+      ]);
+      if (!sandal) continue;
+      const mat = makeMaterial(0xffffff, 0.92);
+      mat.vertexColors = true;
+      const mesh = new THREE.Mesh(trackGeometry(sandal), mat);
+      mesh.name = `attire_andean_sandal_${side}`;
+      enableShadows(mesh);
+      attach(foot, mesh, footPos);
     }
   }
 

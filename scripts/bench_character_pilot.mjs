@@ -1,9 +1,9 @@
 import { launchChromium, withViteServer } from './lib.mjs';
 
 /**
- * Structural cost of the three character-pilot units (main + shadow pass), isolated by hiding
- * their rig while the scene keeps rendering. The ceilings are the art-direction common-unit
- * budget, not the looser worker bench cap.
+ * Structural cost of the three character-pilot units. It isolates one unit (main + shadow pass),
+ * then a 12-unit formation, and measures the mixer update for that formation. The ceiling is the
+ * art-direction common-unit budget, not the looser worker bench cap.
  *
  * Usage: node scripts/bench_character_pilot.mjs [--assert]
  */
@@ -51,7 +51,43 @@ try {
         unit.rig.root.visible = false;
         const hidden = sample();
         unit.rig.root.visible = true;
-        return { variant: unit.rig.variantId, calls: shown.calls - hidden.calls, tris: shown.tris - hidden.tris };
+        const single = { calls: shown.calls - hidden.calls, tris: shown.tris - hidden.tris };
+
+        // A 12-unit formation, the size of the pilot groups in m_cusco_1536 and m_tarapaca.
+        const base = g.playerCenter(0);
+        const group = [];
+        for (let i = 0; i < 12; i++) {
+          const x = base.x + 12 + (i % 4) * 1.6;
+          const z = base.z + 12 + Math.floor(i / 4) * 1.6;
+          const spawned = g.spawnScriptedUnit(kind, 0, x, z);
+          if (spawned?.rig) group.push(spawned);
+        }
+        g.camera.setYaw(0);
+        g.camera.moveTo(base.x + 14, base.z + 15, true);
+        g.camera.setHeight(54);
+        for (let i = 0; i < 60; i++) g.camera.update(1 / 60, i / 60);
+        g.camera.camera.updateMatrixWorld();
+        const roots = group.map((candidate) => candidate.rig.root);
+        for (const root of roots) root.visible = true;
+        const formationShown = sample();
+        for (const root of roots) root.visible = false;
+        const formationHidden = sample();
+        for (const root of roots) root.visible = true;
+        const started = performance.now();
+        for (let frame = 0; frame < 300; frame++) {
+          for (const candidate of group) candidate.rig.update(1 / 60);
+        }
+        const mixerMs = (performance.now() - started) / 300;
+        return {
+          variant: unit.rig.variantId,
+          single,
+          formation: {
+            count: group.length,
+            calls: formationShown.calls - formationHidden.calls,
+            tris: formationShown.tris - formationHidden.tris,
+            mixerMs,
+          },
+        };
       }, entry.kind);
       rows.push({ name: entry.name, ...cost });
     } finally {
@@ -64,11 +100,15 @@ try {
 }
 
 let failed = false;
-console.log('unit | variant | draws | triangles');
+console.log('unit | variant | 1-unit draws | 1-unit tris | 12-unit draws | 12-unit tris | mixer ms/frame (12)');
 for (const row of rows) {
-  const over = row.calls > BUDGET.drawCalls || row.tris > BUDGET.triangles;
+  const over = row.single.calls > BUDGET.drawCalls || row.single.tris > BUDGET.triangles;
   if (over) failed = true;
-  console.log(`${row.name} | ${row.variant} | ${row.calls} | ${row.tris}${over ? ' OVER' : ''}`);
+  console.log(
+    `${row.name} | ${row.variant} | ${row.single.calls} | ${row.single.tris} | ${row.formation.calls} | ${row.formation.tris} | ${row.formation.mixerMs.toFixed(2)}${over ? ' OVER' : ''}`,
+  );
 }
-console.log(`budget: <= ${BUDGET.drawCalls} draws / <= ${BUDGET.triangles} triangles per unit (main + shadow)`);
+console.log(
+  `budget: <= ${BUDGET.drawCalls} draws / <= ${BUDGET.triangles} triangles per unit (main + shadow); the 12-unit formation is informational`,
+);
 if (assert && failed) process.exit(1);

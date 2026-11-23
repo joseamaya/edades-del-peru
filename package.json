@@ -54,6 +54,7 @@
     "sim:matrix": "node scripts/sim.mjs --matrix --jobs=4 --max=900 --out=review/ai-matrix.json",
     "diagnose:resources": "node scripts/diagnose-resources.mjs",
     "evidence": "node scripts/pr_evidence.mjs",
+    "capture:characters": "node scripts/capture_character_pilot.mjs",
     "art:pilot": "node scripts/capture_art_pilot.mjs",
     "capture:fauna": "node scripts/capture_fauna.mjs",
     "shot": "node scripts/screenshot.mjs",

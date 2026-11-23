@@ -2,6 +2,9 @@
 
 **Status:** Living · **Date:** 2026-11-23 · **Branch:** `feat/character-visual-pilot`
 
+The audit and performance numbers below are a **2026-11-23 snapshot**; update them when the rig,
+equipment or budgets change.
+
 This pilot raises the field appearance of three representative infantry units to the stylized-realism
 standard of [`../design/art-direction.md`](../design/art-direction.md) §4.1. It audits the shared rig,
 replaces the primitive period equipment with shaped garments and gear, keeps the proven skeleton and clips,
@@ -12,6 +15,8 @@ and their certainty stay in [`../historia/atuendos.md`](../historia/atuendos.md)
 restate the dossiers.
 
 ![Before and after: Inca warrior, 16th-century arquebusier and 1879 fusilier](../media/character-pilot-before-after.webp)
+
+![Idle, attack and death of the three units](../media/character-pilot-animations.webp)
 
 ## 1. Audit of the current system
 
@@ -27,6 +32,10 @@ The runtime source of truth is `src/model/defs/modelAssets.ts` and
 | Per-unit cost (bench baseline) | ~9.3k triangles and ~8–9 draw calls including the shadow pass |
 | Budget | 40 draws / 40k triangles (bench); art-direction target 25 / 25k for a common unit |
 | `dist/` | 27.61 MiB of 28 MiB; first-play payload 1.87 MiB gzip |
+
+The mounted, siege and vehicle rigs are separate GLBs and were not changed; this pilot is infantry-only. The
+art-direction camera distances are 28 (close), 54 (default) and max zoom; the captures validate close and
+default.
 
 The reusable system is sound: `ModelAssets` (cache, preload, fallback), `RigInstance` (independent skeleton
 and mixer, crossfades, grounded feet), the variant table, `consolidateRig`, `limitShadowCasters` and the
@@ -58,14 +67,16 @@ The first implementation authored three new GLBs (`inca_infantry`, `spanish16_in
 The experiment was removed. The pilot therefore uses the project's existing, proven path: **runtime
 bone attachments on the shared worker rig** (`workerAttire.ts`, `uniformAttire.ts`), which keeps the
 skeleton, clips, save/replay determinism and fallback intact. This is a deliberate result of the audit, not
-a shortcut: a new character GLB needs a bind-matrix-safe export step before it can replace the shared body.
+a shortcut: **re-exporting the finished worker GLB** is not safe. A source-based build (the
+`tambotoco_hero.glb` path) remains viable, but extending it to three new bodies was outside this pilot's
+budget.
 
 ## 3. The three units
 
 | Unit | Unit kinds / variants | Mission used for validation | Why this unit |
 | --- | --- | --- | --- |
 | **Guerrero inca** | `INCA_WARRIOR` and Inca `SOLDIER` → `inca_soldier_*`; slinger → `inca_ranged_*` | `m_cusco_1536` (12 + Manco Inca), `m_vilcabamba`, allies in `m_lima` | The imperial infantry is the icon of the Tahuantinsuyo and appears in formation. |
-| **Arcabucero, 1532–1572** | `MUSKETEER` and `SOLDIER` realistas with the morion → `realistas_soldier_*` / `realistas_ranged_*` | `m_lima` (3 arcabuceros + 8 soldiers; player is the Hueste indiana) | The conquest mission; the firearm and morion are the period signature. |
+| **Arcabucero, 1535–1572** | `MUSKETEER` and `SOLDIER` realistas with the morion → `realistas_soldier_*` / `realistas_ranged_*` | `m_lima` (3 arcabuceros + 8 soldiers; player is the Hueste indiana) | The conquest mission; the firearm and morion are the period signature. |
 | **Fusilero / defensor, 1879** | `REPUBLICA_DEFENSOR` and `RIFLEMAN` → `republica_soldier_*` / `republica_ranged_*`; Chile shares the gear | `m_tarapaca` (8 defensores + 3 fusileros + Cáceres) | The War of the Pacific is the third distinct material language: wool, leather, steel and the kepi. |
 
 `INCA_SLINGER` is pinned to the Andean rig, so the slinger also receives the Inca helmet/yoke but keeps
@@ -82,7 +93,7 @@ The certainty table distinguishes documentation from reconstruction; no new hist
 | Inca quilted helmet, V yoke and usuta sandals | Plausible reconstruction | Padded protection is documented; the specific helmet/sandal shape is a game abstraction |
 | 1879 Peruvian blue guerrera, kepi, rifle and bayonet | Documented | `atuendos.md` §4 (Guerra del Pacífico uniformology report) |
 | 1878–79 Chilean blue coat, kepi, garance trousers | Documented | `atuendos.md` §4 (Chilean uniform decree, 1878) |
-| 1532–1572 morion, doublet, breeches, boots, arquebus, sword | **Plausible reconstruction** | The repository has no 16th-century regimental uniform source; the blue/red table entry is 18th-century (Bourbon) |
+| 1535–1572 morion, doublet, breeches, boots, arquebus, sword | **Plausible reconstruction** | The repository has no 16th-century regimental uniform source; the blue/red table entry is 18th-century (Bourbon) |
 | Exact regiment, buttons, facings and colours | Not claimed | Deliberately omitted |
 
 Visual references are Age of Empires IV (readability at two camera distances, material honesty) and 0 A.D.
@@ -96,19 +107,19 @@ copied. No external asset was downloaded or added.
 - Quilted cotton helmet (cap plus three bands) for soldiers and slingers.
 - Red V yoke on the chest.
 - Convex rodela with a stone boss instead of a flat cylinder.
-- Shorter macana with an icosahedral stone head.
+- Slimmer wooden macana with an icosahedral stone head.
 - Usuta sandals (sole plus strap) per foot.
 - The shared uncu/skirt/wrap keep their existing skinning and are tinted from the civilization palette.
 
 ### Spanish and Republican (`src/rendering/uniformAttire.ts`)
 
 - The worker tunic is the coat/doublet; the extra cylinder coat was removed.
-- Sleeves, collar and cuffs cover the short-sleeved body.
+- Sleeves and collar cover the short-sleeved body.
 - Breeches/trousers and boots/shoes on the leg bones.
 - Proper lathe morion with comb; bicorn for the late realistas; kepi with crown, top, visor and band.
 - Bandolier with five powder flasks; waist belt, cartridge belt, pouches and sash.
 - Musket/rifle with barrel, stock, butt, lock, band and bayonet; sword for the melee role.
-- The 1532–1572 Spanish variant uses buff wool and brown breeches instead of the Bourbon blue/red; the
+- The 1535–1572 Spanish variant uses buff wool and brown breeches instead of the Bourbon blue/red; the
   late realistas keep the blue coat.
 - Gear is merged per bone into a few vertex-coloured draws; the static skinned body is consolidated.
 
@@ -118,8 +129,8 @@ copied. No external asset was downloaded or added.
   and asserts the common-unit ceiling.
 - `tests/model-assets.test.ts` now checks the new attachment names (`attire_post_morion`, bicorn, sleeves,
   weapon) instead of the removed cylinder coat.
-- `docs/historia/atuendos.md` §3 records that 1532–1572 is a plausible field kit and reserves the blue/red
-  coat for the 18th century.
+- The 1535–1572 kit is recorded here as a plausible reconstruction. `atuendos.md` documents the
+  18th-century blue/red uniform and the 1879 uniforms; it has no 16th-century regimental source.
 
 No gameplay, balance, combat, save or replay behaviour changed. No new dependency or asset was added.
 
@@ -130,8 +141,8 @@ The contact sheet at the top compares the same three units, missions and camera 
 | Unit | Before | After |
 | --- | --- | --- |
 | Inca | Headband, flat shield, box-headed club, bare feet | Padded helmet, red V yoke, convex rodela, stone macana, sandals |
-| Spanish 1532–1572 | Blue cylinder coat, cone morion, bare feet | Buff coat with sleeves, breeches, boots, lathe morion, sash, bandolier, arquebus |
-| Republican 1879 | Blue cylinder coat, plain kepi, bare feet | Blue coat with sleeves/cuffs, kepi with visor, gaiters, cartridge belt, rifle and bayonet |
+| Spanish 1535–1572 | Blue cylinder coat, cone morion, bare feet | Buff coat with sleeves, breeches, boots, lathe morion, sash, bandolier, arquebus |
+| Republican 1879 | Blue cylinder coat, plain kepi, bare feet | Blue coat with sleeves, kepi with visor, gaiters, cartridge belt, rifle and bayonet |
 
 Committed captures: [`character-pilot-before-after.webp`](../media/character-pilot-before-after.webp),
 [`character-pilot-lineup.webp`](../media/character-pilot-lineup.webp),
@@ -139,7 +150,13 @@ Committed captures: [`character-pilot-before-after.webp`](../media/character-pil
 [`character-pilot-spanish.webp`](../media/character-pilot-spanish.webp) and
 [`character-pilot-republic.webp`](../media/character-pilot-republic.webp). The local full-resolution PNGs are
 in `review/pilot/` and `review/pilot-before/` (gitignored). The captures use the mission opening with HUD
-hidden, `low=1`, `fog=0`, seed from the mission, a close three-quarter camera and the unit's `idle` clip.
+hidden, `low=1`, `fog=0`, fixed noon light, seed from the mission, a close three-quarter camera and the
+unit's `idle` clip. `node scripts/capture_character_pilot.mjs --out=review/pilot` reproduces the set; run the
+same script from an `origin/main` worktree with `--out=review/pilot-before` for the before set. At the default
+height 54 the unit reads as a small silhouette and colour block; the equipment is a close/cinematic read.
+The attack column uses the shared `Sword_Regular_A`/`Pistol_Shoot`/`OverhandThrow` clips and the death
+column uses `Death01`; the firearm attack is the shared one-handed pistol clip, not a two-handed musket
+aim, and `run`/hit reactions are still missing.
 
 ## 7. Tests and performance
 
@@ -151,29 +168,35 @@ hidden, `low=1`, `fog=0`, seed from the mission, a close three-quarter camera an
 | `yarn test` | 129 files, 1,089 tests, pass |
 | `yarn build` | pass |
 | `yarn dist:check` | 27.61 MiB / 28 MiB; first play 1.87 MiB gzip; loader 2 KB gzip |
-| `yarn bench:characters` | Inca 19 draws / 10,646 tris; Spanish 25 / 14,348; Republican 24 / 12,746 |
+| `yarn bench:characters` | Inca 15 draws / 10,670 tris; Spanish 22 / 14,220; Republican 20 / 11,651 |
 
 The measurement is the isolated unit cost (main + shadow pass) in its mission, using the same
 shown/hidden delta as the rig bench. The old primitive gear measured ~8–9 draws for the shared worker;
-the new gear stays at or below the 25-draw common-unit target and far below the 40k triangle cap. The
-Spanish is exactly on the 25-draw line, so any further accessory needs a merged draw or a removed one.
+the new gear stays at or below the 25-draw common-unit target and 10.7–14.2k triangles, below the 25k
+common-unit target. A 12-unit formation measures 180 / 264 / 246 draws and 0.13–0.14 ms/frame of mixer
+work for the twelve units; the Spanish formation stays under the 280-draw scene cap. The Spanish is at
+22 draws, so a third accessory per bone should be merged into an existing draw.
 
 ## 8. Pending issues
 
 1. **Body proportions and face.** The shared CC0 body is still ~8 heads and texture-faced. The pilot improves
    clothing and equipment, not anatomy. The art direction asks for 6.5–7 heads and a stronger head/hand
    read; that requires a body pass, not another accessory.
-2. **Bind-matrix-safe GLB export.** New character GLBs remain blocked by the shared-skeleton re-export
-   problem in §2. A future body replacement needs a tested export that preserves the inverse bind matrices
-   and the animation tracks.
+2. **Bind-matrix-safe GLB export.** Re-exporting the finished worker GLB remains blocked by the shared-skeleton
+   problem in §2. A future body replacement should start from the original Quaternius sources (the
+   `tambotoco_hero.glb` path) or prove that its export preserves the inverse bind matrices and tracks.
 3. **Per-role animation.** `run` and a hit reaction are still missing from the shared worker; the recent
-   `Pistol_Shoot` covers the firearm attack. Adding `Jog_Fwd_Loop`/`Hit_Chest` would require rebuilding the
-   worker GLB and wiring a presentation-only reaction.
+   `Pistol_Shoot` covers the firearm attack, but it is a one-handed pistol clip rather than a two-handed
+   musket/rifle aim. `Death01` is registered and `playDeath` freezes it; the death column is in the contact
+   sheet above. Adding `Jog_Fwd_Loop`/`Hit_Chest` would require rebuilding the worker GLB and wiring a
+   presentation-only reaction.
 4. **Rigid cloth at joints.** Sleeves and breeches are rigid bone attachments; deep poses can show a crease
    at the elbow/knee. At the RTS camera it is not visible; a skinned garment needs the bind-safe path.
-5. **Late realistas and other cultures.** The Moche, Wari, Chimú and late realistas keep the old gear. The
-   same runtime dresser can be extended culture by culture.
-6. **Draw-call headroom.** The Spanish is at 25 draws. A third accessory per bone should be merged into an
+5. **Shared post-colonial dresser.** `dressUniform` serves every post-colonial variant, so the late realistas,
+   patriotas, m7 rebels and modern roles also inherit the new sleeves, boots and headwear. The pilot's visual
+   validation is limited to the three units; the other variants need their own review. The Moche, Wari, Chimú
+   and the other Andean cultures use `workerAttire` and keep their old gear (only the Inca branch is new).
+6. **Draw-call headroom.** The Spanish is at 22 draws. A third accessory per bone should be merged into an
    existing gear draw, not added as a new mesh.
 
 ## 9. Recommendation

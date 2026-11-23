@@ -16,16 +16,26 @@ test('post-1532 infantry, ranged and missionary classes use the shared rig', asy
     const soldier = spawn('soldier', 0);
     const ranged = spawn('musketeer', 1);
     const missionary = spawn('missionary', 2);
-    const read = (u: any) => ({
-      rig: !!u.rig,
-      variant: u.rig?.variantId ?? null,
-      coat: !!u.rig?.root.getObjectByName('attire_post_coat'),
-      hat: !!u.rig?.root.getObjectByName('attire_post_hat'),
-      hatType: u.rig?.root.getObjectByName('attire_post_hat')?.userData.hat ?? null,
-      weapon: !!u.rig?.root.getObjectByName('attire_post_weapon'),
-      cross: !!u.rig?.root.getObjectByName('attire_post_cross'),
-      sword: !!u.rig?.root.getObjectByName('attire_post_sword'),
-    });
+    const read = (u: any) => {
+      const root = u.rig?.root;
+      const hatType = root?.getObjectByName('attire_post_bicorn')
+        ? 'bicorn'
+        : root?.getObjectByName('attire_post_morion')
+          ? 'morion'
+          : root?.getObjectByName('attire_post_kepi')
+            ? 'kepi'
+            : null;
+      return {
+        rig: !!u.rig,
+        variant: u.rig?.variantId ?? null,
+        coat: !!root?.getObjectByName('attire_post_sleeve_upper_l'),
+        hat: hatType !== null,
+        hatType,
+        weapon: !!root?.getObjectByName('attire_post_weapon'),
+        cross: !!root?.getObjectByName('attire_post_cross'),
+        sword: !!root?.getObjectByName('attire_post_sword'),
+      };
+    };
     return { soldier: read(soldier), ranged: read(ranged), missionary: read(missionary) };
   });
   expect(result.soldier).toMatchObject({ rig: true, coat: true, hat: true, weapon: true, sword: true, cross: false });
@@ -45,7 +55,7 @@ test('a Viceroyalty skirmish keeps the morion', async ({ page }) => {
     const soldier = g.spawnScriptedUnit('soldier', 0, c.x + 6, c.z + 4);
     return {
       variant: soldier.rig?.variantId ?? null,
-      hatType: soldier.rig?.root.getObjectByName('attire_post_hat')?.userData.hat ?? null,
+      hatType: soldier.rig?.root.getObjectByName('attire_post_morion') ? 'morion' : null,
     };
   });
   expect(result.variant).toMatch(/^realistas_soldier_[fm]$/);
@@ -63,7 +73,7 @@ test('m7 Túpac Amaru gives the realista enemy the bicorn', async ({ page }) => 
     const soldier = g.spawnScriptedUnit('soldier', 1, c.x + 6, c.z + 4);
     return {
       variant: soldier.rig?.variantId ?? null,
-      hatType: soldier.rig?.root.getObjectByName('attire_post_hat')?.userData.hat ?? null,
+      hatType: soldier.rig?.root.getObjectByName('attire_post_bicorn') ? 'bicorn' : null,
     };
   });
   expect(result.variant).toMatch(/^realistas_bicorn_soldier_[fm]$/);

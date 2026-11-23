@@ -22,11 +22,11 @@ export function dressUniform(
   role: PostColonialRole,
 ): RigVariantHandle {
   const armed = role === 'soldier' || role === 'ranged';
-  const civilian = role === 'worker' || role === 'scout';
+  const civilian = role === 'worker' || role === 'scout' || role === 'missionary';
   const root = rig.root;
   const male = variant.endsWith('_m');
   // 1532–1572 is a field kit (buff wool, leather, steel), not the 18th-century Bourbon blue.
-  const earlySpanish = variant.startsWith('realistas_') && !variant.startsWith('realistas_bicorn_');
+  const earlySpanish = spec.hat === 'morion';
   const coatColor = earlySpanish ? 0xb39a72 : spec.coat;
   const trouserColor = earlySpanish ? 0x5a4632 : spec.trousers;
   const tools = createRigAttireTools(root);
@@ -34,7 +34,6 @@ export function dressUniform(
 
   showSharedHumanoidBody(root, male);
   tint(male ? 'attire_tunic_m' : 'attire_tunic_f', coatColor);
-  tint(male ? 'attire_wrap_m' : 'attire_skirt_f', trouserColor);
   // The coat covers the hips; the period breeches/trousers replace the Andean lower cloth.
   show('attire_skirt_f', false);
   show('attire_wrap_m', false);
@@ -44,13 +43,12 @@ export function dressUniform(
   const pelvis = bonePosition('pelvis');
   const head = bonePosition('Head');
   const hand = bonePosition('hand_r');
-  const trimMat = material(spec.trim, 0.8);
   const coatMat = material(coatColor, 0.95);
   const leatherMat = material(0x2a1e16, 0.92);
   const trouserMat = material(trouserColor, 0.95);
 
   /** A rigid tapered sleeve around one limb bone; the bone animation carries it. */
-  const limb = (
+  const limbTube = (
     boneName: string,
     childName: string,
     rTop: number,
@@ -80,8 +78,6 @@ export function dressUniform(
   gearMat.vertexColors = true;
   const metalGearMat = material(0xffffff, 0.35, 0.7);
   metalGearMat.vertexColors = true;
-  const weaponMat = material(0xffffff, 0.55, 0.35);
-  weaponMat.vertexColors = true;
   /** Merge one bone's equipment into a single vertex-coloured draw. */
   const mergeGear = (
     parts: [THREE.BufferGeometry, number][],
@@ -94,7 +90,6 @@ export function dressUniform(
       ([geometry, color]) => [geometry, new THREE.Color(color)] as [THREE.BufferGeometry, THREE.Color],
     );
     const merged = mergeColoredGeometry(source);
-    for (const [geometry] of source) geometry.dispose();
     if (!merged) return null;
     const mesh = new THREE.Mesh(track(merged), meshMaterial);
     mesh.name = name;
@@ -132,13 +127,13 @@ export function dressUniform(
       ['l', 'thigh_l', 'calf_l', 'foot_l'],
       ['r', 'thigh_r', 'calf_r', 'foot_r'],
     ]) {
-      limb(thigh, calf, 0.115, 0.09, trouserMat, `attire_post_breeches_${side}`);
-      limb(calf, foot, 0.095, 0.075, leatherMat, `attire_post_boot_${side}`, 0.35, 1);
+      limbTube(thigh, calf, 0.115, 0.09, trouserMat, `attire_post_breeches_${side}`);
+      limbTube(calf, foot, 0.095, 0.075, leatherMat, `attire_post_boot_${side}`, 0.35, 1);
       const footPos = bonePosition(foot);
       if (footPos) {
-        const shoe = new THREE.Mesh(track(new THREE.BoxGeometry(0.1, 0.07, 0.24)), leatherMat);
+        const shoe = new THREE.Mesh(track(new THREE.BoxGeometry(0.1, 0.07, 0.28)), leatherMat);
         shoe.name = `attire_post_shoe_${side}`;
-        attach(foot, shoe, new THREE.Vector3(footPos.x, footPos.y - 0.02, footPos.z + 0.05));
+        attach(foot, shoe, new THREE.Vector3(footPos.x, footPos.y - 0.02, footPos.z + 0.06));
       }
     }
     // Sleeves and cuffs: the shared tunic is short-sleeved, the period coat is not.
@@ -146,19 +141,8 @@ export function dressUniform(
       ['l', 'upperarm_l', 'lowerarm_l', 'hand_l'],
       ['r', 'upperarm_r', 'lowerarm_r', 'hand_r'],
     ]) {
-      limb(upper, lower, 0.075, 0.06, coatMat, `attire_post_sleeve_upper_${side}`, 0.12, 1);
-      limb(lower, handBone, 0.06, 0.05, coatMat, `attire_post_sleeve_lower_${side}`, 0.05, 0.9);
-      const wrist = bonePosition(handBone);
-      if (wrist) {
-        const cuff = new THREE.Mesh(track(new THREE.CylinderGeometry(0.062, 0.065, 0.06, 10)), trimMat);
-        cuff.name = `attire_post_cuff_${side}`;
-        attach(lower, cuff, new THREE.Vector3(wrist.x, wrist.y, wrist.z));
-      }
-    }
-    if (spine) {
-      const collar = new THREE.Mesh(track(new THREE.CylinderGeometry(0.1, 0.12, 0.06, 12)), coatMat);
-      collar.name = 'attire_post_collar';
-      attach('spine_03', collar, new THREE.Vector3(spine.x, spine.y + 0.2, spine.z));
+      limbTube(upper, lower, 0.075, 0.06, coatMat, `attire_post_sleeve_upper_${side}`, 0.02, 1);
+      limbTube(lower, handBone, 0.06, 0.05, coatMat, `attire_post_sleeve_lower_${side}`, 0.02, 0.9);
     }
   }
 
@@ -229,14 +213,18 @@ export function dressUniform(
 
   if (spine && armed) {
     const torsoParts: [THREE.BufferGeometry, number][] = [
-      [new THREE.BoxGeometry(0.055, 0.5, 0.02).rotateZ(0.62).translate(0.02, -0.05, 0.14), 0x2a1e16],
       [new THREE.CylinderGeometry(0.1, 0.12, 0.06, 12).translate(0, 0.2, 0), coatColor],
     ];
-    for (let i = 0; i < 5; i++) {
-      torsoParts.push([
-        new THREE.CylinderGeometry(0.022, 0.026, 0.07, 8).translate(-0.1 + i * 0.05, 0.15 - i * 0.1, 0.16),
-        0xc8a040,
-      ]);
+    // The 16th-century arquebusier carries a powder bandolier; the 1879 rifleman carries the
+    // cartridge belt and pouches instead, so the flasks stay out of the later uniform.
+    if (spec.weapon === 'musket') {
+      torsoParts.push([new THREE.BoxGeometry(0.055, 0.5, 0.02).rotateZ(0.62).translate(0.02, -0.05, 0.14), 0x2a1e16]);
+      for (let i = 0; i < 5; i++) {
+        torsoParts.push([
+          new THREE.CylinderGeometry(0.022, 0.026, 0.07, 8).translate(-0.1 + i * 0.05, 0.15 - i * 0.1, 0.16),
+          0xc8a040,
+        ]);
+      }
     }
     mergeGear(torsoParts, 'spine_03', new THREE.Vector3(spine.x, spine.y, spine.z), 'attire_post_gear_torso');
   }
@@ -279,7 +267,7 @@ export function dressUniform(
       parts.push([new THREE.BoxGeometry(0.025, 0.72, 0.035).translate(0, -0.25, 0), 0x9aa2aa]);
       parts.push([new THREE.TorusGeometry(0.06, 0.01, 4, 10).rotateX(Math.PI / 2), spec.trim]);
     }
-    const weapon = mergeGear(parts, 'hand_r', hand.clone(), 'attire_post_weapon', weaponMat);
+    const weapon = mergeGear(parts, 'hand_r', hand.clone(), 'attire_post_weapon');
     if (weapon) weapon.rotation.set(-0.2, 0, 0);
   }
 
