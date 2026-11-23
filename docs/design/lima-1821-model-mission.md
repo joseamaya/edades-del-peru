@@ -35,7 +35,8 @@ Sources and certainty: [`docs/historia/campanas/lima_1821.md`](../historia/campa
 
 - `PATRIOTAS` vs `REALISTAS`; period-locked Independence.
 - Units: workers, line infantry, musketeers, riflemen, montoneras, cavalry, hussars, artillery, scout and
-  missionary. Buildings follow the late-colonial roster.
+  missionary. Buildings follow the late-colonial roster. Research is limited to irrigation, the elite ranged
+  line, shock cavalry, siege engines, evangelization and the sierra campaign; no mortars, hunters or obrajes.
 - San Martín is a tagged rifleman with a commander card; the mission protects him. No invented likeness:
   the portrait is the existing stylized abstraction.
 

@@ -75,7 +75,9 @@ describe('culture and era building labels', () => {
     expect(BUILDING_INFO.institute.name).toBe('Yachaywasi');
     expect(name('m3_moche_recuay', BuildingKind.INSTITUTE)).toBe('Casa de los ancestros');
     expect(name('m5_yahuar_pampa', BuildingKind.INSTITUTE)).toBe('Yachaywasi');
-    expect(name('m8_independencia', BuildingKind.INSTITUTE)).toBe('Academia');
-    expect(name('m9_guerra_pacifico', BuildingKind.INSTITUTE)).toBe('Academia');
+    expect(name('m4_wari', BuildingKind.INSTITUTE)).toBe('Talleres estatales');
+    // m8 and m9 no longer allow the institute, so they carry no scoped label for it.
+    expect(name('m8_independencia', BuildingKind.INSTITUTE)).toBe('Yachaywasi');
+    expect(name('m9_guerra_pacifico', BuildingKind.INSTITUTE)).toBe('Yachaywasi');
   });
 });

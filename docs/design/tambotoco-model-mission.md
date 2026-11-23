@@ -110,10 +110,12 @@ siblings and their people leave the cave, and the workers raise the first camp �
 receives the hunt — before Act I's hunt opens. With no centre the party cannot train workers; its people are
 the ones who left the cave. Defeat waits until the party has neither buildings nor units.
 
-Workers, militia, slingers and a scout. Buildings: house, farm, storehouse, sawmill and barracks; no
-fortress, walls, gate or towers, since the valley yields to the water, not to a siege. Without dwellings the
-party's cap would read «20/7», so a base-less start raises the cap to the party that left the cave. No market, silver, stable or artillery: the economy is an ayllu economy,
-and the only "engine" of the mission is water.
+Workers, militia, slingers and a scout open the mission; the trainable roster is militia and slingers.
+Buildings: house, farm, storehouse, sawmill, barracks and a «Casa de armas» for the slingers; no fortress,
+walls, gate or towers, since the valley yields to the water, not to a siege. Without dwellings the party's
+cap would read «20/7», so a base-less start raises the cap to the party that left the cave. No centre, no
+market, silver, stable or artillery, and no research: the economy is an ayllu economy, and the only
+"engine" of the mission is water.
 
 The opening hunt is 60 food (about 90 s in the full recording); the optional hualla stop pays stores on the way
 to Inticancha, so Act IV starts with wood in hand.

@@ -270,17 +270,25 @@ export const mTambotoco: MissionDef = {
     },
   ],
   epilogueImage: 'media/tambotoco/intro-epilogo.webp',
-  buildingNames: { [BuildingKind.MILL]: 'Depósito comunal' },
-  allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.MUSKETEER, UnitKind.SCOUT],
+  buildingNames: {
+    [BuildingKind.MILL]: 'Depósito comunal',
+    [BuildingKind.ARSENAL]: 'Casa de armas',
+  },
+  // The party leaves the cave with its workers and scout; only the militia and slingers can be raised
+  // once the barracks and the Casa de armas stand.
+  allowedUnits: [UnitKind.SOLDIER, UnitKind.MUSKETEER],
   allowedBuildings: [
     BuildingKind.HOUSE,
     BuildingKind.FARM,
     BuildingKind.MILL,
     BuildingKind.SAWMILL,
-    // A movement of families, not an army: the ayllu warriors can be raised, but no fortresses,
-    // walls or towers; the valley yields to the water, not to a siege.
+    // A movement of families, not an army: the ayllu warriors and honderos can be raised, but no
+    // fortresses, walls or towers; the valley yields to the water, not to a siege.
     BuildingKind.BARRACKS,
+    BuildingKind.ARSENAL,
   ],
+  // No centre and no research: the ayllu economy has no market, silver or imperial institute.
+  allowedTechs: [],
   objectives: [
     {
       id: 'a1_salida',

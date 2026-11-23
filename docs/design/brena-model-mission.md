@@ -35,7 +35,8 @@ The executions and violence of Concepción/Huamachuco are told in the epilogue a
 ## Economy and cast
 
 - `REPUBLIC` vs `CHILE`; period-locked Republic.
-- Units: workers, republican defenders, riflemen, cavalry, hussars, artillery and scouts.
+- Units: workers, republican defenders, riflemen, cavalry, hussars and scouts; one captured artillery piece
+  is scripted, not trainable (the valley has no artillery workshop).
 - Cáceres is a protected commander card; no invented likeness.
 
 - The Chilean counter-guerrilla column is a **field force**: `enemy.economy: false` and

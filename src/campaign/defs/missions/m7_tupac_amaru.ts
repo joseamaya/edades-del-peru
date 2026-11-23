@@ -223,14 +223,9 @@ export const m7TupacAmaru: MissionDef = {
     },
   ],
   epilogueImage: 'media/cusco/intro-epilogo.webp',
-  allowedUnits: [
-    UnitKind.WORKER,
-    UnitKind.SOLDIER,
-    UnitKind.RIFLEMAN,
-    UnitKind.CAVALRY,
-    UnitKind.SCOUT,
-    UnitKind.MISSIONARY,
-  ],
+  // The few captured muskets and the two horses open the mission; the militia, not a firearm train,
+  // is what the rebellion can raise.
+  allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.SCOUT, UnitKind.MISSIONARY],
   allowedBuildings: [
     BuildingKind.CENTER,
     BuildingKind.HOUSE,
@@ -242,6 +237,10 @@ export const m7TupacAmaru: MissionDef = {
     BuildingKind.SMELTER,
     BuildingKind.REFINERY,
   ],
+  // No artillery, fortifications or cavalry school: the town economy, the cuartel and the smelter.
+  allowedTechs: ['irrigation_canal', 'silver_metallurgy', 'evangelization'],
+  buildingNames: { [BuildingKind.BARRACKS]: 'Cuartel' },
+  unitNames: { [UnitKind.SOLDIER]: 'Miliciano' },
   objectives: [
     {
       id: 'a1_cuartel',

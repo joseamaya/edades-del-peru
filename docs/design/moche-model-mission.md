@@ -56,7 +56,8 @@ builds; the exception is recorded here and in the quality bar.
 
 - Moche workers, warriors and hondero (ranged) units; the Recuay side fields warrior and hondero waves.
   `UnitKind.MUSKETEER` is the project's legacy ranged id: at this period it renders as a hondero with a
-  sling, not a firearm.
+  sling, not a firearm. The bow (`RIFLEMAN`) is not part of the roster; the arsenal and the market are
+  labelled «Taller de armas» and «Plaza de intercambio».
 - The canal gate is the Act I mechanic (`canal_open`, heritage `moche_canal`); it irrigates nearby farms.
 - Recuay has its own camp in the sierra (`layout.enemyBase`, under the authored «Sierra recuay» label).
   Without it the AI camp was placed at random and could land beside the huacas.

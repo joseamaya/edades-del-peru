@@ -52,7 +52,8 @@ first church; the church GLB is hidden until the `ciudad` phase.
 Workers, rodeleros, arcabuces, cavalry, Andean allied warriors, a missionary and a scout. A pair of
 falconetes reinforces the defence when the 1536 siege begins. Buildings: town economy, barracks, arsenal,
 stable, fortress, walls, gate, tower and market. No modern units and no artillery workshop: the falconetes
-are a scripted reinforcement, not a trainable unit.
+are a scripted reinforcement, not a trainable unit. Research is limited to irrigation, shock cavalry and
+evangelization; the arsenal does not offer the pre-Hispanic bow or the siege workshop techs.
 
 ## Opening and closing
 

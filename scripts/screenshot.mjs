@@ -13,6 +13,7 @@ import { launchChromium, withViteServer, reviewDir, cliArg } from './lib.mjs';
  * `--no-labels` also hides the in-world place names, so a blind-test sheet cannot give the mission away.
  * `--select=N` selects the player's first N units before the shot; `--select=<unit kind>` (e.g.
  * `republica_defensor`) selects every unit of that kind, so unit panels and their names are visible.
+ * `--tech` opens the in-match technology tree overlay before the shot.
  */
 const name = process.argv[2] ?? 'default';
 const urlArg = cliArg('url');
@@ -21,6 +22,7 @@ const clickStart = process.argv.includes('--click');
 const siteView = process.argv.includes('--site');
 const noHud = process.argv.includes('--no-hud');
 const noLabels = process.argv.includes('--no-labels');
+const techView = process.argv.includes('--tech');
 const siteHeight = Number.parseFloat(cliArg('height', '78'));
 const targetArg = cliArg('target', '');
 const seed = parseInt(cliArg('seed', '12345'), 10);
@@ -82,6 +84,10 @@ async function main() {
       const layer = document.getElementById('ed-world-labels');
       if (layer) layer.style.display = 'none';
     });
+  }
+  if (techView) {
+    await page.evaluate(() => window.game?.hud?.showTechTree()).catch((e) => errors.push('TECH-VIEW: ' + e.message));
+    await page.waitForTimeout(600);
   }
   if (siteView) {
     await page

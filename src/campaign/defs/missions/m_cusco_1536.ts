@@ -109,6 +109,7 @@ export const mCusco1536: MissionDef = {
     units: [
       { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 4 },
       { kind: UnitKind.INCA_WARRIOR, dx: 8, dz: 0, count: 12 },
+      { kind: UnitKind.INCA_SLINGER, dx: 10, dz: -2, count: 4 },
       { kind: UnitKind.SOLDIER, dx: 12, dz: 2, count: 6 },
       { kind: UnitKind.SCOUT, dx: 14, dz: 0, count: 1 },
       { kind: UnitKind.INCA_WARRIOR, dx: 6, dz: 0, count: 1, tag: 'manco_inca' },
@@ -192,22 +193,29 @@ export const mCusco1536: MissionDef = {
       motion: 'pan-left',
     },
   ],
-  allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.INCA_WARRIOR, UnitKind.SCOUT],
+  allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.INCA_WARRIOR, UnitKind.INCA_SLINGER, UnitKind.SCOUT],
   allowedBuildings: [
     BuildingKind.CENTER,
     BuildingKind.HOUSE,
     BuildingKind.FARM,
     BuildingKind.MILL,
     BuildingKind.SAWMILL,
+    BuildingKind.REFINERY,
     BuildingKind.BARRACKS,
     BuildingKind.ARSENAL,
     BuildingKind.FORTRESS,
     BuildingKind.WALL,
     BuildingKind.GATE,
     BuildingKind.TOWER,
-    BuildingKind.MARKET,
+    BuildingKind.INSTITUTE,
   ],
-  buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
+  // The Inca state keeps its own record-keeping and textile techs; no Spanish cavalry, siege or doctrine.
+  allowedTechs: ['irrigation_canal', 'andean_loom', 'quipus_watchers'],
+  buildingNames: {
+    [BuildingKind.FORTRESS]: 'Pucará',
+    [BuildingKind.ARSENAL]: 'Casa de armas',
+  },
+  unitNames: { [UnitKind.SOLDIER]: 'Milicia inca' },
   objectives: [
     {
       id: 'a1_sacsay',

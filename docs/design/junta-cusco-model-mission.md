@@ -50,7 +50,8 @@ The match is locked to `HistoricalPeriod.INDEPENDENCE` and `Era.REPUBLIC`:
 - Workers, militia (`soldier`), musketeers, scarce riflemen, montoneras, cavalry/hussars, artillery, scouts
   and a missionary. No tanks, aircraft, modern infantry or nuclear weapons.
 - Buildings: the town economy plus barracks, arsenal, stable, artillery workshop, fortress, walls and a
-  market. No institute or wonder.
+  market. No institute or wonder. Research is limited to irrigation, silver, shock cavalry, siege engines,
+  evangelization and the sierra campaign; no mortars, hunters or obrajes.
 - The montonera is the mission's light unit: it flanks and harasses, but does not hold a line. The tutorial
   says so explicitly.
 

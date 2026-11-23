@@ -139,7 +139,7 @@ export const m6bGuerraCivil: MissionDef = {
     units: [
       { kind: UnitKind.SOLDIER, dx: cuscoIncaLength(8), dz: -cuscoIncaLength(4), count: 1, tag: 'quizquiz' },
       { kind: UnitKind.SOLDIER, dx: cuscoIncaLength(10), dz: cuscoIncaLength(4), count: 12 },
-      { kind: UnitKind.MUSKETEER, dx: cuscoIncaLength(6), dz: cuscoIncaLength(10), count: 6 },
+      { kind: UnitKind.INCA_SLINGER, dx: cuscoIncaLength(6), dz: cuscoIncaLength(10), count: 6 },
       { kind: UnitKind.SCOUT, dx: cuscoIncaLength(4), dz: -cuscoIncaLength(8), count: 2 },
       { kind: UnitKind.WORKER, dx: -cuscoIncaLength(4), dz: cuscoIncaLength(8), count: 3 },
     ],
@@ -149,7 +149,28 @@ export const m6bGuerraCivil: MissionDef = {
   // which can pull it toward the player's base after its authored move. The capture is contested while it
   // stands.
   enemy: { active: true, difficulty: 'normal', aggression: 0.6, economy: false },
-  buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
+  // The civil war is fought with Inca melee and slings: no bow, no market and no Amauta conversion.
+  allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.INCA_WARRIOR, UnitKind.INCA_SLINGER, UnitKind.SCOUT],
+  allowedBuildings: [
+    BuildingKind.HOUSE,
+    BuildingKind.FARM,
+    BuildingKind.MILL,
+    BuildingKind.SAWMILL,
+    BuildingKind.SMELTER,
+    BuildingKind.REFINERY,
+    BuildingKind.BARRACKS,
+    BuildingKind.ARSENAL,
+    BuildingKind.WALL,
+    BuildingKind.GATE,
+    BuildingKind.TOWER,
+    BuildingKind.FORTRESS,
+    BuildingKind.INSTITUTE,
+  ],
+  allowedTechs: ['irrigation_canal', 'andean_loom', 'silver_metallurgy', 'quipus_watchers', 'swift_chasquis'],
+  buildingNames: {
+    [BuildingKind.FORTRESS]: 'Pucará',
+    [BuildingKind.ARSENAL]: 'Casa de armas',
+  },
   objectives: [
     {
       id: 'obj_avanzar',
@@ -196,7 +217,7 @@ export const m6bGuerraCivil: MissionDef = {
           owner: 1,
           units: [
             { kind: UnitKind.SOLDIER, count: 4 },
-            { kind: UnitKind.MUSKETEER, count: 3 },
+            { kind: UnitKind.INCA_SLINGER, count: 3 },
           ],
           pos: { ref: 'enemy', dx: 0, dz: 0 },
           radius: cuscoIncaLength(4),
@@ -256,7 +277,7 @@ export const m6bGuerraCivil: MissionDef = {
           owner: 1,
           units: [
             { kind: UnitKind.SOLDIER, count: 8 },
-            { kind: UnitKind.MUSKETEER, count: 2 },
+            { kind: UnitKind.INCA_SLINGER, count: 2 },
           ],
           spawn: { ref: 'enemy', dx: -cuscoIncaLength(18), dz: cuscoIncaLength(8) },
           pos: { ref: 'enemy', dx: 0, dz: 0 },
@@ -298,7 +319,7 @@ export const m6bGuerraCivil: MissionDef = {
           owner: 1,
           units: [
             { kind: UnitKind.SOLDIER, count: 5 },
-            { kind: UnitKind.MUSKETEER, count: 2 },
+            { kind: UnitKind.INCA_SLINGER, count: 2 },
           ],
           spawn: QUIPAIPAN_REAR_COLUMN,
           pos: QUIPAIPAN_CAMP,

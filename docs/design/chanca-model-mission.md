@@ -56,8 +56,9 @@ in the quality bar.
   player's base after their authored move (it targets a building, not the columns). The kill objective is
   contested while the guard still stands.
 
-- Inca workers, warriors, riflemen and honderos; the Chanca side fields warriors and honderos.
-  `UnitKind.MUSKETEER` is the legacy ranged id: in this era it renders as a hondero, not a firearm.
+- Inca workers, warriors and honderos; the Chanca side fields warriors and honderos. No archers, no market
+  and no Spanish techs: the Inca line is `UnitKind.INCA_SLINGER`; the legacy `MUSKETEER` remains the
+  Chanca slinger, not a firearm.
 - Four fortresses guard the Cusco opening; the enemy is active and aggressive, with scripted waves.
   Each column forms up at its own camp and marches on the Cusco camp, so nothing materialises inside the
   defence; the line no longer claims a compass direction the map does not support.

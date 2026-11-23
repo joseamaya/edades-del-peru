@@ -24,7 +24,8 @@
 - **Mapa**: `andes`, con un transecto comprimido valle del Mantaro → pasos → Huamachuco → camino a Ayacucho.
 - **En el juego**: tres actos. El jugador organiza la red de comunidades, embosca una columna en el paso y
   sostiene Huamachuco el tiempo suficiente para retirar a Cáceres. La victoria es la retirada, no la
-  aniquilación del adversario. La violencia contra combatientes y civiles se narra sin espectáculo.
+  aniquilación del adversario. La violencia contra combatientes y civiles se narra sin espectáculo. La única
+  pieza de artillería es capturada y scriptada: la guerrilla no tiene taller de artillería.
 
 ## Tabla de certeza
 

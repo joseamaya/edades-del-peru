@@ -20,7 +20,8 @@
 - **Mapa**: `andes`, con un transecto comprimido Cusco → La Apacheta → Umachiri y el río Lalli.
 - **En el juego**: tres actos. El jugador reúne la Junta en el Cabildo, levanta el cuartel, sostiene La
   Apacheta y resiste en Umachiri el tiempo suficiente para retirar a los líderes. La victoria táctica no
-  cambia el desenlace: el epílogo cuenta la derrota y las ejecuciones.
+  cambia el desenlace: el epílogo cuenta la derrota y las ejecuciones. El cuartel se llama así en la interfaz;
+  no hay instituto ni huaca, y los dos tiradores iniciales son los fusiles escasos de la Junta.
 
 ## Tabla de certeza
 

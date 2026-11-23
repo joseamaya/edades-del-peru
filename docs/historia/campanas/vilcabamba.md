@@ -21,7 +21,8 @@
   Cusco.
 - **En el juego**: tres actos. El jugador defiende Huayna Pucará, evacúa Vilcabamba antes de que la
   expedición la ocupe e incendie, y sostiene la huida de la corte. La captura y ejecución de Túpac Amaru I
-  se cuentan en el epílogo, fuera de pantalla; no se premia la violencia.
+  se cuentan en el epílogo, fuera de pantalla; no se premia la violencia. La corte de Vilcabamba mantiene
+  **honderos**, telar y quipus; no hay mercados, caballería ni doctrina española.
 
 ## Tabla de certeza
 

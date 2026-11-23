@@ -20,7 +20,8 @@
 - **Mapa**: `coast`, con un transecto comprimido pueblo → quebrada → alturas → camino a Pachica/Arica.
 - **En el juego**: tres actos. El jugador sostiene el pueblo sin caballería ni artillería, reconquista las
   alturas con infantería y recibe cañones capturados; después sostiene la quebrada hasta la retirada. La
-  victoria táctica no cambia el desenlace: el epílogo cuenta la pérdida de la provincia y la retirada.
+  victoria táctica no cambia el desenlace: el epílogo cuenta la pérdida de la provincia y la retirada. No
+  hay construcción ni investigación: el roster es fijo y los cañones y refuerzos son scriptados.
 
 ## Tabla de certeza
 

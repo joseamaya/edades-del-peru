@@ -16,7 +16,7 @@
 - **Desenlace documentado**: victoria cusqueña; los chancas se rinden y luego se integran como aliados
   militares del Tahuantinsuyo. **Cusi Yupanqui** asume el poder como **Pachacútec** e inicia la expansión.
 - **Mapa**: `andes`.
-- **En el juego**: base fija en la pampa de Yahuar, alturas del Cusco y un pucará chanca. Tres actos: I el asedio (defender el Cusco), II el contraataque al campamento chanca, III la persecución hacia Andahuaylas. El epílogo retoma la integración chanca y el inicio del Tahuantinsuyo.
+- **En el juego**: base fija en la pampa de Yahuar, alturas del Cusco y un pucará chanca. Tres actos: I el asedio (defender el Cusco), II el contraataque al campamento chanca, III la persecución hacia Andahuaylas. El epílogo retoma la integración chanca y el inicio del Tahuantinsuyo. La línea a distancia inca es de **honderos** (`INCA_SLINGER`); no se añaden arqueros ni una economía de mercado inca, y el arsenal se etiqueta «Casa de armas».
 
 ## Certeza
 

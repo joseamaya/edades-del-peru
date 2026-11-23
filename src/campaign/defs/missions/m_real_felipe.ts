@@ -208,7 +208,18 @@ export const mRealFelipe: MissionDef = {
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
-  buildingNames: { [BuildingKind.FORTRESS]: 'Fortín' },
+  allowedTechs: [
+    'irrigation_canal',
+    'bow_and_bolas',
+    'shock_cavalry',
+    'siege_engines',
+    'evangelization',
+    'patriota_sierra',
+  ],
+  buildingNames: {
+    [BuildingKind.FORTRESS]: 'Fortín',
+    [BuildingKind.BARRACKS]: 'Cuartel',
+  },
   objectives: [
     {
       id: 'a1_baterias',

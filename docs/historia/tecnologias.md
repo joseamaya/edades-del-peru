@@ -13,8 +13,8 @@ ni después/otra cultura (ámbito).
 
 | Tecnología | Ventana | Motivo |
 |---|---|---|
-| Telar Andino (`andean_loom`) | Horizonte Temprano → Horizonte Tardío | Tradición textil andina prehispánica (Paracas, Nazca, Wari, Inca). |
-| Quipus y Vigías (`quipus_watchers`) | Horizonte Medio → Horizonte Tardío, Wari e Inca | Registro por quipus de tradición andina (Wari–Inca). |
+| Telar Andino (`andean_loom`) | Horizonte Temprano → Virreinato | Tradición textil de las civilizaciones andinas (Paracas, Nazca, Wari, Inca); continuó en el Cusco y Vilcabamba coloniales. |
+| Quipus y Vigías (`quipus_watchers`) | Horizonte Medio → Virreinato, Wari e Inca | Registro por quipus de tradición andina (Wari–Inca); los quipus coloniales siguieron en uso. |
 | Palabra del Amauta (`amauta_words`) | Horizonte Tardío, solo Inca | El *amauta* es un sabio/maestro inca. |
 | Chasquis Veloces (`swift_chasquis`) | Horizonte Tardío, solo Inca | Los *chasquis* son los correos del Estado inca; el efecto de capacidad es una abstracción logística, no una afirmación de que transportaran carga. |
 | Metalurgia Moche (`moche_metallurgy`) | Intermedio Temprano, solo Moche | Metalurgia y talleres moches; el efecto de ataque es una abstracción de sus armas de metal. |
@@ -24,9 +24,9 @@ ni después/otra cultura (ámbito).
 | Fardos Funerarios (`paracas_funeral`) | Intermedio Temprano, solo Paracas | Fardos funerarios paracas; el efecto de armadura es una abstracción. |
 | Orejeras de Pashash (`recuay_gold`) | Intermedio Temprano, solo Recuay | Orfebrería y orejeras de Pashash. |
 | Mitimaes (`wari_mitimaes`) | Horizonte Medio, solo Wari | Reasentamientos y red vial wari; el efecto de velocidad es una abstracción logística. |
-| Monolitos de Tiahuanaco (`tiahuanaco_monoliths`) | Intermedio Temprano, solo Tiahuanaco | Escultura lítica y monolitos tiahuanacotas; el efecto de armadura es una abstracción. |
-| Momia Ancestral (`chanca_mummy`) | Intermedio Tardío, solo Chanca | Los chancas llevaban la momia de sus antepasados al combate; el efecto de ataque es una abstracción. |
-| Tumi Ceremonial (`chimu_tumi`) | Intermedio Tardío, solo Chimú | Orfebrería y tumi chimú; el efecto de ataque es una abstracción. |
+| Monolitos de Tiahuanaco (`tiahuanaco_monoliths`) | Intermedio Temprano → Horizonte Medio, solo Tiahuanaco | Escultura lítica y monolitos tiahuanacotas, con su auge en el Horizonte Medio (m4); el efecto de armadura es una abstracción. |
+| Momia Ancestral (`chanca_mummy`) | Intermedio Tardío → Horizonte Tardío, solo Chanca | Los chancas llevaban la momia de sus antepasados al combate; la guerra chanca abre el Horizonte Tardío (m5). |
+| Tumi Ceremonial (`chimu_tumi`) | Intermedio Tardío → Horizonte Tardío, solo Chimú | Orfebrería y tumi chimú; la conquista inca del Chimú (c. 1470) cae en el Horizonte Tardío (m6). |
 | Puerta del Sol (`tiahuanaco_gate`) | Horizonte Medio, solo Tiahuanaco | Astronomía y culto tiahuanacota; el efecto de visión es una abstracción. |
 | Plazas Fortificadas (`realista_plazas`) | Virreinato → Independencia, solo Realistas | Defensa de las plazas del ejército virreinal; el efecto de armadura es una abstracción. |
 | Campaña de la Sierra (`patriota_sierra`) | Independencia, solo Patriotas | Campaña de la sierra y montoneras; el efecto de velocidad es una abstracción. |

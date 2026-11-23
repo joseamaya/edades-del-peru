@@ -17,7 +17,8 @@
 - **Mapa**: `coast`, con el mar al oeste, el Rímac, el llano de Lima y los cerros de Quizu.
 - **En el juego**: fundar la traza, sostener el cerco y romperlo tomando el campamento de Quizu. La victoria
   no cambia el resto de la guerra: el Cusco sigue cercado. La artillería ligera (falconete) llega con el
-  cerco de 1536, no con la fundación de 1535.
+  cerco de 1536, no con la fundación de 1535. La hueste no investiga asedio ni talleres de artillería:
+  el falconete es un refuerzo scriptado.
 
 ## Tabla de certeza
 

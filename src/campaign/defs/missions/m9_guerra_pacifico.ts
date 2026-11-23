@@ -203,7 +203,26 @@ export const m9GuerraPacifico: MissionDef = {
     UnitKind.SNIPER,
     UnitKind.SCOUT,
   ],
-  buildingNames: { [BuildingKind.FORTRESS]: 'Fortín', [BuildingKind.INSTITUTE]: 'Academia' },
+  // The port and fort keep an infantry garrison: no cavalry stable, artillery workshop or academy.
+  allowedBuildings: [
+    BuildingKind.CENTER,
+    BuildingKind.HOUSE,
+    BuildingKind.FARM,
+    BuildingKind.MILL,
+    BuildingKind.SAWMILL,
+    BuildingKind.BARRACKS,
+    BuildingKind.ARSENAL,
+    BuildingKind.FORTRESS,
+    BuildingKind.WALL,
+    BuildingKind.GATE,
+    BuildingKind.TOWER,
+    BuildingKind.MARKET,
+  ],
+  allowedTechs: ['irrigation_canal', 'bow_and_bolas', 'hunters', 'republica_puerto'],
+  buildingNames: {
+    [BuildingKind.FORTRESS]: 'Fortín',
+    [BuildingKind.BARRACKS]: 'Cuartel',
+  },
   unitNames: { [UnitKind.REPUBLICA_DEFENSOR]: 'Defensor de Arica' },
   objectives: [
     {

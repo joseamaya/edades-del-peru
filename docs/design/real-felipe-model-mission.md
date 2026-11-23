@@ -50,7 +50,8 @@ Optional/failure: if Salom dies or the camp falls, the mission is lost.
 
 - `PATRIOTAS` vs `REALISTAS`; period-locked Independence.
 - Units: workers, line infantry, musketeers, riflemen, montoneras, cavalry, artillery, scout and
-  missionary. Buildings include forts, walls, towers and the siege camp.
+  missionary. Buildings include forts, walls, towers and the siege camp. Research is limited to irrigation,
+  the elite ranged line, shock cavalry, siege engines, evangelization and the sierra campaign.
 - Salom and Rodil are commander cards. Both are documented; no invented likeness, the portraits are the
   existing stylized abstractions.
 

@@ -49,7 +49,9 @@ recorded here and in the quality bar.
 
 ## Economy and units
 
-- Wari workers, warriors and the Wari guardian; no arsenal, stable, pucará, walls or towers in the roster.
+- Wari workers, warriors and the Wari guardian; no arsenal, stable, pucará, walls or towers in the roster,
+  and no ranged units. The institute and the smelter are the state workshops («Talleres estatales»,
+  «Taller de orfebrería») that host the loom and quipu techs.
 - No enemy is active on the map: the mission is an administrative contest, and the Tiahuanaco influence is
   measured by the frontier objective, not by waves.
 - No firearms, horses or engines; the narrator is an anonymous **Voz de los Andes** because no Wari or

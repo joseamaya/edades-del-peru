@@ -34,7 +34,9 @@ Optional: cut the city's supplies. The mission never stages the later «Santiago
 ## Economy and cast
 
 - `INCA` vs `HUESTE_INDIANA`; period-locked Viceroyalty.
-- Units: workers, Inca warriors, soldiers and scouts; no horses or firearms for the player.
+- Units: workers, Inca warriors, Inca slingers, soldiers and scouts; no horses or firearms for the player.
+  The slingers (`INCA_SLINGER`) are trained at the «Casa de armas»; the Yachaywasi hosts the loom and quipu
+  techs. No market or Spanish doctrine.
 - The Spanish city is a **besieged garrison**: `enemy.economy: false` and `start.enemyOpeningUnits: false`
   keep its centre and houses but stop the peasant economy, sawmill and mill. `enemy.attacks: false` keeps
   the authored waves on their targets instead of letting the AI pull them toward the player's base; the

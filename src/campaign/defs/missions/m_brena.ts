@@ -213,7 +213,6 @@ export const mBrena: MissionDef = {
     UnitKind.SNIPER,
     UnitKind.CAVALRY,
     UnitKind.HUSSAR,
-    UnitKind.ARTILLERY,
     UnitKind.SCOUT,
   ],
   allowedBuildings: [
@@ -231,8 +230,13 @@ export const mBrena: MissionDef = {
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
-  buildingNames: { [BuildingKind.FORTRESS]: 'Fortín' },
-  // The Breña was fought by the Mantaro communities' guerrillas, not by the Arica garrison.
+  allowedTechs: ['irrigation_canal', 'bow_and_bolas', 'shock_cavalry', 'hunters', 'republica_puerto'],
+  buildingNames: {
+    [BuildingKind.FORTRESS]: 'Fortín',
+    [BuildingKind.BARRACKS]: 'Cuartel',
+  },
+  // The Breña was fought by the Mantaro communities' guerrillas, not by the Arica garrison. The one
+  // captured piece is scripted; there is no artillery workshop in the valley.
   unitNames: { [UnitKind.REPUBLICA_DEFENSOR]: 'Guerrillero de la Breña' },
   objectives: [
     {

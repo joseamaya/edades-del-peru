@@ -52,8 +52,9 @@ recorded here and in the quality bar.
 
 - Junín is cavalry-only, as documented: no riflemen, montoneras or artillery take part in the charge. The
   player roster is workers, cavalry and scouts; the patriot riflemen, montoneras and artillery are scripted
-  reinforcements that join for the march and Ayacucho. Against royalist cavalry, dragoons and the Ayacucho
-  garrison. This is 1824: firearms and horses are period-correct.
+  reinforcements that join for the march and Ayacucho. The camp builds economy, a stable, a fortín and
+  defences; no barracks, arsenal, artillery workshop or academy. Against royalist cavalry, dragoons and the
+  Ayacucho garrison. This is 1824: firearms and horses are period-correct.
 - Sucre rides with the cavalry as a protected named commander; the royalist centre is an optional
   destruction target, not the goal.
 - The narrator is **Antonio José de Sucre**, a documented commander.

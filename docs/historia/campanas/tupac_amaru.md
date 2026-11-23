@@ -26,7 +26,8 @@
   ciudad. La captura en Langui y la ejecución del 18 de mayo de 1781 quedan en el epílogo. La victoria es
   táctica: salvar a la dirigencia y al ejército cuando la historia ya había decidido la derrota. Los
   rebeldes no tienen artillería ni fortificaciones profesionales; las oleadas realistas son una abstracción
-  del asalto, no una orden de batalla literal.
+  del asalto, no una orden de batalla literal. El jugador entrena **milicias**; los pocos mosqueteros y los
+  dos jinetes del inicio representan armas y caballos capturados y no se reemplazan.
 
 ## Tabla de certeza
 

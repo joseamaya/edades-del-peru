@@ -12,7 +12,7 @@
   colgantes, andenes y canales.
 - **Arquitectura ceremonial**: plataformas de piedra (**ushnu**) en las plazas, usadas como trono y lugar de
   culto solar (p. ej. en el Haukaypata del Cusco).
-- **Militar**: ejército imperial; **chasquis**; guerra ritual.
+- **Militar**: ejército imperial de infantería con **honda**, lanza, porra y hacha; el arco era un arma auxiliar de pueblos aliados, no la base del ejército; **chasquis**; guerra ritual.
 - **Personajes**: **Pachacútec** (Cusi Yupanqui, 1438–1471), **Túpac Yupanqui** (1471–1493),
   **Huayna Cápac** (1493–1527), **Huáscar** y **Atahualpa** (guerra civil 1529–1532).
 - **Hitos**: victoria sobre los chancas (1438); conquista del **Reino Chimú** (c. 1470); captura de

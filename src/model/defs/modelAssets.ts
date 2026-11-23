@@ -251,7 +251,8 @@ function postColonialFieldRole(kind: UnitKind): PostColonialRole | null {
     kind === UnitKind.MUSKETEER ||
     kind === UnitKind.RIFLEMAN ||
     kind === UnitKind.SNIPER ||
-    kind === UnitKind.ANTI_AIR
+    kind === UnitKind.ANTI_AIR ||
+    kind === UnitKind.INCA_SLINGER
   ) {
     return 'ranged';
   }
@@ -271,7 +272,7 @@ function andeanRigChoice(culture: AndeanCulture, kind: UnitKind, unitGender: Per
   if (kind === UnitKind.WORKER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('worker') };
   if (kind === UnitKind.SCOUT) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('scout') };
   if (kind === UnitKind.SOLDIER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('soldier') };
-  if (kind === UnitKind.MUSKETEER || kind === UnitKind.RIFLEMAN) {
+  if (kind === UnitKind.MUSKETEER || kind === UnitKind.RIFLEMAN || kind === UnitKind.INCA_SLINGER) {
     return { asset: CARAL_WORKER_ASSET_ID, variant: variant('ranged') };
   }
   if (kind === UnitKind.COMMISSAR) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('amauta') };

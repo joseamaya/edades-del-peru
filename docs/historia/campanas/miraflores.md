@@ -21,7 +21,8 @@
 - **Mapa**: `coast`, con un transecto comprimido Lima → Miraflores → San Juan → camino a la sierra.
 - **En el juego**: tres actos. El jugador levanta tres reductos, sostiene la línea con reservistas y retira
   a Cáceres hacia la sierra. La victoria es la retirada, no la defensa de Lima. El saqueo de Chorrillos y
-  la ocupación se narran en el epílogo, sin escenificarlos.
+  la ocupación se narran en el epílogo, sin escenificarlos. Los reductos tienen taller de artillería para
+  reponer sus piezas; la artillería chilena del asalto se mantiene fuera del combate por abstracción.
 
 ## Tabla de certeza
 

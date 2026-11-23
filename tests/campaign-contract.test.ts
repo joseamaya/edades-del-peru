@@ -3,7 +3,9 @@ import { MISSIONS } from '../src/campaign/defs/campaign';
 import type { MissionDef, MissionPoint, ObjectiveDef } from '../src/campaign/types';
 import { setAutoStart } from '../src/core/Game';
 import { BuildingKind, UnitKind } from '../src/core/types';
-import { getTech } from '../src/model/defs/techs';
+import { BUILDING_DEFS } from '../src/model/defs/buildings';
+import { TECHS, getTech, techAvailable } from '../src/model/defs/techs';
+import { UNIT_ARCHETYPES, unitAvailableToCiv, unitTrainableInPeriod } from '../src/model/defs/units';
 import { CARAL_CITY_BLOCKERS, CARAL_PLAZA_CENTER } from '../src/model/defs/caralCity';
 import { headlessMission } from './headless';
 
@@ -26,6 +28,36 @@ function waves(mission: MissionDef): Wave[] {
 
 function positionedHolds(mission: MissionDef): PositionedHold[] {
   return (mission.objectives ?? []).filter((o): o is PositionedHold => o.kind === 'hold' && o.pos !== undefined);
+}
+
+/** Buildings this mission can put on the map; a base-less opening has no standing centre. */
+function buildableKinds(mission: MissionDef): Set<BuildingKind> {
+  const kinds = Object.values(BUILDING_DEFS)
+    .filter(
+      (def) =>
+        def.id !== BuildingKind.CENTER &&
+        (!mission.allowedBuildings || mission.allowedBuildings.includes(def.id)) &&
+        mission.startingEra >= def.minEra,
+    )
+    .map((def) => def.id);
+  return new Set(mission.start.base === false ? kinds : [BuildingKind.CENTER, ...kinds]);
+}
+
+/** Technologies the mission's period, civilization and allowlist leave available. */
+function availableTechs(mission: MissionDef): Set<string> {
+  return new Set(
+    TECHS.filter(
+      (tech) =>
+        techAvailable(tech, mission.period, mission.playerCiv) &&
+        (!mission.allowedTechs || mission.allowedTechs.includes(tech.id)),
+    ).map((tech) => tech.id),
+  );
+}
+
+function producerKinds(kind: UnitKind): BuildingKind[] {
+  return Object.values(BUILDING_DEFS)
+    .filter((def) => def.trainable?.includes(kind))
+    .map((def) => def.id);
 }
 
 /**
@@ -145,21 +177,48 @@ describe('campaign mission contract', () => {
     expect(leaked).toEqual([]);
   });
 
-  it('does not offer a technology its allowed buildings cannot host', () => {
-    // Chavín listed the loom (institute) and silver metallurgy (smelter) while allowing only a house, a
-    // mill, a farm and the market: two techs nobody could ever research.
+  it('does not offer a technology or unit its allowed buildings cannot support', () => {
+    // Every mission, not only the ones with an explicit allowlist: a restricted building set also
+    // restricts the tech tree, and a unit whose producer or tech is unreachable is a phantom option.
     const orphans: string[] = [];
     for (const mission of MISSIONS) {
-      if (!mission.allowedTechs || !mission.allowedBuildings) continue;
-      for (const id of mission.allowedTechs) {
+      const buildings = buildableKinds(mission);
+      const techs = availableTechs(mission);
+      const units = mission.allowedUnits ?? Object.keys(UNIT_ARCHETYPES).map((kind) => kind as UnitKind);
+      for (const kind of units) {
+        const arch = UNIT_ARCHETYPES[kind];
+        if (!arch) {
+          orphans.push(`${mission.id}: ${kind} (unknown unit)`);
+          continue;
+        }
+        if (
+          !unitAvailableToCiv(kind, mission.playerCiv) ||
+          !unitTrainableInPeriod(kind, mission.period, mission.playerCiv)
+        ) {
+          orphans.push(`${mission.id}: ${kind} (outside the period or civilization)`);
+          continue;
+        }
+        if (!producerKinds(kind).some((id) => buildings.has(id))) {
+          orphans.push(`${mission.id}: ${kind} (no buildable producer)`);
+        }
+        for (const req of arch.requiresTech ?? []) {
+          if (!techs.has(req)) orphans.push(`${mission.id}: ${kind} needs ${req}, which the mission does not allow`);
+        }
+      }
+      for (const id of techs) {
         const tech = getTech(id);
         if (!tech) {
           orphans.push(`${mission.id}: ${id} (unknown tech)`);
           continue;
         }
-        // The town centre is always standing, so it never needs to be listed.
-        if (tech.building === BuildingKind.CENTER) continue;
-        if (!mission.allowedBuildings.includes(tech.building)) orphans.push(`${mission.id}: ${id}`);
+        if (!buildings.has(tech.building)) {
+          orphans.push(`${mission.id}: ${id} (building ${tech.building} is not buildable)`);
+          continue;
+        }
+        const unlocked = tech.unlocksUnits ?? [];
+        if (unlocked.length && !unlocked.some((kind) => units.includes(kind as UnitKind))) {
+          orphans.push(`${mission.id}: ${id} (unlocks ${unlocked.join('/')}, none trainable)`);
+        }
       }
     }
     expect(orphans).toEqual([]);

@@ -1,5 +1,26 @@
 import { BuildingKind, CivId, HistoricalPeriod, Resources, ZERO_RESOURCES } from '../../core/types';
 
+/** Pre-Hispanic Andean civilizations that share the loom tradition. */
+const ANDEAN_CIVS: CivId[] = [
+  CivId.CARAL,
+  CivId.CHAVIN,
+  CivId.CUPISNIQUE,
+  CivId.PARACAS,
+  CivId.MOCHE,
+  CivId.NAZCA,
+  CivId.RECUAY,
+  CivId.WARI,
+  CivId.TIAHUANACO,
+  CivId.CHIMU,
+  CivId.CHINCHA,
+  CivId.CHANCA,
+  CivId.COLLAS_LUPACA,
+  CivId.HUANCA,
+  CivId.INCA_KILLKE,
+  CivId.AYLLUS,
+  CivId.INCA,
+];
+
 export interface TechEffect {
   attackMult?: number;
   armorMult?: number;
@@ -91,7 +112,10 @@ export const TECHS: TechDef[] = [
     cost: cost({ wood: 80, silver: 60 }),
     time: 45,
     minPeriod: HistoricalPeriod.EARLY_HORIZON,
-    maxPeriod: HistoricalPeriod.LATE_HORIZON,
+    // Andean weaving continues into the colonial period (Cusco 1536, Vilcabamba 1572); the civ gate keeps
+    // it out of the Spanish and republican matches.
+    maxPeriod: HistoricalPeriod.VICEROYALTY,
+    civs: ANDEAN_CIVS,
     building: BuildingKind.INSTITUTE,
     effect: { gatheringMult: { wood: 0.15, silver: 0.15 } },
     icon: '🧶',
@@ -133,7 +157,7 @@ export const TECHS: TechDef[] = [
   },
   {
     id: 'siege_engines',
-    name: 'Huaracas y Onagros',
+    name: 'Máquinas de Asedio',
     description: 'Desbloquea la Artillería en el Taller. Máquinas de asedio más potentes.',
     cost: cost({ silver: 180, stone: 40 }),
     time: 60,
@@ -209,7 +233,8 @@ export const TECHS: TechDef[] = [
     cost: cost({ silver: 150, stone: 120 }),
     time: 60,
     minPeriod: HistoricalPeriod.MIDDLE_HORIZON,
-    maxPeriod: HistoricalPeriod.LATE_HORIZON,
+    // Colonial quipus were still used for records; the building gate keeps this out of m7 and the Republic.
+    maxPeriod: HistoricalPeriod.VICEROYALTY,
     civs: [CivId.INCA, CivId.WARI],
     building: BuildingKind.INSTITUTE,
     effect: { losBonus: 2 },
@@ -385,7 +410,8 @@ export const TECHS: TechDef[] = [
     cost: cost({ silver: 140, stone: 100 }),
     time: 55,
     minPeriod: HistoricalPeriod.EARLY_INTERMEDIATE,
-    maxPeriod: HistoricalPeriod.EARLY_INTERMEDIATE,
+    // The great monoliths belong to the Middle Horizon florescence, when Tiahuanaco faces Wari (m4).
+    maxPeriod: HistoricalPeriod.MIDDLE_HORIZON,
     civs: [CivId.TIAHUANACO],
     building: BuildingKind.CENTER,
     effect: { armorMult: 0.1 },
@@ -415,7 +441,8 @@ export const TECHS: TechDef[] = [
     cost: cost({ food: 140, silver: 90 }),
     time: 55,
     minPeriod: HistoricalPeriod.LATE_INTERMEDIATE,
-    maxPeriod: HistoricalPeriod.LATE_INTERMEDIATE,
+    // The Chanca war opens the Late Horizon (1438); the mummy tech must reach m5.
+    maxPeriod: HistoricalPeriod.LATE_HORIZON,
     civs: [CivId.CHANCA],
     building: BuildingKind.BARRACKS,
     effect: { attackMult: 0.1 },
@@ -430,7 +457,8 @@ export const TECHS: TechDef[] = [
     cost: cost({ silver: 150, stone: 80 }),
     time: 55,
     minPeriod: HistoricalPeriod.LATE_INTERMEDIATE,
-    maxPeriod: HistoricalPeriod.LATE_INTERMEDIATE,
+    // The Chimú conquest (c. 1470) is Late Horizon; the tumi tech must reach m6.
+    maxPeriod: HistoricalPeriod.LATE_HORIZON,
     civs: [CivId.CHIMU],
     building: BuildingKind.BARRACKS,
     effect: { attackMult: 0.1 },

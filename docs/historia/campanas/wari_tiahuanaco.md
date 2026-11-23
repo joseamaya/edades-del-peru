@@ -14,7 +14,7 @@
 - **Mapa**: `andes` / `altiplano`.
 - **Desenlace documentado**: ambos estados colapsan hacia el 1000–1100 d.C., dando paso al Intermedio Tardío.
 - **Nota**: **no hay una guerra única documentada** Wari–Tiahuanaco; el emparejamiento es de coetaneidad.
-- **En el juego**: el sitio autorado del complejo Wari articula templo en D, plaza, galerías y andenes. Tres actos: I andenes y suministros, II la red de dos centros provinciales, III la frontera frente a Tiahuanaco. La competencia se mide en territorio e influencia, no en una guerra inventada. El mapa fija terrazas andinas y el epílogo cierra con el colapso de ambos estados hacia 1000–1100 d.C.
+- **En el juego**: el sitio autorado del complejo Wari articula templo en D, plaza, galerías y andenes. Tres actos: I andenes y suministros, II la red de dos centros provinciales, III la frontera frente a Tiahuanaco. La competencia se mide en territorio e influencia, no en una guerra inventada. El mapa fija terrazas andinas y el epílogo cierra con el colapso de ambos estados hacia 1000–1100 d.C. El roster es de obreros, guerreros y el **guardián wari**; no hay arsenal ni unidades a distancia. El instituto y la platería se etiquetan «Talleres estatales» y «Taller de orfebrería».
 
 ## Certeza
 

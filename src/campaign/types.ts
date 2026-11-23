@@ -572,12 +572,14 @@ export interface MissionDef {
   };
   /**
    * If set, the player can only train these units (a scenario restriction, e.g.
-   * a naval campaign with no siege train). Omit for the full roster.
+   * a naval campaign with no siege train). Omit for the full roster; an empty list means nothing is
+   * trainable (a fixed-force battle such as Tarapacá).
    */
   allowedUnits?: UnitKind[];
   /**
    * If set, the player can only build these buildings (e.g. Caral: no metallurgy, no documented war,
-   * no permanent market). Omit for every building of the era.
+   * no permanent market). Omit for every building of the era; an empty list means nothing is
+   * constructible (Tarapacá).
    */
   allowedBuildings?: BuildingKind[];
   /** Player-facing building labels for this scenario (e.g. Caral's «Depósito comunal»). */
@@ -593,7 +595,10 @@ export interface MissionDef {
   commanderRoles?: Partial<Record<PortraitId, string>>;
   /** Period-appropriate building icons that override the global defaults (e.g. Caral's neutral farm). */
   buildingIcons?: Partial<Record<BuildingKind, string>>;
-  /** If set, only these technologies may be researched in the match. */
+  /**
+   * If set, only these technologies may be researched in the match. An empty list means no research
+   * (a fixed-force battle or a base-less opening such as Tambotoco).
+   */
   allowedTechs?: string[];
   objectives: ObjectiveDef[];
   triggers: TriggerDef[];

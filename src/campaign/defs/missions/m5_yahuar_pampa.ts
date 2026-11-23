@@ -142,7 +142,7 @@ export const m5YahuarPampa: MissionDef = {
     units: [
       { kind: UnitKind.INCA_WARRIOR, dx: -chancaLength(8), dz: chancaLength(8), tag: 'cusi_yupanqui', count: 1 },
       { kind: UnitKind.SOLDIER, dx: -chancaLength(6), dz: chancaLength(10), count: 6 },
-      { kind: UnitKind.MUSKETEER, dx: -chancaLength(10), dz: chancaLength(10), count: 2 },
+      { kind: UnitKind.INCA_SLINGER, dx: -chancaLength(10), dz: chancaLength(10), count: 2 },
     ],
   },
   mark: [
@@ -153,7 +153,42 @@ export const m5YahuarPampa: MissionDef = {
   // A field battle: the garrison opens at the centre and the host keeps the AI's own attacks, which can
   // pull it and the columns toward the player's base after their authored move.
   enemy: { active: true, difficulty: 'hard', aggression: 1.3, economy: false },
-  buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
+  // The Inca line is melee and slings: no bow (RIFLEMAN) and no market economy in the Cusco defence.
+  allowedUnits: [
+    UnitKind.WORKER,
+    UnitKind.SOLDIER,
+    UnitKind.INCA_WARRIOR,
+    UnitKind.INCA_SLINGER,
+    UnitKind.SCOUT,
+    UnitKind.COMMISSAR,
+  ],
+  allowedBuildings: [
+    BuildingKind.HOUSE,
+    BuildingKind.FARM,
+    BuildingKind.MILL,
+    BuildingKind.SAWMILL,
+    BuildingKind.SMELTER,
+    BuildingKind.REFINERY,
+    BuildingKind.BARRACKS,
+    BuildingKind.ARSENAL,
+    BuildingKind.WALL,
+    BuildingKind.GATE,
+    BuildingKind.TOWER,
+    BuildingKind.FORTRESS,
+    BuildingKind.INSTITUTE,
+  ],
+  allowedTechs: [
+    'irrigation_canal',
+    'andean_loom',
+    'silver_metallurgy',
+    'quipus_watchers',
+    'amauta_words',
+    'swift_chasquis',
+  ],
+  buildingNames: {
+    [BuildingKind.FORTRESS]: 'Pucará',
+    [BuildingKind.ARSENAL]: 'Casa de armas',
+  },
   objectives: [
     { id: 'obj_defend', kind: 'defend', entityTag: 'cusco', time: 480, title: 'Defiende el Cusco 8 minutos' },
     {

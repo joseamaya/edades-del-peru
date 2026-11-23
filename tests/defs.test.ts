@@ -164,15 +164,26 @@ describe('technology definitions', () => {
 
   it('keeps culture-specific techs in their own window', () => {
     const byId = new Map(TECHS.map((t) => [t.id, t]));
-    // Inca techs are not available to the Spanish/Republic...
-    for (const id of ['quipus_watchers', 'amauta_words', 'swift_chasquis']) {
+    // Amauta and chasqui are state institutions of the Inca state, not the colonial republic.
+    for (const id of ['amauta_words', 'swift_chasquis']) {
       expect(techAvailable(byId.get(id)!, HistoricalPeriod.VICEROYALTY), `${id} leaked to the Viceroyalty`).toBe(false);
       expect(techAvailable(byId.get(id)!, HistoricalPeriod.REPUBLIC), `${id} leaked to the Republic`).toBe(false);
     }
+    // Colonial quipus survive for the Inca/Wari, never for the Spanish or the Republic.
+    expect(techAvailable(byId.get('quipus_watchers')!, HistoricalPeriod.VICEROYALTY, CivId.INCA)).toBe(true);
+    expect(techAvailable(byId.get('quipus_watchers')!, HistoricalPeriod.VICEROYALTY, CivId.WARI)).toBe(true);
+    expect(techAvailable(byId.get('quipus_watchers')!, HistoricalPeriod.VICEROYALTY, CivId.REALISTAS)).toBe(false);
+    expect(techAvailable(byId.get('quipus_watchers')!, HistoricalPeriod.REPUBLIC, CivId.INCA)).toBe(false);
     // ...but are available to the Inca, and every window is well-formed.
     expect(techAvailable(byId.get('amauta_words')!, HistoricalPeriod.LATE_HORIZON)).toBe(true);
     expect(techAvailable(byId.get('swift_chasquis')!, HistoricalPeriod.LATE_HORIZON, CivId.INCA)).toBe(true);
     expect(techAvailable(byId.get('swift_chasquis')!, HistoricalPeriod.LATE_HORIZON, CivId.CHANCA)).toBe(false);
+    // The Chanca and Chimú unique techs must reach the Late Horizon missions (m5/m6).
+    expect(techAvailable(byId.get('chanca_mummy')!, HistoricalPeriod.LATE_HORIZON, CivId.CHANCA)).toBe(true);
+    expect(techAvailable(byId.get('chimu_tumi')!, HistoricalPeriod.LATE_HORIZON, CivId.CHIMU)).toBe(true);
+    expect(techAvailable(byId.get('tiahuanaco_monoliths')!, HistoricalPeriod.MIDDLE_HORIZON, CivId.TIAHUANACO)).toBe(
+      true,
+    );
     for (const t of TECHS) {
       if (t.maxPeriod !== undefined) {
         expect(t.maxPeriod, `${t.id} maxPeriod before minPeriod`).toBeGreaterThanOrEqual(t.minPeriod);
