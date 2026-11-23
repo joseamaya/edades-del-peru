@@ -24,7 +24,8 @@ checklist are in [`docs/release/0.2.0-readiness-audit.md`](./docs/release/0.2.0-
 **Requires a desktop browser with WebGL2** (recent Chrome, Edge, Firefox or Safari), a mouse and a
 keyboard. The interface and the historical content are in Spanish. Quality adapts automatically; the
 reference Intel iGPU runs the high preset at about 27–40 FPS at 1600×900, and the low preset is the
-fallback (36–50 FPS on the tightest views). All 24 site views have a real-GPU frame time
+fallback (36–50 FPS on the tightest views). All 24 site views have a real-GPU frame time, and the seven
+missions of the last arc have their openings measured
 ([`docs/development/site-view-performance.md`](./docs/development/site-view-performance.md)).
 
 Known limitations for 0.2.0:

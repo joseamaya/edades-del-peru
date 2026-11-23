@@ -131,6 +131,6 @@ padding the mission with invented acts. Re-measure after map, wave or economy ch
 
 1. Human art review of the `arica_site` GLB (#343); the authored intro render is approved and the in-engine
    captures are recorded in PROVENANCE and are not a Blender-render claim.
-2. A real-GPU performance pass; the current bench numbers are structural (SwiftShader) and not a GPU
-   benchmark.
+2. ~~A real-GPU performance pass~~ — measured on the reference iGPU
+   ([`../development/site-view-performance.md`](../development/site-view-performance.md)).
 3. The Morro remains outside the playable range by design.

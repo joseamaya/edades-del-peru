@@ -106,5 +106,6 @@ pattern's 30–40 min band is not claimed, and the eight-minute survival is opti
 
 1. Human art review of the reused `wari_site` GLB and its Blender records (#343); the in-engine captures are
    recorded in PROVENANCE and are not a Blender-render claim.
-2. A real-GPU performance pass; the bench numbers are structural (SwiftShader).
+2. Real-GPU performance measured on the reference iGPU:
+   [`../development/site-view-performance.md`](../development/site-view-performance.md).
 3. A human playtest to measure the full path.
