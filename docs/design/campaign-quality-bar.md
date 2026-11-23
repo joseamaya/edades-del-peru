@@ -52,7 +52,7 @@ and `m_vilcabamba` rows were added on 2026-11-18; the rest is the 2026-11-14 aud
 | m_tambotoco        | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m5_yahuar_pampa    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6_chimu_inca      | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
-| m6b_guerra_civil   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
+| m6b_guerra_civil   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | P    | M     |
 | m_cusco_1536       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
 | m_vilcabamba       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | M   | M    | M     |
@@ -65,6 +65,12 @@ and `m_vilcabamba` rows were added on 2026-11-18; the rest is the 2026-11-14 aud
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m_miraflores       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
 | m_brena            | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
+
+**Art review record (2026-11-23).** Miguel Amaya read the site-review sheet
+[`../media/site-review-2026-11-23-new-missions.webp`](../media/site-review-2026-11-23-new-missions.webp) and
+accepted the procedural sites of `m_real_felipe`, `m_tarapaca` and `m_vilcabamba` as abstractions (`Art`
+Partial → Met). Not signed: the reused kits of `m_lima_1821`, `m_miraflores`, `m_brena` and the Cusco
+composition drawn by `m_cusco_1536` and `m6b`, which stay open; those rows keep `Art` Partial where they had it.
 
 **0.2.0 closeout note (2026-11-19).** The seven missions added on 2026-11-18 now have a real-command,
 no-cheat full path in `tests/e2e/release-playtest.spec.ts` (nightly slow tier): place/build/move/attack-move
@@ -87,8 +93,9 @@ the reused kits of the older missions. m8
 was included in this pass. **m3–m9 meet the scale, opening and performance gates**; the m3, m4, m5, Tambotoco, Lima, La Junta and
 Arica intro renders are approved. Every render record in `src/art/manifest.json` is now approved: the five
 Caral education/tour records were reconciled and the three draft Workbench mission intros were removed. The
-open art review is the reused site kits of m3–m9 and La Junta (captures in
-`docs/media/site-review-2026-11-17.webp`; GitHub issue #343 tracks renders, not sites).
+open art review is the 2026-11-17 site captures of m3–m9 and La Junta (their kits are authored, not reused),
+the reused Lima/Miraflores/Breña kits and the Cusco composition; see the review record above. GitHub issue
+#343 tracks renders, not sites.
 
 **Tambotoco art pass (2026-11-16).** The ayllu kit now uses per-surface PBR detail (stone, rock, earth,
 plaster, thatch, wood, crops, people) with world-scale UVs; the cave is an arch in a scree apron, Huanacaure's
@@ -123,7 +130,8 @@ in-engine intro and epilogue, bench scenes and the scale guard).
    Lima opens the Plaza Mayor card through the HUD and advances its tutorial. A manual no-cheat playtest
    remains recommended for all of them.
 3. **Art review:** the render records are reconciled (0 `reviewed: false`); what remains is the human review
-   of the reused site GLBs and the Chavín kit (#343).
+   of the reused site kits of m3–m9, the Lima/Miraflores/Breña kits and the Chavín kit. The procedural sites
+   of Real Felipe, Tarapacá and Vilcabamba were accepted on 2026-11-23.
 4. **Model-mission rebuilds:** done for m3–m9 (2026-11-14), including m8. The quick wins are done too:
    m6's gate really closes (`canal_closed`) and m6b's victory holds Quipaipan and captures Huáscar instead
    of razing a building.
@@ -559,6 +567,6 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Docs        | Met                  | This document, dossier, `guerra-civil-model-mission.md`, experience table, site note, art docs and README aligned.                                         |
 | Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                              |
 | Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_cusco_inca_intro.mjs`; `MISSION_ART` uses the approved authored render.         |
-| Art         | Met                  | The authored ushnu-plaza intro render (`m6b_guerra_civil-intro`) was approved on 2026-11-17; the site now draws the shared plaza composition instead of the grey ushnu GLB (2026-11-23). |
+| Art         | Met                  | The authored ushnu-plaza intro render (`m6b_guerra_civil-intro`) was approved on 2026-11-17; the site now draws the plaza composition shared with `m_cusco_1536` (its own review is still open, see the review record). |
 | Performance | Met                  | `bench_scene.mjs`: opening ~703k tris / 436 calls, battle ~967k / 673; over the 600k art-direction target (as m7/m9), within the recorded first-pass caps. |
 | Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                         |

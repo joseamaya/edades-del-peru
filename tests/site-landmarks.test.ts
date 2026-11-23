@@ -6,6 +6,8 @@ import { archProfileFor, isColonialAndeanProfile, usesAndeanArchitecture } from 
 import { getAuthoredSite } from '../src/model/defs/sites';
 import { SiteLandmarks } from '../src/rendering/SiteLandmarks';
 import type { SiteLandmarkKind } from '../src/model/defs/siteLandmarks';
+import { CUSCO_SITE_POINT, CUSCO_SITE_SACSAY } from '../src/campaign/defs/cuscoSite';
+import { CUSCO_INCA_MAP_SIZE } from '../src/model/defs/cuscoIncaSite';
 
 function mission(id: string) {
   const found = MISSIONS.find((m) => m.id === id);
@@ -23,6 +25,15 @@ describe('mission site landmarks', () => {
       expect(mission(id).layout?.site?.hideModel, id).toBe(true);
     }
     expect(getAuthoredSite('cusco_inca_site')?.hideModel).toBeUndefined();
+    // The composition is anchored on the site point, not on a copy of its coordinates: a drift here would
+    // put the plaza off the ushnu in one of the two missions.
+    for (const id of ['m_cusco_1536', 'm6b_guerra_civil']) {
+      const [plaza, sacsay] = mission(id).layout!.siteLandmarks!;
+      expect(plaza.x, id).toBeCloseTo(CUSCO_SITE_POINT.x / CUSCO_INCA_MAP_SIZE, 6);
+      expect(plaza.z, id).toBeCloseTo(CUSCO_SITE_POINT.z / CUSCO_INCA_MAP_SIZE, 6);
+      expect(sacsay.x, id).toBeCloseTo(CUSCO_SITE_SACSAY.x / CUSCO_INCA_MAP_SIZE, 6);
+      expect(sacsay.z, id).toBeCloseTo(CUSCO_SITE_SACSAY.z / CUSCO_INCA_MAP_SIZE, 6);
+    }
   });
 
   it('replaces the borrowed GLBs with procedural landmarks', () => {

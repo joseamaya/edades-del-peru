@@ -1,20 +1,18 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import { highValleyVegetation } from '../../../model/defs/profiles';
 import { CUSCO1536_HEIGHTFIELD } from '../../../model/defs/cusco1536Heightmap';
-import { CUSCO_SITE_CITY, CUSCO_SITE_SACSAY, cuscoSiteLandmarks } from '../cuscoSite';
+import { CUSCO_SITE_POINT, CUSCO_SITE_SACSAY, cuscoSiteLandmarks } from '../cuscoSite';
 import type { MissionDef } from '../../types';
 
 // Cusco 1536: the Inca camp, Sacsayhuamán, the city and the withdrawal road. Ollantaytambo lies
 // north-west of the city (north is -z), down the Sacred Valley.
-const CUSCO_1536_CITY = CUSCO_SITE_CITY;
-const CUSCO_1536_SACSAY = CUSCO_SITE_SACSAY;
 const CUSCO_1536_CAMP = { x: 77, z: 77 } as const;
 const CUSCO_1536_RETREAT = { x: 100, z: 60 } as const;
 // The road bends west of Sacsayhuamán instead of crossing its tiered footprint.
 const CUSCO_1536_ROAD_BEND = { x: 135, z: 150 } as const;
 // The Act II sortie enters from the city outskirts, clear of both the 24 m siege ring and the spread it
 // spawns over (40 m > 4√2 + 10, and 40 - 4√2 > 24), then marches on the closing ring.
-const CUSCO_1536_SORTIE = { dx: CUSCO_1536_CITY.x + 40, dz: CUSCO_1536_CITY.z } as const;
+const CUSCO_1536_SORTIE = { dx: CUSCO_SITE_POINT.x + 40, dz: CUSCO_SITE_POINT.z } as const;
 
 export const mCusco1536: MissionDef = {
   id: 'm_cusco_1536',
@@ -40,20 +38,20 @@ export const mCusco1536: MissionDef = {
   map: { seed: 1536, type: 'andes', size: 256 },
   layout: {
     labels: [
-      { text: 'Cusco', x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256, kind: 'settlement' },
-      { text: 'Sacsayhuamán', x: CUSCO_1536_SACSAY.x / 256, z: CUSCO_1536_SACSAY.z / 256, kind: 'region' },
+      { text: 'Cusco', x: CUSCO_SITE_POINT.x / 256, z: CUSCO_SITE_POINT.z / 256, kind: 'settlement' },
+      { text: 'Sacsayhuamán', x: CUSCO_SITE_SACSAY.x / 256, z: CUSCO_SITE_SACSAY.z / 256, kind: 'region' },
       { text: 'Campiña inca', x: 0.35, z: 0.4, kind: 'region' },
       { text: 'Camino a Ollantaytambo', x: CUSCO_1536_RETREAT.x / 256, z: CUSCO_1536_RETREAT.z / 256, kind: 'region' },
     ],
     base: { x: CUSCO_1536_CAMP.x / 256, z: CUSCO_1536_CAMP.z / 256 },
     opening: { x: 0.42, z: 0.42 },
-    enemyBase: { x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256 },
+    enemyBase: { x: CUSCO_SITE_POINT.x / 256, z: CUSCO_SITE_POINT.z / 256 },
     discoveries: [],
     terrain: {
       flats: [
         { name: 'Campiña del Cusco', x: 0.42, z: 0.45, rx: 0.18, rz: 0.14 },
-        { name: 'Sacsayhuamán', x: CUSCO_1536_SACSAY.x / 256, z: CUSCO_1536_SACSAY.z / 256, rx: 0.1, rz: 0.08 },
-        { name: 'Cusco', x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256, rx: 0.1, rz: 0.09 },
+        { name: 'Sacsayhuamán', x: CUSCO_SITE_SACSAY.x / 256, z: CUSCO_SITE_SACSAY.z / 256, rx: 0.1, rz: 0.08 },
+        { name: 'Cusco', x: CUSCO_SITE_POINT.x / 256, z: CUSCO_SITE_POINT.z / 256, rx: 0.1, rz: 0.09 },
       ],
     },
     site: {
@@ -62,9 +60,9 @@ export const mCusco1536: MissionDef = {
       // The bundled GLB is a bare grey ushnu; this mission draws the plaza, halls and platform.
       hideModel: true,
       heightField: CUSCO1536_HEIGHTFIELD,
-      focus: { x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256 },
-      keepout: [{ x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256, rx: 0.09, rz: 0.08 }],
-      buildKeepout: [{ x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256, rx: 0.08, rz: 0.07 }],
+      focus: { x: CUSCO_SITE_POINT.x / 256, z: CUSCO_SITE_POINT.z / 256 },
+      keepout: [{ x: CUSCO_SITE_POINT.x / 256, z: CUSCO_SITE_POINT.z / 256, rx: 0.09, rz: 0.08 }],
+      buildKeepout: [{ x: CUSCO_SITE_POINT.x / 256, z: CUSCO_SITE_POINT.z / 256, rx: 0.08, rz: 0.07 }],
     },
     // The Cusco platform is the ushnu; the plaza and the Sacsayhuamán wall front complete it. Shared with
     // Quipaipán so both missions show the same city instead of one of them keeping the grey placeholder GLB.
@@ -72,16 +70,16 @@ export const mCusco1536: MissionDef = {
     roads: [
       {
         from: { dx: CUSCO_1536_CAMP.x, dz: CUSCO_1536_CAMP.z },
-        to: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
+        to: { dx: CUSCO_SITE_POINT.x, dz: CUSCO_SITE_POINT.z },
         width: 3,
       },
       {
-        from: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
-        to: { dx: CUSCO_1536_SACSAY.x, dz: CUSCO_1536_SACSAY.z },
+        from: { dx: CUSCO_SITE_POINT.x, dz: CUSCO_SITE_POINT.z },
+        to: { dx: CUSCO_SITE_SACSAY.x, dz: CUSCO_SITE_SACSAY.z },
         width: 3,
       },
       {
-        from: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
+        from: { dx: CUSCO_SITE_POINT.x, dz: CUSCO_SITE_POINT.z },
         to: { dx: CUSCO_1536_ROAD_BEND.x, dz: CUSCO_1536_ROAD_BEND.z },
         width: 3,
       },
@@ -145,11 +143,11 @@ export const mCusco1536: MissionDef = {
         // From Manco's camp to the eastern outskirts the sortie enters from (x 206).
         view: { x: 60, z: 52, size: 160 },
         marks: [
-          { x: CUSCO_1536_CITY.x, z: CUSCO_1536_CITY.z + 10, label: 'Cusco', side: 'place' },
-          { x: CUSCO_1536_SACSAY.x, z: CUSCO_1536_SACSAY.z - 9, label: 'Sacsayhuamán', side: 'place' },
+          { x: CUSCO_SITE_POINT.x, z: CUSCO_SITE_POINT.z + 10, label: 'Cusco', side: 'place' },
+          { x: CUSCO_SITE_SACSAY.x, z: CUSCO_SITE_SACSAY.z - 9, label: 'Sacsayhuamán', side: 'place' },
           { x: CUSCO_1536_CAMP.x + 4, z: CUSCO_1536_CAMP.z - 8, label: 'Campamento inca', side: 'place' },
           { x: CUSCO_1536_CAMP.x - 2, z: CUSCO_1536_CAMP.z + 8, label: 'Manco Inca', side: 'player', delay: 0.6 },
-          { x: CUSCO_1536_CITY.x + 6, z: CUSCO_1536_CITY.z - 6, label: 'Pizarros', side: 'enemy', delay: 1 },
+          { x: CUSCO_SITE_POINT.x + 6, z: CUSCO_SITE_POINT.z - 6, label: 'Pizarros', side: 'enemy', delay: 1 },
         ],
         routes: [
           {
@@ -157,7 +155,7 @@ export const mCusco1536: MissionDef = {
             label: 'Ejército de Manco',
             points: [
               { x: CUSCO_1536_CAMP.x, z: CUSCO_1536_CAMP.z },
-              { x: CUSCO_1536_SACSAY.x - 8, z: CUSCO_1536_SACSAY.z - 6 },
+              { x: CUSCO_SITE_SACSAY.x - 8, z: CUSCO_SITE_SACSAY.z - 6 },
             ],
             delay: 1.6,
           },
@@ -165,8 +163,8 @@ export const mCusco1536: MissionDef = {
             side: 'enemy',
             label: 'Salidas',
             points: [
-              { x: CUSCO_1536_CITY.x, z: CUSCO_1536_CITY.z },
-              { x: CUSCO_1536_SACSAY.x + 4, z: CUSCO_1536_SACSAY.z + 6 },
+              { x: CUSCO_SITE_POINT.x, z: CUSCO_SITE_POINT.z },
+              { x: CUSCO_SITE_SACSAY.x + 4, z: CUSCO_SITE_SACSAY.z + 6 },
             ],
             delay: 4,
           },
@@ -175,7 +173,7 @@ export const mCusco1536: MissionDef = {
             dashed: true,
             points: [
               { x: CUSCO_1536_SORTIE.dx, z: CUSCO_1536_SORTIE.dz },
-              { x: CUSCO_1536_CITY.x + 8, z: CUSCO_1536_CITY.z },
+              { x: CUSCO_SITE_POINT.x + 8, z: CUSCO_SITE_POINT.z },
             ],
             delay: 5.6,
           },
@@ -219,7 +217,7 @@ export const mCusco1536: MissionDef = {
     {
       id: 'a1_sacsay',
       kind: 'hold',
-      pos: { dx: CUSCO_1536_SACSAY.x, dz: CUSCO_1536_SACSAY.z },
+      pos: { dx: CUSCO_SITE_SACSAY.x, dz: CUSCO_SITE_SACSAY.z },
       radius: 18,
       time: 45,
       minUnits: 6,
@@ -228,7 +226,7 @@ export const mCusco1536: MissionDef = {
     {
       id: 'a2_cerco',
       kind: 'hold',
-      pos: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
+      pos: { dx: CUSCO_SITE_POINT.x, dz: CUSCO_SITE_POINT.z },
       radius: 24,
       time: 60,
       minUnits: 6,
@@ -287,9 +285,9 @@ export const mCusco1536: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [{ kind: UnitKind.SOLDIER, count: 2 }],
-          spawn: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
-          pos: { dx: CUSCO_1536_SACSAY.x, dz: CUSCO_1536_SACSAY.z },
-          target: { dx: CUSCO_1536_SACSAY.x, dz: CUSCO_1536_SACSAY.z },
+          spawn: { dx: CUSCO_SITE_POINT.x, dz: CUSCO_SITE_POINT.z },
+          pos: { dx: CUSCO_SITE_SACSAY.x, dz: CUSCO_SITE_SACSAY.z },
+          target: { dx: CUSCO_SITE_SACSAY.x, dz: CUSCO_SITE_SACSAY.z },
           radius: 10,
           // The small probe is not a general wave: keep the generic "¡Oleada enemiga!" toast out of it.
           objective: 'position',
@@ -310,9 +308,9 @@ export const mCusco1536: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 3 },
             { kind: UnitKind.CAVALRY, count: 1 },
           ],
-          pos: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
+          pos: { dx: CUSCO_SITE_POINT.x, dz: CUSCO_SITE_POINT.z },
           radius: 12,
-          target: { dx: CUSCO_1536_SACSAY.x, dz: CUSCO_1536_SACSAY.z },
+          target: { dx: CUSCO_SITE_SACSAY.x, dz: CUSCO_SITE_SACSAY.z },
         },
       ],
     },
@@ -338,8 +336,8 @@ export const mCusco1536: MissionDef = {
             { kind: UnitKind.CAVALRY, count: 1 },
           ],
           spawn: CUSCO_1536_SORTIE,
-          pos: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
-          target: { dx: CUSCO_1536_CITY.x, dz: CUSCO_1536_CITY.z },
+          pos: { dx: CUSCO_SITE_POINT.x, dz: CUSCO_SITE_POINT.z },
+          target: { dx: CUSCO_SITE_POINT.x, dz: CUSCO_SITE_POINT.z },
           radius: 4,
           // A sally, not a general wave: suppress the generic wave toast and announce it as a sortie.
           objective: 'position',

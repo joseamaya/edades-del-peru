@@ -25,7 +25,8 @@ The Cusco centre stays standing: the victory is the capture, not the destruction
 narrates Cajamarca and the weakened empire.
 
 The enemy base is labelled «Ejército de Huáscar», not «Cusco»: the capture is Huáscar's field headquarters at
-Quipaipan, and the mission is not fought in the city. The Quipaipan garrison deploys from the pampa's edge instead of appearing on it, and the Act III relief
+Quipaipan. The site draws the city's civic centre as the shared composition, and the plaza is walkable (the
+GLB-derived wall collision goes with the GLB; the explicit ushnu blocker stays), as in `m_cusco_1536`. The Quipaipan garrison deploys from the pampa's edge instead of appearing on it, and the Act III relief
 column enters on the Quito road,
 behind the line, and marches on the camp — it used to appear beside the advance and still announce a rear
 attack.
@@ -42,14 +43,15 @@ sampling the former 192 m composition 4/3 larger:
 Painted ground uses `CUSCO_GROUND` (pampa grass, terrace dirt, quebrada sand, ridge rock) sampled at
 128 × 128 over 256 m. The worker crosses in ≈2:22 (`unitSpeedScale: 0.75`), inside the model-mission band.
 The horizontal composition scales 4/3 (start offsets, radii and wave centres included). The heightfield
-keeps the 192 m vertical amplitude, so slopes read gentler; the site GLB scales uniformly with the terrace.
+keeps the 192 m vertical amplitude, so slopes read gentler; the drawn site composition scales with the terrace.
 Both are presentation trade-offs, not a survey.
 
 ## Site
 
 `cusco_inca_site` (scale `0.7 × 256/192`, anchor `(166.4, 174.1)`, camera height 77.3) hides the bare grey
 ushnu GLB and draws the same plaza, tiered ushnu and Sacsayhuamán wall front as `m_cusco_1536`
-(`src/campaign/defs/cuscoSite.ts`), plus its heritage proxy, blocker and corridor, scaled with the terrace.
+(`src/campaign/defs/cuscoSite.ts`), plus its heritage proxy and the explicit ushnu blocker, scaled with the
+terrace.
 Before/after: [`../media/m6b-cusco-plaza-before-after.webp`](../media/m6b-cusco-plaza-before-after.webp).
 The site has **no construction phases**: Cusco is a living capital and Quipaipan a battlefield, not a monument
 the player builds; the exception is recorded here and in the quality bar.
@@ -116,8 +118,9 @@ playtest is still needed to measure the 20–30 min path. The model pattern's 30
 
 ## Open items
 
-1. Human art review of the reused Cusco GLB and its Blender records (#343); the in-engine captures are
-   recorded in PROVENANCE and are not a Blender-render claim.
+1. Human art review of the mission's in-engine art; the Cusco site itself now draws the shared plaza
+   composition (`cuscoSite.ts`) instead of the bundled ushnu GLB, and the before/after is recorded in
+   PROVENANCE. The intro render (`m6b_guerra_civil-intro`) is already approved.
 2. Real-GPU performance measured on the reference iGPU:
    [`../development/site-view-performance.md`](../development/site-view-performance.md).
 3. A human playtest to measure the full path.
