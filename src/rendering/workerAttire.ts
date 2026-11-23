@@ -21,6 +21,86 @@ export interface CaralWorkerHandle extends RigVariantHandle {
 }
 
 /**
+ * A flat trapezoid plate centred on the origin and facing ±Z. The Moche back armour is a trapezoidal
+ * backflap in the documented warrior set (`docs/historia/atuendos.md` §2, Museo Larco).
+ */
+function trapezoidPlate(
+  topWidth: number,
+  bottomWidth: number,
+  height: number,
+  thickness: number,
+): THREE.BufferGeometry {
+  const shape = new THREE.Shape();
+  const half = height / 2;
+  shape.moveTo(-topWidth / 2, half);
+  shape.lineTo(topWidth / 2, half);
+  shape.lineTo(bottomWidth / 2, -half);
+  shape.lineTo(-bottomWidth / 2, -half);
+  shape.closePath();
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false, curveSegments: 1 });
+  geometry.translate(0, 0, -thickness / 2);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+/**
+ * A star/rosette club head in the XY plane. The dossier documents disc, star and rosette heads for the
+ * Andean porra (Museo Larco, *Club Heads*); the exact point count is a game abstraction.
+ */
+function starPlate(outer: number, inner: number, points: number, thickness: number): THREE.BufferGeometry {
+  const shape = new THREE.Shape();
+  for (let i = 0; i < points * 2; i++) {
+    const radius = i % 2 === 0 ? outer : inner;
+    const angle = (i / (points * 2)) * Math.PI * 2 + Math.PI / 2;
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+    if (i === 0) shape.moveTo(x, y);
+    else shape.lineTo(x, y);
+  }
+  shape.closePath();
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false, curveSegments: 1 });
+  geometry.translate(0, 0, -thickness / 2);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+/**
+ * A flared metal ear spool (orejón), the status insignia documented for Moche, Wari, Recuay and Chimú
+ * (`atuendos.md` §1 §2). The lathe axis is +Y, so the caller turns it towards the side of the head.
+ */
+function earSpool(): THREE.BufferGeometry {
+  const profile = [
+    [0, 0],
+    [0.026, 0.005],
+    [0.04, 0.014],
+    [0.04, 0.026],
+    [0.022, 0.036],
+    [0, 0.04],
+  ].map(([x, y]) => new THREE.Vector2(x, y));
+  return new THREE.LatheGeometry(profile, 14);
+}
+
+/** A shallow domed round shield (rodela) with a raised rim; the lathe axis is +Y. */
+function rodela(): THREE.BufferGeometry {
+  // Points run rim-to-centre so the lathe winding faces outward; the reverse order culls the face.
+  const profile = [
+    [0.19, 0],
+    [0.19, 0.004],
+    [0.17, 0.032],
+    [0.13, 0.055],
+    [0, 0.062],
+  ].map(([x, y]) => new THREE.Vector2(x, y));
+  return new THREE.LatheGeometry(profile, 20);
+}
+
+/** Merge same-material pieces and release the inputs. */
+function mergePieces(pieces: THREE.BufferGeometry[]): THREE.BufferGeometry | null {
+  const merged = mergeGeometries(pieces, false);
+  pieces.forEach((geometry) => geometry.dispose());
+  return merged;
+}
+
+/**
  * Project-authored accessories on the finished Caral worker GLB. The body,
  * face, hair, cotton tunic, skirt and sash are part of the asset; this adds the
  * headband, the carry bundle and the digging stick on existing bones. The
@@ -238,13 +318,21 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   }
 
   if (spec && palette && role !== 'worker' && role !== 'scout' && role !== 'amauta') {
+    const soldier = role === 'soldier';
     const addMesh = (geometry: THREE.BufferGeometry, material: THREE.Material, name: string): THREE.Mesh => {
       const mesh = new THREE.Mesh(trackGeometry(geometry), material);
       mesh.name = name;
       enableShadows(mesh);
       return mesh;
     };
-    const armorMat = spec.backflap && role === 'soldier' ? makeMaterial(palette.primary, 0.95) : null;
+    const metalMat =
+      spec.metal !== null && (spec.helmet || spec.ear) && (soldier || role === 'ranged')
+        ? makeMaterial(spec.metal, 0.5, 0.35)
+        : null;
+    const shieldMat = soldier ? makeMaterial(0x7a4a2a, 0.95) : null;
+    const boneL = bonePosition('hand_l');
+    const pelvis = bonePosition('pelvis');
+    const headBone = bonePosition('Head');
     if (spec.shoulderSash && spine) {
       const sashMat = makeMaterial(palette.secondary, 0.95);
       const sash = addMesh(new THREE.BoxGeometry(0.07, 0.4, 0.02), sashMat, 'attire_andean_sash');
@@ -252,73 +340,105 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       attach('spine_03', sash, new THREE.Vector3(spine.x, spine.y - 0.02, spine.z + 0.12));
     }
     if (spec.pectoral && spine) {
-      const pectoralMat = makeMaterial(spec.metal ?? palette.accent, 0.55);
-      const pectoral = addMesh(
-        new THREE.CylinderGeometry(0.11, 0.11, 0.018, 16),
-        pectoralMat,
-        'attire_andean_pectoral',
-      );
-      pectoral.rotation.x = Math.PI / 2;
-      attach('spine_03', pectoral, new THREE.Vector3(spine.x, spine.y + 0.08, spine.z + 0.13));
-      const backplate = addMesh(new THREE.BoxGeometry(0.26, 0.24, 0.025), pectoralMat, 'attire_andean_backplate');
-      attach('spine_03', backplate, new THREE.Vector3(spine.x, spine.y + 0.04, spine.z - 0.18));
+      // Wari: the chest and back plates form one cuirass joined over the shoulders (Museo Larco
+      // ML301403). The plates sit outside the tunic; an earlier version buried the chest disc inside it.
+      const plateMat = metalMat ?? makeMaterial(palette.accent, 0.55);
+      const plateProfile = [
+        [0.15, 0],
+        [0.145, 0.022],
+        [0.11, 0.046],
+        [0, 0.052],
+      ].map(([x, y]) => new THREE.Vector2(x, y));
+      const plate = (): THREE.BufferGeometry | null =>
+        mergePieces([
+          new THREE.LatheGeometry(plateProfile, 20),
+          new THREE.TorusGeometry(0.145, 0.011, 6, 22).rotateX(Math.PI / 2),
+          new THREE.SphereGeometry(0.04, 10, 6).scale(1, 0.6, 1).translate(0, 0.05, 0),
+        ]);
+      const chestGeometry = plate();
+      if (chestGeometry) {
+        const chest = addMesh(chestGeometry, plateMat, 'attire_andean_pectoral');
+        chest.rotation.x = Math.PI / 2;
+        attach('spine_03', chest, new THREE.Vector3(spine.x, spine.y + 0.06, spine.z + 0.2));
+      }
+      const backGeometry = plate();
+      if (backGeometry) {
+        const back = addMesh(backGeometry, plateMat, 'attire_andean_backplate');
+        back.rotation.x = -Math.PI / 2;
+        attach('spine_03', back, new THREE.Vector3(spine.x, spine.y + 0.06, spine.z - 0.2));
+      }
+      const strapPieces: THREE.BufferGeometry[] = [];
       for (const side of [-1, 1]) {
-        const strap = addMesh(new THREE.BoxGeometry(0.05, 0.02, 0.3), pectoralMat, 'attire_andean_pectoral_strap');
-        attach('spine_03', strap, new THREE.Vector3(spine.x + side * 0.11, spine.y + 0.2, spine.z + 0.01));
+        // Two straps in one merged mesh: identical pieces, one draw call.
+        strapPieces.push(new THREE.BoxGeometry(0.045, 0.024, 0.44).translate(side * 0.1, 0.22, 0));
+      }
+      const strapGeometry = mergePieces(strapPieces);
+      if (strapGeometry) {
+        const straps = addMesh(strapGeometry, plateMat, 'attire_andean_pectoral_strap');
+        attach('spine_03', straps, new THREE.Vector3(spine.x, spine.y, spine.z));
       }
     }
-    const metalMat =
-      spec.metal !== null && (spec.helmet || spec.ear) && (role === 'soldier' || role === 'ranged')
-        ? makeMaterial(spec.metal, 0.55)
-        : null;
-    const shieldMat = role === 'soldier' ? makeMaterial(0x7a4a2a, 0.95) : null;
-    const boneL = bonePosition('hand_l');
-    const pelvis = bonePosition('pelvis');
-    const headBone = bonePosition('Head');
-    if (spec.helmet && role === 'soldier' && headBone && metalMat) {
-      const helmet = addMesh(new THREE.ConeGeometry(0.16, 0.28, 10), metalMat, 'attire_andean_helmet');
-      attach('Head', helmet, new THREE.Vector3(headBone.x, headBone.y + 0.2, headBone.z));
+    if (spec.helmet && soldier && headBone && metalMat) {
+      // Conical metal helmet with a rim and a top knob; the dossier documents the conical shape.
+      const helmetGeometry = mergePieces([
+        new THREE.ConeGeometry(0.135, 0.25, 12).translate(0, 0.125, 0),
+        new THREE.TorusGeometry(0.135, 0.014, 6, 18).rotateX(Math.PI / 2),
+        new THREE.SphereGeometry(0.026, 8, 6).translate(0, 0.255, 0),
+      ]);
+      if (helmetGeometry) {
+        const helmet = addMesh(helmetGeometry, metalMat, 'attire_andean_helmet');
+        attach('Head', helmet, new THREE.Vector3(headBone.x, headBone.y + 0.08, headBone.z));
+      }
     }
-    if (spec.backflap && role === 'soldier' && spine && armorMat) {
-      const backflap = addMesh(new THREE.BoxGeometry(0.34, 0.38, 0.035), armorMat, 'attire_andean_backflap');
-      attach('spine_03', backflap, new THREE.Vector3(spine.x, spine.y - 0.1, spine.z - 0.19));
+    if (spec.backflap && soldier && spine) {
+      // Trapezoidal back armour, wider at the bottom, hanging behind the tunic. The dossier documents
+      // the shape, not the material; leather reads as a plate against the textile tunic.
+      const backflapMat = makeMaterial(0x5a3a24, 0.92);
+      const backflap = addMesh(trapezoidPlate(0.26, 0.38, 0.4, 0.035), backflapMat, 'attire_andean_backflap');
+      attach('spine_03', backflap, new THREE.Vector3(spine.x, spine.y - 0.1, spine.z - 0.18));
     }
     if (spec.ear && headBone && metalMat) {
+      const spools: THREE.BufferGeometry[] = [];
       for (const side of [-1, 1]) {
-        const ear = addMesh(new THREE.CylinderGeometry(0.035, 0.035, 0.025, 10), metalMat, 'attire_andean_ear');
-        ear.rotation.z = Math.PI / 2;
-        attach('Head', ear, new THREE.Vector3(headBone.x + side * 0.105, headBone.y, headBone.z));
+        spools.push(
+          earSpool()
+            .rotateZ((-side * Math.PI) / 2)
+            .translate(side * 0.098, -0.02, 0),
+        );
+      }
+      const spoolGeometry = mergePieces(spools);
+      if (spoolGeometry) {
+        const ears = addMesh(spoolGeometry, metalMat, 'attire_andean_ear');
+        attach('Head', ears, new THREE.Vector3(headBone.x, headBone.y, headBone.z));
       }
     }
-    if (role === 'soldier' && pelvis) {
-      if (spec.belt) {
-        const beltMat = makeMaterial(palette.accent, 0.9);
-        const belt = addMesh(new THREE.CylinderGeometry(0.255, 0.26, 0.045, 20), beltMat, 'attire_andean_belt');
-        attach('pelvis', belt, new THREE.Vector3(pelvis.x, pelvis.y + 0.39, pelvis.z));
-      }
-      if (spec.shield && boneL && shieldMat) {
-        const shieldProfile = [
-          [0, 0],
-          [0.17, 0.008],
-          [0.2, 0.03],
-          [0.17, 0.052],
-          [0, 0.055],
-        ].map(([x, y]) => new THREE.Vector2(x, y));
-        const shield = addMesh(new THREE.LatheGeometry(shieldProfile, 18), shieldMat, 'attire_andean_shield');
+    if (soldier && pelvis && spec.belt) {
+      const beltMat = makeMaterial(palette.accent, 0.9);
+      const belt = addMesh(new THREE.CylinderGeometry(0.255, 0.26, 0.045, 20), beltMat, 'attire_andean_belt');
+      attach('pelvis', belt, new THREE.Vector3(pelvis.x, pelvis.y + 0.39, pelvis.z));
+    }
+    if (soldier && boneL && spec.shield && shieldMat) {
+      // Wooden disc and stone umbo in one vertex-coloured mesh: still reads as two materials, one draw.
+      const shieldGeometry = mergeColoredGeometry([
+        [rodela(), new THREE.Color(0x7a4a2a)],
+        [new THREE.SphereGeometry(0.035, 10, 6).translate(0, 0.055, 0), new THREE.Color(0x8a8f94)],
+      ]);
+      if (shieldGeometry) {
+        const shieldVertexMat = makeMaterial(0xffffff, 0.92);
+        shieldVertexMat.vertexColors = true;
+        const shield = addMesh(shieldGeometry, shieldVertexMat, 'attire_andean_shield');
         shield.rotation.z = Math.PI / 2;
         attach('hand_l', shield, new THREE.Vector3(boneL.x, boneL.y - 0.28, boneL.z));
-        const boss = addMesh(new THREE.SphereGeometry(0.035, 10, 6), stoneMat, 'attire_andean_shield_boss');
-        attach('hand_l', boss, new THREE.Vector3(boneL.x + 0.02, boneL.y - 0.28, boneL.z));
       }
-      if (hand && shieldMat) {
-        const shaft = addMesh(new THREE.CylinderGeometry(0.02, 0.024, 0.62, 8), shieldMat, 'attire_andean_macana');
-        shaft.rotation.z = 0.9;
-        attach('hand_r', shaft, new THREE.Vector3(hand.x, hand.y - 0.22, hand.z));
-        const macanaHeadMat = spec.macanaHead === 'stone' ? stoneMat : makeMaterial(palette.accent, 0.9);
-        const macanaHead = addMesh(new THREE.IcosahedronGeometry(0.1, 0), macanaHeadMat, 'attire_andean_macana_head');
-        macanaHead.rotation.z = 0.9;
-        attach('hand_r', macanaHead, new THREE.Vector3(hand.x, hand.y - 0.4, hand.z));
-      }
+    }
+    if (soldier && hand && shieldMat) {
+      const shaft = addMesh(new THREE.CylinderGeometry(0.018, 0.022, 0.6, 8), shieldMat, 'attire_andean_macana');
+      shaft.rotation.z = 0.9;
+      attach('hand_r', shaft, new THREE.Vector3(hand.x, hand.y - 0.22, hand.z));
+      const macanaHeadMat = spec.macanaHead === 'stone' ? stoneMat : makeMaterial(palette.accent, 0.9);
+      const macanaHead = addMesh(starPlate(0.115, 0.052, 6, 0.05), macanaHeadMat, 'attire_andean_macana_head');
+      macanaHead.rotation.z = 0.9;
+      attach('hand_r', macanaHead, new THREE.Vector3(hand.x, hand.y - 0.42, hand.z));
     }
     if (role === 'ranged' && hand) {
       const slingMat = makeMaterial(palette.accent, 0.9);

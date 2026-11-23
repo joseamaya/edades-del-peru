@@ -1,7 +1,7 @@
 import { launchChromium, withViteServer } from './lib.mjs';
 
 /**
- * Structural cost of the three character-pilot units. It isolates one unit (main + shadow pass),
+ * Structural cost of the dressed infantry standard. It isolates one unit (main + shadow pass),
  * then a 12-unit formation, and measures the mixer update for that formation. The ceiling is the
  * art-direction common-unit budget, not the looser worker bench cap.
  *
@@ -12,6 +12,26 @@ const CASES = [
   { name: 'Inca warrior', url: '/?mission=m_cusco_1536&intro=0&fog=0&low=1&noloop=1', kind: 'inca_warrior' },
   { name: 'Spanish arquebusier', url: '/?mission=m_lima&intro=0&fog=0&low=1&noloop=1', kind: 'musketeer' },
   { name: 'Republican fusilier', url: '/?mission=m_tarapaca&intro=0&fog=0&low=1&noloop=1', kind: 'republica_defensor' },
+  {
+    name: 'Moche warrior',
+    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=moche&period=2',
+    kind: 'soldier',
+  },
+  {
+    name: 'Wari warrior',
+    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=wari&period=3',
+    kind: 'soldier',
+  },
+  {
+    name: 'Chimú warrior',
+    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=chimu&period=4',
+    kind: 'soldier',
+  },
+  {
+    name: 'Late realista',
+    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=realistas&period=7',
+    kind: 'soldier',
+  },
 ];
 const assert = process.argv.includes('--assert');
 
@@ -33,9 +53,14 @@ try {
       const cost = await page.evaluate((kind) => {
         const g = window.game;
         g.loop.stop();
-        const unit = [...g.units.values()].find(
+        let unit = [...g.units.values()].find(
           (candidate) => candidate.owner === 0 && !candidate.dead && candidate.kind === kind,
         );
+        if (!unit?.rig) {
+          // A skirmish opens with workers; the bench still needs one rigged combat unit on screen.
+          const centre = g.playerCenter(0);
+          unit = g.spawnScriptedUnit(kind, 0, centre.x + 10, centre.z + 10);
+        }
         if (!unit?.rig) throw new Error(`no rigged ${kind}`);
         window.__directRender = true;
         g.camera.setHeight(1e9);

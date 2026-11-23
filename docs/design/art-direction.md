@@ -108,9 +108,10 @@ No asset is accepted because it looks good at close range. It must read at 54 fi
   ceilings, not targets to fill.
 - **Pilot result (2026-11):** [`../art/character-visual-pilot.md`](../art/character-visual-pilot.md) implements
   the equipment layer on the shared rig. `yarn bench:characters` measures 15 draws / 10.7k triangles for the
-  Inca, 22 / 14.2k for the 16th-century Spanish and 20 / 11.7k for the 1879 fusilier. A 12-unit formation
-  measures 180 / 264 / 246 draws and 0.13–0.14 ms/frame of mixer work. Proportions, faces and a
-  bind-safe character GLB remain open.
+  Inca, 22 / 14.2k for the 16th-century Spanish, 20 / 11.7k for the 1879 fusilier, 12 / 9.4k for the Moche,
+  13 / 10.1k for the Wari, 10 / 9.1k for the Chimú and 22 / 12.7k for the late realista. A 12-unit formation
+  measures 168 / 264 / 246 / 144 / 156 / 120 / 264 draws and 0.13–0.14 ms/frame of mixer work. Proportions,
+  faces and a bind-safe character GLB remain open.
 
 ### 4.2 Architecture
 

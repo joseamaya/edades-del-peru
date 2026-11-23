@@ -3,7 +3,8 @@ import path from 'path';
 import { launchChromium, withViteServer, cliArg } from './lib.mjs';
 
 /**
- * Character-pilot captures: the three units in their missions at a fixed noon light, with HUD hidden.
+ * Character-standard captures: the dressed infantry in their missions/skirmishes at a fixed noon
+ * light, with the HUD hidden.
  *
  * Usage:
  *   node scripts/capture_character_pilot.mjs --out=review/pilot
@@ -17,6 +18,26 @@ const CASES = [
   { name: 'inca', url: '/?mission=m_cusco_1536&intro=0&fog=0&low=1&noloop=1', kind: 'inca_warrior' },
   { name: 'spanish', url: '/?mission=m_lima&intro=0&fog=0&low=1&noloop=1', kind: 'musketeer' },
   { name: 'republic', url: '/?mission=m_tarapaca&intro=0&fog=0&low=1&noloop=1', kind: 'republica_defensor' },
+  {
+    name: 'moche',
+    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=moche&period=2',
+    kind: 'soldier',
+  },
+  {
+    name: 'wari',
+    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=wari&period=3',
+    kind: 'soldier',
+  },
+  {
+    name: 'chimu',
+    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=chimu&period=4',
+    kind: 'soldier',
+  },
+  {
+    name: 'late-realista',
+    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=realistas&period=7',
+    kind: 'soldier',
+  },
 ];
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -38,6 +59,15 @@ try {
         const root = document.getElementById('ui-root');
         if (root) root.style.display = 'none';
       });
+
+      await page.evaluate((kind) => {
+        const g = window.game;
+        const existing = [...g.units.values()].find((candidate) => candidate.owner === 0 && candidate.kind === kind);
+        if (existing?.rig) return;
+        // A skirmish opens with workers; the capture still needs one rigged combat unit on screen.
+        const centre = g.playerCenter(0);
+        g.spawnScriptedUnit(kind, 0, centre.x + 10, centre.z + 10);
+      }, entry.kind);
 
       const place = async (yaw, state) => {
         await page.evaluate(
@@ -74,10 +104,11 @@ try {
         await page.screenshot({ path: path.join(OUT, `${entry.name}-${state}-${yaw > 0 ? 'side' : 'front'}.png`) });
       };
 
+      // Death last: its clamped action would otherwise blend into the following pose.
       await place(0, 'idle');
       await place(0, 'attack');
-      await place(0, 'death');
       await place(Math.PI / 2, 'idle');
+      await place(0, 'death');
 
       await page.evaluate((kind) => {
         const g = window.game;
