@@ -36,7 +36,7 @@ The audit is the authority. If this summary and the quality bar disagree, the qu
 | **D1 · Close the model-mission gap** | `m5`–`m9`, `m6b`, `m8` and the remaining chapters                                                                            | **Done (2026-11-14):** every released mission follows the model pattern and has a model-mission document; the remaining art and performance gaps are D2/D3 |
 | **D2 · Art review and capture**      | Pending `reviewed: false` records, the Chavín kit, and the art of the model missions (m3–m9, m6b, Tambotoco, Lima, La Junta) | No unreviewed record ships; the human review is recorded; the captures are current                                                                         |
 | **D2b · Art-direction pilot**        | Tambotoco becomes the stylized-realism reference: light/shadows, palette, architecture, highland vegetation, hero variant, presentation | **Done (2026-11-17):** E0–E6 of [`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md) close and E7 delivered (baked hero proportions, scoped terrain macro, Inticancha/shrine detail, 3 × 3 E7 set and the 3X recording); caps 500k/280 and 660k/360; `dist` 24.63/25 MB |
-| **D3 · Real-GPU performance**        | The remaining model-mission site views (m3–m9, m6b, La Junta) and late views                                                 | **Done (2026-11-17):** 17 site views measured at 1280×800 and 1600×900 on the Intel iGPU, all hardware; 28–38 FPS high at 1600×900. Decision in [`../development/site-view-performance.md`](../development/site-view-performance.md); B13 schedules the m6b/m8 late-view optimization |
+| **D3 · Real-GPU performance**        | The remaining model-mission site views (m3–m9, m6b, La Junta) and late views                                                 | **Done (2026-11-17):** 17 site views measured at 1280×800 and 1600×900 on the Intel iGPU, all hardware; 28–38 FPS high at 1600×900. Decision in [`../development/site-view-performance.md`](../development/site-view-performance.md); B13 closed the m6b/m8 late-view cost (898 → 615 and 912 → 593 draws, 27 → 34 FPS) |
 | **D4 · Release packaging**           | itch build, Pages artifact, publish checklist                                                                                | The checklist is green on a build that matches the tagged commit                                                                                           |
 | **D5 · 0.2.1 asset corrections**     | The three P0 and the P1 site/label corrections from the 0.2.0 asset audit                                                     | **Done (2026-11-20):** P0 mapping and outfit tests green, P1 labels, headwear and site art closed with captures; no P1 remains.                                      |
 
@@ -73,7 +73,7 @@ this pass; they have SwiftShader rows and are a **known limitation** of the 0.2.
 28–38 FPS claim.
 
 Decision: accept the measured high-quality frame times, keep the SwiftShader structural caps unchanged,
-and schedule the m6b/m8 late-view optimization as **B13**. Re-run `yarn bench:site-views` before D4.
+and closed the m6b/m8 late-view optimization as **B13** (2026-11-23). Re-run `yarn bench:site-views` before D4.
 `yarn bench:check` remains the SwiftShader ratchet. The m8 opening measures ~618–620k triangles against
 its 625k cap, so the row is green but within ~1 %; do not add scene weight to m8, m6b or Tambotoco without
 re-measuring. `m_cusco_1536` and `m_brena` were added to the command in the 0.2.0 closeout.
