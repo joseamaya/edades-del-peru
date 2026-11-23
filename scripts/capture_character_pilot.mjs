@@ -62,9 +62,16 @@ try {
             if (pose === 'death') {
               unit.rig.playDeath();
               unit.rig.update(0.7);
+            } else if (pose === 'hit') {
+              unit.rig.play('idle', 0);
+              unit.rig.update(0.2);
+              unit.rig.playHit?.(0);
+              unit.rig.update(0.12);
             } else {
-              unit.rig.play(pose === 'attack' ? 'attack' : 'idle', 0);
-              unit.rig.update(pose === 'attack' ? 0.25 : 0.4);
+              const clip = { idle: 'idle', run: 'run', attack: 'attack' }[pose] ?? 'idle';
+              const at = { idle: 0.4, run: 0.35, attack: 0.25 }[pose] ?? 0.4;
+              unit.rig.play(clip, 0);
+              unit.rig.update(at);
             }
             const subject = { x: unit.pos.x, y: unit.pos.y, z: unit.pos.z };
             g.camera.camera.position.set(subject.x + 2.6, subject.y + 1.55, subject.z + 3.2);
@@ -78,7 +85,9 @@ try {
 
       // Death last: its clamped action would otherwise blend into the following pose.
       await place(0, 'idle');
+      await place(0, 'run');
       await place(0, 'attack');
+      await place(0, 'hit');
       await place(Math.PI / 2, 'idle');
       await place(0, 'death');
 

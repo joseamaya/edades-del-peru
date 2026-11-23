@@ -88,6 +88,6 @@ test('the Caral scout uses a rigged commoner set for both genders', async ({ pag
     }
     return { state: scout.rig?.currentState ?? null, clip: scout.rig?.currentClipName ?? null };
   });
-  expect(running).toEqual({ state: 'walk', clip: 'Walk_Loop' });
+  expect(running).toEqual({ state: 'run', clip: 'Jog_Fwd_Loop' });
   expect(errors).toEqual([]);
 });

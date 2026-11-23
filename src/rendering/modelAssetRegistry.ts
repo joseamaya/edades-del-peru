@@ -28,6 +28,8 @@ export interface ModelAssetDefinition {
   readonly runSpeedThreshold?: number;
   /** Optional one-shot clip used by `RigInstance.playDeath`. */
   readonly deathClip?: string;
+  /** Optional one-shot hit reaction, played as a presentation overlay. */
+  readonly hitClip?: string;
   /** Ground the bind-pose feet at y=0 (units and terrestrial fauna). */
   readonly ground: boolean;
   /** Extra world-space lift after grounding (avoids clip-driven foot penetration). */
@@ -78,6 +80,7 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
       build: 'Fixing_Kneeling',
       attack: 'Sword_Attack',
     },
+    hitClip: 'Hit_Chest',
   },
   /**
    * Caral worker/scout: Quaternius Universal Base Characters body/hair (CC0)
@@ -90,6 +93,9 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     yawOffset: 0,
     ground: true,
     groundClearance: 0.01,
+    // Stylized jog reference for the UAL clip; scouts and charging infantry run above the shared 3.8
+    // threshold, and a 3.0 m/s reference keeps the playback rate near 1.5–1.8 instead of the 2.2 clamp.
+    runReferenceSpeed: 3,
     shadowSkipMeshes: CARAL_WORKER_SHADOW_SKIP_MESHES,
     // Farm_Harvest reads as the digging-stick harvest; the asset has no
     // construction clip, so Push_Loop is the explicit pushing/placing
@@ -98,11 +104,13 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
       idle: 'Idle_Loop',
       walk: 'Walk_Loop',
       walk_carry: 'Walk_Carry_Loop',
+      run: 'Jog_Fwd_Loop',
       gather: 'Farm_Harvest',
       build: 'Push_Loop',
       attack: 'Punch_Jab',
     },
     deathClip: 'Death01',
+    hitClip: 'Hit_Chest',
   },
   /**
    * Tambotoco hero: male-only derivation of the Caral worker with the Killke outfit and the
@@ -114,14 +122,17 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     yawOffset: 0,
     ground: true,
     groundClearance: 0.01,
+    runReferenceSpeed: 3,
     shadowSkipMeshes: CARAL_WORKER_SHADOW_SKIP_MESHES,
     clips: {
       idle: 'Idle_Loop',
       walk: 'Walk_Loop',
       walk_carry: 'Walk_Loop',
+      run: 'Jog_Fwd_Loop',
       attack: 'Sword_Regular_A',
     },
     deathClip: 'Death01',
+    hitClip: 'Hit_Chest',
   },
   /**
    * Project-authored low-poly horse and rider. The source is

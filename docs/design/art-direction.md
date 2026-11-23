@@ -99,8 +99,9 @@ No asset is accepted because it looks good at close range. It must read at 54 fi
   [`../historia/atuendos.md`](../historia/atuendos.md).
 - **Faces:** stylized, painted features; no portrait claim. The likeness rules in
   [`characters.md`](./characters.md) still apply.
-- **Animation:** shared clips; `idle`, `walk`, `attack` and `death` are mandatory for a fielded role. Work and
-  interaction use the licensed clip set. No per-hero clip and no gameplay timing baked into a GLB.
+- **Animation:** shared clips; `idle`, `walk`, `attack` and `death` are mandatory for a fielded role. `run`
+  and a one-shot hit reaction are available on the shared rig (see the pilot note below). Work and interaction
+  use the licensed clip set. No per-hero clip and no gameplay timing baked into a GLB.
 - **Mounts:** a horse is a riding animal at human scale, not a pony: withers ~1.55–1.65 against the 1.86-unit
   person, mounted height ~2.6–2.7. Normal movement uses the trot; the gallop is reserved for charges
   (`attack`/`attack_move`) and for units whose speed exceeds the rig's threshold. Both cadences follow the
@@ -112,8 +113,9 @@ No asset is accepted because it looks good at close range. It must read at 54 fi
   the equipment layer on the shared rig. `yarn bench:characters` measures 14 draws / 10.7k triangles for the
   Inca, 22 / 14.2k for the 16th-century Spanish, 20 / 11.7k for the 1879 fusilier, 12 / 9.4k for the Moche,
   13 / 10.1k for the Wari, 10 / 9.1k for the Chimú and 22 / 12.7k for the late realista. A 12-unit formation
-  measures 168 / 264 / 246 / 144 / 156 / 120 / 264 draws and 0.12–0.14 ms/frame of mixer work. Proportions,
-  faces and a bind-safe character GLB remain open.
+  measures 168 / 264 / 246 / 144 / 156 / 120 / 264 draws and 0.12–0.14 ms/frame of mixer work. The same rig
+  now ships `Jog_Fwd_Loop` for `run` and `Hit_Chest` as a presentation-only hit overlay. Proportions, faces
+  and a bind-safe character GLB remain open.
 
 ### 4.2 Architecture
 

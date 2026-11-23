@@ -102,7 +102,7 @@ test('the Inca scout uses the chasqui rigged set for both genders', async ({ pag
     scout.rig?.play('attack', 0);
     return { moving, attack: scout.rig?.currentClipName ?? null };
   });
-  expect(animation.moving).toEqual({ state: 'walk', clip: 'Walk_Loop' });
+  expect(animation.moving).toEqual({ state: 'run', clip: 'Jog_Fwd_Loop' });
   expect(animation.attack).toBe('Punch_Jab');
   expect(errors).toEqual([]);
 });

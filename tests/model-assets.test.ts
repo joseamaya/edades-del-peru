@@ -84,6 +84,25 @@ describe('rigged model assets', () => {
     expect(materials.size).toBeGreaterThan(0);
   });
 
+  it('plays the one-shot hit reaction as an overlay and resumes a different state', async () => {
+    await load();
+    const rig = acquireRig('ual_mannequin')!;
+    rig.play('idle', 0);
+    rig.update(0.1);
+    expect(rig.hitPlaying).toBe(false);
+    rig.playHit(0);
+    expect(rig.hitPlaying).toBe(true);
+    // A new state requested during the flinch must actually start when the clip ends.
+    rig.play('walk', 0);
+    rig.update(0.5);
+    expect(rig.hitPlaying).toBe(false);
+    expect(rig.currentState).toBe('walk');
+    const thigh = bone(rig.root, 'thigh_l').quaternion.clone();
+    for (let i = 0; i < 6; i++) rig.update(0.05);
+    expect(bone(rig.root, 'thigh_l').quaternion.equals(thigh)).toBe(false);
+    rig.dispose();
+  });
+
   it('clones skeletons and mixers independently for each instance', async () => {
     const asset = await load();
     const a = acquireRig('ual_mannequin');
@@ -847,7 +866,8 @@ describe('rigged model assets', () => {
     const file = fs.readFileSync(fileURLToPath(WORKER_URL));
     const jsonLength = file.readUInt32LE(12);
     const json = JSON.parse(file.subarray(20, 20 + jsonLength).toString('utf8')) as {
-      animations: { name: string }[];
+      animations: { name: string; samplers: { input: number }[] }[];
+      accessors: { max?: number[] }[];
       skins: { joints: number[] }[];
       nodes: { name?: string }[];
     };
@@ -860,6 +880,7 @@ describe('rigged model assets', () => {
       expect.arrayContaining([
         'Idle_Loop',
         'Walk_Loop',
+        'Jog_Fwd_Loop',
         'Farm_Harvest',
         'Walk_Carry_Loop',
         'Punch_Jab',
@@ -867,8 +888,18 @@ describe('rigged model assets', () => {
         'Sword_Regular_A',
         'OverhandThrow',
         'Death01',
+        'Hit_Chest',
       ]),
     );
+    expect(MODEL_ASSET_DEFS.caral_worker.clips.run).toBe('Jog_Fwd_Loop');
+    expect(MODEL_ASSET_DEFS.caral_worker.hitClip).toBe('Hit_Chest');
+    const clipDuration = (name: string): number => {
+      const clip = json.animations.find((entry) => entry.name === name);
+      if (!clip) return 0;
+      return Math.max(...clip.samplers.map((sampler) => json.accessors[sampler.input]?.max?.[0] ?? 0));
+    };
+    expect(clipDuration('Jog_Fwd_Loop')).toBeGreaterThan(0.8);
+    expect(clipDuration('Hit_Chest')).toBeGreaterThan(0.25);
     expect(json.nodes.map((node) => node.name)).toEqual(
       expect.arrayContaining([
         'Body_f',

@@ -213,7 +213,7 @@ Definition of Done and the building audit see
   scene/geometry/material/texture cache is cloned per entity through `SkeletonUtils.clone` in
   `src/rendering/RigInstance.ts`; **each instance owns its skeleton and `AnimationMixer`**, never its
   geometry/materials. `Unit` uses the rig only for presentation, maps
-  `idle|walk|walk_carry|gather|build|attack` from its real order/movement state through the tested
+  `idle|walk|walk_carry|run|gather|build|attack` from its real order/movement state through the tested
   `rigClipStateFor` and ignores root motion, so navigation, saves,
   replay and determinism are untouched (the existing death topple still renders dead units). `acquireRig` is
   synchronous: the asset must be preloaded or the unit keeps its procedural model (with a `[models] … fallback`
