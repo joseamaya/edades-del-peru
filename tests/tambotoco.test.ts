@@ -255,8 +255,13 @@ describe('Los hijos de Tambotoco', () => {
   });
 
   it('keeps the roster inside the Intermedio Tardío', () => {
-    expect(TAMBOTOCO.allowedUnits).toEqual(
-      expect.arrayContaining([UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.MUSKETEER, UnitKind.SCOUT]),
+    // The party starts with workers and a scout but has no centre, so only militia and slingers train.
+    expect(TAMBOTOCO.allowedUnits).toEqual([UnitKind.SOLDIER, UnitKind.MUSKETEER]);
+    expect(TAMBOTOCO.start.units).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: UnitKind.WORKER }),
+        expect.objectContaining({ kind: UnitKind.SCOUT }),
+      ]),
     );
     for (const unit of TAMBOTOCO.allowedUnits!) {
       expect(unitTrainableInPeriod(unit, HistoricalPeriod.LATE_INTERMEDIATE, CivId.INCA_KILLKE), unit).toBe(true);

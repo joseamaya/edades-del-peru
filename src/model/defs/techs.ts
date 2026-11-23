@@ -1,5 +1,26 @@
 import { BuildingKind, CivId, HistoricalPeriod, Resources, ZERO_RESOURCES } from '../../core/types';
 
+/** Pre-Hispanic Andean civilizations that share the loom tradition. */
+const ANDEAN_CIVS: CivId[] = [
+  CivId.CARAL,
+  CivId.CHAVIN,
+  CivId.CUPISNIQUE,
+  CivId.PARACAS,
+  CivId.MOCHE,
+  CivId.NAZCA,
+  CivId.RECUAY,
+  CivId.WARI,
+  CivId.TIAHUANACO,
+  CivId.CHIMU,
+  CivId.CHINCHA,
+  CivId.CHANCA,
+  CivId.COLLAS_LUPACA,
+  CivId.HUANCA,
+  CivId.INCA_KILLKE,
+  CivId.AYLLUS,
+  CivId.INCA,
+];
+
 export interface TechEffect {
   attackMult?: number;
   armorMult?: number;
@@ -91,9 +112,10 @@ export const TECHS: TechDef[] = [
     cost: cost({ wood: 80, silver: 60 }),
     time: 45,
     minPeriod: HistoricalPeriod.EARLY_HORIZON,
-    // Andean weaving continues into the colonial period (Cusco 1536, Vilcabamba 1572); the building gate
-    // keeps it out of the Spanish and republican missions.
+    // Andean weaving continues into the colonial period (Cusco 1536, Vilcabamba 1572); the civ gate keeps
+    // it out of the Spanish and republican matches.
     maxPeriod: HistoricalPeriod.VICEROYALTY,
+    civs: ANDEAN_CIVS,
     building: BuildingKind.INSTITUTE,
     effect: { gatheringMult: { wood: 0.15, silver: 0.15 } },
     icon: '🧶',

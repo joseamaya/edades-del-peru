@@ -142,7 +142,7 @@ export const m5YahuarPampa: MissionDef = {
     units: [
       { kind: UnitKind.INCA_WARRIOR, dx: -chancaLength(8), dz: chancaLength(8), tag: 'cusi_yupanqui', count: 1 },
       { kind: UnitKind.SOLDIER, dx: -chancaLength(6), dz: chancaLength(10), count: 6 },
-      { kind: UnitKind.MUSKETEER, dx: -chancaLength(10), dz: chancaLength(10), count: 2 },
+      { kind: UnitKind.INCA_SLINGER, dx: -chancaLength(10), dz: chancaLength(10), count: 2 },
     ],
   },
   mark: [
@@ -158,7 +158,7 @@ export const m5YahuarPampa: MissionDef = {
     UnitKind.WORKER,
     UnitKind.SOLDIER,
     UnitKind.INCA_WARRIOR,
-    UnitKind.MUSKETEER,
+    UnitKind.INCA_SLINGER,
     UnitKind.SCOUT,
     UnitKind.COMMISSAR,
   ],

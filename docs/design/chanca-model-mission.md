@@ -57,8 +57,8 @@ in the quality bar.
   contested while the guard still stands.
 
 - Inca workers, warriors and honderos; the Chanca side fields warriors and honderos. No archers, no market
-  and no Spanish techs: `UnitKind.MUSKETEER` is the legacy ranged id and in this era it renders as a
-  hondero, not a firearm.
+  and no Spanish techs: the Inca line is `UnitKind.INCA_SLINGER`; the legacy `MUSKETEER` remains the
+  Chanca slinger, not a firearm.
 - Four fortresses guard the Cusco opening; the enemy is active and aggressive, with scripted waves.
   Each column forms up at its own camp and marches on the Cusco camp, so nothing materialises inside the
   defence; the line no longer claims a compass direction the map does not support.

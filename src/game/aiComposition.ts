@@ -13,6 +13,7 @@ export const UNIT_CATEGORY: Partial<Record<UnitKind, UnitCategory>> = {
   [UnitKind.CHANCA_WARRIOR]: 'melee',
   [UnitKind.CHIMU_FIXI]: 'melee',
   [UnitKind.INCA_WARRIOR]: 'melee',
+  [UnitKind.INCA_SLINGER]: 'ranged',
   [UnitKind.REALISTA_DRAGON]: 'cavalry',
   [UnitKind.PATRIOTA_MONTONERA]: 'cavalry',
   [UnitKind.REPUBLICA_DEFENSOR]: 'ranged',

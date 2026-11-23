@@ -221,7 +221,6 @@ export const m9GuerraPacifico: MissionDef = {
   allowedTechs: ['irrigation_canal', 'bow_and_bolas', 'hunters', 'republica_puerto'],
   buildingNames: {
     [BuildingKind.FORTRESS]: 'Fortín',
-    [BuildingKind.INSTITUTE]: 'Academia',
     [BuildingKind.BARRACKS]: 'Cuartel',
   },
   unitNames: { [UnitKind.REPUBLICA_DEFENSOR]: 'Defensor de Arica' },

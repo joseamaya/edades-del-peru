@@ -13,7 +13,7 @@ ni después/otra cultura (ámbito).
 
 | Tecnología | Ventana | Motivo |
 |---|---|---|
-| Telar Andino (`andean_loom`) | Horizonte Temprano → Virreinato | Tradición textil andina (Paracas, Nazca, Wari, Inca); continuó en el Cusco y Vilcabamba coloniales. |
+| Telar Andino (`andean_loom`) | Horizonte Temprano → Virreinato | Tradición textil de las civilizaciones andinas (Paracas, Nazca, Wari, Inca); continuó en el Cusco y Vilcabamba coloniales. |
 | Quipus y Vigías (`quipus_watchers`) | Horizonte Medio → Virreinato, Wari e Inca | Registro por quipus de tradición andina (Wari–Inca); los quipus coloniales siguieron en uso. |
 | Palabra del Amauta (`amauta_words`) | Horizonte Tardío, solo Inca | El *amauta* es un sabio/maestro inca. |
 | Chasquis Veloces (`swift_chasquis`) | Horizonte Tardío, solo Inca | Los *chasquis* son los correos del Estado inca; el efecto de capacidad es una abstracción logística, no una afirmación de que transportaran carga. |

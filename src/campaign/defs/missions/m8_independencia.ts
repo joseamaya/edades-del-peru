@@ -109,7 +109,6 @@ export const m8Independencia: MissionDef = {
     BuildingKind.WALL,
     BuildingKind.GATE,
     BuildingKind.TOWER,
-    BuildingKind.MARKET,
   ],
   allowedTechs: ['irrigation_canal', 'shock_cavalry'],
   mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
@@ -204,7 +203,7 @@ export const m8Independencia: MissionDef = {
     },
   ],
   epilogueImage: 'media/independencia/intro-epilogo.webp',
-  buildingNames: { [BuildingKind.FORTRESS]: 'Fortín', [BuildingKind.INSTITUTE]: 'Academia' },
+  buildingNames: { [BuildingKind.FORTRESS]: 'Fortín' },
   objectives: [
     {
       id: 'obj_junin',

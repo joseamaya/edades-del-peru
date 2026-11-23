@@ -30,7 +30,7 @@ function positionedHolds(mission: MissionDef): PositionedHold[] {
   return (mission.objectives ?? []).filter((o): o is PositionedHold => o.kind === 'hold' && o.pos !== undefined);
 }
 
-/** Buildings this mission can put on the map; the town centre always stands. */
+/** Buildings this mission can put on the map; a base-less opening has no standing centre. */
 function buildableKinds(mission: MissionDef): Set<BuildingKind> {
   const kinds = Object.values(BUILDING_DEFS)
     .filter(
@@ -40,7 +40,7 @@ function buildableKinds(mission: MissionDef): Set<BuildingKind> {
         mission.startingEra >= def.minEra,
     )
     .map((def) => def.id);
-  return new Set([BuildingKind.CENTER, ...kinds]);
+  return new Set(mission.start.base === false ? kinds : [BuildingKind.CENTER, ...kinds]);
 }
 
 /** Technologies the mission's period, civilization and allowlist leave available. */

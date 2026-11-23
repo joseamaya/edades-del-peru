@@ -18,7 +18,7 @@
   se reparte en **huamanis** y la monarquía chimú pasa a ser vasalla. Querrotumi se subleva en **1475** y
   es vencido.
 - **Mapa**: `costa` con canal y Chan Chan.
-- **En el juego**: el canal arranca abierto y su compuerta es operable (field card `chimu_canal`). Tres actos: I avanzar a Paramonga, II cerrar la compuerta, III marchar a Chan Chan y sostener la capitulación. Cerrar el agua no termina la misión: la ciudad se rinde al llegar. Chan Chan se representa con el centro enemigo y un compuesto adobe; la geometría del canal y el conjunto son visual-only. El epílogo recuerda la capitulación, el traslado de Minchancaman y la revuelta de Querrotumi en 1475. La línea a distancia inca es de **honderos**; no se añaden arqueros ni mercado, y el arsenal se etiqueta «Casa de armas».
+- **En el juego**: el canal arranca abierto y su compuerta es operable (field card `chimu_canal`). Tres actos: I avanzar a Paramonga, II cerrar la compuerta, III marchar a Chan Chan y sostener la capitulación. Cerrar el agua no termina la misión: la ciudad se rinde al llegar. Chan Chan se representa con el centro enemigo y un compuesto adobe; la geometría del canal y el conjunto son visual-only. El epílogo recuerda la capitulación, el traslado de Minchancaman y la revuelta de Querrotumi en 1475. La línea a distancia inca es de **honderos** (`INCA_SLINGER`); no se añaden arqueros ni mercado, y el arsenal se etiqueta «Casa de armas».
 
 ## Certeza
 

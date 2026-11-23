@@ -274,7 +274,9 @@ export const mTambotoco: MissionDef = {
     [BuildingKind.MILL]: 'Depósito comunal',
     [BuildingKind.ARSENAL]: 'Casa de armas',
   },
-  allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.MUSKETEER, UnitKind.SCOUT],
+  // The party leaves the cave with its workers and scout; only the militia and slingers can be raised
+  // once the barracks and the Casa de armas stand.
+  allowedUnits: [UnitKind.SOLDIER, UnitKind.MUSKETEER],
   allowedBuildings: [
     BuildingKind.HOUSE,
     BuildingKind.FARM,
@@ -285,8 +287,8 @@ export const mTambotoco: MissionDef = {
     BuildingKind.BARRACKS,
     BuildingKind.ARSENAL,
   ],
-  // The ayllu economy has no market, silver or imperial institute; the canal is the only shared tech.
-  allowedTechs: ['irrigation_canal'],
+  // No centre and no research: the ayllu economy has no market, silver or imperial institute.
+  allowedTechs: [],
   objectives: [
     {
       id: 'a1_salida',
