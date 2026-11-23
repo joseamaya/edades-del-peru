@@ -61,7 +61,8 @@ evidence. No model-mission rebuild remains.
    mission plus `review/site-review/decisions.md`, and the contact sheet is
    [`../media/site-review-2026-11-23-new-missions.webp`](../media/site-review-2026-11-23-new-missions.webp).
    The human decision is still open (B15–B17); the procedure is in
-   [`../design/asset-pipeline.md`](../design/asset-pipeline.md) §"In-engine site review".
+   [`../design/asset-pipeline.md`](../design/asset-pipeline.md) §"In-engine site review". The seven also keep
+   their own media captures under `public/media/{lima-1821,real-felipe,tarapaca,miraflores,brena,cusco-1536,vilcabamba}/`.
 
 The release-candidate document is an **archived snapshot** from 2026-10-30. Use its checklist as a template,
 but record today's counts and hashes in a new status document or PR, not by editing the snapshot.

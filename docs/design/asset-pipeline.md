@@ -138,12 +138,14 @@ decision is recorded in the quality bar.
    [`campaign-quality-bar.md`](./campaign-quality-bar.md) (`Met` or `Partial`, reviewer, date). A capture that
    becomes the reference goes to `docs/media/` with its PROVENANCE section; every `Major` becomes a backlog row
    with its before/after.
-4. The sheet is review evidence, not shipped art: `docs/media/site-review-<date>.webp` is the precedent for
-   committing it, and the individual captures stay in `review/` (gitignored).
+4. The sheet is review evidence, not shipped art: the composed WebP may be committed under `docs/media/` with
+   its PROVENANCE section (the single exception to "no `review/` artifact is committed" — the individual
+   captures still stay in `review/`, gitignored).
 
-The tool frames each mission from its mapping table (`at`/`height`), or keeps the mission's own opening
-camera (`authored: true`) where the site is drawn procedurally around the played area instead of under a
-named object — say so in the worksheet if a capture is not a close-up.
+The tool frames each mission from its mapping table (`at`/`height`); where a site is marked `hideModel`, no
+reused GLB is drawn and the mission builds its own scenery, so the worksheet's "Qué muestra la captura" column
+says what the cell actually contains. The same run twice is not byte-identical (units, clouds and particles
+move): the framing and the checklist are what is reproducible.
 
 ## Commands
 
@@ -169,7 +171,8 @@ named object — say so in the worksheet if a capture is not a close-up.
 - [ ] Render has a manifest record, `confidence`, `reviewed` and a human reviewer when approved.
 - [ ] GLB is recorded in `PROVENANCE.md` and, where the source kit uses a CSV, the CSV row is updated.
 - [ ] The asset does not invent a historical detail; uncertainty is labelled.
-- [ ] No `review/` artifact is committed.
+- [ ] No `review/` artifact is committed (the one exception is a composed review sheet, committed under
+  `docs/media/` with its PROVENANCE section).
 - [ ] The RTS view and, for characters, `?rig=1` were checked.
 - [ ] `yarn verify:fast` and the relevant tests pass.
 
@@ -188,7 +191,7 @@ named object — say so in the worksheet if a capture is not a close-up.
 
 ## Do not
 
-- Do not commit generated `review/` captures or backups.
+- Do not commit generated `review/` captures or backups (a composed review sheet is the exception above).
 - Do not use AI-generated art as final historical art without review and licence.
 - Do not present a draft render or a stylized portrait as a historical photograph.
 - Do not add a runtime dependency, MCP server or CI service for an asset.

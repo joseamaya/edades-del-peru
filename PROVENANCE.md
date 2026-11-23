@@ -1042,6 +1042,21 @@ slot is absent (offline / without assets).
     select the palette, garments and runtime hero attire. No new body/mesh is added, so other campaigns are
     unchanged. The dedicated Tambotoco hero sculpt remains E4b.
 
+### Site review pack: the seven missions of 2026-11-18 (in-engine)
+
+- **Location**: `docs/media/site-review-2026-11-23-new-missions.webp`, 1920x1158 WebP q78 (3x3 contact sheet,
+  one cell per mission; the individual 1600x900 PNGs stay in `review/site-review/`, gitignored).
+- **Source**: `yarn capture:sites --only=new --sheet=docs/media/site-review-2026-11-23-new-missions.webp`
+  (`scripts/capture_site_review.mjs`): loads each mission, starts it, advances the site phase, hides the HUD,
+  pins the high preset and frames the site from the table (`at`/`height`, or the mission's own opening camera
+  for `m_miraflores` and `m_brena`, whose sites are drawn procedurally).
+- **Content**: Lima 1821 (colonial city), Miraflores (redoubt line), Real Felipe (bastioned trace), Tarapacá
+  (village), Vilcabamba (fort), Cusco 1536 (plaza) and Breña (Huamachuco). These are game captures, never
+  historical photographs, and they are **review evidence**: the human decision is recorded in the quality bar,
+  not in this file.
+- **Review**: pending. The worksheet with the eight-point checklist and one row per mission is
+  `review/site-review/decisions.md`; the procedure is `docs/design/asset-pipeline.md` §"In-engine site review".
+
 ### Late-view performance evidence (in-engine)
 
 - **Location**: `docs/media/late-view-before-after.webp`, 1520x944 WebP q82.

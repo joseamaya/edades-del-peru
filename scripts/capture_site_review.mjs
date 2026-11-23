@@ -17,37 +17,97 @@ import { launchChromium, withViteServer, cliArg, reviewDir } from './lib.mjs';
  * `--only` also accepts a generation name: `--only=new` captures the seven missions added on 2026-11-18,
  * `--only=all` the full set. Every run rewrites `<out>/decisions.md` (the worksheet) from the captures it made.
  */
-const GENERATIONS = {
-  new: ['m_lima_1821', 'm_miraflores', 'm_real_felipe', 'm_tarapaca', 'm_vilcabamba', 'm_cusco_1536', 'm_brena'],
-};
+/** Missions added on 2026-11-18, the generation the `--only=new` shortcut captures. */
+const NEW_GENERATION = '2026-11-18';
 
 const MISSIONS = [
-  { id: 'm3_moche_recuay', site: 'moche_site', phase: 'in_use' },
-  { id: 'm4_wari', site: 'wari_site', phase: 'in_use' },
-  { id: 'm5_yahuar_pampa', site: 'chanca_site', phase: 'in_use' },
-  { id: 'm6_chimu_inca', site: 'chimu_site', phase: 'in_use' },
-  { id: 'm6b_guerra_civil', site: 'cusco_inca_site', phase: 'in_use' },
-  { id: 'm7_tupac_amaru', site: 'colonial_site', phase: 'in_use' },
-  { id: 'm8_independencia', site: 'independence_site', phase: 'in_use' },
-  { id: 'm9_guerra_pacifico', site: 'arica_site', phase: 'in_use' },
-  { id: 'm_lima', site: 'colonial_site', phase: 'ciudad' },
-  { id: 'm_junta_cusco', site: 'colonial_site', phase: null },
-  { id: 'm_tambotoco', site: 'ayllu_site', phase: 'fundada', at: { x: 138, z: 162 }, heroes: true },
-  // The seven missions added on 2026-11-18 reuse an existing site GLB (`object` is the scene name it is
-  // attached under), which is exactly what the review has to judge: does the kit read for this mission?
-  { id: 'm_lima_1821', site: 'lima_site', object: 'colonial_site', phase: 'ciudad', height: 38 },
-  // The redoubt line is drawn procedurally around the played area, not under a named site object: keep the
-  // authored opening framing instead of inventing a centre.
-  { id: 'm_miraflores', site: 'miraflores_site', object: 'colonial_site', phase: 'ciudad', authored: true },
-  { id: 'm_real_felipe', site: 'real_felipe_site', object: 'arica_site', phase: null, height: 44 },
-  { id: 'm_tarapaca', site: 'tarapaca_site', object: 'arica_site', phase: null, height: 40 },
-  { id: 'm_vilcabamba', site: 'vilcabamba_site', object: 'chanca_site', phase: null, height: 36 },
-  { id: 'm_cusco_1536', site: 'cusco_inca_site', object: 'cusco_inca_site', phase: null, height: 48 },
-  { id: 'm_brena', site: 'brena_site', object: 'independence_site', phase: null, authored: true },
+  { id: 'm3_moche_recuay', object: 'moche_site', phase: 'in_use' },
+  { id: 'm4_wari', object: 'wari_site', phase: 'in_use' },
+  { id: 'm5_yahuar_pampa', object: 'chanca_site', phase: 'in_use' },
+  { id: 'm6_chimu_inca', object: 'chimu_site', phase: 'in_use' },
+  { id: 'm6b_guerra_civil', object: 'cusco_inca_site', phase: 'in_use' },
+  { id: 'm7_tupac_amaru', object: 'colonial_site', phase: 'in_use' },
+  { id: 'm8_independencia', object: 'independence_site', phase: 'in_use' },
+  { id: 'm9_guerra_pacifico', object: 'arica_site', phase: 'in_use' },
+  { id: 'm_lima', object: 'colonial_site', phase: 'ciudad' },
+  { id: 'm_junta_cusco', object: 'colonial_site', phase: null },
+  { id: 'm_tambotoco', object: 'ayllu_site', phase: 'fundada', at: { x: 138, z: 162 }, heroes: true },
+  // The seven missions added on 2026-11-18. `object` is the scene name the site is attached under and `note`
+  // is what the capture actually shows — four of these sites are `hideModel: true`, so no reused GLB is drawn
+  // and the mission builds its own scenery; the review has to judge that, not a kit that is not on screen.
+  {
+    id: 'm_lima_1821',
+    added: NEW_GENERATION,
+    object: 'colonial_site',
+    phase: 'ciudad',
+    at: { x: 90, z: 150 },
+    height: 38,
+    note: 'kit colonial reutilizado (plaza y casas)',
+  },
+  {
+    id: 'm_miraflores',
+    added: NEW_GENERATION,
+    object: 'colonial_site',
+    phase: 'ciudad',
+    at: { x: 100, z: 150 },
+    height: 42,
+    note: 'kit colonial de fondo; la línea de reductos es procedural',
+  },
+  {
+    id: 'm_real_felipe',
+    added: NEW_GENERATION,
+    object: 'arica_site',
+    phase: null,
+    height: 44,
+    note: 'procedural: el GLB de Arica no se dibuja (hideModel), traza abaluartada de la misión',
+  },
+  {
+    id: 'm_tarapaca',
+    added: NEW_GENERATION,
+    object: 'arica_site',
+    phase: null,
+    height: 40,
+    note: 'procedural: el GLB de Arica no se dibuja (hideModel), aldea de la quebrada',
+  },
+  {
+    id: 'm_vilcabamba',
+    added: NEW_GENERATION,
+    object: 'chanca_site',
+    phase: null,
+    height: 36,
+    note: 'procedural: el GLB de Chanca no se dibuja (hideModel), fuerte de Vilcabamba',
+  },
+  {
+    id: 'm_cusco_1536',
+    added: NEW_GENERATION,
+    object: 'cusco_inca_site',
+    phase: null,
+    height: 48,
+    note: 'procedural: el ushnu del GLB está oculto (hideModel), plaza y salones de la misión',
+  },
+  {
+    id: 'm_brena',
+    added: NEW_GENERATION,
+    object: 'independence_site',
+    phase: null,
+    at: { x: 180, z: 95 },
+    height: 40,
+    note: 'kit de Independencia reutilizado; el pueblo de Huamachuco es procedural',
+  },
 ];
 
 const onlyArg = cliArg('only', '');
-const only = onlyArg === 'all' ? [] : onlyArg === 'new' ? GENERATIONS.new : onlyArg.split(',').filter(Boolean);
+const only =
+  onlyArg === 'all'
+    ? []
+    : onlyArg === 'new'
+      ? MISSIONS.filter((m) => m.added === NEW_GENERATION).map((m) => m.id)
+      : onlyArg.split(',').filter(Boolean);
+if (only.length) {
+  const known = new Set(MISSIONS.map((m) => m.id));
+  const unknown = only.filter((id) => !known.has(id));
+  if (unknown.length) throw new Error(`unknown mission id(s): ${unknown.join(', ')}`);
+}
 const outDir = cliArg('out', path.join(reviewDir(), 'site-review'));
 const sheetFile = cliArg('sheet', '');
 fs.mkdirSync(outDir, { recursive: true });
@@ -76,7 +136,7 @@ try {
         if (heroes && !found.userData.heroesReady) return false;
         return (g.settlementDressing ?? []).every((d) => d.attached !== false);
       },
-      { object: mission.object ?? mission.site, heroes: !!mission.heroes },
+      { object: mission.object, heroes: !!mission.heroes },
       { timeout: 90_000 },
     );
     await page.evaluate(
@@ -106,7 +166,7 @@ try {
     await page.waitForTimeout(800);
     const out = path.join(outDir, `${mission.id}.png`);
     await page.screenshot({ path: out });
-    captured.push({ id: mission.id, object: mission.object ?? mission.site, phase: mission.phase, file: out });
+    captured.push({ id: mission.id, object: mission.object, phase: mission.phase, file: out });
     console.log(out);
     await page.close();
   }
@@ -152,32 +212,66 @@ async function composeSheet(file) {
   console.log(`sheet: ${file}`);
 }
 
-/** The worksheet a human fills: one row per capture, decisions left empty on purpose. */
+/** Existing decision rows, so a second capture run cannot wipe a worksheet the human already filled. */
+function readDecisions(file) {
+  const kept = new Map();
+  if (!fs.existsSync(file)) return kept;
+  for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
+    if (!line.startsWith('| `')) continue;
+    const cells = line
+      .split('|')
+      .slice(1, -1)
+      .map((cell) => cell.trim());
+    if (cells.length < 6) continue;
+    const id = cells[0]
+      .replace(/^`/, '')
+      .replace(/`$/, '')
+      .replace(/\.png$/, '');
+    if (!id) continue;
+    const [decision = '', severity = '', reason = ''] = cells.slice(3);
+    if (decision && decision !== '_pendiente_') kept.set(id, { decision, severity, reason });
+  }
+  return kept;
+}
+
+/** One row per capture; decisions stay empty until a human fills them. */
 function writeWorksheet() {
   const today = new Date().toISOString().slice(0, 10);
-  const rows = captured
-    .map((c) => `| \`${c.id}.png\` | \`${c.object}\` | ${c.phase ?? '—'} | _pendiente_ | | |`)
+  const file = path.join(outDir, 'decisions.md');
+  const kept = readDecisions(file);
+  // Every capture in the folder, in mission order, so a run that re-shoots one mission cannot drop the rest.
+  const order = (id) => MISSIONS.findIndex((m) => m.id === id);
+  const ids = fs
+    .readdirSync(outDir)
+    .filter((name) => name.endsWith('.png'))
+    .map((name) => name.slice(0, -4))
+    .filter((id) => order(id) >= 0)
+    .sort((a, b) => order(a) - order(b));
+  const rows = ids
+    .map((id) => {
+      const mission = MISSIONS[order(id)];
+      const previous = kept.get(id);
+      const cells = previous ? [previous.decision, previous.severity, previous.reason] : ['_pendiente_', '', ''];
+      return `| \`${id}.png\` | \`${mission.object}\` | ${mission.note ?? '—'} | ${cells.join(' | ')} |`;
+    })
     .join('\n');
   const body = `# Revisión de arte humana — sitios
 
 Capturas: \`${outDir}\`${sheetFile ? ` · hoja: \`${sheetFile}\`` : ''}
 
-Criterios: [\`docs/design/art-direction.md\`](../../docs/design/art-direction.md) §6.
+Criterios: [\`docs/design/art-direction.md\`](../../docs/design/art-direction.md) §6 — el checklist completo,
+la escala de severidad y la regla de «no captura vieja». Una captura de sitio es **una** vista RTS a zoom 54, así
+que el primer punto de §6 (tres vistas y antes/después) sigue aplicando a los renders que se publican, no a
+esta hoja; si algo no se lee, se abre la captura individual a 1600×900.
 
-- [ ] La escena se reconoce a zoom RTS (54) y el hito se lee.
-- [ ] Mismo lenguaje material que sus vecinas (sin choque foto/plano).
-- [ ] Paleta dentro de §5; saturación sólo donde la interacción o el ritual lo pidan.
-- [ ] Transiciones de terreno suaves y geográficas; sin tiling visible a 54.
-- [ ] El suelo recibe sombras direccionales; nada flota.
-- [ ] Sin anacronismo ni especie, estructura o persona sin fuente.
-- [ ] Dentro de los presupuestos (§7) y \`yarn bench:check\`.
-- [ ] Procedencia registrada y captura RTS adjunta a la PR.
+Decisión y destino:
 
-**Severidad:** *Blocker* (historia incorrecta, asset sin licencia, silueta ilegible a 54, geometría flotante,
-fuente ausente) · *Major* (choque de materiales, tiling, paleta fuera de banda, draws sobre presupuesto,
-iluminación plana) · *Minor* (micro-detalle, ruido de textura, prop que sólo se ve de cerca).
+- \`aprobado\` → fila **Art** \`Met\` en la quality bar.
+- \`menor\` → \`Met\` con el detalle en B22 (se arregla después).
+- \`mayor\` → \`Partial\` y una fila de backlog con su antes/después.
+- \`rechazo\` → no se publica: el kit se sustituye o se revierte, y la fila Art queda \`Pending\` con el blocker.
 
-| Captura | Objeto de escena | Fase | Decisión | Severidad | Motivo |
+| Captura | Objeto de escena | Qué muestra la captura | Decisión | Severidad | Motivo |
 | --- | --- | --- | --- | --- | --- |
 ${rows}
 
@@ -185,10 +279,9 @@ Revisor: \`…\` · Fecha: ${today} (actualizar al firmar).
 
 **Después de decidir:** la fila **Art** de cada misión en
 [\`docs/design/campaign-quality-bar.md\`](../../docs/design/campaign-quality-bar.md) con \`Met\` o \`Partial\`,
-revisor y fecha; una sección de evidencia en [\`PROVENANCE.md\`](../../PROVENANCE.md) si la captura pasa a
-ser la referencia; y cada \`Major\` a una fila del backlog con su antes/después.
+revisor y fecha; una sección de evidencia en [\`PROVENANCE.md\`](../../PROVENANCE.md) si la captura pasa a ser
+la referencia; y cada \`mayor\` a una fila de [\`docs/plan/backlog.md\`](../../docs/plan/backlog.md).
 `;
-  const file = path.join(outDir, 'decisions.md');
   fs.writeFileSync(file, body);
   console.log(`worksheet: ${file}`);
 }
