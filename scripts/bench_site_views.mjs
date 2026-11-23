@@ -27,6 +27,14 @@ const MISSIONS = [
   { id: 'm8_independencia', late: true },
   { id: 'm9_guerra_pacifico', late: true },
   { id: 'm_junta_cusco', late: false },
+  // The seven missions added on 2026-11-18 (roadmap D3): openings only, no late row yet.
+  { id: 'm_lima_1821', late: false },
+  { id: 'm_miraflores', late: false },
+  { id: 'm_real_felipe', late: false },
+  { id: 'm_tarapaca', late: false },
+  { id: 'm_vilcabamba', late: false },
+  { id: 'm_cusco_1536', late: false },
+  { id: 'm_brena', late: false },
 ];
 const LOW_VIEWS = ['m6b_guerra_civil', 'm8_independencia', 'm7_tupac_amaru'];
 

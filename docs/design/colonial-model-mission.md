@@ -102,6 +102,7 @@ invented acts were added.
    Workbench blockout of that GLB with no ground, sky or people; it was removed from the manifest in the art
    reconciliation, and the opening uses the in-engine `MISSION_ART` capture. The in-engine captures are
    recorded in PROVENANCE and are not a Blender-render claim.
-2. A real-GPU performance pass; the bench numbers are structural (SwiftShader).
+2. Real-GPU performance measured on the reference iGPU:
+   [`../development/site-view-performance.md`](../development/site-view-performance.md).
 3. The Cusco valley composition keeps its old low water feature; no new terrain art was commissioned for
    this pass.

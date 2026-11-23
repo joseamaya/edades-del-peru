@@ -22,7 +22,7 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
   soft banks/ford and paths, Killke/ayllu variants, the Manco GLB, hero/detail/wide beats and the 3 × 3
   validation set) and the pilot closed with the 2026-11-17 approval; E7 was delivered on 2026-11-17 (baked hero proportions, scoped terrain macro, Inticancha/shrine detail; the 3X recording wins with the optional goals missed), with unique Ayar outfits/portraits, a hand-sculpted body, an andes GLB and new fauna as future work
   ([`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md)).
-- **Open release work:** human art review, a site-specific real-GPU performance pass and the itch package.
+- **Open release work:** human art review and the itch package (the real-GPU pass now covers all 24 site views).
 - **Asset audit:** the 0.2.0 asset audit closed with three P0 (late-era architecture and the Inca outfit of
   1536–1572). They are scheduled for 0.2.1 in [`./0.2.1-asset-corrections.md`](./0.2.1-asset-corrections.md).
 
@@ -36,7 +36,7 @@ The audit is the authority. If this summary and the quality bar disagree, the qu
 | **D1 · Close the model-mission gap** | `m5`–`m9`, `m6b`, `m8` and the remaining chapters                                                                            | **Done (2026-11-14):** every released mission follows the model pattern and has a model-mission document; the remaining art and performance gaps are D2/D3 |
 | **D2 · Art review and capture**      | Pending `reviewed: false` records, the Chavín kit, and the art of the model missions (m3–m9, m6b, Tambotoco, Lima, La Junta) | No unreviewed record ships; the human review is recorded; the captures are current                                                                         |
 | **D2b · Art-direction pilot**        | Tambotoco becomes the stylized-realism reference: light/shadows, palette, architecture, highland vegetation, hero variant, presentation | **Done (2026-11-17):** E0–E6 of [`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md) close and E7 delivered (baked hero proportions, scoped terrain macro, Inticancha/shrine detail, 3 × 3 E7 set and the 3X recording); caps 500k/280 and 660k/360; `dist` 24.63/25 MB |
-| **D3 · Real-GPU performance**        | The remaining model-mission site views (m3–m9, m6b, La Junta) and late views                                                 | **Done (2026-11-17):** 17 site views measured at 1280×800 and 1600×900 on the Intel iGPU, all hardware; 28–38 FPS high at 1600×900. Decision in [`../development/site-view-performance.md`](../development/site-view-performance.md); B13 closed the m6b/m8 late-view cost (898 → 615 and 912 → 593 draws, 27 → 34 FPS) |
+| **D3 · Real-GPU performance**        | Every campaign site view: m1–m9, m6b, Tambotoco, La Junta and the seven missions added on 2026-11-18                          | **Done:** 24 real-GPU views (17 on 2026-11-17, the seven openings on 2026-11-23) at 1280×800 and 1600×900 on the Intel iGPU, all hardware; 27–40 FPS high at 1600×900. Decision in [`../development/site-view-performance.md`](../development/site-view-performance.md); B13 closed the m6b/m8 late-view cost (898 → 615 and 912 → 593 draws, 27 → 34 FPS) |
 | **D4 · Release packaging**           | itch build, Pages artifact, publish checklist                                                                                | The checklist is green on a build that matches the tagged commit                                                                                           |
 | **D5 · 0.2.1 asset corrections**     | The three P0 and the P1 site/label corrections from the 0.2.0 asset audit                                                     | **Done (2026-11-20):** P0 mapping and outfit tests green, P1 labels, headwear and site art closed with captures; no P1 remains.                                      |
 
@@ -68,9 +68,11 @@ but record today's counts and hashes in a new status document or PR, not by edit
 The pass is recorded in [`../development/site-view-performance.md`](../development/site-view-performance.md):
 17 site views (m3–m9, m6b and La Junta) at 1280×800 and 1600×900 on the Intel RPL-S iGPU, all rows on
 hardware. The shipped high preset runs **28–38 FPS** at 1600×900 and **32–48 FPS** at 1280×800; the low
-fallback is 46–50 FPS on the three tightest late views. The seven missions added on 2026-11-18 are not in
-this pass; they have SwiftShader rows and are a **known limitation** of the 0.2.0 release, not a measured
-28–38 FPS claim.
+fallback is 46–50 FPS on the three tightest late views. The seven missions added on 2026-11-18 have their
+**openings** measured since 2026-11-23 with the same script and host: **29–40 FPS** at 1600×900, with the two
+tightest at 27–30 under repeat sampling (`m_vilcabamba` and `m_real_felipe`, 36–43 FPS in the low preset).
+Their late views are still unmeasured, so they have no late-row claim; every mission now has a real-GPU
+**opening** measurement.
 
 Decision: accept the measured high-quality frame times, keep the SwiftShader structural caps unchanged,
 and closed the m6b/m8 late-view optimization as **B13** (2026-11-23). Re-run `yarn bench:site-views` before D4.
@@ -89,8 +91,9 @@ The evidence and the remaining gates are in [`../release/0.2.0-readiness-audit.m
 - Tag `v0.2.0` and keep `v0.1.0` as the earlier nine-mission demo. Keep `localStorage` keys and mission ids
   stable.
 - The seven 2026-11-18 missions have a green automated no-cheat path
-  (`tests/e2e/release-playtest.spec.ts`); a human pass is the first post-release validation and is declared
-  as a known limitation in the notes.
+  (`tests/e2e/release-playtest.spec.ts`) and a real-GPU frame time
+  ([`../development/site-view-performance.md`](../development/site-view-performance.md)); a human art pass on
+  them is the first post-release validation and is declared as a known limitation in the notes.
 
 ## D5 · 0.2.1 asset corrections
 
