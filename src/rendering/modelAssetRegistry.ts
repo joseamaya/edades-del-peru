@@ -93,6 +93,9 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     yawOffset: 0,
     ground: true,
     groundClearance: 0.01,
+    // Stylized jog reference for the UAL clip; scouts and charging infantry run above the shared 3.8
+    // threshold, and a 3.0 m/s reference keeps the playback rate near 1.5–1.8 instead of the 2.2 clamp.
+    runReferenceSpeed: 3,
     shadowSkipMeshes: CARAL_WORKER_SHADOW_SKIP_MESHES,
     // Farm_Harvest reads as the digging-stick harvest; the asset has no
     // construction clip, so Push_Loop is the explicit pushing/placing
@@ -119,6 +122,7 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     yawOffset: 0,
     ground: true,
     groundClearance: 0.01,
+    runReferenceSpeed: 3,
     shadowSkipMeshes: CARAL_WORKER_SHADOW_SKIP_MESHES,
     clips: {
       idle: 'Idle_Loop',

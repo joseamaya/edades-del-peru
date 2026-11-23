@@ -261,20 +261,28 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
   expect(errors).toEqual([]);
 });
 
-test('a damaged worker plays the one-shot hit reaction and returns to its task', async ({ page }) => {
+test('a damaged worker flinches once and clears the hit reaction', async ({ page }) => {
   await startCaral(page);
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead && u.kind === 'worker');
+    const hpBefore = worker.hp;
     worker.takeDamage(5, -1);
     g.loop.onUpdate(1 / 60, 0);
     const started = { playing: worker.rig.hitPlaying, react: worker.hitReact };
     for (let i = 1; i <= 40; i++) g.loop.onUpdate(1 / 60, i / 60);
-    return { started, after: worker.rig.hitPlaying, clip: worker.rig.currentClipName };
+    return {
+      started,
+      hpBefore,
+      hpAfter: worker.hp,
+      after: worker.rig.hitPlaying,
+      clip: worker.rig.currentClipName,
+    };
   });
   expect(out.started.playing).toBe(true);
   expect(out.started.react).toBeGreaterThan(0);
+  expect(out.hpAfter).toBeLessThan(out.hpBefore);
   expect(out.after).toBe(false);
   expect(out.clip).toBe('Idle_Loop');
 });

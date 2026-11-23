@@ -26,6 +26,8 @@ export class RigInstance {
   private readonly deathAction: THREE.AnimationAction | null = null;
   private readonly hitAction: THREE.AnimationAction | null = null;
   private hitRemaining = 0;
+  /** Minimum spacing between hit reactions so a burst of damage does not restart the flinch. */
+  private hitCooldown = 0;
   private pendingState: RigClipState | null = null;
   private preHitState: RigClipState | null = null;
   private current: RigClipState | null = null;
@@ -172,7 +174,7 @@ export class RigInstance {
 
   /** Play a one-shot hit reaction over the current state; ignored when the asset has no clip. */
   playHit(fade = 0.08): void {
-    if (this.disposed || !this.hitAction || this.hitRemaining > 0 || !this.current) return;
+    if (this.disposed || !this.hitAction || this.hitRemaining > 0 || this.hitCooldown > 0 || !this.current) return;
     this.preHitState = this.current;
     this.pendingState = null;
     const previous = this.actions.get(this.current);
@@ -181,12 +183,14 @@ export class RigInstance {
     this.hitAction.fadeIn(fade).play();
     previous?.fadeOut(fade);
     this.hitRemaining = this.hitAction.getClip().duration;
+    this.hitCooldown = 0.6;
   }
 
   /** Play the rig's death clip when it has one, otherwise freeze the current pose. */
   playDeath(): void {
     if (this.disposed) return;
     this.hitRemaining = 0;
+    this.hitCooldown = 0;
     this.pendingState = null;
     this.preHitState = null;
     this.mixer.stopAllAction();
@@ -235,6 +239,7 @@ export class RigInstance {
 
   update(dt: number): void {
     if (this.disposed) return;
+    this.hitCooldown = Math.max(0, this.hitCooldown - dt);
     if (this.hitRemaining > 0) {
       this.hitRemaining = Math.max(0, this.hitRemaining - dt);
       if (this.hitRemaining === 0) {
@@ -242,10 +247,10 @@ export class RigInstance {
         this.pendingState = null;
         this.preHitState = null;
         this.hitAction?.fadeOut(0.15);
-        const actual = this.resolveState(resume);
-        this.actions.get(actual)?.fadeIn(0.15);
-        this.current = actual;
-        this.variant?.setTask?.(actual);
+        // `fadeIn()` only schedules weight: an action that was never started stays at weight 0 and
+        // `play()` would early-return on the current name. Clear the state so `play()` starts it.
+        this.current = null;
+        this.play(resume, 0.15);
       }
     }
     this.mixer.update(dt);

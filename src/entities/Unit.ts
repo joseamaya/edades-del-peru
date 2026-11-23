@@ -868,6 +868,7 @@ export class Unit {
   die(): void {
     if (this.dead) return;
     this.dead = true;
+    this.hitReact = 0;
     if (this.ctx) {
       this.ctx.particles?.emit({
         x: this.pos.x,
