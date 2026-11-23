@@ -177,6 +177,11 @@ common-unit target. A 12-unit formation measures 180 / 264 / 246 draws and 0.13â
 work for the twelve units; the Spanish formation stays under the 280-draw scene cap. The Spanish is at
 22 draws, so a third accessory per bone should be merged into an existing draw.
 
+**LOD, instancing and memory.** The rig has no LOD or instancing: every unit owns a skeleton and mixer, while
+geometry, materials and clips are shared by the asset cache. The pilot adds no game asset or texture, so GPU
+memory and the 28 MiB `dist` budget are unchanged. A future LOD would need a non-skinned or impostor path,
+not another skinned mesh.
+
 ## 8. Pending issues
 
 1. **Body proportions and face.** The shared CC0 body is still ~8 heads and texture-faced. The pilot improves
