@@ -5,7 +5,7 @@ import { applyGeneratedPbr } from './Biomes';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
-import { createRigAttireTools, mergeColoredGeometry } from './rigAttire';
+import { createRigAttireTools, extrudedPlate, latheProfile, mergeColoredGeometry, mergePieces } from './rigAttire';
 import { consolidateRig } from './modelConsolidation';
 import {
   ANDEAN_SPECS,
@@ -37,10 +37,7 @@ function trapezoidPlate(
   shape.lineTo(bottomWidth / 2, -half);
   shape.lineTo(-bottomWidth / 2, -half);
   shape.closePath();
-  const geometry = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false, curveSegments: 1 });
-  geometry.translate(0, 0, -thickness / 2);
-  geometry.computeVertexNormals();
-  return geometry;
+  return extrudedPlate(shape, thickness);
 }
 
 /**
@@ -58,10 +55,7 @@ function starPlate(outer: number, inner: number, points: number, thickness: numb
     else shape.lineTo(x, y);
   }
   shape.closePath();
-  const geometry = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false, curveSegments: 1 });
-  geometry.translate(0, 0, -thickness / 2);
-  geometry.computeVertexNormals();
-  return geometry;
+  return extrudedPlate(shape, thickness);
 }
 
 /**
@@ -69,35 +63,32 @@ function starPlate(outer: number, inner: number, points: number, thickness: numb
  * (`atuendos.md` §1 §2). The lathe axis is +Y, so the caller turns it towards the side of the head.
  */
 function earSpool(): THREE.BufferGeometry {
-  const profile = [
-    [0, 0],
-    [0.026, 0.005],
-    [0.04, 0.014],
-    [0.04, 0.026],
-    [0.022, 0.036],
-    [0, 0.04],
-  ].map(([x, y]) => new THREE.Vector2(x, y));
-  return new THREE.LatheGeometry(profile, 14);
+  return latheProfile(
+    [
+      [0, 0],
+      [0.026, 0.005],
+      [0.04, 0.014],
+      [0.04, 0.026],
+      [0.022, 0.036],
+      [0, 0.04],
+    ],
+    14,
+  );
 }
 
 /** A shallow domed round shield (rodela) with a raised rim; the lathe axis is +Y. */
 function rodela(): THREE.BufferGeometry {
   // Points run rim-to-centre so the lathe winding faces outward; the reverse order culls the face.
-  const profile = [
-    [0.19, 0],
-    [0.19, 0.004],
-    [0.17, 0.032],
-    [0.13, 0.055],
-    [0, 0.062],
-  ].map(([x, y]) => new THREE.Vector2(x, y));
-  return new THREE.LatheGeometry(profile, 20);
-}
-
-/** Merge same-material pieces and release the inputs. */
-function mergePieces(pieces: THREE.BufferGeometry[]): THREE.BufferGeometry | null {
-  const merged = mergeGeometries(pieces, false);
-  pieces.forEach((geometry) => geometry.dispose());
-  return merged;
+  return latheProfile(
+    [
+      [0.19, 0],
+      [0.19, 0.004],
+      [0.17, 0.032],
+      [0.13, 0.055],
+      [0, 0.062],
+    ],
+    20,
+  );
 }
 
 /**
@@ -135,6 +126,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     bonePosition,
     attach,
     enableShadows,
+    vertexMaterial,
     dispose: disposeAttire,
   } = tools;
   show('Body_f', !male);
@@ -329,7 +321,6 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       spec.metal !== null && (spec.helmet || spec.ear) && (soldier || role === 'ranged')
         ? makeMaterial(spec.metal, 0.5, 0.35)
         : null;
-    const shieldMat = soldier ? makeMaterial(0x7a4a2a, 0.95) : null;
     const boneL = bonePosition('hand_l');
     const pelvis = bonePosition('pelvis');
     const headBone = bonePosition('Head');
@@ -359,18 +350,15 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       if (chestGeometry) {
         const chest = addMesh(chestGeometry, plateMat, 'attire_andean_pectoral');
         chest.rotation.x = Math.PI / 2;
-        attach('spine_03', chest, new THREE.Vector3(spine.x, spine.y + 0.06, spine.z + 0.2));
-      }
-      const backGeometry = plate();
-      if (backGeometry) {
-        const back = addMesh(backGeometry, plateMat, 'attire_andean_backplate');
+        attach('spine_03', chest, new THREE.Vector3(spine.x, spine.y + 0.06, spine.z + 0.19));
+        const back = addMesh(chestGeometry.clone(), plateMat, 'attire_andean_backplate');
         back.rotation.x = -Math.PI / 2;
-        attach('spine_03', back, new THREE.Vector3(spine.x, spine.y + 0.06, spine.z - 0.2));
+        attach('spine_03', back, new THREE.Vector3(spine.x, spine.y + 0.06, spine.z - 0.19));
       }
       const strapPieces: THREE.BufferGeometry[] = [];
       for (const side of [-1, 1]) {
         // Two straps in one merged mesh: identical pieces, one draw call.
-        strapPieces.push(new THREE.BoxGeometry(0.045, 0.024, 0.44).translate(side * 0.1, 0.22, 0));
+        strapPieces.push(new THREE.BoxGeometry(0.045, 0.03, 0.44).translate(side * 0.09, 0.235, -0.01));
       }
       const strapGeometry = mergePieces(strapPieces);
       if (strapGeometry) {
@@ -391,9 +379,10 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       }
     }
     if (spec.backflap && soldier && spine) {
-      // Trapezoidal back armour, wider at the bottom, hanging behind the tunic. The dossier documents
-      // the shape, not the material; leather reads as a plate against the textile tunic.
-      const backflapMat = makeMaterial(0x5a3a24, 0.92);
+      // Trapezoidal back armour, wider at the bottom, hanging behind the tunic. The dossier documents the
+      // shape and calls it armour on the tunic, not the material: a contrasting textile panel reads at the
+      // RTS zoom, and a shade of the tunic would disappear against the back.
+      const backflapMat = makeMaterial(palette.secondary, 0.95);
       const backflap = addMesh(trapezoidPlate(0.26, 0.38, 0.4, 0.035), backflapMat, 'attire_andean_backflap');
       attach('spine_03', backflap, new THREE.Vector3(spine.x, spine.y - 0.1, spine.z - 0.18));
     }
@@ -403,7 +392,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
         spools.push(
           earSpool()
             .rotateZ((-side * Math.PI) / 2)
-            .translate(side * 0.098, -0.02, 0),
+            .translate(side * 0.096, 0.13, -0.005),
         );
       }
       const spoolGeometry = mergePieces(spools);
@@ -417,22 +406,20 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       const belt = addMesh(new THREE.CylinderGeometry(0.255, 0.26, 0.045, 20), beltMat, 'attire_andean_belt');
       attach('pelvis', belt, new THREE.Vector3(pelvis.x, pelvis.y + 0.39, pelvis.z));
     }
-    if (soldier && boneL && spec.shield && shieldMat) {
+    if (soldier && boneL && spec.shield) {
       // Wooden disc and stone umbo in one vertex-coloured mesh: still reads as two materials, one draw.
       const shieldGeometry = mergeColoredGeometry([
         [rodela(), new THREE.Color(0x7a4a2a)],
         [new THREE.SphereGeometry(0.035, 10, 6).translate(0, 0.055, 0), new THREE.Color(0x8a8f94)],
       ]);
       if (shieldGeometry) {
-        const shieldVertexMat = makeMaterial(0xffffff, 0.92);
-        shieldVertexMat.vertexColors = true;
-        const shield = addMesh(shieldGeometry, shieldVertexMat, 'attire_andean_shield');
+        const shield = addMesh(shieldGeometry, vertexMaterial(0.92), 'attire_andean_shield');
         shield.rotation.z = Math.PI / 2;
         attach('hand_l', shield, new THREE.Vector3(boneL.x, boneL.y - 0.28, boneL.z));
       }
     }
-    if (soldier && hand && shieldMat) {
-      const shaft = addMesh(new THREE.CylinderGeometry(0.018, 0.022, 0.6, 8), shieldMat, 'attire_andean_macana');
+    if (soldier && hand) {
+      const shaft = addMesh(new THREE.CylinderGeometry(0.018, 0.022, 0.6, 8), woodMat, 'attire_andean_macana');
       shaft.rotation.z = 0.9;
       attach('hand_r', shaft, new THREE.Vector3(hand.x, hand.y - 0.22, hand.z));
       const macanaHeadMat = spec.macanaHead === 'stone' ? stoneMat : makeMaterial(palette.accent, 0.9);

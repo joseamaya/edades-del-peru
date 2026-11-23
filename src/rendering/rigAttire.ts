@@ -25,6 +25,29 @@ export function mergeColoredGeometry(
   return merged;
 }
 
+/** Merge same-material pieces into one geometry and release the inputs. */
+export function mergePieces(pieces: readonly THREE.BufferGeometry[]): THREE.BufferGeometry | null {
+  const merged = mergeGeometries([...pieces], false);
+  pieces.forEach((geometry) => geometry.dispose());
+  return merged;
+}
+
+/** Extrude a 2D shape into a thin plate centred on z=0. */
+export function extrudedPlate(shape: THREE.Shape, thickness: number, curveSegments = 1): THREE.BufferGeometry {
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false, curveSegments });
+  geometry.translate(0, 0, -thickness / 2);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+/** A surface of revolution from `[radius, height]` pairs. */
+export function latheProfile(points: readonly (readonly [number, number])[], segments: number): THREE.BufferGeometry {
+  return new THREE.LatheGeometry(
+    points.map(([x, y]) => new THREE.Vector2(x, y)),
+    segments,
+  );
+}
+
 /** Shared helpers for project-authored, presentation-only rig accessories. */
 export interface RigAttireTools {
   readonly ownedGeometries: THREE.BufferGeometry[];

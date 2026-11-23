@@ -1,4 +1,5 @@
 import { launchChromium, withViteServer } from './lib.mjs';
+import { CHARACTER_CASES, ensureRiggedUnit } from './character_pilot_cases.mjs';
 
 /**
  * Structural cost of the dressed infantry standard. It isolates one unit (main + shadow pass),
@@ -7,32 +8,9 @@ import { launchChromium, withViteServer } from './lib.mjs';
  *
  * Usage: node scripts/bench_character_pilot.mjs [--assert]
  */
+
 const BUDGET = { drawCalls: 25, triangles: 25_000 };
-const CASES = [
-  { name: 'Inca warrior', url: '/?mission=m_cusco_1536&intro=0&fog=0&low=1&noloop=1', kind: 'inca_warrior' },
-  { name: 'Spanish arquebusier', url: '/?mission=m_lima&intro=0&fog=0&low=1&noloop=1', kind: 'musketeer' },
-  { name: 'Republican fusilier', url: '/?mission=m_tarapaca&intro=0&fog=0&low=1&noloop=1', kind: 'republica_defensor' },
-  {
-    name: 'Moche warrior',
-    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=moche&period=2',
-    kind: 'soldier',
-  },
-  {
-    name: 'Wari warrior',
-    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=wari&period=3',
-    kind: 'soldier',
-  },
-  {
-    name: 'Chimú warrior',
-    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=chimu&period=4',
-    kind: 'soldier',
-  },
-  {
-    name: 'Late realista',
-    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=realistas&period=7',
-    kind: 'soldier',
-  },
-];
+const CASES = CHARACTER_CASES;
 const assert = process.argv.includes('--assert');
 
 const { base, close } = await withViteServer({ optimizeDeps: { noDiscovery: true } });
@@ -50,17 +28,13 @@ try {
         .click({ timeout: 3_000 })
         .catch(() => {});
       await page.waitForTimeout(400);
+      await ensureRiggedUnit(page, entry.kind);
       const cost = await page.evaluate((kind) => {
         const g = window.game;
         g.loop.stop();
-        let unit = [...g.units.values()].find(
+        const unit = [...g.units.values()].find(
           (candidate) => candidate.owner === 0 && !candidate.dead && candidate.kind === kind,
         );
-        if (!unit?.rig) {
-          // A skirmish opens with workers; the bench still needs one rigged combat unit on screen.
-          const centre = g.playerCenter(0);
-          unit = g.spawnScriptedUnit(kind, 0, centre.x + 10, centre.z + 10);
-        }
         if (!unit?.rig) throw new Error(`no rigged ${kind}`);
         window.__directRender = true;
         g.camera.setHeight(1e9);
@@ -98,6 +72,10 @@ try {
         for (const root of roots) root.visible = false;
         const formationHidden = sample();
         for (const root of roots) root.visible = true;
+        // Warm up the mixer before timing: the first case otherwise pays the JIT cost.
+        for (let frame = 0; frame < 120; frame++) {
+          for (const candidate of group) candidate.rig.update(1 / 60);
+        }
         const started = performance.now();
         for (let frame = 0; frame < 300; frame++) {
           for (const candidate of group) candidate.rig.update(1 / 60);
@@ -114,7 +92,7 @@ try {
           },
         };
       }, entry.kind);
-      rows.push({ name: entry.name, ...cost });
+      rows.push({ name: entry.label, ...cost });
     } finally {
       await page.close();
     }

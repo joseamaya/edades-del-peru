@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { launchChromium, withViteServer, cliArg } from './lib.mjs';
+import { CHARACTER_CASES, ensureRiggedUnit } from './character_pilot_cases.mjs';
 
 /**
  * Character-standard captures: the dressed infantry in their missions/skirmishes at a fixed noon
@@ -14,31 +15,7 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
  * `docs/media/character-pilot-before-after.webp`.
  */
 const OUT = path.resolve(cliArg('out', 'review/pilot'));
-const CASES = [
-  { name: 'inca', url: '/?mission=m_cusco_1536&intro=0&fog=0&low=1&noloop=1', kind: 'inca_warrior' },
-  { name: 'spanish', url: '/?mission=m_lima&intro=0&fog=0&low=1&noloop=1', kind: 'musketeer' },
-  { name: 'republic', url: '/?mission=m_tarapaca&intro=0&fog=0&low=1&noloop=1', kind: 'republica_defensor' },
-  {
-    name: 'moche',
-    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=moche&period=2',
-    kind: 'soldier',
-  },
-  {
-    name: 'wari',
-    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=wari&period=3',
-    kind: 'soldier',
-  },
-  {
-    name: 'chimu',
-    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=chimu&period=4',
-    kind: 'soldier',
-  },
-  {
-    name: 'late-realista',
-    url: '/?play=1&seed=777&fog=0&low=1&noloop=1&civ=realistas&period=7',
-    kind: 'soldier',
-  },
-];
+const CASES = CHARACTER_CASES;
 fs.mkdirSync(OUT, { recursive: true });
 
 const { base, close } = await withViteServer({ optimizeDeps: { noDiscovery: true } });
@@ -60,14 +37,7 @@ try {
         if (root) root.style.display = 'none';
       });
 
-      await page.evaluate((kind) => {
-        const g = window.game;
-        const existing = [...g.units.values()].find((candidate) => candidate.owner === 0 && candidate.kind === kind);
-        if (existing?.rig) return;
-        // A skirmish opens with workers; the capture still needs one rigged combat unit on screen.
-        const centre = g.playerCenter(0);
-        g.spawnScriptedUnit(kind, 0, centre.x + 10, centre.z + 10);
-      }, entry.kind);
+      await ensureRiggedUnit(page, entry.kind);
 
       const place = async (yaw, state) => {
         await page.evaluate(
@@ -77,12 +47,14 @@ try {
             g.settings.timeOfDay = 'noon';
             g.sky.setTimeOfDay(0.5);
             g.sky.update(0);
-            const unit = [...g.units.values()].find(
-              (candidate) => candidate.owner === 0 && !candidate.dead && candidate.kind === kind,
-            );
+            const unit =
+              g.units.get(window.__captureUnitId) ??
+              [...g.units.values()].find(
+                (candidate) => candidate.owner === 0 && !candidate.dead && candidate.kind === kind,
+              );
             if (!unit?.rig) throw new Error(`no rigged ${kind}`);
-            const base = g.playerCenter(0);
-            const point = g.findLandNear(base.x + 40, base.z + 40, 70);
+            const origin = window.__captureOrigin ?? { x: unit.pos.x, z: unit.pos.z };
+            const point = g.findLandNear(origin.x + 40, origin.z + 40, 70);
             unit.clearOrders();
             unit.pos.set(point.x, g.terrain.getHeight(point.x, point.z), point.z);
             unit.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
@@ -95,8 +67,8 @@ try {
               unit.rig.update(pose === 'attack' ? 0.25 : 0.4);
             }
             const subject = { x: unit.pos.x, y: unit.pos.y, z: unit.pos.z };
-            g.camera.camera.position.set(subject.x + 2.4, subject.y + 1.5, subject.z + 3.0);
-            g.camera.camera.lookAt(subject.x, subject.y + 0.9, subject.z);
+            g.camera.camera.position.set(subject.x + 2.6, subject.y + 1.55, subject.z + 3.2);
+            g.camera.camera.lookAt(subject.x, subject.y + 1.0, subject.z);
             g.renderer.render(g.scene, g.camera.camera);
           },
           { kind: entry.kind, yaw, state },

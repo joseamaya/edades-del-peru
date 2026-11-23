@@ -109,7 +109,8 @@ copied. No external asset was downloaded or added.
 - Quilted cotton helmet (cap plus three bands) for soldiers and slingers.
 - Red V yoke on the chest.
 - Convex rodela with a stone boss instead of a flat cylinder.
-- Slimmer wooden macana with an icosahedral stone head.
+- Slimmer wooden macana with a star/rosette stone head (the general Andean club-head shape; §8 later
+  applied it to every Andean soldier).
 - Usuta sandals (sole plus strap) per foot.
 - The shared uncu/skirt/wrap keep their existing skinning and are tinted from the civilization palette.
 
@@ -153,9 +154,12 @@ Committed captures: [`character-pilot-before-after.webp`](../media/character-pil
 [`character-pilot-republic.webp`](../media/character-pilot-republic.webp). The local full-resolution PNGs are
 in `review/pilot/` and `review/pilot-before/` (gitignored). The captures use the mission opening with HUD
 hidden, `low=1`, `fog=0`, fixed noon light, seed from the mission, a close three-quarter camera and the
-unit's `idle` clip. `node scripts/capture_character_pilot.mjs --out=review/pilot` reproduces the set; run the
-same script from an `origin/main` worktree with `--out=review/pilot-before` for the before set. At the default
-height 54 the unit reads as a small silhouette and colour block; the equipment is a close/cinematic read.
+unit's `idle` clip. This sheet is the **PR #609 snapshot** of the three-unit pilot; the current
+`scripts/capture_character_pilot.mjs` captures the seven units of §8. The before/after rows of §8 are produced
+by running that script with `--out=review/character-standard`, then `git checkout origin/main --
+src/rendering/workerAttire.ts src/rendering/uniformAttire.ts` and the same command with
+`--out=review/character-standard-before`, then restoring the branch files. At the default height 54 the unit
+reads as a small silhouette and colour block; the equipment is a close/cinematic read.
 The attack column uses the shared `Sword_Regular_A`/`Pistol_Shoot`/`OverhandThrow` clips and the death
 column uses `Death01`; the firearm attack is the shared one-handed pistol clip, not a two-handed musket
 aim, and `run`/hit reactions are still missing.
@@ -167,16 +171,16 @@ aim, and `run`/hit reactions are still missing.
 | `yarn typecheck` | pass |
 | `yarn lint` | pass, 0 warnings |
 | `yarn format:check` | pass |
-| `yarn test` | 129 files, 1,089 tests, pass |
+| `yarn test` | 129 files, 1,091 tests, pass |
 | `yarn build` | pass |
-| `yarn dist:check` | 27.61 MiB / 28 MiB; first play 1.87 MiB gzip; loader 2 KB gzip |
-| `yarn bench:characters` | Inca 15 / 10.7k; Spanish 22 / 14.2k; Republican 20 / 11.7k; Moche 12 / 9.4k; Wari 13 / 10.1k; Chimú 10 / 9.1k; late realista 22 / 12.7k (draws / triangles) |
+| `yarn dist:check` | 27.61 MiB / 28 MiB; first play 1.88 MiB gzip; loader 2 KB gzip |
+| `yarn bench:characters` | Inca 14 / 10.7k; Spanish 22 / 14.2k; Republican 20 / 11.7k; Moche 12 / 9.4k; Wari 13 / 10.1k; Chimú 10 / 9.1k; late realista 22 / 12.7k (draws / triangles) |
 
 The measurement is the isolated unit cost (main + shadow pass) in its mission or skirmish, using the same
 shown/hidden delta as the rig bench. The old primitive gear measured ~8–9 draws for the shared worker;
 the new gear stays at or below the 25-draw common-unit target and 9.1–14.2k triangles, below the 25k
 common-unit target. A 12-unit formation measures 168 / 264 / 246 / 144 / 156 / 120 / 264 draws and
-0.13–0.14 ms/frame of mixer work for the twelve units; the Spanish and late-realista formations stay under
+0.12–0.14 ms/frame of mixer work for the twelve units; the Spanish and late-realista formations stay under
 the 280-draw scene cap. The Spanish and the late realista are at 22 draws, so a third accessory per bone
 should be merged into an existing draw.
 
@@ -195,21 +199,35 @@ late-colonial bicorn. Only elements the dossier already describes were shaped; c
 
 | Culture / unit | Documented element | Runtime change | Certainty |
 | --- | --- | --- | --- |
-| **Moche** (`moche_soldier_*`) | conical metal helmet, trapezoidal backflap, ear spools, circular shield, star/rosette club heads | cone with a brow rim and a top knob; trapezoid back plate; flared ear spools; domed rodela with a boss; six-point star head | shape documented; the backflap material is a leather-brown abstraction |
+| **Moche** (`moche_soldier_*`) | conical metal helmet, trapezoidal backflap, ear spools, circular shield, star/rosette club heads | cone with a brow rim and a top knob; trapezoid back plate; flared ear spools; domed rodela with a boss; six-point star head | conical shape documented; the rim and top knob are game abstractions. The backflap is a contrasting textile panel |
 | **Wari** (`wari_soldier_*`) | chest and back armour joined by the shoulders, pectoral disc, ear spools | domed chest disc with a rim and central boss, matching back plate and two shoulder straps, all outside the tunic | documented; the plate is modelled as a metal disc |
 | **Chimú / Recuay** (`chimu_*`, `recuay_*`) | metal ear spools (Chimú also masks/tumi) | flared ear spools; the shared rodela and star macana | spools documented; **no garment is claimed** and the masks/tumi stay unmodelled, as the dossier already notes |
 | **Chanca** (`chanca_*`) | face paint | unchanged | documented |
 | **Late realistas / patriotas** (1780–1826) | bicorn | lens brim with upswept corners and a low crown, replacing the box brim + cylinder that read as a top hat | documented headwear; the exact crown is an abstraction |
 
-The Moche backflap material is not documented; painting it leather-brown makes the plate read against the red
-tunic. The dossier documents the trapezoidal shape, not the material, so this is a presentation choice.
+The Moche backflap material is not documented. The dossier describes a «túnica con armadura de espalda»; the
+game paints the plate in the civilization's secondary textile colour so it reads against the red tunic, without
+claiming a leather or metal piece. The conical helmet's rim and top knob are likewise game abstractions on the documented shape.
+
+The **shared** rodela and star/rosette macana apply to every Andean soldier (Inca, Chanca, Tiahuanaco, Nazca,
+Chincha, Collas, Huanca, Killke/ayllus), so those silhouettes changed too even though their culture-specific
+gear was not in this pass. The dossier documents disc/star/rosette heads and circular shields generally, so the
+shape is not a new culture claim; §9.5 records the remaining review.
+
+Reproduce the sheet with:
+
+```sh
+node scripts/capture_character_pilot.mjs --out=review/character-standard
+git checkout origin/main -- src/rendering/workerAttire.ts src/rendering/uniformAttire.ts
+node scripts/capture_character_pilot.mjs --out=review/character-standard-before
+git checkout HEAD -- src/rendering/workerAttire.ts src/rendering/uniformAttire.ts
+```
 
 ### Costs and testing
 
-Per-unit cost (main + shadow, `yarn bench:characters`): Moche 12 draws / 9,441 triangles; Wari 13 / 10,101;
-Chimú 10 / 9,109; late realista 22 / 12,674. All are inside the 25-draw / 25k common-unit ceiling; the Moche,
-Wari and Chimú gear also got cheaper than the previous version because the ear spools, the shield boss and the
-Wari straps are merged per bone (the earlier build was 14 / 16 / 12).
+Per-unit cost is in the §7 table. All seven units are inside the 25-draw / 25k common-unit ceiling; the Moche,
+Wari and Chimú gear is also cheaper than the primitive version because the ear spools, the shield boss and the
+Wari straps are merged per bone (14 / 16 / 12 draws before).
 
 `tests/model-assets.test.ts` now covers the shaped bicorn (wider than deep) and the Moche trapezoid (wider at
 the bottom); the existing Moche/Wari/Chimú E2E specs keep asserting the documented gear names.
@@ -231,10 +249,10 @@ the bottom); the existing Moche/Wari/Chimú E2E specs keep asserting the documen
 4. **Rigid cloth at joints.** Sleeves and breeches are rigid bone attachments; deep poses can show a crease
    at the elbow/knee. At the RTS camera it is not visible; a skinned garment needs the bind-safe path.
 5. **Shared dressers.** `dressUniform` serves every post-colonial variant and `dressCaralWorker` every Andean
-   one. The shaped gear now reaches the Moche, Wari, Recuay, Chimú, late realistas and patriotas, but the
-   m7 rebels, the modern roles and the remaining Andean cultures (Tiahuanaco, Nazca, Chincha, Collas,
-   Huanca, Killke) still need their own review; the pilot's captures cover seven units, not every variant.
-   Where the dossier says «no documentado», the shared base stays and no garment is invented.
+   one. The shaped gear now reaches the Moche, Wari, Recuay, Chimú, late realistas and patriotas. The other
+   Andean cultures inherit the shared rodela and star macana but not their own culture-specific gear, and the
+   m7 rebels and modern roles are still unreviewed; the captures cover seven units, not every variant. Where
+   the dossier says «no documentado», the shared base stays and no garment is invented.
 6. **Draw-call headroom.** The Spanish and the late realista are at 22 draws. A third accessory per bone
    should be merged into an existing gear draw, not added as a new mesh.
 
