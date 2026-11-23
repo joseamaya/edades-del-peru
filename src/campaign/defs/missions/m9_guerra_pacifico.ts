@@ -218,7 +218,7 @@ export const m9GuerraPacifico: MissionDef = {
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
-  allowedTechs: ['irrigation_canal', 'bow_and_bolas', 'hunters', 'republica_puerto'],
+  allowedTechs: ['irrigation_canal', 'rifle_drill', 'hunters', 'republica_puerto'],
   buildingNames: {
     [BuildingKind.FORTRESS]: 'Fortín',
     [BuildingKind.BARRACKS]: 'Cuartel',

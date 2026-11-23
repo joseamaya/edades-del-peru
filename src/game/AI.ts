@@ -4,9 +4,8 @@ import { TECHS, techAvailable } from '../model/defs/techs';
 import { distance2D } from '../util/math';
 import { RNG } from '../util/rng';
 import { BUILDING_DEFS, getBuildingStats } from '../model/defs/buildings';
-import { UNIT_ARCHETYPES } from '../model/defs/units';
 import { getUnitStats } from '../model/defs/units';
-import { unitAvailableInPeriod } from '../model/defs/units';
+import { requiredTechsFor, unitAvailableInPeriod } from '../model/defs/units';
 import { ERA_DEFS } from '../model/defs/eras';
 import type { Game } from '../core/Game';
 import { MELEE_ATTACK_RANGE, gatherApproachFor, gatherStandRangeFor, type Unit } from '../entities/Unit';
@@ -452,9 +451,9 @@ export class AI {
       for (const u of BUILDING_DEFS[bld.kind].trainable ?? []) {
         const category = UNIT_CATEGORY[u];
         if (!category) continue;
-        const arch = UNIT_ARCHETYPES[u];
         if (!unitAvailableToCiv(u, p.civ)) continue;
-        if (arch.requiresTech && !arch.requiresTech.every((t) => p.techs.has(t))) continue;
+        const requiredTechs = requiredTechsFor(u, this.game.settings.period);
+        if (requiredTechs.length > 0 && !requiredTechs.every((t) => p.techs.has(t))) continue;
         if (!unitAvailableInPeriod(u, this.game.settings.period)) continue;
         if (!this.canAfford(getUnitStats(u, p.era).cost)) continue;
         candidates.push({ unit: u, bld, category });

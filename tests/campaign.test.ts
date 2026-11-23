@@ -824,6 +824,8 @@ describe('campaign educational content', () => {
     for (const id of ['m_lima_1821', 'm_real_felipe']) {
       const m = mission(id);
       expect(m.allowedUnits, `${id} elite rifles`).toContain(UnitKind.RIFLEMAN);
+      expect(m.allowedTechs, `${id} rifle drill`).toContain('rifle_drill');
+      expect(m.allowedTechs, `${id} bow`).not.toContain('bow_and_bolas');
       for (const tech of ['siege_mortars', 'hunters', 'workshops']) {
         expect(m.allowedTechs, `${id} ${tech}`).not.toContain(tech);
       }
@@ -834,6 +836,8 @@ describe('campaign educational content', () => {
     for (const kind of [BuildingKind.STABLE, BuildingKind.FACTORY, BuildingKind.INSTITUTE]) {
       expect(arica.allowedBuildings, `m9 ${kind}`).not.toContain(kind);
     }
+    expect(arica.allowedTechs, 'm9 rifle drill').toContain('rifle_drill');
+    expect(arica.allowedTechs, 'm9 bow').not.toContain('bow_and_bolas');
     for (const tech of ['shock_cavalry', 'siege_engines', 'siege_mortars']) {
       expect(arica.allowedTechs, `m9 ${tech}`).not.toContain(tech);
     }

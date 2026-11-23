@@ -212,7 +212,7 @@ export const mMiraflores: MissionDef = {
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
-  allowedTechs: ['irrigation_canal', 'bow_and_bolas', 'shock_cavalry', 'siege_engines', 'hunters', 'republica_puerto'],
+  allowedTechs: ['irrigation_canal', 'rifle_drill', 'shock_cavalry', 'siege_engines', 'hunters', 'republica_puerto'],
   buildingNames: {
     [BuildingKind.FORTRESS]: 'Reducto',
     [BuildingKind.BARRACKS]: 'Cuartel',

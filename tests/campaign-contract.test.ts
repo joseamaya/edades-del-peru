@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
-import type { MissionDef, MissionPoint, ObjectiveDef } from '../src/campaign/types';
+import { seatStartsWithBase, type MissionDef, type MissionPoint, type ObjectiveDef } from '../src/campaign/types';
 import { setAutoStart } from '../src/core/Game';
 import { BuildingKind, UnitKind } from '../src/core/types';
 import { BUILDING_DEFS } from '../src/model/defs/buildings';
@@ -40,7 +40,7 @@ function buildableKinds(mission: MissionDef): Set<BuildingKind> {
         mission.startingEra >= def.minEra,
     )
     .map((def) => def.id);
-  return new Set(mission.start.base === false ? kinds : [BuildingKind.CENTER, ...kinds]);
+  return new Set(seatStartsWithBase(mission.start, 0) ? [BuildingKind.CENTER, ...kinds] : kinds);
 }
 
 /** Technologies the mission's period, civilization and allowlist leave available. */
