@@ -1254,7 +1254,6 @@ export function unitAvailableToCiv(kind: UnitKind, civ?: CivId): boolean {
   return !civs || civ === undefined || civs.includes(civ);
 }
 
-/** Period availability: chronology plus whether the required techs exist in that period (not researched state). */
 /** Technologies required to train a unit in a historical period; legacy units may vary by period. */
 export function requiredTechsFor(kind: UnitKind, period: HistoricalPeriod): string[] {
   const arch = UNIT_ARCHETYPES[kind];
@@ -1266,6 +1265,7 @@ export function hasRequiredTechs(kind: UnitKind, period: HistoricalPeriod, techs
   return requiredTechsFor(kind, period).every((tech) => techs.has(tech));
 }
 
+/** Period availability: chronology plus whether the required techs exist in that period (not researched state). */
 export function unitTrainableInPeriod(kind: UnitKind, period: HistoricalPeriod, civ?: CivId): boolean {
   if (!unitAvailableToCiv(kind, civ)) return false;
   if (!unitAvailableInPeriod(kind, period)) return false;
