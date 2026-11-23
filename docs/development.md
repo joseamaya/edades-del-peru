@@ -390,16 +390,18 @@ Definition of Done and the building audit see
 - **Chronology of units**: `UnitArchetype.minPeriod` (`src/model/defs/units.ts`) is the earliest historical
   period a unit is plausible in (default Arcaico). `tests/history.test.ts` forbids any campaign — including
   scripted waves/reinforcements — from spawning a unit before its `minPeriod` (no firearms, horses, vehicles
-  or engines before 1532). Normal production is gated independently by `eraModel` + `requiresTech` (e.g.
-  `cavalry` has no model before Viceroyalty and needs the `shock_cavalry` tech), so `minPeriod` governs the
-  scripted content that those gates do not cover.
+  or engines before 1532). Normal production is gated by `unitAvailableInPeriod` plus the tech gate from
+  `requiredTechsFor(kind, period)` (e.g. `cavalry` needs `shock_cavalry`; `RIFLEMAN` needs `bow_and_bolas`
+  until the Late Horizon, `musketry` in the Viceroyalty and `rifle_drill` from Independence). A legacy
+  `requiresTech` is the conservative fallback only when a direct/headless queue has no match period yet.
 - **Ranged identity and legacy unit IDs**: `UnitKind.MUSKETEER` and `UnitKind.RIFLEMAN` are persisted IDs; do
   not rename them without migrating saves/replays. Their visible identity comes from `eraIdentity`
   (name, description, icon, ranged weapon) and `eraModel` in `units.ts`:
   `MUSKETEER` is Hondero (sling) → Arcabucero (arquebus) → Fusilero (rifle), while `RIFLEMAN` is Arquero
   (bow) → Mosquetero (musket) → Tirador de Élite (rifle). `unitDisplayName`/`unitDisplayIcon` require the
-  unit's era, and `unitRangedWeapon` feeds the chronology tests (no gunpowder before 1532). m7 (1780) is late
-  Viceroyalty: it excludes the Arcabucero from its allowed roster and uses the Mosquetero/RIFLEMAN line.
+  unit's era, and `unitRangedWeapon` feeds the chronology tests (no gunpowder before 1532). The tech gate is
+  period-aware (`requiresTechByPeriod`): m7 (1780) is late Viceroyalty, opens with a few captured
+  Mosquetero/RIFLEMAN troops and trains militia, not the elite line.
 - **Chronology/culture of techs**: `TechDef.minPeriod` / `maxPeriod` / `civs` (`src/model/defs/techs.ts`) is
   the historical window and optional civilization restriction of a technology. `techAvailable(tech, period, civ)`
   is enforced centrally in `Building.queueTech` (like the unit guard) plus the HUD research panel and the AI, so a

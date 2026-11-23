@@ -25,7 +25,7 @@ import {
   unitAvailableToCiv,
   unitDisplayIcon,
   unitAvailableInPeriod,
-  requiredTechsFor,
+  hasRequiredTechs,
 } from '../model/defs/units';
 import { TECHS, techAvailable } from '../model/defs/techs';
 import { uniqueTechsForCiv, uniqueUnitGapForCiv, uniqueUnitsForCiv } from '../model/defs/unique';
@@ -2113,12 +2113,10 @@ export class HUD {
       if (!unitAvailableToCiv(unitKind, ownerCiv)) continue;
       const stats = getUnitStats(unitKind, b.era);
       const unitName = this.game.unitName(unitKind, b.owner);
-      const requiredTechs = requiredTechsFor(unitKind, this.game.settings.period);
-      const techOk = requiredTechs.every((tech) => this.game.players[0].techs.has(tech));
-      const eraOk = !!UNIT_ARCHETYPES[unitKind].eraModel[this.game.players[0].era];
+      const techOk = hasRequiredTechs(unitKind, this.game.settings.period, this.game.players[0].techs);
       const periodOk = unitAvailableInPeriod(unitKind, this.game.settings.period);
       const fortOk = !UNIT_ARCHETYPES[unitKind].requiresFortress || b.kind === BuildingKind.FORTRESS;
-      const disabled = !techOk || !eraOk || !periodOk || !fortOk || !this.canAfford(stats.cost);
+      const disabled = !techOk || !periodOk || !fortOk || !this.canAfford(stats.cost);
       this.addCard(
         unitDisplayIcon(unitKind, b.era),
         unitName,

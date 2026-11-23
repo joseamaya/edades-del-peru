@@ -68,14 +68,18 @@ describe('tech tree', () => {
       };
     };
 
-    const cusco = techTreeData(match('m_cusco_1536'))[0]!;
-    const cuscoUnits = cusco.units.map((unit) => unit.id);
-    expect(cuscoUnits).toEqual(expect.arrayContaining([UnitKind.INCA_WARRIOR, UnitKind.INCA_SLINGER]));
-    expect(cuscoUnits).not.toContain(UnitKind.RIFLEMAN);
-    const cuscoTechs = cusco.techs.map((tech) => tech.id);
-    expect(cuscoTechs).toEqual(expect.arrayContaining(['andean_loom', 'quipus_watchers']));
-    for (const id of ['shock_cavalry', 'siege_engines', 'evangelization']) {
-      expect(cuscoTechs, `cusco ${id}`).not.toContain(id);
+    for (const missionId of ['m_cusco_1536', 'm_vilcabamba']) {
+      const inca = techTreeData(match(missionId))[0]!;
+      const units = inca.units.map((unit) => unit.id);
+      expect(units, `${missionId} units`).toEqual(
+        expect.arrayContaining([UnitKind.INCA_WARRIOR, UnitKind.INCA_SLINGER]),
+      );
+      expect(units, `${missionId} archers`).not.toContain(UnitKind.RIFLEMAN);
+      const techs = inca.techs.map((tech) => tech.id);
+      expect(techs, `${missionId} techs`).toEqual(expect.arrayContaining(['andean_loom', 'quipus_watchers']));
+      for (const id of ['shock_cavalry', 'siege_engines', 'evangelization']) {
+        expect(techs, `${missionId} ${id}`).not.toContain(id);
+      }
     }
 
     const junin = techTreeData(match('m8_independencia'))[0]!;

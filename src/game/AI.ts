@@ -5,7 +5,7 @@ import { distance2D } from '../util/math';
 import { RNG } from '../util/rng';
 import { BUILDING_DEFS, getBuildingStats } from '../model/defs/buildings';
 import { getUnitStats } from '../model/defs/units';
-import { requiredTechsFor, unitAvailableInPeriod } from '../model/defs/units';
+import { hasRequiredTechs, unitAvailableInPeriod } from '../model/defs/units';
 import { ERA_DEFS } from '../model/defs/eras';
 import type { Game } from '../core/Game';
 import { MELEE_ATTACK_RANGE, gatherApproachFor, gatherStandRangeFor, type Unit } from '../entities/Unit';
@@ -452,8 +452,7 @@ export class AI {
         const category = UNIT_CATEGORY[u];
         if (!category) continue;
         if (!unitAvailableToCiv(u, p.civ)) continue;
-        const requiredTechs = requiredTechsFor(u, this.game.settings.period);
-        if (requiredTechs.length > 0 && !requiredTechs.every((t) => p.techs.has(t))) continue;
+        if (!hasRequiredTechs(u, this.game.settings.period, p.techs)) continue;
         if (!unitAvailableInPeriod(u, this.game.settings.period)) continue;
         if (!this.canAfford(getUnitStats(u, p.era).cost)) continue;
         candidates.push({ unit: u, bld, category });

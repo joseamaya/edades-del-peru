@@ -140,7 +140,7 @@ export const TECHS: TechDef[] = [
     cost: cost({ silver: 120, food: 60 }),
     time: 50,
     minPeriod: HistoricalPeriod.VICEROYALTY,
-    maxPeriod: HistoricalPeriod.INDEPENDENCE,
+    maxPeriod: HistoricalPeriod.VICEROYALTY,
     building: BuildingKind.ARSENAL,
     effect: { attackMult: 0.1 },
     unlocksUnits: ['rifleman'],

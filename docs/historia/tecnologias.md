@@ -40,7 +40,7 @@ ni después/otra cultura (ámbito).
 | Canal de Regadío (`irrigation_canal`) | Arcaico Tardío | Riego y canales (Caral). |
 | Arco y Boleadora (`bow_and_bolas`) | Horizonte Temprano → Horizonte Tardío | Armamento de caza/guerra prehispánico; el arco deja de ser la puerta de la línea de élite tras 1532. |
 | Metalurgia de la Plata (`silver_metallurgy`) | Horizonte Temprano | Metalurgia andina de la plata. |
-| Mosquetería (`musketry`) | Virreinato → Independencia | Formación y fuego de mosquete; desbloquea al Mosquetero de élite. |
+| Mosquetería (`musketry`) | Virreinato | Formación y fuego de mosquete; desbloquea al Mosquetero de élite. |
 | Instrucción de Fusilería (`rifle_drill`) | Independencia → | Puntería y fuego de fusil; desbloquea al Tirador de Élite republicano. |
 | Caballería de Choque (`shock_cavalry`) | Virreinato | El caballo llega con la conquista (1532). |
 | Máquinas de Asedio (`siege_engines`), Morteros (`siege_mortars`) | Virreinato | Asedio y pólvora tras 1532. |
@@ -71,6 +71,7 @@ Horizonte Tardío) y el **Misionero** (`evangelization`, colonial/republicano, V
 - Obrajes coloniales: Wikipedia, [Obraje](https://es.wikipedia.org/wiki/Obraje); Assadourian, C. S., *El sistema de la economía colonial* (1982).
 - Caballo y ganadería colonial: dossier del Virreinato en [`fuentes.md`](./fuentes.md).
 - Dragones y uniformes: [`atuendos.md`](./atuendos.md) §3.
+- Mosquetería y fusilería: ordenanzas de infantería europeas y americanas de los siglos XVIII–XIX; las ventanas son una abstracción jugable.
 - Montoneras y campaña de la sierra: [`civilizaciones/patriotas.md`](./civilizaciones/patriotas.md) e
   [`campanas/independencia.md`](./campanas/independencia.md).
 - Defensa de Arica y artillería: [`civilizaciones/republica.md`](./civilizaciones/republica.md),

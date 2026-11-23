@@ -483,6 +483,9 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
         weapon: 'rifle',
       },
     },
+    // Conservative fallback for a direct/headless queue before the match period is attached; the
+    // period map below is what normal production, the HUD and the AI use.
+    requiresTech: ['bow_and_bolas'],
     requiresTechByPeriod: {
       [HistoricalPeriod.ARCHAIC]: ['bow_and_bolas'],
       [HistoricalPeriod.EARLY_HORIZON]: ['bow_and_bolas'],
@@ -1252,9 +1255,15 @@ export function unitAvailableToCiv(kind: UnitKind, civ?: CivId): boolean {
 }
 
 /** Period availability: chronology plus whether the required techs exist in that period (not researched state). */
+/** Technologies required to train a unit in a historical period; legacy units may vary by period. */
 export function requiredTechsFor(kind: UnitKind, period: HistoricalPeriod): string[] {
   const arch = UNIT_ARCHETYPES[kind];
   return arch.requiresTechByPeriod?.[period] ?? arch.requiresTech ?? [];
+}
+
+/** Whether a player's researched set satisfies the unit's period-aware tech gate. */
+export function hasRequiredTechs(kind: UnitKind, period: HistoricalPeriod, techs: ReadonlySet<string>): boolean {
+  return requiredTechsFor(kind, period).every((tech) => techs.has(tech));
 }
 
 export function unitTrainableInPeriod(kind: UnitKind, period: HistoricalPeriod, civ?: CivId): boolean {
