@@ -595,6 +595,43 @@ const SCENES = {
       { name: 'rts', mode: 'rts', height: 18, centerSubject: true },
     ],
   },
+  'firearm-attack': {
+    url: '/?mission=m9_guerra_pacifico&intro=0&fog=0&low=1&noloop=1',
+    start: true,
+    prepare: () => {
+      const g = window.game;
+      g.loop.stop();
+      const unit = [...g.units.values()].find(
+        (u) => u.owner === 0 && !u.dead && (u.kind === 'rifleman' || u.kind === 'musketeer'),
+      );
+      if (!unit) throw new Error('missing firearm unit');
+      const base = g.playerCenter(0);
+      const c = g.findLandNear(base.x + 44, base.z + 44, 56);
+      unit.clearOrders();
+      unit.pos.set(c.x, g.terrain.getHeight(c.x, c.z), c.z);
+      unit.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
+      // Three-quarter view: the musket and the firing arm read in profile, not pointed at the camera.
+      unit.view.setRotationY(Math.PI / 2);
+      const target = g.spawnScriptedBuilding('house', 1, c.x + 2.2, c.z);
+      g.executeCommand({
+        kind: 'order',
+        unitIds: [unit.id],
+        order: { kind: 'attack', entityId: target.id },
+        clear: true,
+      });
+      unit.rig?.play('attack', 0);
+      unit.rig?.update(0.5);
+      g.renderer.render(g.scene, g.camera.camera);
+      return {
+        center: { x: c.x, z: c.z },
+        subject: { x: unit.pos.x, y: unit.pos.y, z: unit.pos.z },
+      };
+    },
+    views: [
+      { name: 'close', mode: 'close', offset: { x: 2.0, y: 1.4, z: 2.8 }, lookHeight: 1.0 },
+      { name: 'rts', mode: 'rts', height: 18, centerSubject: true },
+    ],
+  },
   'caral-scout': {
     url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
     start: true,

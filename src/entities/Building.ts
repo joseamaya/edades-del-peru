@@ -11,6 +11,7 @@ import {
 import {
   UNIT_ARCHETYPES,
   getUnitStats,
+  projectileHasMuzzleFlash,
   requiredTechsFor,
   unitAvailableInPeriod,
   unitAvailableToCiv,
@@ -432,17 +433,19 @@ export class Building {
         targetId: target.id,
       });
     }
-    this.ctx?.particles?.emit?.({
-      x: this.pos.x,
-      y: this.pos.y + 3,
-      z: this.pos.z,
-      count: 4,
-      color: 0xffcc66,
-      kind: 'explosion',
-      speed: 1,
-      life: 0.15,
-      size: 1.2,
-    });
+    if (projectileHasMuzzleFlash(shot.kind)) {
+      this.ctx?.particles?.emit?.({
+        x: this.pos.x,
+        y: this.pos.y + 3,
+        z: this.pos.z,
+        count: 4,
+        color: 0xffcc66,
+        kind: 'explosion',
+        speed: 1,
+        life: 0.15,
+        size: 1.2,
+      });
+    }
     void time;
   }
 

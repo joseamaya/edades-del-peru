@@ -1205,6 +1205,11 @@ export function projectileFor(kind: UnitKind, era: Era): ProjectileKind {
   return base.projectile;
 }
 
+/** Gunpowder and artillery flash at the muzzle; arrows and sling stones do not. */
+export function projectileHasMuzzleFlash(kind: ProjectileKind): boolean {
+  return kind !== 'arrow' && kind !== 'sling_stone' && kind !== 'none';
+}
+
 /** Pristine projectile defaults, captured before mods patch BASE_STATS. */
 const DEFAULT_PROJECTILES: Record<UnitKind, ProjectileKind> = Object.fromEntries(
   Object.entries(BASE_STATS).map(([kind, stats]) => [kind, stats.projectile]),

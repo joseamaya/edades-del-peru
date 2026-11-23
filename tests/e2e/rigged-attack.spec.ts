@@ -58,3 +58,61 @@ test('rigged Caral workers and scouts play an attack clip instead of falling bac
   expect(result.scout.clip).toBe('Punch_Jab');
   expect(errors).toEqual([]);
 });
+
+test('rigged firearm soldiers play the firearm clip and line infantry the stock swing', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/?mission=m9_guerra_pacifico&seed=777&fog=0&low=1&noloop=1&intro=0');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page
+    .getByRole('button', { name: /COMENZAR MISIÓN/ })
+    .click({ timeout: 10_000 })
+    .catch(() => {});
+
+  const result = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const base = g.playerCenter(0);
+    const c = g.findLandNear(base.x + 18, base.z + 18, 24);
+    const target = g.spawnScriptedBuilding('house', 1, c.x + 1.4, c.z);
+    const find = (kind: string) => [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead && u.kind === kind);
+    const rifleman = find('rifleman');
+    const soldier = find('soldier');
+    if (!rifleman || !soldier) throw new Error('missing rifleman/soldier');
+
+    const attack = (unit: any) => {
+      unit.clearOrders();
+      const x = c.x - 1.6;
+      unit.pos.set(x, g.terrain.getHeight(x, c.z), c.z);
+      unit.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
+      g.executeCommand({
+        kind: 'order',
+        unitIds: [unit.id],
+        order: { kind: 'attack', entityId: target.id },
+        clear: true,
+      });
+      let time = 0;
+      for (let i = 0; i < 180; i++) {
+        time += 1 / 60;
+        g.loop.onUpdate(1 / 60, time);
+      }
+      return {
+        variant: unit.rig?.variantId ?? null,
+        state: unit.rig?.currentState ?? null,
+        clip: unit.rig?.currentClipName ?? null,
+      };
+    };
+
+    return { rifleman: attack(rifleman), soldier: attack(soldier) };
+  });
+
+  expect(result.rifleman.variant).toMatch(/^republica_ranged_[fm]$/);
+  expect(result.rifleman.state).toBe('attack');
+  expect(result.rifleman.clip).toBe('Pistol_Shoot');
+  expect(result.soldier.variant).toMatch(/^republica_soldier_[fm]$/);
+  expect(result.soldier.state).toBe('attack');
+  expect(result.soldier.clip).toBe('Sword_Regular_A');
+  expect(errors).toEqual([]);
+});

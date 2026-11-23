@@ -109,8 +109,10 @@ const ANDEAN_CLIP_OVERRIDES: Record<AndeanRole, Partial<Record<RigClipState, str
 };
 
 const FIELD_ROLE_CLIPS = {
-  soldier: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-  ranged: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  // Line infantry fights in melee but carries a musket/rifle; the shared stock/bayonet swing reads better
+  // than the unarmed jab. The ranged roles fire the era's firearm.
+  soldier: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Sword_Regular_A' },
+  ranged: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Pistol_Shoot' },
   missionary: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: null },
   worker: {
     walk: 'Walk_Loop',
@@ -251,8 +253,7 @@ function postColonialFieldRole(kind: UnitKind): PostColonialRole | null {
     kind === UnitKind.MUSKETEER ||
     kind === UnitKind.RIFLEMAN ||
     kind === UnitKind.SNIPER ||
-    kind === UnitKind.ANTI_AIR ||
-    kind === UnitKind.INCA_SLINGER
+    kind === UnitKind.ANTI_AIR
   ) {
     return 'ranged';
   }
@@ -299,6 +300,10 @@ export function unitModelAsset(
   // The hueste's Andean allies are scripted, not trained: keep the Inca rig instead of the Spanish one.
   if (civ === CivId.HUESTE_INDIANA && kind === UnitKind.INCA_WARRIOR) {
     return unitModelAsset(kind, era, CivId.INCA, id, gender, tag, missionId);
+  }
+  // The Inca slinger is always an Andean thrower, never a post-1532 firearm role (m7 rebels included).
+  if (kind === UnitKind.INCA_SLINGER) {
+    return unitModelAsset(UnitKind.MUSKETEER, Era.TAHUANTINSUYO, CivId.INCA, id, gender, tag, missionId);
   }
   const baseKind = unitBaseKind(kind);
   if (baseKind !== kind) return unitModelAsset(baseKind, era, civ, id, gender, tag, missionId);

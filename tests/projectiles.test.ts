@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Era, HistoricalPeriod, UnitKind } from '../src/core/types';
-import { UNIT_ARCHETYPES, getUnitStats, overrideUnit, projectileFor, unitMinPeriod } from '../src/model/defs/units';
+import {
+  UNIT_ARCHETYPES,
+  getUnitStats,
+  overrideUnit,
+  projectileFor,
+  projectileHasMuzzleFlash,
+  unitMinPeriod,
+} from '../src/model/defs/units';
 import { PERIODS } from '../src/model/defs/periods';
 import { validateMod } from '../src/game/mods/schema';
 
@@ -8,6 +15,15 @@ const FIREARMS = new Set(['bullet', 'rocket', 'tracer']);
 const PRE_1532_ERAS = [Era.FORMATIVE, Era.REGIONAL_STATES, Era.TAHUANTINSUYO];
 
 describe('period projectiles', () => {
+  it('only flashes gunpowder and artillery, never arrows or sling stones', () => {
+    for (const kind of ['bullet', 'tracer', 'howitzer_shell', 'nuclear', 'rocket'] as const) {
+      expect(projectileHasMuzzleFlash(kind), kind).toBe(true);
+    }
+    for (const kind of ['arrow', 'sling_stone', 'none'] as const) {
+      expect(projectileHasMuzzleFlash(kind), kind).toBe(false);
+    }
+  });
+
   it('never uses firearms before 1532, for any unit in any pre-colonial period', () => {
     for (const kind of Object.values(UnitKind)) {
       if (unitMinPeriod(kind) >= HistoricalPeriod.VICEROYALTY) continue;

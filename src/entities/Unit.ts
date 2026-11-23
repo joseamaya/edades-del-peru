@@ -12,7 +12,7 @@ import {
   AlertReason,
   ResourceKind,
 } from '../core/types';
-import { getUnitStats, UnitStats, DamageClass, UnitClass } from '../model/defs/units';
+import { getUnitStats, projectileHasMuzzleFlash, UnitStats, DamageClass, UnitClass } from '../model/defs/units';
 import type { BuildContext } from '../model/ProceduralModel';
 import type { RigInstance } from '../rendering/RigInstance';
 import type { UnitView } from '../rendering/UnitView';
@@ -1392,24 +1392,26 @@ export class Unit {
       attackerKind: this.kind,
       bonusVs: this.stats.bonusVs,
     });
-    // muzzle flash at the cannon mouth (weapon pivot + barrel length, rotated with the unit)
-    const angle = facingRotation(this.yaw);
-    const muzzle = {
-      x: 0.28 * Math.cos(angle) + 0.62 * Math.sin(angle),
-      y: 0.9,
-      z: -0.28 * Math.sin(angle) + 0.62 * Math.cos(angle),
-    };
-    this.ctx.particles?.emit({
-      x: this.pos.x + muzzle.x,
-      y: this.pos.y + muzzle.y,
-      z: this.pos.z + muzzle.z,
-      count: 4,
-      color: 0xffcc66,
-      kind: 'explosion',
-      speed: 1.2,
-      life: 0.12,
-      size: 1.4,
-    });
+    // Gunpowder flash only: an arrow or a sling stone does not ignite at the muzzle.
+    if (projectileHasMuzzleFlash(pKind)) {
+      const angle = facingRotation(this.yaw);
+      const muzzle = {
+        x: 0.28 * Math.cos(angle) + 0.62 * Math.sin(angle),
+        y: 0.9,
+        z: -0.28 * Math.sin(angle) + 0.62 * Math.cos(angle),
+      };
+      this.ctx.particles?.emit({
+        x: this.pos.x + muzzle.x,
+        y: this.pos.y + muzzle.y,
+        z: this.pos.z + muzzle.z,
+        count: 4,
+        color: 0xffcc66,
+        kind: 'explosion',
+        speed: 1.2,
+        life: 0.12,
+        size: 1.4,
+      });
+    }
     void time;
   }
 

@@ -50,6 +50,7 @@ const CLIPS = [
   ['ual2', 'Walk_Carry_Loop'],
   ['ual1', 'Push_Loop'],
   ['ual1', 'Punch_Jab'],
+  ['ual1', 'Pistol_Shoot'],
   // Combat and death states used by the ayllu/Ayar presentation; the generic UAL clips are CC0.
   ['ual2', 'Sword_Regular_A'],
   ['ual2', 'OverhandThrow'],
