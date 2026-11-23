@@ -72,13 +72,14 @@ only, with no injected resources, health or objective states. Their **Tests** ga
 stays **P** because the project's own gate requires a human no-cheat playtest; that pass is the first
 post-release validation and is declared in the 0.2.0 notes. **Persistence** stays **P** for the same seven:
 the save round-trip covers the opening, not a mid-act save. **Performance** moves to **M** for the seven because their openings are in
-`yarn bench:check` and pass; their real-GPU frame time is still a P2 item.
+`yarn bench:check` and pass; their real-GPU frame time was measured on 2026-11-23 (27–40 FPS at 1600×900,
+[`../development/site-view-performance.md`](../development/site-view-performance.md)).
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín's intro render
 is approved; its kit and captures keep their own review status. Every released mission now
 follows the model pattern (256 m, painted ground, acts and in-engine intro); the newest arc now has
-SwiftShader bench rows in `yarn bench:check` and still awaits a real-GPU pass and the human art review. m8
+SwiftShader bench rows in `yarn bench:check` and a real-GPU frame time; the human art review remains. m8
 was included in this pass. **m3–m9 meet the scale, opening and performance gates**; the m3, m4, m5, Tambotoco, Lima, La Junta and
 Arica intro renders are approved. Every render record in `src/art/manifest.json` is now approved: the five
 Caral education/tour records were reconciled and the three draft Workbench mission intros were removed. The

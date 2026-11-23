@@ -22,7 +22,7 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
   soft banks/ford and paths, Killke/ayllu variants, the Manco GLB, hero/detail/wide beats and the 3 × 3
   validation set) and the pilot closed with the 2026-11-17 approval; E7 was delivered on 2026-11-17 (baked hero proportions, scoped terrain macro, Inticancha/shrine detail; the 3X recording wins with the optional goals missed), with unique Ayar outfits/portraits, a hand-sculpted body, an andes GLB and new fauna as future work
   ([`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md)).
-- **Open release work:** human art review, a site-specific real-GPU performance pass and the itch package.
+- **Open release work:** human art review and the itch package (the real-GPU pass now covers all 24 site views).
 - **Asset audit:** the 0.2.0 asset audit closed with three P0 (late-era architecture and the Inca outfit of
   1536–1572). They are scheduled for 0.2.1 in [`./0.2.1-asset-corrections.md`](./0.2.1-asset-corrections.md).
 
@@ -68,9 +68,10 @@ but record today's counts and hashes in a new status document or PR, not by edit
 The pass is recorded in [`../development/site-view-performance.md`](../development/site-view-performance.md):
 17 site views (m3–m9, m6b and La Junta) at 1280×800 and 1600×900 on the Intel RPL-S iGPU, all rows on
 hardware. The shipped high preset runs **28–38 FPS** at 1600×900 and **32–48 FPS** at 1280×800; the low
-fallback is 46–50 FPS on the three tightest late views. The seven missions added on 2026-11-18 are not in
-this pass; they have SwiftShader rows and are a **known limitation** of the 0.2.0 release, not a measured
-28–38 FPS claim.
+fallback is 46–50 FPS on the three tightest late views. The seven missions added on 2026-11-18 were measured
+on 2026-11-23 with the same script and host: **27–40 FPS** at 1600×900 (the two tightest, `m_vilcabamba` and
+`m_real_felipe`, sit at the 28 FPS floor and run 36–43 in the low preset), so all 24 site views now have a
+real-GPU frame time and the 0.2.0 known-limitation note no longer applies.
 
 Decision: accept the measured high-quality frame times, keep the SwiftShader structural caps unchanged,
 and closed the m6b/m8 late-view optimization as **B13** (2026-11-23). Re-run `yarn bench:site-views` before D4.
@@ -89,8 +90,9 @@ The evidence and the remaining gates are in [`../release/0.2.0-readiness-audit.m
 - Tag `v0.2.0` and keep `v0.1.0` as the earlier nine-mission demo. Keep `localStorage` keys and mission ids
   stable.
 - The seven 2026-11-18 missions have a green automated no-cheat path
-  (`tests/e2e/release-playtest.spec.ts`); a human pass is the first post-release validation and is declared
-  as a known limitation in the notes.
+  (`tests/e2e/release-playtest.spec.ts`) and a real-GPU frame time
+  ([`../development/site-view-performance.md`](../development/site-view-performance.md)); a human art pass on
+  them is the first post-release validation and is declared as a known limitation in the notes.
 
 ## D5 · 0.2.1 asset corrections
 

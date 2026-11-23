@@ -23,8 +23,9 @@ checklist are in [`docs/release/0.2.0-readiness-audit.md`](./docs/release/0.2.0-
 
 **Requires a desktop browser with WebGL2** (recent Chrome, Edge, Firefox or Safari), a mouse and a
 keyboard. The interface and the historical content are in Spanish. Quality adapts automatically; the
-reference Intel iGPU runs the high preset at about 28–38 FPS at 1600×900, and the low preset is the
-fallback (46–50 FPS on the tightest views).
+reference Intel iGPU runs the high preset at about 27–40 FPS at 1600×900, and the low preset is the
+fallback (36–50 FPS on the tightest views). All 24 site views have a real-GPU frame time
+([`docs/development/site-view-performance.md`](./docs/development/site-view-performance.md)).
 
 Known limitations for 0.2.0:
 
@@ -32,7 +33,6 @@ Known limitations for 0.2.0:
   (`tests/e2e/release-playtest.spec.ts`) and are **pending a final human no-cheat playtest**; their save
   coverage is the mission opening, not a mid-act save.
 - The reused site kits (Moche, Wari, Cusco, Chanca, Lima, Arica) keep their own art-review status (#343).
-- No real-GPU frame time is recorded for those seven missions yet; only the SwiftShader structural ratchet.
 - Campaign progress stored by 0.1.0 is migrated from its single mission count, which is approximate.
 
 ## Media
