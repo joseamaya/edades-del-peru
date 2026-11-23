@@ -121,6 +121,32 @@ ingestion writes the generated provenance copy under `public/media/generated/PRO
 3. `yarn art:textures --terrain --check` must pass; record the output hash in `PROVENANCE.md`.
 4. Check the slot in the terrain blend and the mission's `groundPbr` profile.
 
+## In-engine site review
+
+A site GLB or a mission's scenery is approved by looking at it **in the game**, not in Blender: the gate is a
+current RTS capture. `yarn art:review` only covers renders (Path C); a site has no manifest record, so the
+decision is recorded in the quality bar.
+
+1. `yarn capture:sites --only=new` captures the seven missions added on 2026-11-18 (`--only=all` for the full
+   set, `--only=<id,…>` for a subset). It writes one 1600×900 PNG per mission to `review/site-review/`,
+   composes a contact sheet when given `--sheet=<file>.webp`, and rewrites
+   `review/site-review/decisions.md` with one row per capture.
+2. A human reads the sheet against [`art-direction.md`](./art-direction.md) §6 (the eight-point checklist and
+   the Blocker/Major/Minor ladder) and fills the worksheet: `aprobado`, `menor`, `mayor` or `rechazo`, with the
+   severity and a reason.
+3. Record the decision per mission in the **Art** row of
+   [`campaign-quality-bar.md`](./campaign-quality-bar.md) (`Met` or `Partial`, reviewer, date). A capture that
+   becomes the reference goes to `docs/media/` with its PROVENANCE section; every `Major` becomes a backlog row
+   with its before/after.
+4. The sheet is review evidence, not shipped art: the composed WebP may be committed under `docs/media/` with
+   its PROVENANCE section (the single exception to "no `review/` artifact is committed" — the individual
+   captures still stay in `review/`, gitignored).
+
+The tool frames each mission from its mapping table (`at`/`height`); where a site is marked `hideModel`, no
+reused GLB is drawn and the mission builds its own scenery, so the worksheet's "Qué muestra la captura" column
+says what the cell actually contains. The same run twice is not byte-identical (units, clouds and particles
+move): the framing and the checklist are what is reproducible.
+
 ## Commands
 
 | Command | What it does |
@@ -133,6 +159,7 @@ ingestion writes the generated provenance copy under `public/media/generated/PRO
 | `yarn art:validate` | Validate the render manifest and assets |
 | `yarn art:review` | Record the human approval/rejection of a render |
 | `yarn art:pilot` | Capture the Tambotoco art-direction pilot before/after (`--tag`, `--quality`, `--sizes`, `--views`) |
+| `yarn capture:sites` | Capture the in-engine site views for the art review (`--only`, `--out`, `--sheet`) |
 | `yarn bench:check` | Check rig/fauna/mounted/siege/tank/vehicle/mixed structural budgets |
 | `yarn dist:check` | Verify `dist/` and the entry chunk budget |
 
@@ -144,7 +171,8 @@ ingestion writes the generated provenance copy under `public/media/generated/PRO
 - [ ] Render has a manifest record, `confidence`, `reviewed` and a human reviewer when approved.
 - [ ] GLB is recorded in `PROVENANCE.md` and, where the source kit uses a CSV, the CSV row is updated.
 - [ ] The asset does not invent a historical detail; uncertainty is labelled.
-- [ ] No `review/` artifact is committed.
+- [ ] No `review/` artifact is committed (the one exception is a composed review sheet, committed under
+  `docs/media/` with its PROVENANCE section).
 - [ ] The RTS view and, for characters, `?rig=1` were checked.
 - [ ] `yarn verify:fast` and the relevant tests pass.
 
@@ -163,7 +191,7 @@ ingestion writes the generated provenance copy under `public/media/generated/PRO
 
 ## Do not
 
-- Do not commit generated `review/` captures or backups.
+- Do not commit generated `review/` captures or backups (a composed review sheet is the exception above).
 - Do not use AI-generated art as final historical art without review and licence.
 - Do not present a draft render or a stylized portrait as a historical photograph.
 - Do not add a runtime dependency, MCP server or CI service for an asset.
