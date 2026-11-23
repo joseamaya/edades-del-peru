@@ -8,7 +8,13 @@ import {
   defensiveShotCount,
   defensiveShotDamage,
 } from '../model/defs/buildings';
-import { UNIT_ARCHETYPES, getUnitStats, unitAvailableInPeriod, unitAvailableToCiv } from '../model/defs/units';
+import {
+  UNIT_ARCHETYPES,
+  getUnitStats,
+  requiredTechsFor,
+  unitAvailableInPeriod,
+  unitAvailableToCiv,
+} from '../model/defs/units';
 import type { EntityView } from './EntityView';
 import { allocId } from '../sim/ids';
 import { getTech, techAvailable } from '../model/defs/techs';
@@ -241,18 +247,15 @@ export class Building {
     const arch = UNIT_ARCHETYPES[unit];
     const civ = this.ctx?.getPlayer?.(this.owner)?.civ;
     if (!unitAvailableToCiv(unit, civ)) return false;
-    if (arch.requiresTech) {
-      const player = this.ctx?.players?.find((p: any) => p.id === this.owner);
-      if (player) {
-        for (const t of arch.requiresTech) {
-          if (!player.techs.has(t)) return false;
-        }
-      }
+    const player = this.ctx?.players?.find((p: any) => p.id === this.owner);
+    if (player) {
+      const requiredTechs =
+        this.ctx?.period !== undefined ? requiredTechsFor(unit, this.ctx.period) : (arch.requiresTech ?? []);
+      if (!requiredTechs.every((tech) => player.techs.has(tech))) return false;
     }
     // chronology guard: no firearms/horses/etc. outside their historical window
     if (this.ctx?.period !== undefined && !unitAvailableInPeriod(unit, this.ctx.period)) return false;
     const stats = getUnitStats(unit, this.era);
-    const player = this.ctx?.players?.find((p: any) => p.id === this.owner);
     if (player && player.populationUsed + stats.population > player.populationCap) return false;
     this.productionQueue.push({ unit, progress: 0 });
     return true;

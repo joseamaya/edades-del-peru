@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { Era, UnitKind, BuildingKind, HistoricalPeriod, CivId } from '../src/core/types';
-import { UNIT_ARCHETYPES, getUnitStats, unitDisplayDescription, unitDisplayName } from '../src/model/defs/units';
+import {
+  UNIT_ARCHETYPES,
+  getUnitStats,
+  requiredTechsFor,
+  unitDisplayDescription,
+  unitDisplayName,
+  unitTrainableInPeriod,
+} from '../src/model/defs/units';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../src/model/defs/buildings';
 import { TECHS, techAvailable } from '../src/model/defs/techs';
 import { ERA_DEFS } from '../src/model/defs/eras';
@@ -53,10 +60,43 @@ describe('unit definitions', () => {
 
   it('tech requirements reference existing units', () => {
     for (const kind of unitKinds) {
-      for (const req of UNIT_ARCHETYPES[kind].requiresTech ?? []) {
+      const arch = UNIT_ARCHETYPES[kind];
+      for (const req of arch.requiresTech ?? []) {
         expect(techIds.has(req), `${kind} requires unknown tech ${req}`).toBe(true);
       }
+      for (const reqs of Object.values(arch.requiresTechByPeriod ?? {})) {
+        for (const req of reqs) expect(techIds.has(req), `${kind} requires unknown tech ${req}`).toBe(true);
+      }
     }
+  });
+
+  it('gates the elite ranged line by historical period', () => {
+    for (const period of [
+      HistoricalPeriod.ARCHAIC,
+      HistoricalPeriod.EARLY_HORIZON,
+      HistoricalPeriod.EARLY_INTERMEDIATE,
+      HistoricalPeriod.MIDDLE_HORIZON,
+      HistoricalPeriod.LATE_INTERMEDIATE,
+      HistoricalPeriod.LATE_HORIZON,
+    ]) {
+      expect(requiredTechsFor(UnitKind.RIFLEMAN, period), `${period} rifleman`).toEqual(['bow_and_bolas']);
+    }
+    expect(requiredTechsFor(UnitKind.RIFLEMAN, HistoricalPeriod.VICEROYALTY)).toEqual(['musketry']);
+    for (const period of [HistoricalPeriod.INDEPENDENCE, HistoricalPeriod.REPUBLIC, HistoricalPeriod.CONTEMPORARY]) {
+      expect(requiredTechsFor(UnitKind.RIFLEMAN, period), `${period} rifleman`).toEqual(['rifle_drill']);
+    }
+    const bow = TECHS.find((tech) => tech.id === 'bow_and_bolas')!;
+    const musketry = TECHS.find((tech) => tech.id === 'musketry')!;
+    const drill = TECHS.find((tech) => tech.id === 'rifle_drill')!;
+    expect(techAvailable(bow, HistoricalPeriod.LATE_HORIZON)).toBe(true);
+    expect(techAvailable(bow, HistoricalPeriod.VICEROYALTY)).toBe(false);
+    expect(techAvailable(bow, HistoricalPeriod.REPUBLIC)).toBe(false);
+    expect(techAvailable(musketry, HistoricalPeriod.VICEROYALTY)).toBe(true);
+    expect(techAvailable(musketry, HistoricalPeriod.REPUBLIC)).toBe(false);
+    expect(techAvailable(drill, HistoricalPeriod.INDEPENDENCE)).toBe(true);
+    expect(techAvailable(drill, HistoricalPeriod.REPUBLIC)).toBe(true);
+    expect(unitTrainableInPeriod(UnitKind.RIFLEMAN, HistoricalPeriod.INDEPENDENCE)).toBe(true);
+    expect(unitTrainableInPeriod(UnitKind.RIFLEMAN, HistoricalPeriod.LATE_HORIZON)).toBe(true);
   });
 });
 

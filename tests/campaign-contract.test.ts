@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
-import type { MissionDef, MissionPoint, ObjectiveDef } from '../src/campaign/types';
+import { seatStartsWithBase, type MissionDef, type MissionPoint, type ObjectiveDef } from '../src/campaign/types';
 import { setAutoStart } from '../src/core/Game';
 import { BuildingKind, UnitKind } from '../src/core/types';
 import { BUILDING_DEFS } from '../src/model/defs/buildings';
 import { TECHS, getTech, techAvailable } from '../src/model/defs/techs';
-import { UNIT_ARCHETYPES, unitAvailableToCiv, unitTrainableInPeriod } from '../src/model/defs/units';
+import { UNIT_ARCHETYPES, requiredTechsFor, unitAvailableToCiv, unitTrainableInPeriod } from '../src/model/defs/units';
 import { CARAL_CITY_BLOCKERS, CARAL_PLAZA_CENTER } from '../src/model/defs/caralCity';
 import { headlessMission } from './headless';
 
@@ -40,7 +40,7 @@ function buildableKinds(mission: MissionDef): Set<BuildingKind> {
         mission.startingEra >= def.minEra,
     )
     .map((def) => def.id);
-  return new Set(mission.start.base === false ? kinds : [BuildingKind.CENTER, ...kinds]);
+  return new Set(seatStartsWithBase(mission.start, 0) ? [BuildingKind.CENTER, ...kinds] : kinds);
 }
 
 /** Technologies the mission's period, civilization and allowlist leave available. */
@@ -201,7 +201,7 @@ describe('campaign mission contract', () => {
         if (!producerKinds(kind).some((id) => buildings.has(id))) {
           orphans.push(`${mission.id}: ${kind} (no buildable producer)`);
         }
-        for (const req of arch.requiresTech ?? []) {
+        for (const req of requiredTechsFor(kind, mission.period)) {
           if (!techs.has(req)) orphans.push(`${mission.id}: ${kind} needs ${req}, which the mission does not allow`);
         }
       }

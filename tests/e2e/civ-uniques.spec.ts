@@ -150,6 +150,8 @@ test('campaign missions expose their unique infantry in the barracks', async ({ 
     ['m5_yahuar_pampa', 'Guerrero Inca', 'inca_warrior'],
     ['m6_chimu_inca', 'Guerrero Inca', 'inca_warrior'],
     ['m6b_guerra_civil', 'Guerrero Inca', 'inca_warrior'],
+    ['m_cusco_1536', 'Guerrero Inca', 'inca_warrior'],
+    ['m_vilcabamba', 'Guerrero Inca', 'inca_warrior'],
   ] as const) {
     await page.goto(`/?mission=${mission}&seed=777&fog=0&low=1&noloop=1`);
     await page.waitForFunction(() => (window as unknown as { game?: unknown }).game?.mission !== undefined, null, {

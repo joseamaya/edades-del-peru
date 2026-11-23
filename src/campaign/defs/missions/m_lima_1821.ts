@@ -221,7 +221,7 @@ export const mLima1821: MissionDef = {
   ],
   allowedTechs: [
     'irrigation_canal',
-    'bow_and_bolas',
+    'rifle_drill',
     'shock_cavalry',
     'siege_engines',
     'evangelization',

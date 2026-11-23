@@ -1,5 +1,13 @@
 import { BUILDING_DEFS, BUILDING_INFO } from '../model/defs/buildings';
-import { UNIT_ARCHETYPES, UNIT_INFO, unitAvailableToCiv, unitDisplayIcon, unitDisplayName } from '../model/defs/units';
+import {
+  UNIT_ARCHETYPES,
+  UNIT_INFO,
+  requiredTechsFor,
+  unitAvailableInPeriod,
+  unitAvailableToCiv,
+  unitDisplayIcon,
+  unitDisplayName,
+} from '../model/defs/units';
 import { TECHS, techAvailable } from '../model/defs/techs';
 import { PERIODS } from '../model/defs/periods';
 import { ERA_DEFS } from '../model/defs/eras';
@@ -49,6 +57,39 @@ export interface TechTreeMatch {
 export function techTreeData(match?: TechTreeMatch): TechTreeEra[] {
   if (match) {
     const eraDef = ERA_DEFS.find((def) => def.id === match.era) ?? ERA_DEFS[0]!;
+    const buildable = new Set(
+      Object.values(BUILDING_DEFS)
+        .filter((def) => match.canBuild(def.id))
+        .map((def) => def.id),
+    );
+    const producersOf = (kind: UnitKind): BuildingKind[] =>
+      Object.values(BUILDING_DEFS)
+        .filter((def) => def.trainable?.includes(kind))
+        .map((def) => def.id);
+    const techById = new Map(TECHS.map((tech) => [tech.id, tech]));
+    const units = Object.values(UNIT_ARCHETYPES)
+      .filter((def) => unitAvailableToCiv(def.id, match.civ))
+      .filter((def) => unitAvailableInPeriod(def.id, match.period))
+      .filter((def) => match.canTrain(def.id))
+      .filter((def) => producersOf(def.id).some((id) => buildable.has(id)))
+      .filter((def) =>
+        requiredTechsFor(def.id, match.period).every((id) => {
+          const tech = techById.get(id);
+          return (
+            tech !== undefined &&
+            techAvailable(tech, match.period, match.civ) &&
+            buildable.has(tech.building) &&
+            (!match.canResearch || match.canResearch(id))
+          );
+        }),
+      )
+      .map((def) => ({
+        id: def.id,
+        name: match.unitName?.(def.id) ?? unitDisplayName(def.id, match.civ, match.era),
+        icon: unitDisplayIcon(def.id, match.era),
+        unique: def.category === 'unique',
+      }));
+    const trainable = new Set(units.map((unit) => unit.id));
     return [
       {
         era: match.era,
@@ -60,16 +101,14 @@ export function techTreeData(match?: TechTreeMatch): TechTreeEra[] {
             name: match.buildingName?.(def.id) ?? BUILDING_INFO[def.id].name,
             icon: match.buildingIcon?.(def.id) ?? BUILDING_INFO[def.id].icon,
           })),
-        units: Object.values(UNIT_ARCHETYPES)
-          .filter((def) => def.eraModel[match.era] && unitAvailableToCiv(def.id, match.civ) && match.canTrain(def.id))
-          .map((def) => ({
-            id: def.id,
-            name: match.unitName?.(def.id) ?? unitDisplayName(def.id, match.civ, match.era),
-            icon: unitDisplayIcon(def.id, match.era),
-            unique: def.category === 'unique',
-          })),
+        units,
         techs: TECHS.filter(
-          (tech) => techAvailable(tech, match.period, match.civ) && (!match.canResearch || match.canResearch(tech.id)),
+          (tech) =>
+            techAvailable(tech, match.period, match.civ) &&
+            (!match.canResearch || match.canResearch(tech.id)) &&
+            buildable.has(tech.building) &&
+            ((tech.unlocksUnits ?? []).length === 0 ||
+              (tech.unlocksUnits ?? []).some((id) => trainable.has(id as UnitKind))),
         ).map((tech) => ({
           id: tech.id,
           name: tech.name,

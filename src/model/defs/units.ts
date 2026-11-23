@@ -72,6 +72,8 @@ export interface UnitArchetype {
   eraIdentity?: Partial<Record<Era, EraIdentity>>;
   /** Technologies required to train (besides the era). */
   requiresTech?: string[];
+  /** Per-period gate for a legacy unit whose tech line changes with the era (the elite ranged line). */
+  requiresTechByPeriod?: Partial<Record<HistoricalPeriod, string[]>>;
   /** Does it need an advancement building (castle)? */
   requiresFortress?: boolean;
   /**
@@ -481,7 +483,21 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
         weapon: 'rifle',
       },
     },
+    // Conservative fallback for a direct/headless queue before the match period is attached; the
+    // period map below is what normal production, the HUD and the AI use.
     requiresTech: ['bow_and_bolas'],
+    requiresTechByPeriod: {
+      [HistoricalPeriod.ARCHAIC]: ['bow_and_bolas'],
+      [HistoricalPeriod.EARLY_HORIZON]: ['bow_and_bolas'],
+      [HistoricalPeriod.EARLY_INTERMEDIATE]: ['bow_and_bolas'],
+      [HistoricalPeriod.MIDDLE_HORIZON]: ['bow_and_bolas'],
+      [HistoricalPeriod.LATE_INTERMEDIATE]: ['bow_and_bolas'],
+      [HistoricalPeriod.LATE_HORIZON]: ['bow_and_bolas'],
+      [HistoricalPeriod.VICEROYALTY]: ['musketry'],
+      [HistoricalPeriod.INDEPENDENCE]: ['rifle_drill'],
+      [HistoricalPeriod.REPUBLIC]: ['rifle_drill'],
+      [HistoricalPeriod.CONTEMPORARY]: ['rifle_drill'],
+    },
   },
   sniper: {
     id: UnitKind.SNIPER,
@@ -1238,12 +1254,23 @@ export function unitAvailableToCiv(kind: UnitKind, civ?: CivId): boolean {
   return !civs || civ === undefined || civs.includes(civ);
 }
 
+/** Technologies required to train a unit in a historical period; legacy units may vary by period. */
+export function requiredTechsFor(kind: UnitKind, period: HistoricalPeriod): string[] {
+  const arch = UNIT_ARCHETYPES[kind];
+  return arch.requiresTechByPeriod?.[period] ?? arch.requiresTech ?? [];
+}
+
+/** Whether a player's researched set satisfies the unit's period-aware tech gate. */
+export function hasRequiredTechs(kind: UnitKind, period: HistoricalPeriod, techs: ReadonlySet<string>): boolean {
+  return requiredTechsFor(kind, period).every((tech) => techs.has(tech));
+}
+
 /** Period availability: chronology plus whether the required techs exist in that period (not researched state). */
 export function unitTrainableInPeriod(kind: UnitKind, period: HistoricalPeriod, civ?: CivId): boolean {
   if (!unitAvailableToCiv(kind, civ)) return false;
   if (!unitAvailableInPeriod(kind, period)) return false;
-  const required = UNIT_ARCHETYPES[kind].requiresTech;
-  if (!required) return true;
+  const required = requiredTechsFor(kind, period);
+  if (required.length === 0) return true;
   return required.every((id) => {
     const tech = getTech(id);
     return tech !== undefined && techAvailable(tech, period, civ);

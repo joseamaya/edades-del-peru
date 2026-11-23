@@ -38,8 +38,10 @@ ni después/otra cultura (ámbito).
 | Tecnología | Desde | Motivo |
 |---|---|---|
 | Canal de Regadío (`irrigation_canal`) | Arcaico Tardío | Riego y canales (Caral). |
-| Arco y Boleadora (`bow_and_bolas`) | Horizonte Temprano | Armamento de caza/guerra prehispánico. |
+| Arco y Boleadora (`bow_and_bolas`) | Horizonte Temprano → Horizonte Tardío | Armamento de caza/guerra prehispánico; el arco deja de ser la puerta de la línea de élite tras 1532. |
 | Metalurgia de la Plata (`silver_metallurgy`) | Horizonte Temprano | Metalurgia andina de la plata. |
+| Mosquetería (`musketry`) | Virreinato | Formación y fuego de mosquete; desbloquea al Mosquetero de élite. |
+| Instrucción de Fusilería (`rifle_drill`) | Independencia → | Puntería y fuego de fusil; desbloquea al Tirador de Élite republicano. |
 | Caballería de Choque (`shock_cavalry`) | Virreinato | El caballo llega con la conquista (1532). |
 | Máquinas de Asedio (`siege_engines`), Morteros (`siege_mortars`) | Virreinato | Asedio y pólvora tras 1532. |
 | Obrajes y Talleres (`workshops`) | Virreinato | Los **obrajes** son talleres textiles coloniales (no existían antes de 1532). |
@@ -47,6 +49,13 @@ ni después/otra cultura (ámbito).
 | Evangelización (`evangelization`) | Virreinato | Doctrinas y misiones: desbloquea al **Misionero** (conversor colonial). |
 | Producción en Serie (`mass_production`) | República | Producción industrial seriada (posterior a la Independencia). |
 | Defensa Antiaérea, Blindajes Pesados, Cohetería, Ingeniería Blindada, Hidroeléctricas | Contemporáneo | Tecnología del siglo XX. |
+
+## La línea de élite (`RIFLEMAN`)
+
+`RIFLEMAN` es un id legado que cambia de identidad por época: **Arquero** en el mundo prehispánico,
+**Mosquetero** en el Virreinato y **Tirador de Élite** desde la Independencia. Su puerta tecnológica también
+cambia: `bow_and_bolas` hasta el Horizonte Tardío, `musketry` en el Virreinato y `rifle_drill` desde la
+Independencia. Así el jugador de 1814 o 1880 no investiga un arco prehispánico para entrenar fusileros.
 
 ## Nota de diseño (conversores)
 
@@ -62,6 +71,7 @@ Horizonte Tardío) y el **Misionero** (`evangelization`, colonial/republicano, V
 - Obrajes coloniales: Wikipedia, [Obraje](https://es.wikipedia.org/wiki/Obraje); Assadourian, C. S., *El sistema de la economía colonial* (1982).
 - Caballo y ganadería colonial: dossier del Virreinato en [`fuentes.md`](./fuentes.md).
 - Dragones y uniformes: [`atuendos.md`](./atuendos.md) §3.
+- Mosquetería y fusilería: ordenanzas de infantería europeas y americanas de los siglos XVIII–XIX; las ventanas son una abstracción jugable.
 - Montoneras y campaña de la sierra: [`civilizaciones/patriotas.md`](./civilizaciones/patriotas.md) e
   [`campanas/independencia.md`](./campanas/independencia.md).
 - Defensa de Arica y artillería: [`civilizaciones/republica.md`](./civilizaciones/republica.md),

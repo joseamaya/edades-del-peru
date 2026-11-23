@@ -25,6 +25,7 @@ import {
   unitAvailableToCiv,
   unitDisplayIcon,
   unitAvailableInPeriod,
+  hasRequiredTechs,
 } from '../model/defs/units';
 import { TECHS, techAvailable } from '../model/defs/techs';
 import { uniqueTechsForCiv, uniqueUnitGapForCiv, uniqueUnitsForCiv } from '../model/defs/unique';
@@ -57,6 +58,7 @@ import { renderBriefing } from './MissionBriefing';
 import { decorateTitleScreen, renderCampaignPath, renderMainMenu } from './SeriesMenu';
 import { publicAsset } from '../util/publicAsset';
 import type { MissionDef, ObjectiveProgress, ObjState } from '../campaign/types';
+import { seatStartsWithBase } from '../campaign/types';
 import {
   COMMANDERS,
   commanderById,
@@ -1200,8 +1202,11 @@ export class HUD {
             civ,
             period: this.game.settings.period,
             era: p.era,
-            // The civic center is never placed but always stands, and its technologies are researched there.
-            canBuild: (kind) => kind === BuildingKind.CENTER || this.game.canBuildKind(kind),
+            // The civic center is never placed but stands unless the mission opens base-less.
+            canBuild: (kind) =>
+              kind === BuildingKind.CENTER
+                ? seatStartsWithBase(this.game.mission?.def.start, 0)
+                : this.game.canBuildKind(kind),
             canTrain: (kind) => !allowedUnits || allowedUnits.includes(kind),
             canResearch: (techId) => this.game.canResearchTech(techId),
             buildingName: (kind) => this.game.buildingName(kind),
@@ -2108,12 +2113,10 @@ export class HUD {
       if (!unitAvailableToCiv(unitKind, ownerCiv)) continue;
       const stats = getUnitStats(unitKind, b.era);
       const unitName = this.game.unitName(unitKind, b.owner);
-      const tech = UNIT_ARCHETYPES[unitKind].requiresTech?.[0];
-      const techOk = !tech || this.game.players[0].techs.has(tech);
-      const eraOk = !!UNIT_ARCHETYPES[unitKind].eraModel[this.game.players[0].era];
+      const techOk = hasRequiredTechs(unitKind, this.game.settings.period, this.game.players[0].techs);
       const periodOk = unitAvailableInPeriod(unitKind, this.game.settings.period);
       const fortOk = !UNIT_ARCHETYPES[unitKind].requiresFortress || b.kind === BuildingKind.FORTRESS;
-      const disabled = !techOk || !eraOk || !periodOk || !fortOk || !this.canAfford(stats.cost);
+      const disabled = !techOk || !periodOk || !fortOk || !this.canAfford(stats.cost);
       this.addCard(
         unitDisplayIcon(unitKind, b.era),
         unitName,

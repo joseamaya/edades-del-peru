@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { techTreeData } from '../src/ui/TechTree';
 import { BUILDING_DEFS } from '../src/model/defs/buildings';
+import { MISSIONS } from '../src/campaign/defs/campaign';
+import { seatStartsWithBase } from '../src/campaign/types';
 import { UNIT_ARCHETYPES } from '../src/model/defs/units';
 import { TECHS } from '../src/model/defs/techs';
 import { PERIODS } from '../src/model/defs/periods';
-import { CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
+import { BuildingKind, CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
 
 describe('tech tree', () => {
   it('is generated from the defs without losing any unlock', () => {
@@ -46,6 +48,62 @@ describe('tech tree', () => {
     });
     const node = tree[0]?.units.find((unit) => unit.id === UnitKind.REPUBLICA_DEFENSOR);
     expect(node?.name).toBe('Defensor de Tarapacá');
+  });
+
+  it('filters a real mission tree to buildable producers and usable techs', () => {
+    const mission = (id: string) => MISSIONS.find((m) => m.id === id)!;
+    const match = (id: string) => {
+      const m = mission(id);
+      return {
+        civ: m.playerCiv,
+        period: m.period,
+        era: m.startingEra,
+        canBuild: (kind: BuildingKind) =>
+          kind === BuildingKind.CENTER
+            ? seatStartsWithBase(m.start, 0)
+            : (m.allowedBuildings ? m.allowedBuildings.includes(kind) : true) &&
+              m.startingEra >= BUILDING_DEFS[kind].minEra,
+        canTrain: (kind: UnitKind) => (m.allowedUnits ? m.allowedUnits.includes(kind) : true),
+        canResearch: (id: string) => (m.allowedTechs ? m.allowedTechs.includes(id) : true),
+      };
+    };
+
+    for (const missionId of ['m_cusco_1536', 'm_vilcabamba']) {
+      const inca = techTreeData(match(missionId))[0]!;
+      const units = inca.units.map((unit) => unit.id);
+      expect(units, `${missionId} units`).toEqual(
+        expect.arrayContaining([UnitKind.INCA_WARRIOR, UnitKind.INCA_SLINGER]),
+      );
+      expect(units, `${missionId} archers`).not.toContain(UnitKind.RIFLEMAN);
+      const techs = inca.techs.map((tech) => tech.id);
+      expect(techs, `${missionId} techs`).toEqual(expect.arrayContaining(['andean_loom', 'quipus_watchers']));
+      for (const id of ['shock_cavalry', 'siege_engines', 'evangelization']) {
+        expect(techs, `${missionId} ${id}`).not.toContain(id);
+      }
+    }
+
+    const junin = techTreeData(match('m8_independencia'))[0]!;
+    for (const kind of [BuildingKind.BARRACKS, BuildingKind.ARSENAL, BuildingKind.FACTORY, BuildingKind.INSTITUTE]) {
+      expect(
+        junin.buildings.map((b) => b.id),
+        `m8 ${kind}`,
+      ).not.toContain(kind);
+    }
+    expect(junin.units.map((unit) => unit.id)).toContain(UnitKind.CAVALRY);
+    expect(junin.techs.map((tech) => tech.id)).toEqual(expect.arrayContaining(['irrigation_canal', 'shock_cavalry']));
+    expect(junin.techs.map((tech) => tech.id)).not.toContain('rifle_drill');
+
+    const tarapaca = techTreeData(match('m_tarapaca'))[0]!;
+    expect(tarapaca.buildings).toEqual([]);
+    expect(tarapaca.units).toEqual([]);
+    expect(tarapaca.techs).toEqual([]);
+
+    const arica = techTreeData(match('m9_guerra_pacifico'))[0]!;
+    expect(arica.techs.map((tech) => tech.id)).toEqual(
+      expect.arrayContaining(['rifle_drill', 'hunters', 'republica_puerto']),
+    );
+    expect(arica.techs.map((tech) => tech.id)).not.toContain('bow_and_bolas');
+    expect(arica.techs.map((tech) => tech.id)).not.toContain('siege_engines');
   });
 
   it('has one column per era and unique ids inside each column', () => {
