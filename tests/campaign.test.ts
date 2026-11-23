@@ -221,7 +221,7 @@ describe('campaign educational content', () => {
     for (const [id, playerUnit, enemyUnit] of cases) {
       const mis = MISSIONS.find((m) => m.id === id)!;
       const edu = getEducational(id);
-      if (mis.allowedUnits) expect(mis.allowedUnits, `${id} player unique`).toContain(playerUnit);
+      expect(mis.allowedUnits, `${id} player unique`).toContain(playerUnit);
       expect(unitTrainableInPeriod(playerUnit, mis.period, mis.playerCiv), `${id} player unique`).toBe(true);
       expect(BUILDING_DEFS[BuildingKind.BARRACKS].trainable, `${id} barracks roster`).toContain(playerUnit);
       expect(edu, `${id} briefing`).toBeDefined();
