@@ -138,8 +138,8 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 > ni arma, y el trabajador conserva el bulto de carga; es una abstracción de indumentaria civil no documentada.
 > La República contemporánea usa una abstracción de uniforme de campaña moderno (verde) para sus humanoides:
 > soldados y tiradores llevan casco, chaleco y fusil de asalto; el misionero, el trabajador y el explorador
-> usan la indumentaria base sin casco ni armas. El ataque reutiliza el clip melee compartido (`Punch_Jab`)
-> hasta que se añada un clip de disparo. Los vehículos contemporáneos (`vehicle_motorcycle`, `vehicle_aa`,
+> usan la indumentaria base sin casco ni armas. La infantería de línea ataca con `Sword_Regular_A` y las
+> unidades a distancia disparan con `Pistol_Shoot`; los honderos andinos conservan `OverhandThrow`. Los vehículos contemporáneos (`vehicle_motorcycle`, `vehicle_aa`,
 > `vehicle_rockets`) usan `vehicle_rig.glb`: moto, pieza antiaérea y lanzacohetes son siluetas genéricas de la
 > República contemporánea, sin un modelo histórico concreto, y solo aparecen en la era contemporánea.
 

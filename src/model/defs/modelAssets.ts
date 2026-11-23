@@ -109,8 +109,10 @@ const ANDEAN_CLIP_OVERRIDES: Record<AndeanRole, Partial<Record<RigClipState, str
 };
 
 const FIELD_ROLE_CLIPS = {
-  soldier: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-  ranged: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  // Line infantry fights in melee but carries a musket/rifle; the shared stock/bayonet swing reads better
+  // than the unarmed jab. The ranged roles fire the era's firearm.
+  soldier: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Sword_Regular_A' },
+  ranged: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Pistol_Shoot' },
   missionary: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: null },
   worker: {
     walk: 'Walk_Loop',

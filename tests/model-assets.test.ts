@@ -288,8 +288,8 @@ describe('rigged model assets', () => {
       variant: 'patriotas_ranged_m',
     });
     expect(unitModelAsset(UnitKind.COMMISSAR, Era.REPUBLIC, CivId.PATRIOTAS)).toBeNull();
-    expect(RIG_VARIANT_CLIPS.realistas_soldier_m?.attack).toBe('Punch_Jab');
-    expect(RIG_VARIANT_CLIPS.republica_ranged_f?.attack).toBe('Punch_Jab');
+    expect(RIG_VARIANT_CLIPS.realistas_soldier_m?.attack).toBe('Sword_Regular_A');
+    expect(RIG_VARIANT_CLIPS.republica_ranged_f?.attack).toBe('Pistol_Shoot');
     expect(unitModelAsset(UnitKind.HUSSAR, Era.REPUBLIC, CivId.CHILE)).toEqual({
       asset: 'mounted_rig',
       variant: 'mounted_chile',
@@ -443,7 +443,7 @@ describe('rigged model assets', () => {
     });
     expect(RIG_VARIANT_CLIPS.realistas_worker_f?.gather).toBe('Farm_Harvest');
     expect(RIG_VARIANT_CLIPS.realistas_bicorn_worker_f?.gather).toBe('Farm_Harvest');
-    expect(RIG_VARIANT_CLIPS.realistas_bicorn_soldier_m?.attack).toBe('Punch_Jab');
+    expect(RIG_VARIANT_CLIPS.realistas_bicorn_soldier_m?.attack).toBe('Sword_Regular_A');
     expect(RIG_VARIANT_CLIPS.republica_worker_m?.build).toBe('Push_Loop');
     expect(RIG_VARIANT_CLIPS.republica_worker_m?.walk_carry).toBe('Walk_Carry_Loop');
     expect(modelAssetIdsForMatch(HistoricalPeriod.INDEPENDENCE, [CivId.REALISTAS])).toContain('caral_worker');
@@ -492,8 +492,8 @@ describe('rigged model assets', () => {
     }
     expect(RIG_VARIANT_CLIPS.contemporary_republica_worker_f?.gather).toBe('Farm_Harvest');
     expect(RIG_VARIANT_CLIPS.contemporary_republica_worker_m?.walk_carry).toBe('Walk_Carry_Loop');
-    expect(RIG_VARIANT_CLIPS.contemporary_republica_ranged_m?.attack).toBe('Punch_Jab');
-    expect(RIG_VARIANT_CLIPS.contemporary_republica_sniper_m?.attack).toBe('Punch_Jab');
+    expect(RIG_VARIANT_CLIPS.contemporary_republica_ranged_m?.attack).toBe('Pistol_Shoot');
+    expect(RIG_VARIANT_CLIPS.contemporary_republica_sniper_m?.attack).toBe('Pistol_Shoot');
     expect(RIG_VARIANT_CLIPS.contemporary_republica_missionary_f?.attack).toBeNull();
     expect(modelAssetIdsForMatch(HistoricalPeriod.CONTEMPORARY, [CivId.REPUBLIC])).toEqual(
       expect.arrayContaining(['caral_worker', 'vehicle_rig']),
@@ -535,7 +535,7 @@ describe('rigged model assets', () => {
       asset: 'caral_worker',
       variant: 'realistas_soldier_f',
     });
-    expect(RIG_VARIANT_CLIPS.rebelde_ranged_m?.attack).toBe('Punch_Jab');
+    expect(RIG_VARIANT_CLIPS.rebelde_ranged_m?.attack).toBe('Pistol_Shoot');
     expect(RIG_VARIANT_CLIPS.rebelde_worker_f?.gather).toBe('Farm_Harvest');
     expect(RIG_VARIANT_CLIPS.rebelde_missionary_m?.attack).toBeNull();
     expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.INCA])).toEqual(
@@ -796,6 +796,7 @@ describe('rigged model assets', () => {
         'Farm_Harvest',
         'Walk_Carry_Loop',
         'Punch_Jab',
+        'Pistol_Shoot',
         'Sword_Regular_A',
         'OverhandThrow',
         'Death01',
@@ -828,6 +829,33 @@ describe('rigged model assets', () => {
     expect(RIG_VARIANT_CLIPS.chanca_worker_m?.attack).toBe('Punch_Jab');
     expect(MODEL_ASSET_DEFS.caral_worker.deathClip).toBe('Death01');
     expect(MODEL_ASSET_DEFS.caral_worker.clips.attack).toBe('Punch_Jab');
+  });
+
+  it('uses the firearm clip for ranged roles and the stock swing for line infantry', () => {
+    for (const variant of [
+      'realistas_ranged_m',
+      'patriotas_ranged_m',
+      'republica_ranged_m',
+      'chile_ranged_m',
+      'rebelde_ranged_m',
+      'contemporary_republica_ranged_m',
+      'contemporary_republica_sniper_m',
+    ] as const) {
+      expect(RIG_VARIANT_CLIPS[variant]?.attack, variant).toBe('Pistol_Shoot');
+    }
+    for (const variant of [
+      'realistas_soldier_m',
+      'patriotas_soldier_m',
+      'republica_soldier_m',
+      'chile_soldier_m',
+      'rebelde_soldier_m',
+      'contemporary_republica_soldier_m',
+    ] as const) {
+      expect(RIG_VARIANT_CLIPS[variant]?.attack, variant).toBe('Sword_Regular_A');
+    }
+    // Honderos keep the sling throw; the firearm clip is not inherited by the Andean line.
+    expect(RIG_VARIANT_CLIPS.inca_ranged_m?.attack).toBe('OverhandThrow');
+    expect(RIG_VARIANT_CLIPS.moche_ranged_m?.attack).toBe('OverhandThrow');
   });
 
   it('adds the Caral accessories to a compatible rig and toggles the carried load', async () => {
