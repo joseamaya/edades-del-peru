@@ -15,14 +15,14 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
 - **Model pattern:** every released mission follows it after the m5–m9, m6b and m8 rebuilds (closed
   2026-11-14); all twenty missions have a model-mission document.
 - **Performance:** m3–m9 and m6b meet the scale, opening and performance gates; the m3, m4, m5, Tambotoco,
-  Lima, La Junta and Arica intro renders are approved, and the rest of the art review is pending.
+  Lima, La Junta and Arica intro renders are approved, and the site-view review closed on 2026-11-23.
 - **Art pending:** Chavín, Chimú, the civil war, Túpac Amaru and Independencia still lack mostly art.
 - **Art direction:** Tambotoco is the new reference scene; E0–E6 of the pilot are implemented (docs,
   terrain shadows, palette, plaza, procedural architecture finish, cave/huaca GLBs, highland vegetation,
   soft banks/ford and paths, Killke/ayllu variants, the Manco GLB, hero/detail/wide beats and the 3 × 3
   validation set) and the pilot closed with the 2026-11-17 approval; E7 was delivered on 2026-11-17 (baked hero proportions, scoped terrain macro, Inticancha/shrine detail; the 3X recording wins with the optional goals missed), with unique Ayar outfits/portraits, a hand-sculpted body, an andes GLB and new fauna as future work
   ([`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md)).
-- **Open release work:** human art review and the itch package (the real-GPU pass now covers all 24 site views).
+- **Open release work:** the itch package and the human playtests (art review closed 2026-11-23; the real-GPU pass covers all 24 site views).
 - **Asset audit:** the 0.2.0 asset audit closed with three P0 (late-era architecture and the Inca outfit of
   1536–1572). They are scheduled for 0.2.1 in [`./0.2.1-asset-corrections.md`](./0.2.1-asset-corrections.md).
 

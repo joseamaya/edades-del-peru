@@ -75,8 +75,9 @@ them; no `Major` or `Blocker` was raised.
 2. The full campaign — 18 in-engine RTS captures, one per mission at its final site phase, generated with
    `yarn capture:sites --only=all` — in
    [`../media/site-review-2026-11-23-all.webp`](../media/site-review-2026-11-23-all.webp). This closes the
-   site-view review that the 2026-11-17 sheet opened (`Art` Partial → Met on m3, m4, m5, m6, m7, m8 and the
-   seven-mission arc; the rest were already Met).
+   site-view review that the 2026-11-17 sheet opened: `Art` Partial → Met on `m3_moche_recuay`, `m4_wari`,
+   `m7_tupac_amaru`, `m8_independencia`, `m_cusco_1536`, `m_miraflores` and `m_brena`; the other eleven were
+   already Met (the seven-mission arc was signed in the first pass).
 
 The only art work left is the optional P2/P3 polish tracked in B22.
 
@@ -100,8 +101,7 @@ approved on 2026-11-23 (see the review record). m8
 was included in this pass. **m3–m9 meet the scale, opening and performance gates**; the m3, m4, m5, Tambotoco, Lima, La Junta and
 Arica intro renders are approved. Every render record in `src/art/manifest.json` is now approved: the five
 Caral education/tour records were reconciled and the three draft Workbench mission intros were removed. The
-art review is closed: the 18 site views were approved on 2026-11-23 and no render record is `reviewed: false`.
-GitHub issue #343 lists draft renders that were already reconciled.
+art review is closed: all 18 site views were approved on 2026-11-23 and no render record is `reviewed: false`.
 
 **Tambotoco art pass (2026-11-16).** The ayllu kit now uses per-surface PBR detail (stone, rock, earth,
 plaster, thatch, wood, crops, people) with world-scale UVs; the cave is an arch in a scree apron, Huanacaure's
@@ -135,9 +135,9 @@ in-engine intro and epilogue, bench scenes and the scale guard).
    are Met (automated): Tambotoco fights the valley wave and visits the shrine and the gate through the HUD;
    Lima opens the Plaza Mayor card through the HUD and advances its tutorial. A manual no-cheat playtest
    remains recommended for all of them.
-3. **Art review:** the render records are reconciled (0 `reviewed: false`); what remains is the human review
-   of the reused site kits of m3–m9, the Lima/Miraflores/Breña kits and the Chavín kit. The procedural sites
-   of Real Felipe, Tarapacá and Vilcabamba were accepted on 2026-11-23.
+3. **Art review:** closed on 2026-11-23 (see the Art review record): every site view approved, no render record
+   `reviewed: false`, and the Chavín kit approved on 2026-11-17. The `Vis` gate keeps its own Partial rows,
+   which track the optional Blender/lighting pass, not the site views.
 4. **Model-mission rebuilds:** done for m3–m9 (2026-11-14), including m8. The quick wins are done too:
    m6's gate really closes (`canal_closed`) and m6b's victory holds Quipaipan and captures Huáscar instead
    of razing a building.
@@ -245,8 +245,8 @@ Reviewed 2026-11-14 as a model mission; the art gate closed on 2026-11-23 (site 
 
 ## Yahuar Pampa gold-master status
 
-Reviewed 2026-11-14 as a model mission. The Blender intro render is approved (2026-11-15); the reused
-pucará GLB keeps its own review status (#343).
+Reviewed 2026-11-14 as a model mission. The Blender intro render is approved (2026-11-15) and the site view
+was approved on 2026-11-23.
 
 | Gate        | Status             | Evidence                                                                                                                                                                                  |
 | ----------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -327,7 +327,7 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 
 Campaign III is released as **playable** with the documented arc, onboarding, real-command victory path,
 dedicated decor GLB and save round-trip covered. m7 is now a model mission (256 m, painted ground, in-engine
-intro/epilogue and bench scenes); its art review is pending. The HUD layout has a CI geometry gate
+intro/epilogue and bench scenes); its art was approved on 2026-11-23. The HUD layout has a CI geometry gate
 (`tests/e2e/hud-layout.spec.ts`).
 
 | Gate        | m7 Túpac Amaru                                                                                                                |
@@ -432,7 +432,7 @@ The 2026-11-18 pass completed the 1879–1883 land arc:
 All three have dossier, design document, tutorial, educational entry, own in-engine captures, epilogue and
 the generic completable path; they pass the scale and HUD layout guards. Human no-cheat playtests remain
 pending; Tarapacá's procedural site is accepted, while the reused Lima and Ayacucho kits of Miraflores and
-Breña keep their art review open (Partial).
+Breña were approved on 2026-11-23 like the rest of the campaign.
 
 ## La Junta del Cusco playable status (m_junta_cusco)
 
@@ -467,8 +467,7 @@ The 2026-11-18 pass closed the 1814–1826 arc with two model missions:
 - **`m_lima_1821`** reuses `lima_site` at the `ciudad` phase and the colonial kit. The mechanic is pressure:
   montoneras cut the Lurín road, San Martín proclaims independence at the Plaza Mayor, and the player holds
   the first siege of Callao. Real-command test: `tests/e2e/lima-1821.spec.ts`. Captures are current in
-  `public/media/lima-1821/`; open: human art review of the reused kit and a performance row if the late view
-  warrants it.
+  `public/media/lima-1821/`; the site view was approved on 2026-11-23.
 - **`m_real_felipe`** adds the `real_felipe_site` entry, which reuses the Arica coastal-fort heightfield and
   draws a minimal bastioned trace of its own. The mechanic is siege economy: two batteries, a coastal
   blockade, sorties against the camp and a food-consuming final hold. Real-command test:
@@ -478,8 +477,7 @@ The 2026-11-18 pass closed the 1814–1826 arc with two model missions:
 
 Both have dossier, design document, tutorial, educational entry, briefing art, epilogue and the generic
 completable path; both pass `tests/campaign-scale.test.ts` and the HUD layout gate. The human no-cheat
-playtest remains pending on both; the art review still open here is the reused Lima colonial kit of
-`m_lima_1821`.
+playtest remains pending on both; their site views were approved on 2026-11-23.
 
 ## El Virreinato arc (m_cusco_1536 and m_vilcabamba)
 
@@ -573,6 +571,6 @@ Reviewed 2026-11-14 as a model mission; the art gate closed on 2026-11-23 (site 
 | Docs        | Met                  | This document, dossier, `guerra-civil-model-mission.md`, experience table, site note, art docs and README aligned.                                         |
 | Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                              |
 | Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_cusco_inca_intro.mjs`; `MISSION_ART` uses the approved authored render.         |
-| Art         | Met                  | The authored ushnu-plaza intro render (`m6b_guerra_civil-intro`) was approved on 2026-11-17; the site now draws the plaza composition shared with `m_cusco_1536` (its own review is still open, see the review record). |
+| Art         | Met                  | The authored ushnu-plaza intro render (`m6b_guerra_civil-intro`) was approved on 2026-11-17; the site view, drawn with the composition shared with `m_cusco_1536`, was approved on 2026-11-23 (see the review record). |
 | Performance | Met                  | `bench_scene.mjs`: opening ~703k tris / 436 calls, battle ~967k / 673; over the 600k art-direction target (as m7/m9), within the recorded first-pass caps. |
 | Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                         |

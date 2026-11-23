@@ -67,4 +67,4 @@ Optional: cut the city's supplies. The mission never stages the later «Santiago
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts`.
 - Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in
   `yarn bench:check`.
-- Open: human no-cheat playtest and the mission's own art review.
+- Open: human no-cheat playtest.

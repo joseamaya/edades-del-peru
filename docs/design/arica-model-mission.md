@@ -129,7 +129,8 @@ padding the mission with invented acts. Re-measure after map, wave or economy ch
 
 ## Open items
 
-1. Human art review of the `arica_site` GLB (#343); the authored intro render is approved and the in-engine
+1. Human art review of the mission's in-engine art: done on 2026-11-23 (site view approved); the authored
+   intro render is approved and the in-engine
    captures are recorded in PROVENANCE and are not a Blender-render claim.
 2. ~~A real-GPU performance pass~~ — measured on the reference iGPU
    ([`../development/site-view-performance.md`](../development/site-view-performance.md)).

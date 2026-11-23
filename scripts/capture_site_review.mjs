@@ -15,7 +15,8 @@ import { launchChromium, withViteServer, cliArg, reviewDir } from './lib.mjs';
  *        [--sheet=review/site-review/sheet.webp]
  *
  * `--only` also accepts a generation name: `--only=new` captures the seven missions added on 2026-11-18,
- * `--only=all` the full set. Every run rewrites `<out>/decisions.md` (the worksheet) from the captures it made.
+ * `--only=all` the full set. The sheet is composed from the captures of this run (never from stale files); the
+ * worksheet is rebuilt from every capture in `<out>` so a partial run cannot drop the earlier decisions.
  */
 /** Missions added on 2026-11-18, the generation the `--only=new` shortcut captures. */
 const NEW_GENERATION = '2026-11-18';
@@ -188,14 +189,8 @@ const caption = (text) =>
   );
 
 async function composeSheet(file) {
-  // Every capture in the folder, so a run that only fills in some missions still composes the whole sheet.
-  const order = (id) => MISSIONS.findIndex((m) => m.id === id);
-  const shots = fs
-    .readdirSync(outDir)
-    .filter((name) => name.endsWith('.png'))
-    .map((name) => ({ id: name.slice(0, -4), file: path.join(outDir, name) }))
-    .filter((shot) => order(shot.id) >= 0)
-    .sort((a, b) => order(a.id) - order(b.id));
+  // Only this run's captures: a sheet is review evidence and must not mix in files from an older build.
+  const shots = captured;
   if (!shots.length) return;
   const columns = Math.min(3, shots.length);
   const rows = Math.ceil(shots.length / columns);

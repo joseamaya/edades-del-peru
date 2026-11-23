@@ -104,7 +104,8 @@ pattern's 30–40 min band is not claimed, and the eight-minute survival is opti
 
 ## Open items
 
-1. Human art review of the reused `wari_site` GLB and its Blender records (#343); the in-engine captures are
+1. Human art review of the mission's in-engine art: done on 2026-11-23 (site view approved, see the quality
+   bar's Art review record); the in-engine captures are
    recorded in PROVENANCE and are not a Blender-render claim.
 2. Real-GPU performance measured on the reference iGPU:
    [`../development/site-view-performance.md`](../development/site-view-performance.md).
