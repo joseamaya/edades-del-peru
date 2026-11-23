@@ -112,10 +112,10 @@ No asset is accepted because it looks good at close range. It must read at 54 fi
 - **Budgets:** hero ≤ 40 draw calls / 40k triangles; common unit ≤ 25 draw calls / 25k triangles. These are
   ceilings, not targets to fill.
 - **Pilot result (2026-11):** [`../art/character-visual-pilot.md`](../art/character-visual-pilot.md) implements
-  the equipment layer on the shared rig. `yarn bench:characters` measures 14 draws / 10.7k triangles for the
-  Inca, 22 / 14.2k for the 16th-century Spanish, 20 / 11.7k for the 1879 fusilier, 12 / 9.4k for the Moche,
-  13 / 10.1k for the Wari, 10 / 9.1k for the Chimú and 22 / 12.7k for the late realista. A 12-unit formation
-  measures 168 / 264 / 246 / 144 / 156 / 120 / 264 draws and 0.12–0.14 ms/frame of mixer work. The same rig
+  the equipment layer on the shared rig. `yarn bench:characters` measures 9 draws / 10.7k triangles for the
+  Inca, 6 / 10.5k for the 16th-century Spanish, 6 / 9.5k for the 1879 fusilier, 9 / 9.4k for the Moche,
+  9 / 10.1k for the Wari, 9 / 9.1k for the Chimú and 6 / 9.7k for the late realista. A 12-unit formation
+  measures 108 / 72 / 72 / 108 / 108 / 108 / 72 draws and 0.13–0.14 ms/frame of mixer work. The same rig
   now ships `Jog_Fwd_Loop` for `run`, `Hit_Chest` as a presentation-only hit overlay, and a baked ~7.1-head
   proportion pass. A 6.5–7-head sculpt, the face and a bind-safe character GLB remain open.
 

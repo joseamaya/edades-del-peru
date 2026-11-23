@@ -163,6 +163,15 @@ interface RigPart {
   material: THREE.MeshStandardMaterial;
   /** Bone that carries a rigid (non-skinned) part. */
   bone: THREE.Bone | null;
+  /** Rigid parts: the mesh's transform in that bone's space (they may sit in a nested group). */
+  toBone: THREE.Matrix4;
+}
+
+/** Names (on the mesh or any ancestor) whose visibility changes at runtime and must keep a draw. */
+export interface RigConsolidationOptions {
+  dynamic?: readonly string[];
+  /** The variant: merged geometry is built once and shared by every rig with this key. */
+  cacheKey?: string;
 }
 
 function shownUpTo(object: THREE.Object3D, root: THREE.Object3D): boolean {
@@ -173,11 +182,30 @@ function shownUpTo(object: THREE.Object3D, root: THREE.Object3D): boolean {
   return false;
 }
 
-/** Only flat colours or one shared base-colour map: those survive baking the colour into vertices. */
-function consolidatableMaterial(material: THREE.Material | THREE.Material[]): THREE.MeshStandardMaterial | null {
+function nearestBone(object: THREE.Object3D, root: THREE.Object3D): THREE.Bone | null {
+  for (let o: THREE.Object3D | null = object.parent; o && o !== root; o = o.parent) {
+    if ((o as THREE.Bone).isBone) return o as THREE.Bone;
+  }
+  return null;
+}
+
+function inDynamicSubtree(object: THREE.Object3D, root: THREE.Object3D, dynamic: ReadonlySet<string>): boolean {
+  for (let o: THREE.Object3D | null = object; o && o !== root; o = o.parent) {
+    if (o.name && dynamic.has(o.name)) return true;
+  }
+  return false;
+}
+
+/**
+ * Only flat colours (or vertex colours the geometry actually carries) or one shared base-colour
+ * map: those survive baking the colour into vertices.
+ */
+function consolidatableMaterial(mesh: THREE.Mesh): THREE.MeshStandardMaterial | null {
+  const material = mesh.material;
   if (Array.isArray(material)) return null;
   const m = material as THREE.MeshStandardMaterial;
-  if (!m.isMeshStandardMaterial || m.transparent || m.alphaTest > 0 || m.vertexColors) return null;
+  if (!m.isMeshStandardMaterial || m.transparent || m.alphaTest > 0) return null;
+  if (m.vertexColors && !mesh.geometry.getAttribute('color')) return null;
   for (const slot of TEXTURE_SLOTS) if (slot !== 'map' && m[slot]) return null;
   return m;
 }
@@ -189,48 +217,53 @@ function sameMatrix(a: THREE.Matrix4, b: THREE.Matrix4): boolean {
 }
 
 /**
- * Merge a dressed rig's visible skinned meshes (and named rigid parts parented to a bone) into one
- * skinned mesh per base-colour map: material colours are baked into vertex colours and every part's
- * bones are remapped onto one shared skeleton. A worker's hair, eyebrows, sash and headband become
- * one draw call, its tunic and skirt another. Parts that would change the look (other texture slots,
- * transparency, existing vertex colours) or whose bind pose disagrees are left as they are; the
- * merged sources move to `CONSOLIDATED_SOURCE_LAYER`. Call after the variant is final (visibility and
- * tints), and never on parts whose visibility changes later. With a `cacheKey` (the variant) the merged
- * geometry is built once and shared by every rig with that key; it is then not in the returned
- * `geometries` (which the caller owns and disposes) but lives for the session, like the loaded asset.
+ * Merge a dressed rig's visible skinned meshes and rigid bone-attached gear into one skinned mesh
+ * per base-colour map and shadow flag: material colours are baked into vertex colours and every
+ * part's bones are remapped onto one shared skeleton, so a rig that was ~20 draws becomes less than
+ * ten. Parts that would change the look (other texture slots, transparency, vertex colours without a
+ * colour attribute) or whose bind pose disagrees are left as they are; the merged sources move to
+ * `CONSOLIDATED_SOURCE_LAYER`. Call after the variant is final (visibility and tints), and list in
+ * `dynamic` every part whose visibility changes later — those keep their own draw call. With
+ * `cacheKey` (the variant) the merged geometry is built once and shared by every rig with that key; it
+ * is then not in the returned `geometries` (which the caller owns and disposes) but lives for the
+ * session, like the loaded asset.
  */
-export function consolidateRig(
-  root: THREE.Object3D,
-  rigidNames: readonly string[] = [],
-  cacheKey?: string,
-): RigConsolidation {
+export function consolidateRig(root: THREE.Object3D, options: RigConsolidationOptions = {}): RigConsolidation {
   const out: RigConsolidation = { meshes: [], geometries: [], materials: [] };
+  const { dynamic = [], cacheKey } = options;
   root.updateMatrixWorld(true);
+  const dynamicNames = new Set(dynamic);
   const groups = new Map<string, RigPart[]>();
-  const rigid = new Set(rigidNames);
+  let anchor: THREE.SkinnedMesh | null = null;
   root.traverse((object) => {
     const mesh = object as THREE.Mesh;
     if (!mesh.isMesh || !shownUpTo(mesh, root)) return;
-    const material = consolidatableMaterial(mesh.material);
-    if (!material) return;
     const skinned = (mesh as THREE.SkinnedMesh).isSkinnedMesh;
-    const bone =
-      !skinned && rigid.has(mesh.name) && (mesh.parent as THREE.Bone)?.isBone ? (mesh.parent as THREE.Bone) : null;
-    if (!skinned && !bone) return;
+    if (!anchor && skinned && (mesh as THREE.SkinnedMesh).skeleton && mesh.geometry.getAttribute('skinIndex')) {
+      anchor = mesh as THREE.SkinnedMesh;
+    }
+    if (inDynamicSubtree(mesh, root, dynamicNames)) return;
+    const material = consolidatableMaterial(mesh);
+    if (!material) return;
     if (skinned && !mesh.geometry.getAttribute('skinIndex')) return;
+    const bone = skinned ? null : nearestBone(mesh, root);
+    if (!skinned && !bone) return;
+    const toBone = bone
+      ? new THREE.Matrix4().copy(bone.matrixWorld).invert().multiply(mesh.matrixWorld)
+      : new THREE.Matrix4();
     const key = `${material.map?.uuid ?? 'flat'}|${mesh.castShadow}|${mesh.receiveShadow}`;
     const list = groups.get(key) ?? [];
-    list.push({ mesh, material, bone });
+    list.push({ mesh, material, bone, toBone });
     groups.set(key, list);
   });
+  const shared = anchor as THREE.SkinnedMesh | null;
 
   for (const [groupKey, parts] of groups) {
-    const anchor = parts.find((p) => !p.bone)?.mesh as THREE.SkinnedMesh | undefined;
-    if (parts.length < 2 || !anchor) continue;
-    const bones = [...anchor.skeleton.bones];
-    const inverses = anchor.skeleton.boneInverses.map((m) => m.clone());
+    if (parts.length < 2 || !shared) continue;
+    const bones = [...shared.skeleton.bones];
+    const inverses = shared.skeleton.boneInverses.map((m) => m.clone());
     const boneIndex = new Map(bones.map((b, i) => [b, i]));
-    const bindInverse = anchor.bindMatrix.clone().invert();
+    const bindInverse = shared.bindMatrix.clone().invert();
     const merged: { part: RigPart; binding: PartBinding }[] = [];
     for (const part of parts) {
       const binding = partBinding(part, bones, inverses, boneIndex, bindInverse);
@@ -251,6 +284,10 @@ export function consolidateRig(
       geometry = mergeGeometries(pieces as THREE.BufferGeometry[], false) ?? undefined;
       pieces.forEach((g) => g?.dispose());
       if (!geometry) continue;
+      // A generous bind-pose bound so the merged draw can be frustum-culled per unit without popping
+      // while a weapon swings; computed once per variant, not once per rig.
+      geometry.computeBoundingSphere();
+      if (geometry.boundingSphere) geometry.boundingSphere.radius *= 1.35;
       if (key) rigGeometryCache.set(key, geometry);
       else out.geometries.push(geometry);
     }
@@ -267,16 +304,21 @@ export function consolidateRig(
     material.name = `${base.name || 'rig'}:consolidated`;
     const mesh = new THREE.SkinnedMesh(geometry, material);
     mesh.name = 'rig:consolidated';
-    mesh.castShadow = anchor.castShadow;
-    mesh.receiveShadow = anchor.receiveShadow;
-    mesh.frustumCulled = false;
-    mesh.bindMode = anchor.bindMode;
-    anchor.parent!.add(mesh);
-    mesh.position.copy(anchor.position);
-    mesh.quaternion.copy(anchor.quaternion);
-    mesh.scale.copy(anchor.scale);
+    mesh.castShadow = merged[0].part.mesh.castShadow;
+    mesh.receiveShadow = merged[0].part.mesh.receiveShadow;
+    // Cull the whole merged draw when the unit leaves the view: a crowd's off-screen garments and gear
+    // used to be one mesh per part, and the merged one has to be cullable too or it costs more than it saves.
+    mesh.frustumCulled = true;
+    mesh.bindMode = shared.bindMode;
+    shared.parent!.add(mesh);
+    mesh.position.copy(shared.position);
+    mesh.quaternion.copy(shared.quaternion);
+    mesh.scale.copy(shared.scale);
     mesh.updateMatrixWorld(true);
-    mesh.bind(new THREE.Skeleton(bones, inverses), anchor.bindMatrix);
+    mesh.bind(new THREE.Skeleton(bones, inverses), shared.bindMatrix);
+    // `Frustum` prefers a SkinnedMesh's own sphere over the geometry's, so hand it the inflated bind-pose
+    // bound instead of letting three compute an un-margined one from the first posed frame.
+    if (geometry.boundingSphere) mesh.boundingSphere = geometry.boundingSphere.clone();
     for (const { part } of merged) part.mesh.layers.set(CONSOLIDATED_SOURCE_LAYER);
     out.meshes.push(mesh);
     out.materials.push(material);
@@ -303,13 +345,13 @@ function partBinding(
   bindInverse: THREE.Matrix4,
 ): PartBinding | null {
   if (part.bone) {
-    // Rigid part on a bone: weight 1 on that bone. world = bone · local · v must equal
-    // bone · inverse(bone) · bind · v', so v' = bind⁻¹ · inverse(bone)⁻¹ · local · v.
+    // Rigid part on a bone: weight 1 on that bone. world = bone · toBone · v must equal
+    // bone · inverse(bone) · bind · v', so v' = bind⁻¹ · inverse(bone)⁻¹ · toBone · v.
     const index = boneIndex.get(part.bone);
     if (index === undefined) return null;
     return {
       remap: [index],
-      toAnchor: bindInverse.clone().multiply(inverses[index].clone().invert()).multiply(part.mesh.matrix),
+      toAnchor: bindInverse.clone().multiply(inverses[index].clone().invert()).multiply(part.toBone),
     };
   }
   // Each glTF skin may be bound in its own space: its inverse bind matrices can differ from the

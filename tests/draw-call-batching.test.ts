@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
 import { mergeStaticByMaterial } from '../src/rendering/mergeStatic';
 import { CONSOLIDATED_SOURCE_LAYER, consolidateRig } from '../src/rendering/modelConsolidation';
+import { bodyOnlyShadows } from '../src/rendering/rigAttire';
 import {
   SHADOW_FRAME_MAX,
   SHADOW_FRAME_MIN,
@@ -77,6 +78,26 @@ describe('mergeStaticByMaterial', () => {
     expect(mergeStaticByMaterial(root, (m) => !!m.userData.heritageId)).toBe(1);
     expect(root.children).toContain(hidden);
     expect(root.children).toContain(kept);
+  });
+});
+
+describe('bodyOnlyShadows', () => {
+  it('keeps only the body in the shadow pass and leaves a body-less rig alone', () => {
+    const root = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial());
+    body.name = 'Body_m';
+    const coat = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial());
+    coat.name = 'attire_tunic_m';
+    for (const mesh of [body, coat]) {
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      root.add(mesh);
+    }
+    expect(bodyOnlyShadows(root)).toBe(true);
+    expect(body.castShadow).toBe(true);
+    expect(coat.castShadow).toBe(false);
+    expect(coat.receiveShadow).toBe(false);
+    expect(bodyOnlyShadows(new THREE.Group())).toBe(false);
   });
 });
 
@@ -222,7 +243,7 @@ describe('consolidateRig', () => {
     const build = (): ReturnType<typeof consolidateRig> => {
       const { root, bones } = rig();
       root.add(part(bones, 0xff0000, new THREE.Matrix4()), part(bones, 0x00ff00, new THREE.Matrix4()));
-      return consolidateRig(root, [], 'test-variant');
+      return consolidateRig(root, { cacheKey: 'test-variant' });
     };
     const a = build();
     const b = build();
@@ -231,6 +252,51 @@ describe('consolidateRig', () => {
     expect(a.meshes[0].material).not.toBe(b.meshes[0].material);
     // Cached geometry is not the caller's to dispose.
     expect(a.geometries).toHaveLength(0);
+  });
+
+  it('merges rigid gear parented to a bone, keeping the dynamic parts as their own draw', () => {
+    const { root, bones } = rig();
+    const skinned = part(bones, 0xff0000, new THREE.Matrix4());
+    const kind = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    // A nested group under the knee bone, as `attach()` builds the gear.
+    const gear = new THREE.Group();
+    gear.name = 'attire_gear';
+    const handle = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.2), kind);
+    handle.name = 'attire_gear_handle';
+    handle.position.set(0.1, 0.2, 0);
+    const toggle = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1), kind);
+    toggle.name = 'attire_gear_toggle';
+    const toggleGroup = new THREE.Group();
+    toggleGroup.name = 'attire_tool';
+    toggleGroup.add(toggle);
+    gear.add(handle, toggleGroup);
+    bones[1].add(gear);
+    root.add(skinned);
+    root.updateMatrixWorld(true);
+    const expected = [...skinnedPositions(skinned)];
+    handle.updateMatrixWorld(true);
+    const expectedGear = new THREE.Vector3(0.1, 1.2, 0).applyMatrix4(bones[1].matrixWorld);
+
+    const result = consolidateRig(root, { dynamic: ['attire_tool'] });
+    expect(result.meshes).toHaveLength(1);
+    // The merged mesh carries the skinned strip and the static handle, not the toggled gear.
+    expect(result.meshes[0].geometry.getAttribute('position').count).toBe(
+      skinned.geometry.getAttribute('position').count + handle.geometry.getAttribute('position').count,
+    );
+    expect(toggle.layers.mask).toBe(1);
+    root.updateMatrixWorld(true);
+    const actual = skinnedPositions(result.meshes[0]);
+    // Merged order follows the parts, so match every source vertex to its nearest merged one.
+    const nearest = (target: THREE.Vector3) =>
+      actual.reduce((best, v) => (v.distanceTo(target) < best.distanceTo(target) ? v : best));
+    for (const v of expected) expect(nearest(v).distanceTo(v)).toBeLessThan(1e-4);
+    // The handle lands where the bone would have put it (weight 1 on knee_l).
+    expect(nearest(expectedGear).distanceTo(expectedGear)).toBeLessThan(0.25);
+    // The merged draw must stay cullable, and `Frustum` reads the mesh's own sphere, not the geometry's.
+    const mesh = result.meshes[0];
+    expect(mesh.frustumCulled).toBe(true);
+    expect(mesh.boundingSphere).not.toBeNull();
+    expect(mesh.boundingSphere!.radius).toBeCloseTo(mesh.geometry.boundingSphere!.radius, 6);
   });
 
   it('leaves hidden and textured-differently parts alone', () => {

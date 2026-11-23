@@ -1042,6 +1042,18 @@ slot is absent (offline / without assets).
     select the palette, garments and runtime hero attire. No new body/mesh is added, so other campaigns are
     unchanged. The dedicated Tambotoco hero sculpt remains E4b.
 
+### Late-view performance evidence (in-engine)
+
+- **Location**: `docs/media/late-view-before-after.webp`, 1520x944 WebP q82.
+- **Source**: `node scripts/bench_scene.mjs --mission=m6b_guerra_civil --stage=late --gpu --frames
+  --viewport=1600x900 --shot=review/b13-shots/m6b-after.png` (the same command for `m8_independencia`), and the
+  `before` row with the `src/` changes stashed. `--shot` writes a PNG of the exact framing the structural
+  numbers come from.
+- **Content**: the two tightest late views at the bench framing. The change is a rendering cost, not a look:
+  the frames differ only in animation phase and the in-flight HUD, and the caption records the draw-call drop
+  (898 → 615 and 912 → 593). Numbers and decision: `docs/development/site-view-performance.md` §"B13 follow-up".
+- **Review**: no historical claim; these are performance captures of an existing scene.
+
 ### Character proportions (in-engine evidence)
 
 - **Location**: `docs/media/character-proportions-before-after.webp`, 2240x940 WebP q84.

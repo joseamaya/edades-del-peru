@@ -20,7 +20,13 @@ import {
 } from '../model/defs/modelAssets';
 import type { Unit } from '../entities/Unit';
 import { FishingNetFx } from './FishingNetFx';
-import { createRigAttireTools, mergeColoredGeometry, type RigAttireTools } from './rigAttire';
+import {
+  HERO_HIDDEN_PARTS,
+  HERO_WEAPON_PARTS,
+  createRigAttireTools,
+  mergeColoredGeometry,
+  type RigAttireTools,
+} from './rigAttire';
 import { limitShadowCasters } from './shadowCasters';
 import { clamp } from '../util/math';
 import type { Resources } from '../core/types';
@@ -107,18 +113,10 @@ export class UnitView {
     tools.show(female ? 'attire_tunic_f' : 'attire_tunic_m', true);
     tools.show(female ? 'attire_skirt_f' : 'attire_wrap_m', true);
     // The hero's own headdress, sash and weapon replace the generic soldier kit; hiding it also
-    // keeps the hero at a handful of draw calls at the strategic zoom.
-    for (const name of [
-      'attire_headband',
-      'attire_andean_face_paint',
-      'attire_andean_shield',
-      'attire_andean_belt',
-      'attire_andean_manta',
-    ]) {
-      tools.show(name, false);
-    }
-    tools.show('attire_andean_macana', commander.weapon === 'macana');
-    tools.show('attire_andean_macana_head', commander.weapon === 'macana');
+    // keeps the hero at a handful of draw calls at the strategic zoom. The lists are shared with the
+    // consolidation's `dynamic` set so a new hero override cannot be merged into the rig.
+    for (const name of HERO_HIDDEN_PARTS) tools.show(name, false);
+    for (const name of HERO_WEAPON_PARTS) tools.show(name, commander.weapon === 'macana');
     // The rig caches its garment geometry per variant with the source colours baked into vertices, so the
     // visible cloth is one `rig:consolidated` mesh; its per-unit material carries the accent.
     const tunic = root.getObjectByName(female ? 'attire_tunic_f' : 'attire_tunic_m') as THREE.Mesh | null;

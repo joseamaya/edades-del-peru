@@ -3,7 +3,13 @@ import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { PostColonialRole, PostColonialSpec } from '../model/defs/postColonialCharacters';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
-import { createRigAttireTools, extrudedPlate, showSharedHumanoidBody, mergeColoredGeometry } from './rigAttire';
+import {
+  bodyOnlyShadows,
+  createRigAttireTools,
+  extrudedPlate,
+  mergeColoredGeometry,
+  showSharedHumanoidBody,
+} from './rigAttire';
 import { consolidateRig } from './modelConsolidation';
 
 /**
@@ -316,9 +322,16 @@ export function dressUniform(
     attach('spine_03', carry, new THREE.Vector3(spine.x, spine.y - 0.02, spine.z - 0.17));
   }
 
-  const consolidated = consolidateRig(root, [], `uniform:${root.name}:${variant}`);
+  // The weapon and the carry bundle toggle visibility with the task, so they keep their own draw.
+  const consolidated = consolidateRig(root, {
+    dynamic: ['attire_post_weapon', 'attire_post_carry'],
+    cacheKey: `uniform:${root.name}:${variant}`,
+  });
   tools.ownedGeometries.push(...consolidated.geometries);
   tools.ownedMaterials.push(...consolidated.materials);
+  // Only the body silhouette is in the shadow pass: the merged garments and gear would be a second copy of
+  // every soldier in the shadow map (both flags go, as in the worker rule).
+  bodyOnlyShadows(root);
 
   let task: RigClipState = 'idle';
   return {
