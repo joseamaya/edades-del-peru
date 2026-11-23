@@ -775,6 +775,72 @@ describe('rigged model assets', () => {
     late.dispose();
   });
 
+  it('shapes the bicorn into a two-cornered hat', async () => {
+    await load();
+    const rig = acquireRig('ual_mannequin', 'realistas_bicorn_soldier_m')!;
+    const bicorn = rig.root.getObjectByName('attire_post_bicorn') as THREE.Mesh;
+    const box =
+      bicorn.geometry.boundingBox ??
+      new THREE.Box3().setFromBufferAttribute(bicorn.geometry.getAttribute('position') as THREE.BufferAttribute);
+    // A bicorn's points run across the head (x) with a narrow front-to-back (z) footprint.
+    expect(box.max.x - box.min.x).toBeGreaterThan(box.max.z - box.min.z);
+    rig.dispose();
+  });
+
+  it('dresses the documented Andean warriors with their own shaped gear', async () => {
+    await load();
+    const moche = acquireRig('ual_mannequin', 'moche_soldier_m')!;
+    for (const name of [
+      'attire_andean_helmet',
+      'attire_andean_backflap',
+      'attire_andean_ear',
+      'attire_andean_belt',
+      'attire_andean_shield',
+      'attire_andean_macana',
+      'attire_andean_macana_head',
+    ]) {
+      expect(moche.root.getObjectByName(name), name).toBeDefined();
+    }
+    // The back armour is a trapezoid: wider at the bottom than at the top.
+    const backflap = moche.root.getObjectByName('attire_andean_backflap') as THREE.Mesh;
+    const positions = backflap.geometry.getAttribute('position');
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (let i = 0; i < positions.count; i++) {
+      minY = Math.min(minY, positions.getY(i));
+      maxY = Math.max(maxY, positions.getY(i));
+    }
+    const widthAt = (y: number): number => {
+      let min = Infinity;
+      let max = -Infinity;
+      for (let i = 0; i < positions.count; i++) {
+        if (Math.abs(positions.getY(i) - y) > 1e-3) continue;
+        min = Math.min(min, positions.getX(i));
+        max = Math.max(max, positions.getX(i));
+      }
+      return max - min;
+    };
+    expect(widthAt(maxY)).toBeLessThan(widthAt(minY));
+    moche.dispose();
+
+    const wari = acquireRig('ual_mannequin', 'wari_soldier_m')!;
+    for (const name of [
+      'attire_andean_pectoral',
+      'attire_andean_backplate',
+      'attire_andean_pectoral_strap',
+      'attire_andean_ear',
+    ]) {
+      expect(wari.root.getObjectByName(name), name).toBeDefined();
+    }
+    expect(wari.root.getObjectByName('attire_andean_helmet')).toBeUndefined();
+    wari.dispose();
+
+    const worker = acquireRig('ual_mannequin', 'moche_worker_m')!;
+    expect(worker.root.getObjectByName('attire_andean_helmet')).toBeUndefined();
+    expect(worker.root.getObjectByName('attire_andean_backflap')).toBeUndefined();
+    worker.dispose();
+  });
+
   it('ships a worker GLB with one skeleton, the worker clips and the cotton garment', () => {
     const file = fs.readFileSync(fileURLToPath(WORKER_URL));
     const jsonLength = file.readUInt32LE(12);

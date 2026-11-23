@@ -174,11 +174,26 @@ export function dressUniform(
         metalGearMat,
       );
     } else if (spec.hat === 'bicorn') {
-      const brim = new THREE.BoxGeometry(0.34, 0.035, 0.2);
-      brim.rotateZ(0.08);
-      brim.translate(0, 0.19, 0);
-      const crown = new THREE.CylinderGeometry(0.1, 0.12, 0.1, 10);
-      crown.translate(0, 0.24, 0);
+      // A two-cornered hat: from the RTS camera the top silhouette is the read, so the brim is a
+      // lens with the points at the sides and a low crown in the middle. The earlier box brim read
+      // as a top hat (see the pilot capture).
+      const lens = new THREE.Shape();
+      lens.moveTo(-0.24, 0);
+      lens.quadraticCurveTo(0, 0.12, 0.24, 0);
+      lens.quadraticCurveTo(0, -0.12, -0.24, 0);
+      const brim = new THREE.ExtrudeGeometry(lens, { depth: 0.03, bevelEnabled: false, curveSegments: 10 });
+      brim.rotateX(-Math.PI / 2);
+      // Upswept corners: a flat plate reads as a sombrero; a bicorn's points curl up.
+      const brimPosition = brim.getAttribute('position');
+      for (let i = 0; i < brimPosition.count; i++) {
+        const lift = 0.11 * (Math.abs(brimPosition.getX(i)) / 0.24) ** 2;
+        brimPosition.setY(i, brimPosition.getY(i) + lift);
+      }
+      brim.computeVertexNormals();
+      brim.translate(0, 0.27, 0);
+      const crown = new THREE.SphereGeometry(0.11, 12, 8);
+      crown.scale(1, 0.75, 1);
+      crown.translate(0, 0.32, 0);
       mergeGear(
         [
           [brim, spec.hatColor],
@@ -219,10 +234,15 @@ export function dressUniform(
     // cartridge belt and pouches instead, so the flasks stay out of the later uniform.
     if (spec.weapon === 'musket') {
       torsoParts.push([new THREE.BoxGeometry(0.055, 0.5, 0.02).rotateZ(0.62).translate(0.02, -0.05, 0.14), 0x2a1e16]);
+      // The powder flasks follow the strap instead of a loose vertical column; the earlier row read as
+      // oversized buttons on the chest.
       for (let i = 0; i < 5; i++) {
+        const step = -0.2 + i * 0.1;
         torsoParts.push([
-          new THREE.CylinderGeometry(0.022, 0.026, 0.07, 8).translate(-0.1 + i * 0.05, 0.15 - i * 0.1, 0.16),
-          0xc8a040,
+          new THREE.CylinderGeometry(0.017, 0.02, 0.05, 8)
+            .rotateZ(0.62)
+            .translate(0.02 - 0.581 * step, -0.05 + 0.814 * step, 0.155),
+          0xb08a3a,
         ]);
       }
     }

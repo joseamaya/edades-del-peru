@@ -1,6 +1,7 @@
 # Character visual pilot
 
-**Status:** Living · **Date:** 2026-11-23 · **Branch:** `feat/character-visual-pilot`
+**Status:** Living · **Date:** 2026-11-23 · **Branch:** `feat/character-visual-pilot` and
+`feat/andean-equipment-standard`
 
 The audit and performance numbers below are a **2026-11-23 snapshot**; update them when the rig,
 equipment or budgets change.
@@ -8,10 +9,11 @@ equipment or budgets change.
 This pilot raises the field appearance of three representative infantry units to the stylized-realism
 standard of [`../design/art-direction.md`](../design/art-direction.md) §4.1. It audits the shared rig,
 replaces the primitive period equipment with shaped garments and gear, keeps the proven skeleton and clips,
-and measures the result against the project budgets.
+and measures the result against the project budgets. §8 extends the same standard to the documented Andean
+warrior sets and to the late-colonial bicorn.
 
-It is deliberately **not** a library-wide rebuild: three cultures/periods are in scope. The historical facts
-and their certainty stay in [`../historia/atuendos.md`](../historia/atuendos.md); this document does not
+It is deliberately **not** a library-wide rebuild: a handful of cultures/periods are in scope. The historical
+facts and their certainty stay in [`../historia/atuendos.md`](../historia/atuendos.md); this document does not
 restate the dossiers.
 
 ![Before and after: Inca warrior, 16th-century arquebusier and 1879 fusilier](../media/character-pilot-before-after.webp)
@@ -168,21 +170,52 @@ aim, and `run`/hit reactions are still missing.
 | `yarn test` | 129 files, 1,089 tests, pass |
 | `yarn build` | pass |
 | `yarn dist:check` | 27.61 MiB / 28 MiB; first play 1.87 MiB gzip; loader 2 KB gzip |
-| `yarn bench:characters` | Inca 15 draws / 10,670 tris; Spanish 22 / 14,220; Republican 20 / 11,651 |
+| `yarn bench:characters` | Inca 15 / 10.7k; Spanish 22 / 14.2k; Republican 20 / 11.7k; Moche 12 / 9.4k; Wari 13 / 10.1k; Chimú 10 / 9.1k; late realista 22 / 12.7k (draws / triangles) |
 
-The measurement is the isolated unit cost (main + shadow pass) in its mission, using the same
+The measurement is the isolated unit cost (main + shadow pass) in its mission or skirmish, using the same
 shown/hidden delta as the rig bench. The old primitive gear measured ~8–9 draws for the shared worker;
-the new gear stays at or below the 25-draw common-unit target and 10.7–14.2k triangles, below the 25k
-common-unit target. A 12-unit formation measures 180 / 264 / 246 draws and 0.13–0.14 ms/frame of mixer
-work for the twelve units; the Spanish formation stays under the 280-draw scene cap. The Spanish is at
-22 draws, so a third accessory per bone should be merged into an existing draw.
+the new gear stays at or below the 25-draw common-unit target and 9.1–14.2k triangles, below the 25k
+common-unit target. A 12-unit formation measures 168 / 264 / 246 / 144 / 156 / 120 / 264 draws and
+0.13–0.14 ms/frame of mixer work for the twelve units; the Spanish and late-realista formations stay under
+the 280-draw scene cap. The Spanish and the late realista are at 22 draws, so a third accessory per bone
+should be merged into an existing draw.
 
 **LOD, instancing and memory.** The rig has no LOD or instancing: every unit owns a skeleton and mixer, while
 geometry, materials and clips are shared by the asset cache. The pilot adds no game asset or texture, so GPU
 memory and the 28 MiB `dist` budget are unchanged. A future LOD would need a non-skinned or impostor path,
 not another skinned mesh.
 
-## 8. Pending issues
+## 8. Extension: Andean warriors and the late realistas
+
+The same runtime standard was then applied to the remaining documented pre-Hispanic warrior sets and to the
+late-colonial bicorn. Only elements the dossier already describes were shaped; cultures whose dossier says
+«no documentado» keep the shared base and gain no invented garment.
+
+![Before and after: Moche, Wari, Chimú and the late realista](../media/character-standard-andean.webp)
+
+| Culture / unit | Documented element | Runtime change | Certainty |
+| --- | --- | --- | --- |
+| **Moche** (`moche_soldier_*`) | conical metal helmet, trapezoidal backflap, ear spools, circular shield, star/rosette club heads | cone with a brow rim and a top knob; trapezoid back plate; flared ear spools; domed rodela with a boss; six-point star head | shape documented; the backflap material is a leather-brown abstraction |
+| **Wari** (`wari_soldier_*`) | chest and back armour joined by the shoulders, pectoral disc, ear spools | domed chest disc with a rim and central boss, matching back plate and two shoulder straps, all outside the tunic | documented; the plate is modelled as a metal disc |
+| **Chimú / Recuay** (`chimu_*`, `recuay_*`) | metal ear spools (Chimú also masks/tumi) | flared ear spools; the shared rodela and star macana | spools documented; **no garment is claimed** and the masks/tumi stay unmodelled, as the dossier already notes |
+| **Chanca** (`chanca_*`) | face paint | unchanged | documented |
+| **Late realistas / patriotas** (1780–1826) | bicorn | lens brim with upswept corners and a low crown, replacing the box brim + cylinder that read as a top hat | documented headwear; the exact crown is an abstraction |
+
+The Moche backflap material is not documented; painting it leather-brown makes the plate read against the red
+tunic. The dossier documents the trapezoidal shape, not the material, so this is a presentation choice.
+
+### Costs and testing
+
+Per-unit cost (main + shadow, `yarn bench:characters`): Moche 12 draws / 9,441 triangles; Wari 13 / 10,101;
+Chimú 10 / 9,109; late realista 22 / 12,674. All are inside the 25-draw / 25k common-unit ceiling; the Moche,
+Wari and Chimú gear also got cheaper than the previous version because the ear spools, the shield boss and the
+Wari straps are merged per bone (the earlier build was 14 / 16 / 12).
+
+`tests/model-assets.test.ts` now covers the shaped bicorn (wider than deep) and the Moche trapezoid (wider at
+the bottom); the existing Moche/Wari/Chimú E2E specs keep asserting the documented gear names.
+`scripts/bench_character_pilot.mjs` and `scripts/capture_character_pilot.mjs` cover the seven units.
+
+## 9. Pending issues
 
 1. **Body proportions and face.** The shared CC0 body is still ~8 heads and texture-faced. The pilot improves
    clothing and equipment, not anatomy. The art direction asks for 6.5–7 heads and a stronger head/hand
@@ -197,26 +230,31 @@ not another skinned mesh.
    presentation-only reaction.
 4. **Rigid cloth at joints.** Sleeves and breeches are rigid bone attachments; deep poses can show a crease
    at the elbow/knee. At the RTS camera it is not visible; a skinned garment needs the bind-safe path.
-5. **Shared post-colonial dresser.** `dressUniform` serves every post-colonial variant, so the late realistas,
-   patriotas, m7 rebels and modern roles also inherit the new sleeves, boots and headwear. The pilot's visual
-   validation is limited to the three units; the other variants need their own review. The Moche, Wari, Chimú
-   and the other Andean cultures use `workerAttire` and keep their old gear (only the Inca branch is new).
-6. **Draw-call headroom.** The Spanish is at 22 draws. A third accessory per bone should be merged into an
-   existing gear draw, not added as a new mesh.
+5. **Shared dressers.** `dressUniform` serves every post-colonial variant and `dressCaralWorker` every Andean
+   one. The shaped gear now reaches the Moche, Wari, Recuay, Chimú, late realistas and patriotas, but the
+   m7 rebels, the modern roles and the remaining Andean cultures (Tiahuanaco, Nazca, Chincha, Collas,
+   Huanca, Killke) still need their own review; the pilot's captures cover seven units, not every variant.
+   Where the dossier says «no documentado», the shared base stays and no garment is invented.
+6. **Draw-call headroom.** The Spanish and the late realista are at 22 draws. A third accessory per bone
+   should be merged into an existing gear draw, not added as a new mesh.
 
-## 9. Recommendation
+## 10. Recommendation
 
-**The runtime equipment standard is worth extending, but it is not yet a complete character standard.**
+**The runtime equipment standard is worth keeping and extending, but it is not yet a complete character
+standard.**
 
-- The pilot visibly improves the three units, keeps the proven rig and passes every gate. Extend the same
-  dresser to the remaining infantry cultures and the late realistas, one culture at a time, with the
-  `yarn bench:characters` ceiling.
-- Do **not** call the character standard finished until the body proportion/face pass lands. The current
-  result reads as a well-equipped 8-head mannequin, not as a 6.5–7-head stylized character.
+- The standard now covers seven units (Inca, 16th-century Spanish, 1879 Republican/Chilean, Moche, Wari,
+  Chimú/Recuay and the late realista) with documented, shaped gear, the proven rig and every gate green.
+  Extend the rest of the infantry culture by culture with the `yarn bench:characters` ceiling, and stop
+  wherever the dossier says «no documentado» instead of inventing a garment.
+- The next real quality step is the body: proportions (~8 heads today, 6.5–7 asked), hands and face. Until
+  that pass lands the result reads as a well-equipped mannequin, and no amount of gear will change it.
 - Keep the shared `caral_worker` body and clips for now. A new body must come with a bind-safe GLB export
   and a before/after that proves the animation did not stretch.
-- The 28 MiB budget is untouched by this pilot because the gear is runtime geometry; that is the strongest
-  argument for the runtime path until the export problem is solved.
+- The 28 MiB budget is untouched because the gear is runtime geometry; that is the strongest argument for the
+  runtime path until the export problem is solved.
+- If a future pass adds headwear or a cuirass to the remaining cultures, merge it into an existing bone draw
+  first: the Spanish and the late realista are already at 22 of the 25 available draws.
 
 ## See also
 
