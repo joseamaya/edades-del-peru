@@ -36,6 +36,28 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
     const attire = [tunic, lower, 'attire_sash', 'attire_headband', 'attire_carry', 'attire_tool'].map(
       (name) => !!worker.rig.root.getObjectByName(name),
     );
+    // The proportion pass scales the head 1.12 around its bone pivot (female ~0.284 m, male ~0.269 m in the
+    // bind pose); a revert or a pivot regression drops it back near 0.24.
+    const body = worker.rig.root.getObjectByName(male ? 'Body_m' : 'Body_f') as any;
+    let headHeight = 0;
+    if (body) {
+      const position = body.geometry.getAttribute('position');
+      const skinIndex = body.geometry.getAttribute('skinIndex');
+      const skinWeight = body.geometry.getAttribute('skinWeight');
+      let min = Infinity;
+      let max = -Infinity;
+      for (let i = 0; i < position.count; i++) {
+        let best = 0;
+        for (let k = 1; k < 4; k++) {
+          if (skinWeight.getComponent(i, k) > skinWeight.getComponent(i, best)) best = k;
+        }
+        if (body.skeleton.bones[skinIndex.getComponent(i, best)]?.name !== 'Head') continue;
+        const y = position.getY(i);
+        min = Math.min(min, y);
+        max = Math.max(max, y);
+      }
+      headHeight = max - min;
+    }
     const shadows = (name: string): { cast: boolean; receive: boolean } | null => {
       const mesh = worker.rig.root.getObjectByName(name) as {
         castShadow?: boolean;
@@ -48,6 +70,7 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
       workers: workers.length,
       rigged: workers.filter((u: any) => !!u.rig).length,
       attire,
+      headHeight,
       shadowSkipOk: skipNames.every((name) => {
         const flags = shadows(name);
         return !!flags && !flags.cast && !flags.receive;
@@ -68,6 +91,8 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
   expect(initial.assets.find((asset) => asset.id === 'caral_worker')?.state).toBe('ready');
   expect(initial.workers).toBeGreaterThan(0);
   expect(initial.rigged).toBe(initial.workers);
+  expect(initial.headHeight).toBeGreaterThan(0.26);
+  expect(initial.headHeight).toBeLessThan(0.31);
   expect(initial.attire.every(Boolean)).toBe(true);
   expect(initial.shadowSkipOk).toBe(true);
   expect(initial.bodyOnlyShadow).toBe(true);

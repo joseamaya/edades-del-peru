@@ -12,7 +12,8 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
  *
  * Sources are fetched from the pinned mirror commit and verified by SHA-256.
  * The generated GLB owns one skeleton, the body/hair meshes and the worker
- * clips; tools and the carry bundle stay runtime attachments.
+ * clips; tools and the carry bundle stay runtime attachments. The visible skin gets the art-direction
+ * proportions (head/hands +12 %, waist/chest taper) before the garments are derived from it.
  */
 const PIN = '1e83864f55ff8646e929ac9b73faa75df29161de';
 const BASE = `https://raw.githubusercontent.com/Dallolz/moorfall-assets/${PIN}`;
@@ -375,6 +376,80 @@ try {
       addEyebrows(maleBrows, 'Eyebrows_m');
       femaleBrows?.removeFromParent();
 
+      // Bake the art-direction proportions into the visible skin before the garments are derived from it.
+      // The head and hands are +12 % around their bone pivots and the waist/chest get a gentle taper. Keep
+      // the constants and bands in sync with `scripts/blender/bake_character_proportions.py`, the hero path;
+      // doing it here keeps the worker's welded vertices (a Blender round-trip split them and grew the GLB
+      // by 0.17 MB).
+      const bakeProportions = (meshes) => {
+        const head = skeleton.bones.find((bone) => bone.name === 'Head');
+        const pelvis = skeleton.bones.find((bone) => bone.name === 'pelvis');
+        const hands = ['hand_l', 'hand_r']
+          .map((name) => skeleton.bones.find((bone) => bone.name === name))
+          .filter(Boolean);
+        if (!head || !pelvis) throw new Error('proportion pass: missing Head/pelvis');
+        const taper = (t) => {
+          if (t <= 0.25) return 1;
+          if (t <= 0.45) return 1 + (0.97 - 1) * ((t - 0.25) / 0.2);
+          if (t <= 0.75) return 0.97 + (1.04 - 0.97) * ((t - 0.45) / 0.3);
+          return 1.04 + (1 - 1.04) * Math.min(1, (t - 0.75) / 0.25);
+        };
+        for (const mesh of meshes) {
+          mesh.updateWorldMatrix(true, false);
+          const position = mesh.geometry.getAttribute('position');
+          const skinIndex = mesh.geometry.getAttribute('skinIndex');
+          const skinWeight = mesh.geometry.getAttribute('skinWeight');
+          if (!skinIndex || !skinWeight) continue;
+          const pivot = (bone) => mesh.worldToLocal(bone.getWorldPosition(new THREE.Vector3()));
+          const headPivot = pivot(head);
+          const pelvisPivot = pivot(pelvis);
+          const handPivots = new Map(hands.map((bone) => [bone.name, pivot(bone)]));
+          const span = Math.max(1e-4, headPivot.y - pelvisPivot.y);
+          for (let i = 0; i < position.count; i++) {
+            let x = position.getX(i);
+            let y = position.getY(i);
+            let z = position.getZ(i);
+            if (y > pelvisPivot.y && y < headPivot.y) {
+              x = pelvisPivot.x + (x - pelvisPivot.x) * taper((y - pelvisPivot.y) / span);
+            }
+            let best = 0;
+            for (let k = 1; k < 4; k++) {
+              if (skinWeight.getComponent(i, k) > skinWeight.getComponent(i, best)) best = k;
+            }
+            const bone = skeleton.bones[skinIndex.getComponent(i, best)];
+            if (bone === head) {
+              x = headPivot.x + (x - headPivot.x) * 1.12;
+              y = headPivot.y + (y - headPivot.y) * 1.12;
+              z = headPivot.z + (z - headPivot.z) * 1.12;
+            } else if (handPivots.has(bone?.name)) {
+              const handPivot = handPivots.get(bone.name);
+              x = handPivot.x + (x - handPivot.x) * 1.12;
+              y = handPivot.y + (y - handPivot.y) * 1.12;
+              z = handPivot.z + (z - handPivot.z) * 1.12;
+            }
+            position.setXYZ(i, x, y, z);
+          }
+          position.needsUpdate = true;
+        }
+      };
+      if (!hero) {
+        // The hero base intentionally stays unscaled: `bake_character_proportions.py` applies the same pass
+        // once in Blender, so running it here too would double the head/hand scale and the taper.
+        const proportionMeshes = [
+          'Body_f',
+          'Body_m',
+          'Hair_f',
+          'Hair_m',
+          'Eyes_f',
+          'Eyes_m',
+          'Eyebrows_f',
+          'Eyebrows_m',
+        ]
+          .map((name) => baseGltf.scene.getObjectByName(name))
+          .filter((object) => object?.isSkinnedMesh);
+        bakeProportions(proportionMeshes);
+      }
+
       // A short-sleeved cotton tunic derived from the body surface: same skin weights,
       // slightly offset along the normals, with the arms and neck excluded.
       const makeTunic = (sourceBody, { topY = 1.48, bottomY = 0.88, sideX = 0.22, offset = 0.03 } = {}) => {
@@ -563,12 +638,17 @@ try {
         return mesh;
       };
       const tunicF = addSkinned(makeTunic(femaleBody), cotton, 'attire_tunic_f');
-      const tunicM = addSkinned(makeTunic(maleBody, { sideX: 0.3 }), cotton, 'attire_tunic_m', maleBody.bindMatrix);
+      const tunicM = addSkinned(
+        makeTunic(addedMaleBody, { sideX: 0.3 }),
+        cotton,
+        'attire_tunic_m',
+        maleBody.bindMatrix,
+      );
       if (hero) {
         // The hero's uncu is longer than the worker's: a second silhouette layer under the mantle.
         tunicM.removeFromParent();
         addSkinned(
-          makeTunic(maleBody, { topY: 1.48, bottomY: 0.68, sideX: 0.34, offset: 0.04 }),
+          makeTunic(addedMaleBody, { topY: 1.48, bottomY: 0.68, sideX: 0.34, offset: 0.04 }),
           cotton.clone(),
           'attire_tunic_m',
           maleBody.bindMatrix,

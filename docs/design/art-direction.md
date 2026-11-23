@@ -84,8 +84,10 @@ No asset is accepted because it looks good at close range. It must read at 54 fi
 
 ### 4.1 Characters and units
 
-- **Proportions:** 6.5–7 heads tall, not the 8+ heroic proportion of the current CC0 bodies. Head and hands
-  are +10–15 % relative to a realistic body so faces and gestures survive the RTS zoom.
+- **Proportions:** 6.5–7 heads tall, not the 8+ heroic proportion of the CC0 bodies. Head and hands are
+  +10–15 % relative to a realistic body so faces and gestures survive the RTS zoom. The shared worker and hero
+  now bake +12 % (head/hands around the bone pivots) and a waist/chest taper, which lands at ~7.1 heads; a
+  true 6.5–7-head body still needs a sculpt (pilot note below).
 - **Silhouette layers:** body, garment, headdress/prop. Each Ayar sibling must be identifiable by at least
   **two** layers at the default zoom, not by accent colour alone. Ayar Manco, Ayar Cachi and Mama Huaco are
   the first acceptance cases.
@@ -114,8 +116,8 @@ No asset is accepted because it looks good at close range. It must read at 54 fi
   Inca, 22 / 14.2k for the 16th-century Spanish, 20 / 11.7k for the 1879 fusilier, 12 / 9.4k for the Moche,
   13 / 10.1k for the Wari, 10 / 9.1k for the Chimú and 22 / 12.7k for the late realista. A 12-unit formation
   measures 168 / 264 / 246 / 144 / 156 / 120 / 264 draws and 0.12–0.14 ms/frame of mixer work. The same rig
-  now ships `Jog_Fwd_Loop` for `run` and `Hit_Chest` as a presentation-only hit overlay. Proportions, faces
-  and a bind-safe character GLB remain open.
+  now ships `Jog_Fwd_Loop` for `run`, `Hit_Chest` as a presentation-only hit overlay, and a baked ~7.1-head
+  proportion pass. A 6.5–7-head sculpt, the face and a bind-safe character GLB remain open.
 
 ### 4.2 Architecture
 

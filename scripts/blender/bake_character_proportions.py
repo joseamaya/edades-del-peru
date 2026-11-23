@@ -1,19 +1,20 @@
-"""Bake the Tambotoco hero proportions into the rigged GLB.
+"""Bake the shared character proportions into a rigged GLB.
 
-The E4b hero was a male-only derivation of the CC0 body with a longer tunic; the head and hands were
-scaled +12% at runtime because the shared body reads as ~8 heads. This pass bakes that proportion into
-the mesh (head and hands around their bone pivots) and adds a gentle shoulder/waist taper, so the
-committed asset owns the silhouette and the runtime hack can go. It does not retopologise the body; a
-hand-sculpted replacement can still swap the same asset and clips.
+The CC0 Quaternius body reads as ~8 heads. This pass bakes the art-direction proportions into the mesh:
+the head and hands are scaled +12 % around their bone pivots and the shoulders/waist get a gentle taper,
+so the committed asset owns the silhouette. It does not retopologise the body. Keep the constants and the
+taper bands in sync with `bakeProportions` in `scripts/build_caral_worker.mjs` (the worker path).
 
 Run after the base hero build, then meshopt with the hero tunic budget:
 
   node scripts/build_caral_worker.mjs --hero --out=review/tambotoco_hero_base.glb
-  blender --background --python scripts/blender/build_tambotoco_hero_sculpt.py -- \
+  blender --background --python scripts/blender/bake_character_proportions.py -- \
       --in=review/tambotoco_hero_base.glb --out=src/assets/models/tambotoco_hero.glb
   node scripts/simplify_caral_worker.mjs --file=src/assets/models/tambotoco_hero.glb --hero
 
-`yarn models:hero` runs the whole chain (Blender is a local authoring tool, not a CI dependency).
+`yarn models:hero` runs the whole chain (Blender is a local authoring tool, not a CI dependency). The
+worker applies the same pass inside `build_caral_worker.mjs`, because a Blender round-trip splits the
+welded vertices and grows the shared GLB by ~0.17 MB; the hero keeps this authoring path.
 """
 import sys
 
