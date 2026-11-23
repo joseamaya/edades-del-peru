@@ -273,11 +273,37 @@ during the flinch really starts (the thigh bone keeps moving after the resume).
 the Caral and Inca scout specs now expect `run`/`Jog_Fwd_Loop` for a moving scout, which is the intended
 behaviour change. `yarn test` (1,092 tests) and `yarn test:e2e:fast` (349 tests) are green.
 
-## 10. Pending issues
+## 10. Body proportions
 
-1. **Body proportions and face.** The shared CC0 body is still ~8 heads and texture-faced. The pilot improves
-   clothing and equipment, not anatomy. The art direction asks for 6.5–7 heads and a stronger head/hand
-   read; that requires a body pass, not another accessory.
+![Before and after: the shared body at ~8 heads and the baked ~7.1-head pass](../media/character-proportions-before-after.webp)
+
+The pilot left the shared CC0 body at ~8 heads. The hero already had a baked proportion pass
+(`bake_character_proportions.py`: head and hands +12 % around their bone pivots, shoulders/waist taper); the
+worker now gets the same pass **inside `build_caral_worker.mjs`**, before the tunic is derived from the body,
+so every humanoid variant shares the new silhouette.
+
+| Measure | Before | After |
+| --- | --- | --- |
+| `Body_f` head height | 0.247 m | 0.284 m (+15 %, including the pivot distribution) |
+| Head/hand scale | 1.00 | 1.12 around the bone pivots |
+| Head-to-body ratio | ~8 heads | ~7.1 heads |
+| `caral_worker.glb` | 2,571,908 bytes | 2,572,456 bytes |
+| `dist` | 27.80 MB | 27.80 MB (1024-based) |
+
+The pass is applied in the browser build rather than a Blender round-trip: importing/exporting the worker
+through Blender splits its welded vertices and grew the shared GLB by ~0.17 MB (`dist` reached 27.96 MB), while
+the browser pass adds ~0.5 KB. The hero keeps the Blender authoring path because it is a separate asset.
+
+**Remaining gap.** ~7.1 heads is inside the 6.5–7 band only at the edge; a true 6.5–7-head character needs a
+body-specific sculpt/retopology, not another uniform scale. The face is still the painted source texture: no
+geometric nose, jaw or eyelids. `tests/visual/baseline.json` was regenerated for the 26 affected scenes; the
+change is intentional and is the evidence for this pass.
+
+## 11. Pending issues
+
+1. **Body and face.** §10 took the shared body from ~8 to ~7.1 heads with the baked head/hand scale and waist
+   taper, so the face and hands read better. It is still a uniform scale on the CC0 body, not a body-specific
+   sculpt: 6.5–7 heads, a geometric nose/jaw and eyelids remain open.
 2. **Bind-matrix-safe GLB export.** Re-exporting the finished worker GLB remains blocked by the shared-skeleton
    problem in §2. A future body replacement should start from the original Quaternius sources (the
    `tambotoco_hero.glb` path) or prove that its export preserves the inverse bind matrices and tracks.
@@ -294,7 +320,7 @@ behaviour change. `yarn test` (1,092 tests) and `yarn test:e2e:fast` (349 tests)
 6. **Draw-call headroom.** The Spanish and the late realista are at 22 draws. A third accessory per bone
    should be merged into an existing gear draw, not added as a new mesh.
 
-## 11. Recommendation
+## 12. Recommendation
 
 **The runtime equipment standard is worth keeping and extending, but it is not yet a complete character
 standard.**
@@ -304,8 +330,9 @@ standard.**
   rig, and every gate green. Extend the rest of the infantry culture by culture with the
   `yarn bench:characters` ceiling, and stop wherever the dossier says «no documentado» instead of inventing a
   garment.
-- The next real quality step is the body: proportions (~8 heads today, 6.5–7 asked), hands and face. Until
-  that pass lands the result reads as a well-equipped mannequin, and no amount of gear will change it.
+- §10 landed the proportion pass (~7.1 heads, bigger head/hands). The next real quality step is the body
+  itself: a 6.5–7-head sculpt/retopology with a geometric nose/jaw and eyelids. Uniform scaling has reached
+  its limit; no amount of gear will change that.
 - Keep the shared `caral_worker` body and clips for now. A new body must come with a bind-safe GLB export
   and a before/after that proves the animation did not stretch.
 - The 28 MiB budget is untouched because the gear is runtime geometry; that is the strongest argument for the
