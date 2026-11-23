@@ -253,8 +253,7 @@ function postColonialFieldRole(kind: UnitKind): PostColonialRole | null {
     kind === UnitKind.MUSKETEER ||
     kind === UnitKind.RIFLEMAN ||
     kind === UnitKind.SNIPER ||
-    kind === UnitKind.ANTI_AIR ||
-    kind === UnitKind.INCA_SLINGER
+    kind === UnitKind.ANTI_AIR
   ) {
     return 'ranged';
   }
@@ -301,6 +300,10 @@ export function unitModelAsset(
   // The hueste's Andean allies are scripted, not trained: keep the Inca rig instead of the Spanish one.
   if (civ === CivId.HUESTE_INDIANA && kind === UnitKind.INCA_WARRIOR) {
     return unitModelAsset(kind, era, CivId.INCA, id, gender, tag, missionId);
+  }
+  // The Inca slinger is always an Andean thrower, never a post-1532 firearm role (m7 rebels included).
+  if (kind === UnitKind.INCA_SLINGER) {
+    return unitModelAsset(UnitKind.MUSKETEER, Era.TAHUANTINSUYO, CivId.INCA, id, gender, tag, missionId);
   }
   const baseKind = unitBaseKind(kind);
   if (baseKind !== kind) return unitModelAsset(baseKind, era, civ, id, gender, tag, missionId);

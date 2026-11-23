@@ -12,7 +12,7 @@ import {
   AlertReason,
   ResourceKind,
 } from '../core/types';
-import { getUnitStats, UnitStats, DamageClass, UnitClass } from '../model/defs/units';
+import { getUnitStats, projectileHasMuzzleFlash, UnitStats, DamageClass, UnitClass } from '../model/defs/units';
 import type { BuildContext } from '../model/ProceduralModel';
 import type { RigInstance } from '../rendering/RigInstance';
 import type { UnitView } from '../rendering/UnitView';
@@ -1393,7 +1393,7 @@ export class Unit {
       bonusVs: this.stats.bonusVs,
     });
     // Gunpowder flash only: an arrow or a sling stone does not ignite at the muzzle.
-    if (pKind === 'bullet' || pKind === 'tracer' || pKind === 'howitzer_shell' || pKind === 'nuclear') {
+    if (projectileHasMuzzleFlash(pKind)) {
       const angle = facingRotation(this.yaw);
       const muzzle = {
         x: 0.28 * Math.cos(angle) + 0.62 * Math.sin(angle),

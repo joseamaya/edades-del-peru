@@ -1196,6 +1196,11 @@ const WEAPON_PROJECTILE: Record<RangedWeapon, ProjectileKind> = {
 };
 
 /** Projectile that matches the unit's weapon in this era (no firearms before 1532). */
+/** Gunpowder and artillery flash at the muzzle; arrows and sling stones do not. */
+export function projectileHasMuzzleFlash(kind: ProjectileKind): boolean {
+  return kind !== 'arrow' && kind !== 'sling_stone' && kind !== 'none';
+}
+
 export function projectileFor(kind: UnitKind, era: Era): ProjectileKind {
   const base = BASE_STATS[kind];
   if (base.range === 0) return 'none';
