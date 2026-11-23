@@ -782,8 +782,10 @@ describe('rigged model assets', () => {
     const box =
       bicorn.geometry.boundingBox ??
       new THREE.Box3().setFromBufferAttribute(bicorn.geometry.getAttribute('position') as THREE.BufferAttribute);
-    // A bicorn's points run across the head (x) with a narrow front-to-back (z) footprint.
-    expect(box.max.x - box.min.x).toBeGreaterThan(box.max.z - box.min.z);
+    // A bicorn's points run across the head (x) with a narrow front-to-back (z) footprint. The bounds
+    // also reject the old box brim (0.34 x 0.2), which would pass a bare x > z comparison.
+    expect(box.max.x - box.min.x).toBeGreaterThan(0.44);
+    expect(box.max.z - box.min.z).toBeLessThan(0.3);
     rig.dispose();
   });
 
@@ -799,7 +801,7 @@ describe('rigged model assets', () => {
       'attire_andean_macana',
       'attire_andean_macana_head',
     ]) {
-      expect(moche.root.getObjectByName(name), name).toBeDefined();
+      expect(moche.root.getObjectByName(name), name).not.toBeNull();
     }
     // The back armour is a trapezoid: wider at the bottom than at the top.
     const backflap = moche.root.getObjectByName('attire_andean_backflap') as THREE.Mesh;
@@ -830,7 +832,7 @@ describe('rigged model assets', () => {
       'attire_andean_pectoral_strap',
       'attire_andean_ear',
     ]) {
-      expect(wari.root.getObjectByName(name), name).toBeDefined();
+      expect(wari.root.getObjectByName(name), name).not.toBeNull();
     }
     expect(wari.root.getObjectByName('attire_andean_helmet')).toBeUndefined();
     wari.dispose();
