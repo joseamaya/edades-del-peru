@@ -94,7 +94,9 @@ No asset is accepted because it looks good at close range. It must read at 54 fi
 - **Common units:** three variants per role (tunic colour, headwear, mantle) so a group does not read as
   clones. Variation is deterministic and presentation-only.
 - **Materials:** woven cotton/wool with a visible weave and roughness break; skin is matte
-  (roughness 0.55–0.70), never glossy. No metal before 1532.
+  (roughness 0.55–0.70), never glossy. No metal before 1532 **except the documented Andean metalwork** (Moche
+  conical helmets and ear spools, Wari pectoral, Chimú/Recuay gold ear spools); those follow
+  [`../historia/atuendos.md`](../historia/atuendos.md).
 - **Faces:** stylized, painted features; no portrait claim. The likeness rules in
   [`characters.md`](./characters.md) still apply.
 - **Animation:** shared clips; `idle`, `walk`, `attack` and `death` are mandatory for a fielded role. Work and
@@ -107,10 +109,10 @@ No asset is accepted because it looks good at close range. It must read at 54 fi
 - **Budgets:** hero ≤ 40 draw calls / 40k triangles; common unit ≤ 25 draw calls / 25k triangles. These are
   ceilings, not targets to fill.
 - **Pilot result (2026-11):** [`../art/character-visual-pilot.md`](../art/character-visual-pilot.md) implements
-  the equipment layer on the shared rig. `yarn bench:characters` measures 15 draws / 10.7k triangles for the
+  the equipment layer on the shared rig. `yarn bench:characters` measures 14 draws / 10.7k triangles for the
   Inca, 22 / 14.2k for the 16th-century Spanish, 20 / 11.7k for the 1879 fusilier, 12 / 9.4k for the Moche,
   13 / 10.1k for the Wari, 10 / 9.1k for the Chimú and 22 / 12.7k for the late realista. A 12-unit formation
-  measures 168 / 264 / 246 / 144 / 156 / 120 / 264 draws and 0.13–0.14 ms/frame of mixer work. Proportions,
+  measures 168 / 264 / 246 / 144 / 156 / 120 / 264 draws and 0.12–0.14 ms/frame of mixer work. Proportions,
   faces and a bind-safe character GLB remain open.
 
 ### 4.2 Architecture
