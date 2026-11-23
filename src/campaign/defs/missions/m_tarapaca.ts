@@ -220,16 +220,11 @@ export const mTarapaca: MissionDef = {
       motion: 'pan-right',
     },
   ],
-  allowedUnits: [
-    UnitKind.WORKER,
-    UnitKind.SOLDIER,
-    UnitKind.RIFLEMAN,
-    UnitKind.REPUBLICA_DEFENSOR,
-    UnitKind.SNIPER,
-    UnitKind.SCOUT,
-  ],
-  // No settlement construction: the mission is a single-day battle, not a founding scenario.
+  // The field force is fixed: the opening units and the Pachica/captured-gun reinforcements are scripted.
+  allowedUnits: [],
+  // No settlement construction and no research: the mission is a single-day battle, not a founding scenario.
   allowedBuildings: [],
+  allowedTechs: [],
   buildingNames: { [BuildingKind.FORTRESS]: 'Fortín' },
   unitNames: { [UnitKind.REPUBLICA_DEFENSOR]: 'Defensor de Tarapacá' },
   // He commands from the rear: the mission is lost if he falls, and the assault is no place for him.

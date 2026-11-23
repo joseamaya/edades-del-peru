@@ -270,17 +270,23 @@ export const mTambotoco: MissionDef = {
     },
   ],
   epilogueImage: 'media/tambotoco/intro-epilogo.webp',
-  buildingNames: { [BuildingKind.MILL]: 'Depósito comunal' },
+  buildingNames: {
+    [BuildingKind.MILL]: 'Depósito comunal',
+    [BuildingKind.ARSENAL]: 'Casa de armas',
+  },
   allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.MUSKETEER, UnitKind.SCOUT],
   allowedBuildings: [
     BuildingKind.HOUSE,
     BuildingKind.FARM,
     BuildingKind.MILL,
     BuildingKind.SAWMILL,
-    // A movement of families, not an army: the ayllu warriors can be raised, but no fortresses,
-    // walls or towers; the valley yields to the water, not to a siege.
+    // A movement of families, not an army: the ayllu warriors and honderos can be raised, but no
+    // fortresses, walls or towers; the valley yields to the water, not to a siege.
     BuildingKind.BARRACKS,
+    BuildingKind.ARSENAL,
   ],
+  // The ayllu economy has no market, silver or imperial institute; the canal is the only shared tech.
+  allowedTechs: ['irrigation_canal'],
   objectives: [
     {
       id: 'a1_salida',

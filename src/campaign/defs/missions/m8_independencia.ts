@@ -97,6 +97,21 @@ export const m8Independencia: MissionDef = {
   // The player's roster is the cavalry arm of Junín; the infantry, montoneras and artillery are scripted
   // reinforcements for the march and Ayacucho.
   allowedUnits: [UnitKind.WORKER, UnitKind.CAVALRY, UnitKind.SCOUT],
+  // The camp is a cavalry camp: no infantry barracks, arsenal, artillery workshop or academy.
+  allowedBuildings: [
+    BuildingKind.CENTER,
+    BuildingKind.HOUSE,
+    BuildingKind.FARM,
+    BuildingKind.MILL,
+    BuildingKind.SAWMILL,
+    BuildingKind.STABLE,
+    BuildingKind.FORTRESS,
+    BuildingKind.WALL,
+    BuildingKind.GATE,
+    BuildingKind.TOWER,
+    BuildingKind.MARKET,
+  ],
+  allowedTechs: ['irrigation_canal', 'shock_cavalry'],
   mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
   // The royalist army is a scripted force: it keeps its centre and houses but no peasant economy, and its
   // pressure is the Junín charge, the Ayacucho garrison and the surrender hold.

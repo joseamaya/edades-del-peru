@@ -161,7 +161,8 @@ describe('campaign educational content', () => {
   it('a mission roster restriction only lists valid units and keeps workers', () => {
     const kinds = new Set<string>(Object.values(UnitKind));
     for (const mis of MISSIONS) {
-      if (!mis.allowedUnits) continue;
+      // An empty list is the explicit no-economy battle (Tarapacá), not a forgotten worker.
+      if (!mis.allowedUnits || mis.allowedUnits.length === 0) continue;
       for (const u of mis.allowedUnits) expect(kinds.has(u), `${mis.id} allows unknown unit ${u}`).toBe(true);
       expect(mis.allowedUnits.includes(UnitKind.WORKER), `${mis.id} restriction excludes workers`).toBe(true);
     }
@@ -212,7 +213,7 @@ describe('campaign educational content', () => {
     for (const [id, playerUnit, enemyUnit] of cases) {
       const mis = MISSIONS.find((m) => m.id === id)!;
       const edu = getEducational(id);
-      expect(mis.allowedUnits, `${id} adds a mission restriction`).toBeUndefined();
+      if (mis.allowedUnits) expect(mis.allowedUnits, `${id} player unique`).toContain(playerUnit);
       expect(unitTrainableInPeriod(playerUnit, mis.period, mis.playerCiv), `${id} player unique`).toBe(true);
       expect(BUILDING_DEFS[BuildingKind.BARRACKS].trainable, `${id} barracks roster`).toContain(playerUnit);
       expect(edu, `${id} briefing`).toBeDefined();
@@ -734,6 +735,53 @@ describe('campaign educational content', () => {
         expect(o.time, `${mis.id}/${o.id} hold without time`).toBeGreaterThan(0);
       }
     }
+  });
+
+  it('keeps the Inca ranged line as slingers and the fixed battles free of phantom options', () => {
+    const mission = (id: string) => MISSIONS.find((m) => m.id === id)!;
+    // m5/m6/m6b: no archers; the ranged line is the hondero (MUSKETEER) and the commanders are warriors.
+    for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']) {
+      const m = mission(id);
+      expect(m.allowedUnits, `${id} archers`).not.toContain(UnitKind.RIFLEMAN);
+      expect(m.allowedUnits, `${id} slings`).toContain(UnitKind.MUSKETEER);
+      expect(m.allowedBuildings, `${id} market`).not.toContain(BuildingKind.MARKET);
+      expect(m.allowedTechs, `${id} bow tech`).not.toContain('bow_and_bolas');
+    }
+    expect(
+      mission('m5_yahuar_pampa').start.units?.some(
+        (u) => u.kind === UnitKind.INCA_WARRIOR && u.tag === 'cusi_yupanqui',
+      ),
+    ).toBe(true);
+    expect(
+      mission('m6_chimu_inca').start.units?.some((u) => u.kind === UnitKind.INCA_WARRIOR && u.tag === 'tupac_yupanqui'),
+    ).toBe(true);
+    // Cusco/Vilcabamba keep an Inca sling line and their own techs; no Spanish market.
+    for (const id of ['m_cusco_1536', 'm_vilcabamba']) {
+      const m = mission(id);
+      expect(m.allowedUnits, `${id} slingers`).toContain(UnitKind.INCA_SLINGER);
+      expect(m.allowedUnits, `${id} archers`).not.toContain(UnitKind.RIFLEMAN);
+      expect(m.allowedBuildings, `${id} market`).not.toContain(BuildingKind.MARKET);
+      expect(m.allowedBuildings, `${id} institute`).toContain(BuildingKind.INSTITUTE);
+      expect(m.allowedTechs, `${id} quipus`).toContain('quipus_watchers');
+      expect(m.allowedTechs, `${id} cavalry`).not.toContain('shock_cavalry');
+      expect(m.allowedTechs, `${id} evangelization`).not.toContain('evangelization');
+    }
+    // Junín is a cavalry camp: no infantry/artillery buildings.
+    const junin = mission('m8_independencia');
+    for (const kind of [BuildingKind.BARRACKS, BuildingKind.ARSENAL, BuildingKind.FACTORY, BuildingKind.INSTITUTE]) {
+      expect(junin.allowedBuildings, `m8 ${kind}`).not.toContain(kind);
+    }
+    expect(junin.allowedBuildings, 'm8 stable').toContain(BuildingKind.STABLE);
+    // Tarapacá is a fixed field battle: no production and no research.
+    const tarapaca = mission('m_tarapaca');
+    expect(tarapaca.allowedUnits).toEqual([]);
+    expect(tarapaca.allowedBuildings).toEqual([]);
+    expect(tarapaca.allowedTechs).toEqual([]);
+    // Miraflores keeps its guns (workshop); Breña only has the captured starting piece.
+    expect(mission('m_miraflores').allowedBuildings).toContain(BuildingKind.FACTORY);
+    expect(mission('m_miraflores').allowedUnits).toContain(UnitKind.ARTILLERY);
+    expect(mission('m_brena').allowedUnits).not.toContain(UnitKind.ARTILLERY);
+    expect(mission('m_brena').allowedBuildings).not.toContain(BuildingKind.FACTORY);
   });
 
   it('every objective and trigger entityTag is declared by a start/mark tag', () => {

@@ -180,6 +180,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       UnitKind.RIFLEMAN,
       UnitKind.SNIPER,
       UnitKind.ANTI_AIR,
+      UnitKind.INCA_SLINGER,
       UnitKind.REPUBLICA_DEFENSOR,
       UnitKind.CHILE_INFANTE,
     ],

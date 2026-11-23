@@ -31,6 +31,8 @@ The sack of Chorrillos and the occupation of Lima are stated in the epilogue, ne
 
 - `REPUBLIC` vs `CHILE`; period-locked Republic.
 - Units: workers, republican defenders (reservists), riflemen, cavalry, hussars, artillery and scouts.
+- The redoubts historically had guns, so the mission allows an artillery workshop; it is the only source of
+  trainable artillery.
 - Cáceres is a protected commander card; no invented likeness.
 
 - The Chilean army is a **field force**: `enemy.economy: false` and `start.enemyOpeningUnits: false` keep

@@ -35,7 +35,9 @@ The Inca's capture and execution are narrated in the epilogue; no counterfactual
 ## Economy and cast
 
 - `INCA` vs `REALISTAS`; period-locked Viceroyalty.
-- Units: workers, Inca warriors, soldiers and scouts; no horses or firearms for the player.
+- Units: workers, Inca warriors, Inca slingers, soldiers and scouts; no horses or firearms for the player.
+  The slingers are trained at the «Casa de armas»; the Yachaywasi hosts the loom and quipu techs. No market
+  or Spanish doctrine.
 - Arbieto's column is an **expedition, not a settlement**: `enemy.economy: false`,
   `start.enemyOpeningUnits: false` and `enemy.attacks: false` keep its camp but stop the peasant economy,
   sawmill and mill, and leave the offensive to the authored waves. The column after Huayna Pucará is five

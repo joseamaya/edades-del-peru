@@ -1,4 +1,4 @@
-import { Era, CivId, HistoricalPeriod, BuildingKind } from '../../../core/types';
+import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import { highValleyVegetation } from '../../../model/defs/profiles';
 import type { MissionDef } from '../../types';
 import { WARI_MAP_SIZE, wariLength } from '../../../model/defs/wariSite';
@@ -155,10 +155,19 @@ export const m4Wari: MissionDef = {
     BuildingKind.MILL,
     BuildingKind.SAWMILL,
     BuildingKind.REFINERY,
+    BuildingKind.SMELTER,
+    BuildingKind.INSTITUTE,
     BuildingKind.MARKET,
     BuildingKind.BARRACKS,
   ],
-  buildingNames: { [BuildingKind.MARKET]: 'Centro administrativo wari' },
+  // No arsenal: the dossier's roster is workers, warriors, the Wari guardian and the road network.
+  allowedUnits: [UnitKind.WORKER, UnitKind.CARAVAN, UnitKind.SOLDIER, UnitKind.WARI_GUARDIAN, UnitKind.SCOUT],
+  allowedTechs: ['irrigation_canal', 'andean_loom', 'silver_metallurgy', 'quipus_watchers', 'wari_mitimaes'],
+  buildingNames: {
+    [BuildingKind.MARKET]: 'Centro administrativo wari',
+    [BuildingKind.INSTITUTE]: 'Talleres estatales',
+    [BuildingKind.SMELTER]: 'Taller de orfebrería',
+  },
   objectives: [
     {
       id: 'obj_suministros',

@@ -17,8 +17,9 @@
 - **En el juego**: dos fases de posición, Junín y Ayacucho, con Sucre protegido y oleadas realistas. Las
   batallas se abstraen como “sostener” el campo durante un tiempo; no se inventan unidades, generales ni
   hechos. Junín es solo de caballería, sin armas de fuego; la infantería, las **montoneras** y la artillería
-  se suman después, para la marcha y Ayacucho. Las oleadas realistas de Junín son **dragones**. El mapa fija
-  dos pampas de altura y una iglesia realista como referencia visual.
+  se suman después, para la marcha y Ayacucho. Las oleadas realistas de Junín son **dragones**. El campamento
+  patriota construye economía, establo, fortín y defensas; no cuartel de infantería, arsenal ni taller de
+  artillería. El mapa fija dos pampas de altura y una iglesia realista como referencia visual.
 
 ## Certeza
 

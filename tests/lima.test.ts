@@ -68,6 +68,9 @@ describe('La Ciudad de los Reyes', () => {
     expect(LIMA.start.units?.some((u) => u.kind === UnitKind.ARTILLERY)).toBe(false);
     expect(LIMA.allowedUnits).not.toContain(UnitKind.ARTILLERY);
     expect(LIMA.allowedBuildings).not.toContain(BuildingKind.FACTORY);
+    expect(LIMA.allowedTechs).not.toContain('siege_engines');
+    expect(LIMA.allowedTechs).not.toContain('bow_and_bolas');
+    expect(LIMA.allowedTechs).toContain('shock_cavalry');
     expect(LIMA.unitNames?.[UnitKind.ARTILLERY]).toBe('Falconete');
     const cabildo = LIMA.triggers.find((t) => t.id === 't_cabildo')!;
     expect(

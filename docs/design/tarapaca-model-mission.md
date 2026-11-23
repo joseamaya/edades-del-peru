@@ -76,8 +76,9 @@ Arica. Sources and certainty: [`docs/historia/campanas/tarapaca.md`](../historia
 ## Economy and cast
 
 - `REPUBLIC` vs `CHILE`; period-locked Republic.
-- No workers and no construction: the roster is eight republican defenders, three riflemen, four soldiers
-  and Cáceres. The captured artillery arrives as a scripted reinforcement after the heights.
+- No workers, no construction and no research (`allowedUnits`, `allowedBuildings` and `allowedTechs` are
+  empty): the roster is eight republican defenders, three riflemen, four soldiers and Cáceres. The captured
+  artillery arrives as a scripted reinforcement after the heights.
 - Two captured artillery pieces arrive after Act II; four defenders arrive from Pachica when Act II opens,
   and the optional Pachica link adds four more.
 - Cáceres is a protected field commander with a battle marker, posted at the rear of the village. His card

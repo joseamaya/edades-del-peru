@@ -204,13 +204,19 @@ export const mMiraflores: MissionDef = {
     BuildingKind.BARRACKS,
     BuildingKind.ARSENAL,
     BuildingKind.STABLE,
+    // The redoubt line historically had guns; the workshop is what lets the player replace them.
+    BuildingKind.FACTORY,
     BuildingKind.FORTRESS,
     BuildingKind.WALL,
     BuildingKind.GATE,
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
-  buildingNames: { [BuildingKind.FORTRESS]: 'Reducto' },
+  allowedTechs: ['irrigation_canal', 'bow_and_bolas', 'shock_cavalry', 'siege_engines', 'hunters', 'republica_puerto'],
+  buildingNames: {
+    [BuildingKind.FORTRESS]: 'Reducto',
+    [BuildingKind.BARRACKS]: 'Cuartel',
+  },
   // The Miraflores line was held by limeño reservists, not by the Arica garrison.
   unitNames: { [UnitKind.REPUBLICA_DEFENSOR]: 'Reservista de Miraflores' },
   objectives: [

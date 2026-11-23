@@ -149,7 +149,28 @@ export const m6bGuerraCivil: MissionDef = {
   // which can pull it toward the player's base after its authored move. The capture is contested while it
   // stands.
   enemy: { active: true, difficulty: 'normal', aggression: 0.6, economy: false },
-  buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
+  // The civil war is fought with Inca melee and slings: no bow, no market and no Amauta conversion.
+  allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.INCA_WARRIOR, UnitKind.MUSKETEER, UnitKind.SCOUT],
+  allowedBuildings: [
+    BuildingKind.HOUSE,
+    BuildingKind.FARM,
+    BuildingKind.MILL,
+    BuildingKind.SAWMILL,
+    BuildingKind.SMELTER,
+    BuildingKind.REFINERY,
+    BuildingKind.BARRACKS,
+    BuildingKind.ARSENAL,
+    BuildingKind.WALL,
+    BuildingKind.GATE,
+    BuildingKind.TOWER,
+    BuildingKind.FORTRESS,
+    BuildingKind.INSTITUTE,
+  ],
+  allowedTechs: ['irrigation_canal', 'andean_loom', 'silver_metallurgy', 'quipus_watchers', 'swift_chasquis'],
+  buildingNames: {
+    [BuildingKind.FORTRESS]: 'Pucará',
+    [BuildingKind.ARSENAL]: 'Casa de armas',
+  },
   objectives: [
     {
       id: 'obj_avanzar',

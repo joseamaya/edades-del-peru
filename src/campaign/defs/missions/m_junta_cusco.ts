@@ -211,7 +211,20 @@ export const mJuntaCusco: MissionDef = {
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
-  buildingNames: { [BuildingKind.FORTRESS]: 'Fortín' },
+  // The two starting riflemen are the Junta's scarce elite; the trainable line is militia, muskets,
+  // montoneras, cavalry and artillery.
+  allowedTechs: [
+    'irrigation_canal',
+    'silver_metallurgy',
+    'shock_cavalry',
+    'siege_engines',
+    'evangelization',
+    'patriota_sierra',
+  ],
+  buildingNames: {
+    [BuildingKind.FORTRESS]: 'Fortín',
+    [BuildingKind.BARRACKS]: 'Cuartel',
+  },
   objectives: [
     {
       id: 'a1_cabildo',

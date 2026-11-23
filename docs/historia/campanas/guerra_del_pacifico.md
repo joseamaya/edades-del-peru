@@ -20,7 +20,8 @@
   naval. La campaña marítima de Grau y Angamos queda como contexto histórico; el juego no simula el Huáscar ni
   la escuadra. La misión se juega en tres actos: el **rechazo al parlamento de Salvo** y la mina de los accesos
   con zapadores; el **bombardeo**, sosteniendo el cuartel y el fuerte; y el **asalto final**, que termina con la
-  caída documentada de la plaza. La guarnición incluye **defensores de Arica** y el asalto chileno,
+  caída documentada de la plaza. La guarnición incluye **defensores de Arica** y el asalto chileno. No hay
+  establo, taller de artillería ni academia: las baterías pertenecen al fuerte y la defensa es de
   **infantería de línea**; el mapa fija la terraza portuaria, la batería y un apostadero chileno. La victoria
   es táctica: cumplir la defensa y sostener la última línea, no cambiar el desenlace. El epílogo cuenta la
   caída, la muerte de Bolognesi y la inutilización del *Manco Cápac*.

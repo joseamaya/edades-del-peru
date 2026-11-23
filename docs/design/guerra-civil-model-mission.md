@@ -55,7 +55,8 @@ builds; the exception is recorded here and in the quality bar.
 ## Economy and units
 
 - Inca workers, warriors and honderos on both sides; `UnitKind.MUSKETEER` is the legacy ranged id and renders
-  as a hondero in this era, not a firearm. No horses or firearms on the Inca side.
+  as a hondero in this era, not a firearm. No horses, firearms, archers, market or amauta converter on either
+  side.
 - Huáscar's headquarters is a **field command, not a town**: `enemy.economy: false` and
   `start.enemyOpeningUnits: false` keep its centre and houses but stop the peasant economy, and a scripted
   guard (four warriors and three honderos) opens at the centre, and the AI keeps its strategic offensive,

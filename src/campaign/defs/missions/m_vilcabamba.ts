@@ -114,6 +114,7 @@ export const mVilcabamba: MissionDef = {
       // The garrison holds Huayna Pucará: a defensive stance keeps the forty-five second hold from
       // unravelling when the Spanish probe crosses the aggro radius and the line chases it downhill.
       { kind: UnitKind.INCA_WARRIOR, dx: 8, dz: 0, count: 10, stance: 'defensivo' },
+      { kind: UnitKind.INCA_SLINGER, dx: 10, dz: -2, count: 3, stance: 'defensivo' },
       { kind: UnitKind.SOLDIER, dx: 12, dz: 2, count: 4, stance: 'defensivo' },
       { kind: UnitKind.SCOUT, dx: 14, dz: 0, count: 1 },
       { kind: UnitKind.INCA_WARRIOR, dx: 6, dz: 0, count: 1, tag: 'curi_paucar', stance: 'defensivo' },
@@ -191,22 +192,29 @@ export const mVilcabamba: MissionDef = {
       motion: 'pan-right',
     },
   ],
-  allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.INCA_WARRIOR, UnitKind.SCOUT],
+  allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.INCA_WARRIOR, UnitKind.INCA_SLINGER, UnitKind.SCOUT],
   allowedBuildings: [
     BuildingKind.CENTER,
     BuildingKind.HOUSE,
     BuildingKind.FARM,
     BuildingKind.MILL,
     BuildingKind.SAWMILL,
+    BuildingKind.REFINERY,
     BuildingKind.BARRACKS,
     BuildingKind.ARSENAL,
     BuildingKind.FORTRESS,
     BuildingKind.WALL,
     BuildingKind.GATE,
     BuildingKind.TOWER,
-    BuildingKind.MARKET,
+    BuildingKind.INSTITUTE,
   ],
-  buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
+  // The Vilcabamba court keeps its own record-keeping and textile techs; no Spanish cavalry or siege.
+  allowedTechs: ['irrigation_canal', 'andean_loom', 'quipus_watchers'],
+  buildingNames: {
+    [BuildingKind.FORTRESS]: 'Pucará',
+    [BuildingKind.ARSENAL]: 'Casa de armas',
+  },
+  unitNames: { [UnitKind.SOLDIER]: 'Milicia inca' },
   objectives: [
     {
       id: 'a1_huayna',

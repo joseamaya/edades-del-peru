@@ -52,9 +52,9 @@ in the quality bar.
 
 ## Economy and units
 
-- Inca workers, warriors, riflemen and honderos; the Chimú side fields warriors and honderos.
-  `UnitKind.MUSKETEER` and `UnitKind.RIFLEMAN` are legacy ranged ids: in this era they render as a hondero
-  and an arquero, not firearms.
+- Inca workers, warriors and honderos; the Chimú side fields warriors and honderos. No archers, no market
+  and no Spanish techs: `UnitKind.MUSKETEER` is the legacy ranged id and in this era it renders as a
+  hondero, not a firearm.
 - The canal gate is Act II's mechanic (`canal_closed`, heritage `chimu_canal`); the water is an abstraction
   of the documented cut, not a reconstructed canal trace.
 - Chan Chan keeps its centre and houses — the capital is not a camp — but it does not run the generic

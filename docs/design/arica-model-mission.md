@@ -50,7 +50,8 @@ recorded here and in the quality bar. The Morro is not invented as a new mesh.
 ## Economy and units
 
 - Workers, line infantry, riflemen, `REPUBLICA_DEFENSOR` and scouts; no artillery train, no
-  cavalry (the 1880 garrison fought on foot in the scenario).
+  cavalry (the 1880 garrison fought on foot in the scenario). The build set is the port and fort: no stable,
+  artillery workshop or academy; the batteries belong to the fort and are not a trainable unit.
 - The player base is the port terrace; the soldiers start around the cuartel and the fort.
 - The royalist pressure is scripted: the bombardment wave, the sortie and the final assault.
   The enemy does not run an economy in this mission, and the definition says so: `enemy.economy: false`,

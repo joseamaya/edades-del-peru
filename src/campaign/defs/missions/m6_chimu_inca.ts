@@ -154,7 +154,42 @@ export const m6ChimuInca: MissionDef = {
   // Chan Chan keeps its centre and houses (a capital, not a camp), but it does not play the skirmish
   // economy: its defence is the authored counterattack from Paramonga.
   enemy: { active: true, difficulty: 'hard', aggression: 1.2, economy: false, attacks: false },
-  buildingNames: { [BuildingKind.FORTRESS]: 'Pucará' },
+  // The Inca line is melee and slings: no bow (RIFLEMAN) and no market economy in the northern war.
+  allowedUnits: [
+    UnitKind.WORKER,
+    UnitKind.SOLDIER,
+    UnitKind.INCA_WARRIOR,
+    UnitKind.MUSKETEER,
+    UnitKind.SCOUT,
+    UnitKind.COMMISSAR,
+  ],
+  allowedBuildings: [
+    BuildingKind.HOUSE,
+    BuildingKind.FARM,
+    BuildingKind.MILL,
+    BuildingKind.SAWMILL,
+    BuildingKind.SMELTER,
+    BuildingKind.REFINERY,
+    BuildingKind.BARRACKS,
+    BuildingKind.ARSENAL,
+    BuildingKind.WALL,
+    BuildingKind.GATE,
+    BuildingKind.TOWER,
+    BuildingKind.FORTRESS,
+    BuildingKind.INSTITUTE,
+  ],
+  allowedTechs: [
+    'irrigation_canal',
+    'andean_loom',
+    'silver_metallurgy',
+    'quipus_watchers',
+    'amauta_words',
+    'swift_chasquis',
+  ],
+  buildingNames: {
+    [BuildingKind.FORTRESS]: 'Pucará',
+    [BuildingKind.ARSENAL]: 'Casa de armas',
+  },
   objectives: [
     {
       id: 'obj_avanzar',

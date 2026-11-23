@@ -50,8 +50,9 @@ here and in the quality bar. The Sangarará chapel is a separate typological `co
 
 ## Economy and units
 
-- Workers, militia, scarce riflemen, cavalry, scouts and a missionary; no rebel artillery train (not
-  documented for 1780). The player can build the town economy, a barracks and a market.
+- Workers, militia, scouts and a missionary are the trainable roster; the few riflemen and the two horses
+  in the opening are captured weapons and are not replaced. No rebel artillery train (not documented for
+  1780). The player can build the town economy, a cuartel and a market.
 - The royalist pressure is scripted (Sangarará, the Cusco sortie and the Lima relief); the city does not
   run an economy. The waves are labelled as an abstraction in the dossier.
 

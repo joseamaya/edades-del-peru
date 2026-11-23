@@ -100,6 +100,7 @@ export enum UnitKind {
   CHANCA_WARRIOR = 'chanca_warrior', // unique Chanca infantry
   CHIMU_FIXI = 'chimu_fixi', // unique Chimú infantry
   INCA_WARRIOR = 'inca_warrior', // unique Inca infantry
+  INCA_SLINGER = 'inca_slinger', // unique Inca ranged (sling; not a firearm)
 
   REALISTA_DRAGON = 'realista_dragon', // unique Realista cavalry
   PATRIOTA_MONTONERA = 'patriota_montonera', // unique Patriota cavalry

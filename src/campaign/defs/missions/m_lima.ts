@@ -89,9 +89,18 @@ export const mLima: MissionDef = {
   tutorial: true,
   modelMission: true,
   epilogueImage: 'media/lima/intro-epilogo.webp',
-  buildingNames: { [BuildingKind.MARKET]: 'Cabildo y plaza' },
+  buildingNames: {
+    [BuildingKind.MARKET]: 'Cabildo y plaza',
+    [BuildingKind.BARRACKS]: 'Cuartel',
+    [BuildingKind.STABLE]: 'Caballeriza',
+  },
   // The Spanish used light pieces (falconetes) in the conquest; the generic siege model is only a stand-in.
-  unitNames: { [UnitKind.ARTILLERY]: 'Falconete', [UnitKind.INCA_WARRIOR]: 'Aliado andino' },
+  unitNames: {
+    [UnitKind.SOLDIER]: 'Rodelero',
+    [UnitKind.CAVALRY]: 'Jinete',
+    [UnitKind.ARTILLERY]: 'Falconete',
+    [UnitKind.INCA_WARRIOR]: 'Aliado andino',
+  },
   // Played as a letterboxed film: two in-engine stills and a campaign map drawn from this terrain. The map
   // uses the mission's own geometry (the traza, the Rímac bridge, Quizu's camp and the relief columns'
   // entry), so what the player sees is what the siege will throw at Lima. It does not tell the outcome.
@@ -191,6 +200,8 @@ export const mLima: MissionDef = {
     BuildingKind.TOWER,
     BuildingKind.MARKET,
   ],
+  // No siege train and no Inca research: the falconetes are a scripted reinforcement, not a workshop unit.
+  allowedTechs: ['irrigation_canal', 'shock_cavalry', 'evangelization'],
   objectives: [
     {
       id: 'a1_traza',

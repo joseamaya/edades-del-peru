@@ -181,7 +181,38 @@ export const m3MocheRecuay: MissionDef = {
   // A field battle on the valley: the Recuay camp keeps the AI's own attacks, which can pull its watch and
   // columns toward the player's base after their authored move (launchAttack targets a building).
   enemy: { active: true, difficulty: 'normal', aggression: 1, economy: false },
-  buildingNames: { [BuildingKind.INSTITUTE]: 'Casa de los ancestros' },
+  // The dossier lists Moche warriors and honderos: the bow is not part of this roster.
+  allowedUnits: [
+    UnitKind.WORKER,
+    UnitKind.CARAVAN,
+    UnitKind.SOLDIER,
+    UnitKind.MOCHE_WARRIOR,
+    UnitKind.MUSKETEER,
+    UnitKind.SCOUT,
+  ],
+  allowedBuildings: [
+    BuildingKind.CENTER,
+    BuildingKind.HOUSE,
+    BuildingKind.FARM,
+    BuildingKind.MILL,
+    BuildingKind.SAWMILL,
+    BuildingKind.SMELTER,
+    BuildingKind.BARRACKS,
+    BuildingKind.ARSENAL,
+    BuildingKind.WALL,
+    BuildingKind.GATE,
+    BuildingKind.TOWER,
+    BuildingKind.FORTRESS,
+    BuildingKind.MARKET,
+    BuildingKind.INSTITUTE,
+    BuildingKind.WONDER,
+  ],
+  allowedTechs: ['irrigation_canal', 'andean_loom', 'silver_metallurgy', 'moche_metallurgy'],
+  buildingNames: {
+    [BuildingKind.INSTITUTE]: 'Casa de los ancestros',
+    [BuildingKind.ARSENAL]: 'Taller de armas',
+    [BuildingKind.MARKET]: 'Plaza de intercambio',
+  },
   objectives: [
     {
       id: 'obj_canal',

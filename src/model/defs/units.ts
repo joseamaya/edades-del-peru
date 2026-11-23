@@ -216,6 +216,39 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     eraStats: { [Era.TAHUANTINSUYO]: { hp: 1.3, attack: 1.35 } },
     eraModel: { [Era.TAHUANTINSUYO]: { type: 'soldier_modern', scale: 1.04 } },
   },
+  inca_slinger: {
+    id: UnitKind.INCA_SLINGER,
+    name: 'Hondero Inca',
+    description: 'Hondero del ejército inca con honda de fibra y piedras; hostiga a distancia sin pólvora.',
+    category: 'unique',
+    baseKind: UnitKind.MUSKETEER,
+    civs: [CivId.INCA],
+    minPeriod: HistoricalPeriod.LATE_HORIZON,
+    source: 'docs/historia/civilizaciones/inca.md',
+    bonusVs: { infantry: 0.2, ranged: 0.1 },
+    eraStats: {
+      [Era.TAHUANTINSUYO]: { hp: 1.5, attack: 1.65 },
+      [Era.VICEROYALTY]: { hp: 1.6, attack: 1.95 },
+    },
+    eraModel: {
+      [Era.TAHUANTINSUYO]: { type: 'musketeer', scale: 1.02 },
+      [Era.VICEROYALTY]: { type: 'musketeer', scale: 1.03 },
+    },
+    eraIdentity: {
+      [Era.TAHUANTINSUYO]: {
+        name: 'Hondero Inca',
+        icon: '🏹',
+        description: 'Hondero del ejército inca con honda de fibra y piedras; hostiga a distancia sin pólvora.',
+        weapon: 'sling',
+      },
+      [Era.VICEROYALTY]: {
+        name: 'Hondero Inca',
+        icon: '🏹',
+        description: 'Hondero de la resistencia inca; sigue usando la honda frente a las armas de fuego.',
+        weapon: 'sling',
+      },
+    },
+  },
   recuay_warrior: {
     id: UnitKind.RECUAY_WARRIOR,
     name: 'Guerrero Recuay',
@@ -797,6 +830,21 @@ const BASE_STATS: Record<UnitKind, UnitStats> = {
     damageType: 'light',
     projectile: 'bullet',
   },
+  inca_slinger: {
+    hp: 36,
+    attack: 7,
+    range: 9,
+    lightArmor: 0,
+    heavyArmor: 0,
+    speed: 2.4,
+    los: 7,
+    attackSpeed: 2.2,
+    cost: cost({ food: 35, silver: 25 }),
+    trainTime: 22,
+    population: 1,
+    damageType: 'heavy',
+    projectile: 'sling_stone',
+  },
   recuay_warrior: {
     hp: 44,
     attack: 5.5,
@@ -1112,6 +1160,7 @@ const CLASS_BY_KIND: Record<UnitKind, UnitClass> = {
   [UnitKind.CHANCA_WARRIOR]: 'infantry',
   [UnitKind.CHIMU_FIXI]: 'infantry',
   [UnitKind.INCA_WARRIOR]: 'infantry',
+  [UnitKind.INCA_SLINGER]: 'ranged',
   [UnitKind.REALISTA_DRAGON]: 'cavalry',
   [UnitKind.PATRIOTA_MONTONERA]: 'cavalry',
   [UnitKind.REPUBLICA_DEFENSOR]: 'ranged',
@@ -1236,9 +1285,12 @@ function eraIdentityFor(kind: UnitKind, era: Era): EraIdentity | undefined {
 
 /** Ranged weapon a unit carries in an era, when the archetype defines one. */
 export function unitRangedWeapon(kind: UnitKind, era: Era): RangedWeapon | undefined {
+  // A unique variant may override the base weapon (the Inca slinger is not an arquebusier).
+  const own = eraIdentityFor(kind, era)?.weapon;
+  if (own) return own;
   const baseKind = unitBaseKind(kind);
   if (baseKind !== kind) return unitRangedWeapon(baseKind, era);
-  return eraIdentityFor(kind, era)?.weapon;
+  return undefined;
 }
 
 /** True for gunpowder weapons that must not appear before 1532. */
@@ -1304,6 +1356,7 @@ export const UNIT_INFO: Record<UnitKind, { name: string; icon: string; category:
   chanca_warrior: { name: 'Guerrero Chanca', icon: '🎨', category: 'Única' },
   chimu_fixi: { name: 'Fixi Chimú', icon: '🗡️', category: 'Única' },
   inca_warrior: { name: 'Guerrero Inca', icon: '☀️', category: 'Única' },
+  inca_slinger: { name: 'Hondero Inca', icon: '🏹', category: 'Única' },
   realista_dragon: { name: 'Dragón Realista', icon: '🐎', category: 'Única' },
   patriota_montonera: { name: 'Montonera', icon: '🐎', category: 'Única' },
   republica_defensor: { name: 'Defensor republicano', icon: '🎯', category: 'Única' },

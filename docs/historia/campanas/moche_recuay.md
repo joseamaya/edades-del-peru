@@ -12,7 +12,7 @@
   2. Repeler incursiones desde la sierra (**Recuay**).
   3. Sostener el intercambio de élite (metal, cerámica).
 - **Mapa**: `costa` + estribaciones `andes` (transición valle-sierra).
-- **En el juego**: base fija en los valles de Moche/Chicama, sitio autorado de las Huacas del Sol y de la Luna y canal operable. Tres actos: el valle y el agua, la frontera (sostener la plaza de las huacas 90 s frente a las oleadas recuay) y el intercambio de élite en la Huaca de la Luna. El epílogo retoma la fragmentación moche hacia el 800 d.C.
+- **En el juego**: base fija en los valles de Moche/Chicama, sitio autorado de las Huacas del Sol y de la Luna y canal operable. Tres actos: el valle y el agua, la frontera (sostener la plaza de las huacas 90 s frente a las oleadas recuay) y el intercambio de élite en la Huaca de la Luna. El epílogo retoma la fragmentación moche hacia el 800 d.C. El roster es de guerreros y **honderos** (`MUSKETEER`); no se añaden arqueros, y el arsenal y el mercado se etiquetan «Taller de armas» y «Plaza de intercambio».
 - **Desenlace**: Moche domina la costa norte durante el Intermedio Temprano y se fragmenta hacia el 800 d.C.
 - **Nota**: el conflicto con componente bélico está **atestiguado**, aunque no como una batalla única.
 

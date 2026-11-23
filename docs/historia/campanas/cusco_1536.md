@@ -20,7 +20,8 @@
   Ollantaytambo.
 - **En el juego**: tres actos. El jugador ocupa Sacsayhuamán, sostiene el cerco con consumo de comida
   (la siembra) y retira el ejército hacia Ollantaytambo. La victoria es la retirada, no la toma de la
-  ciudad. La «aparición» de Santiago no se representa.
+  ciudad. La «aparición» de Santiago no se representa. El ejército inca incluye **honderos** (`INCA_SLINGER`)
+  y conserva sus tecnologías de telar y quipus; no usa mercados, caballería ni doctrina española.
 
 ## Tabla de certeza
 

@@ -307,6 +307,11 @@ describe('rigged model assets', () => {
       asset: 'caral_worker',
       variant: 'inca_soldier_f',
     });
+    // The Inca slinger keeps the Andean ranged rig in the conquest missions, not a firearm model.
+    expect(unitModelAsset(UnitKind.INCA_SLINGER, Era.VICEROYALTY, CivId.INCA, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'inca_ranged_m',
+    });
     expect(unitModelAsset(UnitKind.CAVALRY, Era.CONTEMPORARY, CivId.REPUBLIC)).toEqual({
       asset: 'siege_rig',
       variant: 'siege_tank_republica',
