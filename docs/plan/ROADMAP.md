@@ -56,9 +56,12 @@ evidence. No model-mission rebuild remains.
    of 2026-10-30. Approve or reject each new record with `yarn art:review`.
 3. Capture the model missions whose art review is pending (m3–m9, m6b, Tambotoco, Lima, La Junta) with the
    current build. **Done (2026-11-17):** the current site views are in
-   `docs/media/site-review-2026-11-17.webp` (human review still pending). Lima 1821, Real Felipe, Tarapacá, Miraflores, Breña, Cusco 1536 and Vilcabamba have current captures in
-   `public/media/{lima-1821,real-felipe,tarapaca,miraflores,brena,cusco-1536,vilcabamba}/`; their human art
-   review remains (B15–B17). Their bench rows are now in `yarn bench:check` (2026-11-19).
+   `docs/media/site-review-2026-11-17.webp` (human review still pending). The seven missions added on
+   2026-11-18 have a review pack since 2026-11-23: `yarn capture:sites --only=new` writes one capture per
+   mission plus `review/site-review/decisions.md`, and the contact sheet is
+   [`../media/site-review-2026-11-23-new-missions.webp`](../media/site-review-2026-11-23-new-missions.webp).
+   The human decision is still open (B15–B17); the procedure is in
+   [`../design/asset-pipeline.md`](../design/asset-pipeline.md) §"In-engine site review".
 
 The release-candidate document is an **archived snapshot** from 2026-10-30. Use its checklist as a template,
 but record today's counts and hashes in a new status document or PR, not by editing the snapshot.

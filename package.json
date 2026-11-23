@@ -57,6 +57,7 @@
     "capture:characters": "node scripts/capture_character_pilot.mjs",
     "art:pilot": "node scripts/capture_art_pilot.mjs",
     "capture:fauna": "node scripts/capture_fauna.mjs",
+    "capture:sites": "node scripts/capture_site_review.mjs",
     "shot": "node scripts/screenshot.mjs",
     "record": "node scripts/record_mission.mjs",
     "shot:analyze": "node scripts/analyze.mjs",
