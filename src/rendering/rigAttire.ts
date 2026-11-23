@@ -92,10 +92,23 @@ export function showSharedHumanoidBody(root: THREE.Object3D, male: boolean): voi
   show('attire_tool', false);
 }
 
+/** Generic kit a hero replaces with its own headdress, sash and weapon. */
+export const HERO_HIDDEN_PARTS = [
+  'attire_headband',
+  'attire_andean_face_paint',
+  'attire_andean_shield',
+  'attire_andean_belt',
+  'attire_andean_manta',
+] as const;
+
+/** The macana the hero shows or hides from its commander's weapon. */
+export const HERO_WEAPON_PARTS = ['attire_andean_macana', 'attire_andean_macana_head'] as const;
+
 /**
- * Keep only the body in a unit's shadow pass: from the RTS camera the hair, garments and gear add nothing
- * to its silhouette, and each part is a shadow-pass draw per unit. Both flags go, so the part stays out of
- * the caster pass and the receiver pass. A rig without a base body keeps whatever it had.
+ * Keep only the body in a unit's shadow pass: from the RTS camera the hair, garments and gear add nothing to
+ * its silhouette, and each caster is a shadow-pass draw per unit. The receiver flag goes too, matching the
+ * worker rule (and the old VSM receiver pass), so a later shadow-mode change cannot put the detail back in.
+ * A rig without a base body keeps whatever it had.
  */
 export function bodyOnlyShadows(root: THREE.Object3D): boolean {
   if (!root.getObjectByName('Body_f') && !root.getObjectByName('Body_m')) return false;

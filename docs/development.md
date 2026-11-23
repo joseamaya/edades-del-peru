@@ -278,7 +278,8 @@ Definition of Done and the building audit see
   largest single item in a late-view frame (~9.6 ms of 36.5 on the reference iGPU, `bench_scene.mjs
   --no-refraction`), so the target is re-drawn every **second** frame (`RuntimeController.refractionFrame`)
   and the shader keeps the previous reflection in between; a half-resolution, wave-distorted sample one frame
-  behind is invisible, and the frame gets the pass back (backlog B13).
+  behind is invisible, and the frame gets the pass back (backlog B13). The cadence restarts whenever the pass is
+  gated off or the refraction target is resized, so the first frame back is never blank.
 - **Andenes (agricultural terracing)**: `profile.terrain.terraceChance` is no longer dead data — `carveTerraces`
   (`src/sim/heightField.ts`) pulls moderate slopes toward flat shelves (gated by a coherent noise mask so
   terraces form patchy zones) and writes a `terraceMap` strength (0..~0.55). `TerrainData` exposes it via

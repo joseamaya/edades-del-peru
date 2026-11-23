@@ -20,7 +20,8 @@ import {
  * unlike FPS: headless Chromium renders in software unless `--gpu` (or `GPU=1`) asks for the host GPU.
  *
  * Usage: node scripts/bench_scene.mjs [--mission=m1_caral] [--stage=late] [--assert] [--out=review/bench-scene.json]
- *        [--gpu] [--gl=egl|angle-vulkan|...] [--frames] [--quality=high|low] [--viewport=1600x900] [--direct] [--no-refraction]
+ *        [--gpu] [--gl=egl|angle-vulkan|...] [--frames] [--quality=high|low] [--viewport=1600x900] [--direct]
+ *        [--no-refraction] [--attribute] [--shot=review/frame.png]
  *
  * `--frames` also measures the shipped frame (loop running, post-processing on, 2 s of rAF samples) at the pinned
  * framing: that is the frame the player actually sees in a mission, unlike the structural draws-only pass.
@@ -523,7 +524,7 @@ try {
         scene,
         kit: { calls: scene.calls - withoutKit.calls, triangles: scene.triangles - withoutKit.triangles },
         kitObjects: kitObjects.length,
-        attribution,
+        ...(attribution ? { attribution } : {}),
       };
     },
     { kitPattern: KIT_NAMES.source, stage, mission, quality, attribute },

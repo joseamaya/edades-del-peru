@@ -6,6 +6,8 @@ import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
 import {
+  HERO_HIDDEN_PARTS,
+  HERO_WEAPON_PARTS,
   bodyOnlyShadows,
   createRigAttireTools,
   extrudedPlate,
@@ -100,16 +102,11 @@ function rodela(): THREE.BufferGeometry {
 
 /** Gear that toggles visibility after dressing, so `consolidateRig` must leave it as its own draw. */
 const WORKER_DYNAMIC_PARTS = [
-  'attire_headband',
+  ...HERO_HIDDEN_PARTS,
+  ...HERO_WEAPON_PARTS,
   'attire_tool',
   'attire_carry',
   'attire_net',
-  'attire_andean_face_paint',
-  'attire_andean_shield',
-  'attire_andean_belt',
-  'attire_andean_manta',
-  'attire_andean_macana',
-  'attire_andean_macana_head',
 ] as const;
 
 /**

@@ -329,8 +329,8 @@ export function dressUniform(
   });
   tools.ownedGeometries.push(...consolidated.geometries);
   tools.ownedMaterials.push(...consolidated.materials);
-  // Only the body silhouette is in the shadow pass; the merged garments and gear would be one draw but a
-  // whole extra shadow-mapped copy of every soldier.
+  // Only the body silhouette is in the shadow pass: the merged garments and gear would be a second copy of
+  // every soldier in the shadow map (both flags go, as in the worker rule).
   bodyOnlyShadows(root);
 
   let task: RigClipState = 'idle';

@@ -1207,15 +1207,15 @@ export class RuntimeController {
    *
    * The pass is the most expensive thing in a late-view frame (~9 ms of 36 on the reference iGPU) and
    * the surface it feeds is a rippling, screen-distorted reflection, so it is re-drawn every second
-   * frame instead of every frame: the reflection lags the scene by one frame at 60 Hz, which the water
-   * shader's own distortion hides completely, and the frame gets the pass back.
+   * frame instead of every frame: the reflection is one frame behind, which the water shader's own
+   * distortion hides completely, and the frame gets the pass back.
    */
   renderWaterRefraction(): void {
     // extra full-scene pass: off in classic mode and once the preset drops to low
     if (!this.syncWaterRefraction()) return;
     // Frames 1, 3, 5…: the first frame primes the target, the rest reuse the previous reflection.
     this.refractionFrame += 1;
-    if (this.refractionFrame > 1 && this.refractionFrame % 2 === 0) return;
+    if (this.refractionFrame % 2 === 0) return;
     const prev = this.game.renderer.getRenderTarget();
     this.game.water.mesh.visible = false;
     this.game.renderer.setRenderTarget(this.game.water.refractionRT);
@@ -1244,6 +1244,8 @@ export class RuntimeController {
 
   syncWaterRefractionSize(): void {
     if (!this.game.water) return;
+    // `setSize` discards the target: redraw it on the next frame instead of reusing a blank one.
+    this.refractionFrame = 0;
     const db = this.game.renderer.getDrawingBufferSize(new THREE.Vector2());
     this.game.water.setSize(db.x, db.y);
   }

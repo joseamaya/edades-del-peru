@@ -108,18 +108,23 @@ have SwiftShader rows in `bench_scene.mjs` / `yarn bench:check` but **no real-GP
 rigs, the landmark and the terrain and turns every unit caster off, reporting each delta. On the two
 tightest views it says the crowd owns the draw calls but **not** the frame:
 
-| View | Units | Unit calls | Unit shadows | Unit triangles | FPS p50 |
+| View | Units | Unit calls (shadows included) | Of those, shadows | Unit triangles | FPS p50 |
 | --- | --- | ---: | ---: | ---: | ---: |
 | m6b late | 70 | 694 (77 % of 898) | 70 | 665k (50 %) | 27.0 |
 | m8 late | 36 | 687 (75 % of 912) | 114 | 420k (42 %) | 28.8 |
+
+Hiding a unit's group also drops its shadow casters, so the unit column includes the shadow draw calls; the
+shadow column is that subset, not an extra cost on top.
 
 ### What was measured
 
 1. **Material consolidation of the character rigs** (`consolidateRig` now merges the rigid bone-attached
    gear — morion, backplate, breeches, boots, sleeves, sandals — into the same skinned draws as the body
    and garments, keeping only the parts that toggle visibility at runtime). Per-unit draws from
-   `yarn bench:characters`: Inca 14 → **9**, Spanish 22 → **8**, 1879 fusilier 20 → **6**, Moche 12 → **9**,
-   Wari 13 → **9**, Chimú 10 → **9**, late realista 22 → **6**.
+   `yarn bench:characters`: Inca 14 → **9**, Spanish 22 → **6**, 1879 fusilier 20 → **6**, Moche 12 → **9**,
+   Wari 13 → **9**, Chimú 10 → **9**, late realista 22 → **6**. The merged draw takes the first part's
+   roughness/metalness, so a morion or a breastplate now reads as matte metal at the RTS zoom (its colour is
+   preserved in the vertex colours); the visual baselines cover that trade.
 2. **The result on the scene:** m6b late 898 → **615** calls (−31 %), m8 late 912 → **593** (−35 %).
 3. **The result on the frame at 1600×900:** m6b 36.4 → 36.9 ms p50 (27 FPS both, three interleaved runs
    per build) and m8 32.2 → 32.2 ms. A quarter of the draw calls bought nothing: the late view is not
@@ -151,12 +156,15 @@ the spread; see `review/b13-final2/`).
 | m8 late | 1280×800 | 910 → 590 | 33.8 | **41.7** |
 | m8 late | 1600×900 | 912 → **593** | 28.8 | **34** |
 
-(`m_lima` late, measured ad hoc for the refraction lever alone: 36.6 → 31.0 ms, 27 → 32 FPS.)
+(`m_lima` late, measured ad hoc while isolating the refraction lever: 36.6 ms p50 with the pass every frame,
+31.0 ms with the every-second-frame pass and 27.4 ms with the pass off — the last is the ceiling, not a
+shipped configuration.)
 
 The local `yarn bench:check` ratchet was **already red on `main`** when this pass started: the character
 equipment shipped in #609–#613 raised the late m6b row from the recorded 1,011,049 triangles to **1,053,169**
-(and 722 → 894 calls), because every soldier's new gear is one more draw and a few hundred more triangles. No
-cap was raised; the culling lever brought both tight rows back under their budgets:
+(and 722 → 894 calls), because every soldier's new gear is one more draw and a few hundred more triangles.
+Reproduce with `node scripts/bench_scene.mjs --mission=m6b_guerra_civil --stage=late --assert` on `a25c6547`;
+no cap was raised and the row is green again:
 
 | Row | Cap | `main` before this PR | After |
 | --- | ---: | ---: | ---: |
