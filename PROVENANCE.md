@@ -1042,6 +1042,18 @@ slot is absent (offline / without assets).
     select the palette, garments and runtime hero attire. No new body/mesh is added, so other campaigns are
     unchanged. The dedicated Tambotoco hero sculpt remains E4b.
 
+### m6b Cusco site composition (in-engine)
+
+- **Location**: `docs/media/m6b-cusco-plaza-before-after.webp`, 1520x486 WebP q82.
+- **Source**: `node scripts/bench_scene.mjs --mission=m6b_guerra_civil --stage=late --gpu --frames
+  --viewport=1600x900 --shot=<file>` before (`review/b13-shots/m6b-after.png`) and after
+  (`review/m6b-plaza-late.png`).
+- **Content**: the Quipaipán late view. Left, the bundled grey ushnu GLB; right, the plaza, tiered ushnu and
+  Sacsayhuamán wall front shared with `m_cusco_1536` (`src/campaign/defs/cuscoSite.ts`). Same mission, seed,
+  camera and stage; only the site composition changed (+2.2k triangles, +4 draw calls).
+- **Review**: the composition is the one accepted for the procedural sites on 2026-11-23; no historical claim
+  beyond the authored abstraction.
+
 ### Site review pack: the seven missions of 2026-11-18 (in-engine)
 
 - **Location**: `docs/media/site-review-2026-11-23-new-missions.webp`, 1920x1158 WebP q78 (3x3 contact sheet,
@@ -1054,8 +1066,10 @@ slot is absent (offline / without assets).
   (village), Vilcabamba (fort), Cusco 1536 (plaza) and Breña (Huamachuco). These are game captures, never
   historical photographs, and they are **review evidence**: the human decision is recorded in the quality bar,
   not in this file.
-- **Review**: pending. The worksheet with the eight-point checklist and one row per mission is
-  `review/site-review/decisions.md`; the procedure is `docs/design/asset-pipeline.md` §"In-engine site review".
+- **Review**: the procedural sites of Real Felipe, Tarapacá and Vilcabamba were accepted as abstractions on
+  2026-11-23 (Miguel Amaya; recorded in `docs/design/campaign-quality-bar.md`). Miraflores and Breña keep their
+  reused-kit review open, and so does Lima 1821; the worksheet with one row per mission is
+  `review/site-review/decisions.md` and the procedure is `docs/design/asset-pipeline.md` §"In-engine site review".
 
 ### Late-view performance evidence (in-engine)
 

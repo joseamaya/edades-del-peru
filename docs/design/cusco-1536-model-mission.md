@@ -1,7 +1,7 @@
 # Cusco 1536 — model mission
 
 **Mission:** `m_cusco_1536` · **Campaign:** El Virreinato · **Period:** Viceroyalty (1536) ·
-**Status:** implemented, pending art review and a human playtest.
+**Status:** implemented; the site now draws the same composition as `m6b`; pending art review and the human playtest.
 
 ## Historical problem
 
@@ -67,4 +67,4 @@ Optional: cut the city's supplies. The mission never stages the later «Santiago
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts`.
 - Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in
   `yarn bench:check`.
-- Open: human no-cheat playtest and art review.
+- Open: human no-cheat playtest and the mission's own art review.

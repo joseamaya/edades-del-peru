@@ -1,7 +1,7 @@
 # Tarapacá 1879 — model mission
 
 **Mission:** `m_tarapaca` · **Campaign:** La República · **Period:** Republic (1879) ·
-**Status:** implemented and covered by real-order specs; pending a human no-cheat playtest.
+**Status:** implemented, covered by real-order specs and art-accepted (procedural site signed 2026-11-23); pending a human no-cheat playtest.
 
 ## Historical problem
 

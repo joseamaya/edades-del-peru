@@ -1,5 +1,6 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import { QUIPAIPAN_HEIGHTFIELD } from '../../../model/defs/quipaipanHeightmap';
+import { cuscoSiteLandmarks } from '../cuscoSite';
 import type { MissionDef } from '../../types';
 import { CUSCO_INCA_MAP_SIZE, cuscoIncaLength } from '../../../model/defs/cuscoIncaSite';
 
@@ -113,11 +114,15 @@ export const m6bGuerraCivil: MissionDef = {
     site: {
       id: 'cusco_inca_site',
       y: 5,
+      // Same city, same composition as m_cusco_1536: the bundled GLB is a bare grey ushnu, so both missions
+      // hide it and draw the plaza, the tiered ushnu and the Sacsayhuamán wall front (`cuscoSite.ts`).
+      hideModel: true,
       heightField: QUIPAIPAN_HEIGHTFIELD,
       focus: { x: QUIPAIPAN_FIELD.x, z: QUIPAIPAN_FIELD.z },
       keepout: [{ x: QUIPAIPAN_FIELD.x, z: QUIPAIPAN_FIELD.z, rx: 0.09, rz: 0.08 }],
       buildKeepout: [{ x: QUIPAIPAN_FIELD.x, z: QUIPAIPAN_FIELD.z, rx: 0.08, rz: 0.07 }],
     },
+    siteLandmarks: cuscoSiteLandmarks(),
     terrain: {
       flats: [
         { name: 'Ruta de Quito al Cusco', x: QUIPAIPAN_BASE.x, z: QUIPAIPAN_BASE.z, rx: 0.16, rz: 0.12 },

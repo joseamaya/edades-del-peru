@@ -1,7 +1,7 @@
 # Vilcabamba 1572 — model mission
 
 **Mission:** `m_vilcabamba` · **Campaign:** El Virreinato · **Period:** Viceroyalty (1572) ·
-**Status:** implemented, pending art review and a human playtest.
+**Status:** implemented and art-accepted (procedural site signed 2026-11-23); pending the human playtest.
 
 ## Historical problem
 
@@ -26,8 +26,9 @@ The Inca's capture and execution are narrated in the epilogue; no counterfactual
 ## Map and site
 
 - 256 m jungle transect, painted ground every 2 m, worker crossing ≈2:22.
-- `vilcabamba_site` reuses the Chanca stone-fort composition and heightfield as a **labelled
-  cloud-forest abstraction**; the real Vilcabamba (Espíritu Pampa) has no surveyed heightfield in the repo.
+- `vilcabamba_site` reuses the **heightfield** of the Chanca map and draws a low cloud-forest platform and
+  longhouses instead of the Chanca hillfort GLB (accepted as an abstraction on 2026-11-23); the real
+  Vilcabamba (Espíritu Pampa) has no surveyed heightfield in the repo.
 - Player camp in the valley, Huayna Pucará on the height, Spanish column from the Cusco road, escape to the
   lower Urubamba.
 - Own in-engine captures (`scripts/capture_virreinato_arc.mjs`), documented in `PROVENANCE.md`.
@@ -66,4 +67,5 @@ The Inca's capture and execution are narrated in the epilogue; no counterfactual
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts`.
 - Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in
   `yarn bench:check`.
-- Open: human no-cheat playtest and art review.
+- The procedural refuge site was accepted as an abstraction on 2026-11-23 (Miguel Amaya); open: human
+  no-cheat playtest.
