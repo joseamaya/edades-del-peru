@@ -106,6 +106,10 @@ No asset is accepted because it looks good at close range. It must read at 54 fi
   them.
 - **Budgets:** hero ≤ 40 draw calls / 40k triangles; common unit ≤ 25 draw calls / 25k triangles. These are
   ceilings, not targets to fill.
+- **Pilot result (2026-11):** [`../art/character-visual-pilot.md`](../art/character-visual-pilot.md) implements
+  the equipment layer on the shared rig. `yarn bench:characters` measures 19 draws / 10.6k triangles for the
+  Inca, 25 / 14.3k for the 16th-century Spanish and 24 / 12.7k for the 1879 fusilier. Proportions, faces and a
+  bind-safe character GLB remain open.
 
 ### 4.2 Architecture
 

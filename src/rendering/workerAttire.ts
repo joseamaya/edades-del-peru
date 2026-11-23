@@ -297,18 +297,27 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
         attach('pelvis', belt, new THREE.Vector3(pelvis.x, pelvis.y + 0.39, pelvis.z));
       }
       if (spec.shield && boneL && shieldMat) {
-        const shield = addMesh(new THREE.CylinderGeometry(0.16, 0.16, 0.03, 16), shieldMat, 'attire_andean_shield');
+        const shieldProfile = [
+          [0, 0],
+          [0.17, 0.008],
+          [0.2, 0.03],
+          [0.17, 0.052],
+          [0, 0.055],
+        ].map(([x, y]) => new THREE.Vector2(x, y));
+        const shield = addMesh(new THREE.LatheGeometry(shieldProfile, 18), shieldMat, 'attire_andean_shield');
         shield.rotation.z = Math.PI / 2;
         attach('hand_l', shield, new THREE.Vector3(boneL.x, boneL.y - 0.28, boneL.z));
+        const boss = addMesh(new THREE.SphereGeometry(0.035, 10, 6), stoneMat, 'attire_andean_shield_boss');
+        attach('hand_l', boss, new THREE.Vector3(boneL.x + 0.02, boneL.y - 0.28, boneL.z));
       }
       if (hand && shieldMat) {
-        const shaft = addMesh(new THREE.CylinderGeometry(0.018, 0.022, 0.42, 6), shieldMat, 'attire_andean_macana');
+        const shaft = addMesh(new THREE.CylinderGeometry(0.02, 0.024, 0.62, 8), shieldMat, 'attire_andean_macana');
         shaft.rotation.z = 0.9;
-        attach('hand_r', shaft, new THREE.Vector3(hand.x, hand.y - 0.3, hand.z));
+        attach('hand_r', shaft, new THREE.Vector3(hand.x, hand.y - 0.22, hand.z));
         const macanaHeadMat = spec.macanaHead === 'stone' ? stoneMat : makeMaterial(palette.accent, 0.9);
-        const macanaHead = addMesh(new THREE.BoxGeometry(0.12, 0.12, 0.28), macanaHeadMat, 'attire_andean_macana_head');
+        const macanaHead = addMesh(new THREE.IcosahedronGeometry(0.1, 0), macanaHeadMat, 'attire_andean_macana_head');
         macanaHead.rotation.z = 0.9;
-        attach('hand_r', macanaHead, new THREE.Vector3(hand.x, hand.y - 0.48, hand.z));
+        attach('hand_r', macanaHead, new THREE.Vector3(hand.x, hand.y - 0.4, hand.z));
       }
     }
     if (role === 'ranged' && hand) {
@@ -316,6 +325,56 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       const sling = addMesh(new THREE.TorusGeometry(0.16, 0.012, 5, 16), slingMat, 'attire_andean_sling');
       sling.rotation.x = Math.PI / 2;
       attach('hand_r', sling, new THREE.Vector3(hand.x, hand.y - 0.35, hand.z));
+    }
+  }
+
+  // Inca field infantry: a quilted cotton helmet, the red V yoke and usuta sandals. The dossier
+  // documents the uncu, padded protection, rodela and porra; the exact pattern is an abstraction.
+  if (andeanCulture === 'inca' && palette && (role === 'soldier' || role === 'ranged')) {
+    const headBone = bonePosition('Head');
+    const spineBone = bonePosition('spine_03');
+    const cottonHelmetMat = makeMaterial(0xe0d2b4, 0.95);
+    if (headBone) {
+      const cap = new THREE.Mesh(
+        trackGeometry(new THREE.SphereGeometry(0.145, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.52)),
+        cottonHelmetMat,
+      );
+      cap.name = 'attire_andean_padded_helmet';
+      enableShadows(cap);
+      attach('Head', cap, new THREE.Vector3(headBone.x, headBone.y + 0.13, headBone.z));
+      for (const y of [0.07, 0.12, 0.17]) {
+        const band = new THREE.Mesh(trackGeometry(new THREE.TorusGeometry(0.132, 0.012, 5, 18)), cottonHelmetMat);
+        band.name = 'attire_andean_helmet_band';
+        band.rotation.x = Math.PI / 2;
+        enableShadows(band);
+        attach('Head', band, new THREE.Vector3(headBone.x, headBone.y + y, headBone.z));
+      }
+    }
+    if (spineBone) {
+      for (const side of [-1, 1]) {
+        const panel = new THREE.Mesh(
+          trackGeometry(new THREE.BoxGeometry(0.075, 0.32, 0.012)),
+          makeMaterial(palette.secondary, 0.95),
+        );
+        panel.name = 'attire_andean_yoke';
+        panel.rotation.z = side * 0.38;
+        enableShadows(panel);
+        attach('spine_03', panel, new THREE.Vector3(spineBone.x + side * 0.06, spineBone.y, spineBone.z + 0.16));
+      }
+    }
+    for (const [side, foot] of [
+      ['l', 'foot_l'],
+      ['r', 'foot_r'],
+    ]) {
+      const footPos = bonePosition(foot);
+      if (!footPos) continue;
+      const sole = new THREE.Mesh(
+        trackGeometry(new THREE.BoxGeometry(0.11, 0.025, 0.24)),
+        makeMaterial(0x2a1e16, 0.92),
+      );
+      sole.name = `attire_andean_sandal_${side}`;
+      enableShadows(sole);
+      attach(foot, sole, new THREE.Vector3(footPos.x, footPos.y - 0.02, footPos.z + 0.04));
     }
   }
 
