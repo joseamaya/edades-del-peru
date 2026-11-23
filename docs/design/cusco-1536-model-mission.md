@@ -1,7 +1,7 @@
 # Cusco 1536 — model mission
 
 **Mission:** `m_cusco_1536` · **Campaign:** El Virreinato · **Period:** Viceroyalty (1536) ·
-**Status:** implemented; the site now draws the same composition as `m6b`; pending art review and the human playtest.
+**Status:** implemented and art-accepted (site view approved 2026-11-23; the site draws the same composition as `m6b`); pending the human playtest.
 
 ## Historical problem
 

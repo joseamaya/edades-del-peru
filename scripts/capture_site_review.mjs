@@ -23,15 +23,15 @@ const NEW_GENERATION = '2026-11-18';
 const MISSIONS = [
   { id: 'm3_moche_recuay', object: 'moche_site', phase: 'in_use' },
   { id: 'm4_wari', object: 'wari_site', phase: 'in_use' },
-  { id: 'm5_yahuar_pampa', object: 'chanca_site', phase: 'in_use' },
-  { id: 'm6_chimu_inca', object: 'chimu_site', phase: 'in_use' },
+  { id: 'm5_yahuar_pampa', object: 'chanca_site', phase: 'in_use', height: 45 },
+  { id: 'm6_chimu_inca', object: 'chimu_site', phase: 'in_use', height: 45 },
   { id: 'm6b_guerra_civil', object: 'cusco_inca_site', phase: 'in_use' },
-  { id: 'm7_tupac_amaru', object: 'colonial_site', phase: 'in_use' },
-  { id: 'm8_independencia', object: 'independence_site', phase: 'in_use' },
-  { id: 'm9_guerra_pacifico', object: 'arica_site', phase: 'in_use' },
+  { id: 'm7_tupac_amaru', object: 'colonial_site', phase: 'in_use', height: 42 },
+  { id: 'm8_independencia', object: 'independence_site', phase: 'in_use', height: 45 },
+  { id: 'm9_guerra_pacifico', object: 'arica_site', phase: 'in_use', height: 40 },
   { id: 'm_lima', object: 'colonial_site', phase: 'ciudad' },
-  { id: 'm_junta_cusco', object: 'colonial_site', phase: null },
-  { id: 'm_tambotoco', object: 'ayllu_site', phase: 'fundada', at: { x: 138, z: 162 }, heroes: true },
+  { id: 'm_junta_cusco', object: 'colonial_site', phase: null, height: 40 },
+  { id: 'm_tambotoco', object: 'ayllu_site', phase: 'fundada', at: { x: 138, z: 162 }, height: 38, heroes: true },
   // The seven missions added on 2026-11-18. `object` is the scene name the site is attached under and `note`
   // is what the capture actually shows — four of these sites are `hideModel: true`, so no reused GLB is drawn
   // and the mission builds its own scenery; the review has to judge that, not a kit that is not on screen.
@@ -188,19 +188,27 @@ const caption = (text) =>
   );
 
 async function composeSheet(file) {
-  if (!captured.length) return;
-  const columns = Math.min(3, captured.length);
-  const rows = Math.ceil(captured.length / columns);
+  // Every capture in the folder, so a run that only fills in some missions still composes the whole sheet.
+  const order = (id) => MISSIONS.findIndex((m) => m.id === id);
+  const shots = fs
+    .readdirSync(outDir)
+    .filter((name) => name.endsWith('.png'))
+    .map((name) => ({ id: name.slice(0, -4), file: path.join(outDir, name) }))
+    .filter((shot) => order(shot.id) >= 0)
+    .sort((a, b) => order(a.id) - order(b.id));
+  if (!shots.length) return;
+  const columns = Math.min(3, shots.length);
+  const rows = Math.ceil(shots.length / columns);
   const composites = [];
-  for (let i = 0; i < captured.length; i++) {
+  for (let i = 0; i < shots.length; i++) {
     const x = (i % columns) * CELL_W;
     const y = Math.floor(i / columns) * (CELL_H + CAPTION);
     composites.push({
-      input: await sharp(captured[i].file).resize(CELL_W, CELL_H, { fit: 'cover' }).toBuffer(),
+      input: await sharp(shots[i].file).resize(CELL_W, CELL_H, { fit: 'cover' }).toBuffer(),
       left: x,
       top: y,
     });
-    composites.push({ input: caption(captured[i].id), left: x, top: y + CELL_H });
+    composites.push({ input: caption(shots[i].id), left: x, top: y + CELL_H });
   }
   fs.mkdirSync(path.dirname(path.resolve(file)), { recursive: true });
   await sharp({

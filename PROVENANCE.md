@@ -1054,6 +1054,16 @@ slot is absent (offline / without assets).
 - **Review**: the composition is the one accepted for the procedural sites on 2026-11-23; no historical claim
   beyond the authored abstraction.
 
+### Site review pass: all 18 missions (in-engine)
+
+- **Location**: `docs/media/site-review-2026-11-23-all.webp`, 1920x2316 WebP q78 (3x6 contact sheet, one cell
+  per mission; the individual 1600x900 PNGs stay in `review/site-review-all/`, gitignored).
+- **Source**: `yarn capture:sites --only=all --out=review/site-review-all --sheet=docs/media/site-review-2026-11-23-all.webp`.
+- **Content**: every campaign mission's site at its final phase, HUD hidden, high preset. Approved by the human
+  review on 2026-11-23 with no Major or Blocker (record in `docs/design/campaign-quality-bar.md`).
+- **Supersedes**: `docs/media/site-review-2026-11-17.webp`, which was incomplete (four empty cells and no third
+  row) and is removed. The seven-mission pack below is the subset for the 2026-11-18 arc.
+
 ### Site review pack: the seven missions of 2026-11-18 (in-engine)
 
 - **Location**: `docs/media/site-review-2026-11-23-new-missions.webp`, 1920x1158 WebP q78 (3x3 contact sheet,

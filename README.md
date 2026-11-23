@@ -33,7 +33,6 @@ Known limitations for 0.2.0:
 - The seven missions added on 2026-11-18 have an automated no-cheat full path
   (`tests/e2e/release-playtest.spec.ts`) and are **pending a final human no-cheat playtest**; their save
   coverage is the mission opening, not a mid-act save.
-- The reused site kits (Moche, Wari, Cusco, Chanca, Lima, Arica) keep their own art-review status (#343).
 - Campaign progress stored by 0.1.0 is migrated from its single mission count, which is approximate.
 
 ## Media

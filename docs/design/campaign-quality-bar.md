@@ -47,30 +47,38 @@ and `m_vilcabamba` rows were added on 2026-11-18; the rest is the 2026-11-14 aud
 | ------------------ | ---- | ----- | ---- | ----- | --- | ---- | --- | --- | ---- | ----- | ---- | ------ | ---- | --- | ---- | ----- |
 | m1_caral           | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m2_chavin          | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | M    | M     |
-| m3_moche_recuay    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m4_wari            | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
+| m3_moche_recuay    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
+| m4_wari            | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m_tambotoco        | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m5_yahuar_pampa    | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6_chimu_inca      | M    | M     | M    | M     | M   | M    | M   | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m6b_guerra_civil   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | P    | M     |
-| m_cusco_1536       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
+| m_cusco_1536       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | M   | M    | M     |
 | m_vilcabamba       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | M   | M    | M     |
-| m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
+| m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m_junta_cusco      | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | P    | M     |
 | m_lima_1821        | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
-| m8_independencia   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
+| m8_independencia   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m_real_felipe      | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m_tarapaca         | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | M   | M    | M     |
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
-| m_miraflores       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
-| m_brena            | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
+| m_miraflores       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | M   | M    | M     |
+| m_brena            | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | M   | M    | M     |
 
-**Art review record (2026-11-23).** Miguel Amaya read the site-review sheet
-[`../media/site-review-2026-11-23-new-missions.webp`](../media/site-review-2026-11-23-new-missions.webp) and
-accepted the procedural sites of `m_real_felipe`, `m_tarapaca` and `m_vilcabamba` as abstractions (`Art`
-Partial → Met). Not signed: the reused kits of `m_lima_1821`, `m_miraflores`, `m_brena` and the Cusco
-composition drawn by `m_cusco_1536` and `m6b`, which stay open; those rows keep `Art` Partial where they had it.
+**Art review record (2026-11-23).** Miguel Amaya reviewed the site views in two passes and approved all of
+them; no `Major` or `Blocker` was raised.
+
+1. The seven missions added on 2026-11-18, from
+   [`../media/site-review-2026-11-23-new-missions.webp`](../media/site-review-2026-11-23-new-missions.webp):
+   the procedural sites of `m_real_felipe`, `m_tarapaca` and `m_vilcabamba` are accepted as abstractions.
+2. The full campaign — 18 in-engine RTS captures, one per mission at its final site phase, generated with
+   `yarn capture:sites --only=all` — in
+   [`../media/site-review-2026-11-23-all.webp`](../media/site-review-2026-11-23-all.webp). This closes the
+   site-view review that the 2026-11-17 sheet opened (`Art` Partial → Met on m3, m4, m5, m6, m7, m8 and the
+   seven-mission arc; the rest were already Met).
+
+The only art work left is the optional P2/P3 polish tracked in B22.
 
 **0.2.0 closeout note (2026-11-19).** The seven missions added on 2026-11-18 now have a real-command,
 no-cheat full path in `tests/e2e/release-playtest.spec.ts` (nightly slow tier): place/build/move/attack-move
@@ -87,15 +95,13 @@ unmeasured for the seven.
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín's intro render
 is approved; its kit and captures keep their own review status. Every released mission now
 follows the model pattern (256 m, painted ground, acts and in-engine intro); the newest arc has
-SwiftShader bench rows in `yarn bench:check` and real-GPU opening frame times, and the procedural sites of
-Real Felipe, Tarapacá and Vilcabamba were accepted as abstractions on 2026-11-23; the art review that remains is
-the reused kits of the older missions. m8
+SwiftShader bench rows in `yarn bench:check` and real-GPU opening frame times, and every campaign site view was
+approved on 2026-11-23 (see the review record). m8
 was included in this pass. **m3–m9 meet the scale, opening and performance gates**; the m3, m4, m5, Tambotoco, Lima, La Junta and
 Arica intro renders are approved. Every render record in `src/art/manifest.json` is now approved: the five
 Caral education/tour records were reconciled and the three draft Workbench mission intros were removed. The
-open art review is the 2026-11-17 site captures of m3–m9 and La Junta (their kits are authored, not reused),
-the reused Lima/Miraflores/Breña kits and the Cusco composition; see the review record above. GitHub issue
-#343 tracks renders, not sites.
+art review is closed: the 18 site views were approved on 2026-11-23 and no render record is `reviewed: false`.
+GitHub issue #343 lists draft renders that were already reconciled.
 
 **Tambotoco art pass (2026-11-16).** The ayllu kit now uses per-surface PBR detail (stone, rock, earth,
 plaster, thatch, wood, crops, people) with world-scale UVs; the cave is an arch in a scree apron, Huanacaure's
@@ -189,7 +195,7 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 
 ## Moche gold-master status
 
-Reviewed 2026-11-14 as a model mission. The human art gate is still open.
+Reviewed 2026-11-14 as a model mission; the art gate closed on 2026-11-23 (site views approved).
 
 | Gate        | Status               | Evidence                                                                                                                                                                          |
 | ----------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -208,13 +214,13 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Docs        | Met                  | This document, dossier, `moche-model-mission.md`, experience table, site note, art docs and README aligned.                                                                       |
 | Structure   | Met                  | Three acts, hidden objectives revealed per act, chapter cards with images and optional goals.                                                                                     |
 | Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_moche_intro.mjs`; `MISSION_ART` uses the valley capture.                                              |
-| Art         | Pending human review | The reused Huacas GLB and its draft Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                                                 |
+| Art         | Met                  | The site view and the in-engine captures were approved on 2026-11-23 (see the review record); the authored intro render is in the manifest and PROVENANCE.                                       |
 | Performance | Met                  | `bench_scene.mjs`: opening ~550k tris / 332 calls, huacas plaza ~721k / 568; within the recorded first-pass caps (the late view is over the 600k art-direction target, as m7/m9). |
 | Scale       | Met                  | 256 m map, 128² painted ground over 256 m and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                     |
 
 ## Wari gold-master status
 
-Reviewed 2026-11-14 as a model mission. The human art gate is still open.
+Reviewed 2026-11-14 as a model mission; the art gate closed on 2026-11-23 (site views approved).
 
 | Gate        | Status               | Evidence                                                                                                                                                                                       |
 | ----------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -233,7 +239,7 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Docs        | Met                  | This document, dossier, `wari-model-mission.md`, experience table, site note, art docs and README aligned.                                                                                     |
 | Structure   | Met                  | Three acts, hidden objectives revealed per act, chapter cards with images and optional goals.                                                                                                  |
 | Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_wari_intro.mjs`; `MISSION_ART` uses the basin capture.                                                             |
-| Art         | Pending human review | The reused Wari GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                                                                      |
+| Art         | Met                  | The site view and the in-engine captures were approved on 2026-11-23 (see the review record); the authored intro render is in the manifest and PROVENANCE.                                       |
 | Performance | Met                  | `bench_scene.mjs`: opening ~421k tris / 199 calls, frontier ~494k / 342; within the recorded first-pass caps.                                                                                  |
 | Scale       | Met                  | 256 m map, 128² painted ground over 256 m and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                  |
 
@@ -259,13 +265,13 @@ pucará GLB keeps its own review status (#343).
 | Docs        | Met                | This document, dossier, `chanca-model-mission.md`, experience table, site note, art docs and README aligned.                                                                              |
 | Structure   | Met                | Three acts, hidden objectives revealed per act, chapter cards with images; the pursuit closes Act III.                                                                                    |
 | Opening     | Met                | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_chanca_intro.mjs`; `MISSION_ART` uses the approved EEVEE render (`m5_chanca-intro`).                          |
-| Art         | Met (intro render) | Approved `chanca/chanca_intro.blend` render in `src/art/manifest.json`; the reused Chanca GLB keeps its own review status (#343), and the in-engine captures stay recorded in PROVENANCE. |
+| Art         | Met                | Approved `chanca/chanca_intro.blend` render; the site view and the in-engine captures were approved on 2026-11-23 (see the review record).                                                  |
 | Performance | Met                | `bench_scene.mjs`: opening ~682k tris / 362 calls, counterattack ~761k / 521; over the 600k art-direction target (as m7/m9), within the recorded first-pass caps.                         |
 | Scale       | Met                | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                        |
 
 ## La Guerra del Norte gold-master status
 
-Reviewed 2026-11-14 as a model mission. The human art gate is still open.
+Reviewed 2026-11-14 as a model mission; the art gate closed on 2026-11-23 (site views approved).
 
 | Gate        | Status             | Evidence                                                                                                                                                             |
 | ----------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -284,7 +290,7 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Docs        | Met                | This document, dossier, `chimu-model-mission.md`, experience table, site note, art docs and README aligned.                                                          |
 | Structure   | Met                | Three acts, hidden objectives revealed per act, chapter cards with images and optional goals.                                                                        |
 | Opening     | Met                | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_chimu_intro.mjs`; `MISSION_ART` uses the approved Chan Chan render.                      |
-| Art         | Met (intro render) | Approved `m6_chimu-intro` render; the reused Chimú GLB and the captures keep their own `reviewed: false` status.                                                     |
+| Art         | Met                | Approved `m6_chimu-intro` render; the Chan Chan site view and the in-engine captures were approved on 2026-11-23 (see the review record).                            |
 | Performance | Met                | `bench_scene.mjs`: opening ~499k tris / 273 calls, surrender ~765k / 516; within the recorded first-pass caps (the late view is over the 600k art-direction target). |
 | Scale       | Met                | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                   |
 
@@ -344,7 +350,7 @@ intro/epilogue and bench scenes); its art review is pending. The HUD layout has 
 | Gate        | Status               | Evidence                                                                                                                                                                                                               |
 | ----------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Opening     | Met                  | Three-beat in-engine intro (`capture_colonial_intro.mjs`), `MISSION_ART` and an epilogue capture; PROVENANCE records the captures.                                                                                     |
-| Art         | Pending (GLB)        | The draft `m7_colonial-intro` record was removed in the art reconciliation (a Workbench blockout with no ground, sky or people; the opening uses the in-engine capture). The reused `colonial_site` GLB keeps its own review status (#343).                                                                                            |
+| Art         | Met                  | The draft `m7_colonial-intro` record was removed in the art reconciliation (a Workbench blockout with no ground, sky or people; the opening uses the in-engine capture). The colonial site view was approved on 2026-11-23 (see the review record).                                                                                     |
 | Performance | Met                  | `bench_scene.mjs`: opening ~537k tris / 661–665 calls, late ~811k / 1083, under the recorded first-pass caps; `yarn bench:check` green.                                                                                |
 | Scale       | Met                  | 256 m map, 128² painted ground over 256 m, `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                                             |
 | Pacing      | Pending (exception)  | The real-command bot reaches the ending in ~7 min of simulated time; the agreed 20–30 min human path is still unmeasured. The model pattern's 30–40 band is documented as an exception in `colonial-model-mission.md`. |
@@ -352,7 +358,7 @@ intro/epilogue and bench scenes); its art review is pending. The HUD layout has 
 
 ## La Independencia gold-master status (m8)
 
-Reviewed 2026-11-14 as a model mission. The human art gate is still open.
+Reviewed 2026-11-14 as a model mission; the art gate closed on 2026-11-23 (site views approved).
 
 | Gate        | Status               | Evidence                                                                                                                                      |
 | ----------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -371,7 +377,7 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Docs        | Met                  | This document, dossier, `independencia-model-mission.md`, experience table, site note, art docs and README aligned.                           |
 | Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                 |
 | Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_independencia_intro.mjs`; `MISSION_ART` uses the Lima capture.    |
-| Art         | Pending (GLB)        | The draft `m8_independencia-intro` record (a Workbench blockout that did not show the tents its caption promised) was removed in the art reconciliation; the opening uses the in-engine Lima capture. The reused Ayacucho GLB keeps its review status (#343). |
+| Art         | Met                  | The draft `m8_independencia-intro` record (a Workbench blockout that did not show the tents its caption promised) was removed in the art reconciliation; the opening uses the in-engine Lima capture. The Ayacucho site view was approved on 2026-11-23 (see the review record). |
 | Performance | Met                  | `bench_scene.mjs` 2026-11-16, after the PCF shadow pass and the rig silhouette rule: opening 567,865 tris / 603 calls (under 625k/660, over 200 calls), Ayacucho 808,151 / 959 (under 920k/1,325); the caps were not raised; the scene now measures under them. |
 | Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                            |
 
@@ -548,7 +554,7 @@ The table reflects the art-direction pilot, closed through E7 on 2026-11-17; the
 
 ## Inca civil war playable status (m6b)
 
-Reviewed 2026-11-14 as a model mission. The human art gate is still open.
+Reviewed 2026-11-14 as a model mission; the art gate closed on 2026-11-23 (site views approved).
 
 | Gate        | Status               | Evidence                                                                                                                                                   |
 | ----------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |

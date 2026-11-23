@@ -1,7 +1,7 @@
 # Miraflores 1881 — model mission
 
 **Mission:** `m_miraflores` · **Campaign:** La República · **Period:** Republic (1881) ·
-**Status:** implemented, pending art review and a human playtest.
+**Status:** implemented and art-accepted (site view approved 2026-11-23); pending the human playtest.
 
 ## Historical problem
 

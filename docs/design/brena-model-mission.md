@@ -1,7 +1,7 @@
 # La Breña 1882–1883 — model mission
 
 **Mission:** `m_brena` · **Campaign:** La República · **Period:** Republic (1882–1883) ·
-**Status:** implemented, pending art review and a human playtest.
+**Status:** implemented and art-accepted (site view approved 2026-11-23); pending the human playtest.
 
 ## Historical problem
 

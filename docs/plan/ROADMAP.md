@@ -34,7 +34,7 @@ The audit is the authority. If this summary and the quality bar disagree, the qu
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **D0 · Documentation foundation**    | Documentation map, GDD, ADR log, roadmap and backlog                                                                         | A new contributor or agent can find the owner document for a task without asking; links resolve                                                            |
 | **D1 · Close the model-mission gap** | `m5`–`m9`, `m6b`, `m8` and the remaining chapters                                                                            | **Done (2026-11-14):** every released mission follows the model pattern and has a model-mission document; the remaining art and performance gaps are D2/D3 |
-| **D2 · Art review and capture**      | Pending `reviewed: false` records, the Chavín kit, and the art of the model missions (m3–m9, m6b, Tambotoco, Lima, La Junta) | No unreviewed record ships; the human review is recorded; the captures are current                                                                         |
+| **D2 · Art review and capture**      | Pending `reviewed: false` records, the Chavín kit, and the art of the model missions (m3–m9, m6b, Tambotoco, Lima, La Junta) | **Done (2026-11-23):** no unreviewed record ships; the 18 site views were approved from `docs/media/site-review-2026-11-23-all.webp` and the captures are current |
 | **D2b · Art-direction pilot**        | Tambotoco becomes the stylized-realism reference: light/shadows, palette, architecture, highland vegetation, hero variant, presentation | **Done (2026-11-17):** E0–E6 of [`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md) close and E7 delivered (baked hero proportions, scoped terrain macro, Inticancha/shrine detail, 3 × 3 E7 set and the 3X recording); caps 500k/280 and 660k/360; `dist` 24.63/25 MB |
 | **D3 · Real-GPU performance**        | Every campaign site view: m1–m9, m6b, Tambotoco, La Junta and the seven missions added on 2026-11-18                          | **Done:** 24 real-GPU views (17 on 2026-11-17, the seven openings on 2026-11-23) at 1280×800 and 1600×900 on the Intel iGPU, all hardware; 27–40 FPS high at 1600×900. Decision in [`../development/site-view-performance.md`](../development/site-view-performance.md); B13 closed the m6b/m8 late-view cost (898 → 615 and 912 → 593 draws, 27 → 34 FPS) |
 | **D4 · Release packaging**           | itch build, Pages artifact, publish checklist                                                                                | The checklist is green on a build that matches the tagged commit                                                                                           |
@@ -54,15 +54,13 @@ evidence. No model-mission rebuild remains.
 2. Review every new `reviewed: false` record. The five Caral records were reconciled and the three Workbench
    mission intros were retired on 2026-11-16 (B5/B10 closed); the archived release snapshot lists the set as
    of 2026-10-30. Approve or reject each new record with `yarn art:review`.
-3. Capture the model missions whose art review is pending (m3–m9, m6b, Tambotoco, Lima, La Junta) with the
-   current build. **Done (2026-11-17):** the current site views are in
-   `docs/media/site-review-2026-11-17.webp` (human review still pending). The seven missions added on
-   2026-11-18 have a review pack since 2026-11-23: `yarn capture:sites --only=new` writes one capture per
-   mission plus `review/site-review/decisions.md`, and the contact sheet is
-   [`../media/site-review-2026-11-23-new-missions.webp`](../media/site-review-2026-11-23-new-missions.webp).
-   The human decision is still open (B15–B17); the procedure is in
-   [`../design/asset-pipeline.md`](../design/asset-pipeline.md) §"In-engine site review". The seven also keep
-   their own media captures under `public/media/{lima-1821,real-felipe,tarapaca,miraflores,brena,cusco-1536,vilcabamba}/`.
+3. Capture the model missions and review them. **Done (2026-11-23):** `yarn capture:sites --only=all` produced
+   one in-engine RTS capture per mission (18) and the sheet
+   [`../media/site-review-2026-11-23-all.webp`](../media/site-review-2026-11-23-all.webp); the human review
+   approved all of them the same day, with no Major or Blocker. The seven missions added on 2026-11-18 keep
+   their own pack ([`../media/site-review-2026-11-23-new-missions.webp`](../media/site-review-2026-11-23-new-missions.webp))
+   and their media captures under `public/media/{lima-1821,real-felipe,tarapaca,miraflores,brena,cusco-1536,vilcabamba}/`.
+   The procedure is in [`../design/asset-pipeline.md`](../design/asset-pipeline.md) §"In-engine site review".
 
 The release-candidate document is an **archived snapshot** from 2026-10-30. Use its checklist as a template,
 but record today's counts and hashes in a new status document or PR, not by editing the snapshot.
