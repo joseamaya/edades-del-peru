@@ -1,7 +1,7 @@
 # Vilcabamba 1572 — model mission
 
 **Mission:** `m_vilcabamba` · **Campaign:** El Virreinato · **Period:** Viceroyalty (1572) ·
-**Status:** implemented, pending art review and a human playtest.
+**Status:** implemented and art-accepted (procedural site signed 2026-11-23); pending the human playtest.
 
 ## Historical problem
 
@@ -66,4 +66,5 @@ The Inca's capture and execution are narrated in the epilogue; no counterfactual
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts`.
 - Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in
   `yarn bench:check`.
-- Open: human no-cheat playtest and art review.
+- The procedural refuge site was accepted as an abstraction on 2026-11-23 (Miguel Amaya); open: human
+  no-cheat playtest.

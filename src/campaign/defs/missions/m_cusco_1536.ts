@@ -1,12 +1,13 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import { highValleyVegetation } from '../../../model/defs/profiles';
 import { CUSCO1536_HEIGHTFIELD } from '../../../model/defs/cusco1536Heightmap';
+import { CUSCO_SITE_CITY, CUSCO_SITE_SACSAY, cuscoSiteLandmarks } from '../cuscoSite';
 import type { MissionDef } from '../../types';
 
 // Cusco 1536: the Inca camp, Sacsayhuamán, the city and the withdrawal road. Ollantaytambo lies
 // north-west of the city (north is -z), down the Sacred Valley.
-const CUSCO_1536_CITY = { x: 166, z: 174 } as const;
-const CUSCO_1536_SACSAY = { x: 158, z: 141 } as const;
+const CUSCO_1536_CITY = CUSCO_SITE_CITY;
+const CUSCO_1536_SACSAY = CUSCO_SITE_SACSAY;
 const CUSCO_1536_CAMP = { x: 77, z: 77 } as const;
 const CUSCO_1536_RETREAT = { x: 100, z: 60 } as const;
 // The road bends west of Sacsayhuamán instead of crossing its tiered footprint.
@@ -65,11 +66,9 @@ export const mCusco1536: MissionDef = {
       keepout: [{ x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256, rx: 0.09, rz: 0.08 }],
       buildKeepout: [{ x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256, rx: 0.08, rz: 0.07 }],
     },
-    // The Cusco platform is the ushnu; the plaza and the Sacsayhuamán wall front complete it.
-    siteLandmarks: [
-      { kind: 'cusco-plaza', x: CUSCO_1536_CITY.x / 256, z: CUSCO_1536_CITY.z / 256 },
-      { kind: 'sacsayhuaman', x: CUSCO_1536_SACSAY.x / 256, z: CUSCO_1536_SACSAY.z / 256 },
-    ],
+    // The Cusco platform is the ushnu; the plaza and the Sacsayhuamán wall front complete it. Shared with
+    // Quipaipán so both missions show the same city instead of one of them keeping the grey placeholder GLB.
+    siteLandmarks: cuscoSiteLandmarks(),
     roads: [
       {
         from: { dx: CUSCO_1536_CAMP.x, dz: CUSCO_1536_CAMP.z },

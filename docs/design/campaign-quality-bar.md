@@ -55,13 +55,13 @@ and `m_vilcabamba` rows were added on 2026-11-18; the rest is the 2026-11-14 aud
 | m6b_guerra_civil   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_lima             | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | P    | M     |
 | m_cusco_1536       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
-| m_vilcabamba       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
+| m_vilcabamba       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | M   | M    | M     |
 | m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_junta_cusco      | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | P    | M      | M    | M   | P    | M     |
 | m_lima_1821        | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m8_independencia   | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m_real_felipe      | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m_tarapaca         | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
+| m_real_felipe      | M    | M     | P    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
+| m_tarapaca         | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | M   | M    | M     |
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M   | P   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m_miraflores       | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
 | m_brena            | M    | M     | P    | M     | M   | M    | M   | P   | P    | M     | M    | M      | M    | P   | M    | M     |
@@ -80,12 +80,15 @@ unmeasured for the seven.
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín's intro render
 is approved; its kit and captures keep their own review status. Every released mission now
-follows the model pattern (256 m, painted ground, acts and in-engine intro); the newest arc now has
-SwiftShader bench rows in `yarn bench:check` and real-GPU opening frame times; the human art review remains. m8
+follows the model pattern (256 m, painted ground, acts and in-engine intro); the newest arc has
+SwiftShader bench rows in `yarn bench:check` and real-GPU opening frame times, and the procedural sites of
+Real Felipe, Tarapacá and Vilcabamba were accepted as abstractions on 2026-11-23; the art review that remains is
+the reused kits of the older missions. m8
 was included in this pass. **m3–m9 meet the scale, opening and performance gates**; the m3, m4, m5, Tambotoco, Lima, La Junta and
 Arica intro renders are approved. Every render record in `src/art/manifest.json` is now approved: the five
 Caral education/tour records were reconciled and the three draft Workbench mission intros were removed. The
-open art review is the reused site GLBs (#343).
+open art review is the reused site kits of m3–m9 and La Junta (captures in
+`docs/media/site-review-2026-11-17.webp`; GitHub issue #343 tracks renders, not sites).
 
 **Tambotoco art pass (2026-11-16).** The ayllu kit now uses per-surface PBR detail (stone, rock, earth,
 plaster, thatch, wood, crops, people) with world-scale UVs; the cave is an arch in a scree apron, Huanacaure's
@@ -401,9 +404,10 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 
 The 2026-11-18 pass completed the 1879–1883 land arc:
 
-- **`m_tarapaca`** reuses the Arica desert terrace as a labelled quebrada. It holds the village without
-  cavalry or artillery, recovers the heights with infantry, receives captured guns and withdraws to Arica.
-  Real-command test: `tests/e2e/tarapaca.spec.ts`. Open: human no-cheat playtest and a performance row.
+- **`m_tarapaca`** reuses the Arica desert terrace as a labelled quebrada and draws the adobe village on its
+  own heightfield. It holds the village without cavalry or artillery, recovers the heights with infantry,
+  receives captured guns and withdraws to Arica. Real-command test: `tests/e2e/tarapaca.spec.ts`. The
+  procedural site was accepted as an abstraction on 2026-11-23 (Miguel Amaya); open: human no-cheat playtest.
 - **`m_miraflores`** adds `miraflores_site` (the Lima colonial kit at the `ciudad` phase). It builds three redoubts, holds the line with
   reservists and withdraws Cáceres to the sierra. Real-command test: `tests/e2e/miraflores.spec.ts`.
   Open: human no-cheat playtest and a performance row.
@@ -412,8 +416,9 @@ The 2026-11-18 pass completed the 1879–1883 land arc:
   `tests/e2e/brena.spec.ts`. Open: human no-cheat playtest and a performance row.
 
 All three have dossier, design document, tutorial, educational entry, own in-engine captures, epilogue and
-the generic completable path; they pass the scale and HUD layout guards. Human no-cheat playtests and art
-reviews remain pending, and the reused kits are marked Partial.
+the generic completable path; they pass the scale and HUD layout guards. Human no-cheat playtests remain
+pending; Tarapacá's procedural site is accepted, while the reused Lima and Ayacucho kits of Miraflores and
+Breña keep their art review open (Partial).
 
 ## La Junta del Cusco playable status (m_junta_cusco)
 
@@ -450,28 +455,32 @@ The 2026-11-18 pass closed the 1814–1826 arc with two model missions:
   the first siege of Callao. Real-command test: `tests/e2e/lima-1821.spec.ts`. Captures are current in
   `public/media/lima-1821/`; open: human art review of the reused kit and a performance row if the late view
   warrants it.
-- **`m_real_felipe`** adds the `real_felipe_site` entry, which reuses the Arica coastal-fort composition and
-  heightfield as a labelled abstraction. The mechanic is siege economy: two batteries, a coastal blockade,
-  sorties against the camp and a food-consuming final hold. Real-command test:
-  `tests/e2e/real-felipe.spec.ts`. Captures are current in `public/media/real-felipe/`; open: a dedicated
-  star-fort GLB, human art review and a performance row.
+- **`m_real_felipe`** adds the `real_felipe_site` entry, which reuses the Arica coastal-fort heightfield and
+  draws a minimal bastioned trace of its own. The mechanic is siege economy: two batteries, a coastal
+  blockade, sorties against the camp and a food-consuming final hold. Real-command test:
+  `tests/e2e/real-felipe.spec.ts`. Captures are current in `public/media/real-felipe/`. The procedural site was
+  accepted as an abstraction on 2026-11-23 (Miguel Amaya); open: human no-cheat playtest. A dedicated star-fort
+  GLB stays a future upgrade, not a gate.
 
 Both have dossier, design document, tutorial, educational entry, briefing art, epilogue and the generic
 completable path; both pass `tests/campaign-scale.test.ts` and the HUD layout gate. The human no-cheat
-playtest and the human art review remain pending.
+playtest remains pending on both; the art review still open here is the reused Lima colonial kit of
+`m_lima_1821`.
 
 ## El Virreinato arc (m_cusco_1536 and m_vilcabamba)
 
 The 2026-11-18 pass completed the conquest-to-Vilcabamba arc:
 
-- **`m_cusco_1536`** reuses `cusco_inca_site`. It takes Sacsayhuamán, holds the Cusco siege through a
-  food-consuming «siembra» and withdraws to Ollantaytambo with Manco alive. Real-command test:
-  `tests/e2e/cusco-1536.spec.ts`. Open: human no-cheat playtest, art review and a performance row.
-- **`m_vilcabamba`** adds `vilcabamba_site`, reusing the Chanca stone-fort composition as a labelled
-  cloud-forest abstraction. It defends Huayna Pucará, evacuates Vilcabamba (the expedition burns it) and saves
+- **`m_cusco_1536`** reuses `cusco_inca_site`, drawing its own plaza, ushnu and Sacsayhuamán wall front
+  (shared with `m6b`). It takes Sacsayhuamán, holds the Cusco siege through a food-consuming «siembra» and
+  withdraws to Ollantaytambo with Manco alive. Real-command test: `tests/e2e/cusco-1536.spec.ts`. Open: human
+  no-cheat playtest and the mission's own art review.
+- **`m_vilcabamba`** adds `vilcabamba_site`, drawing a low cloud-forest platform and longhouses in place of the
+  Chanca hillfort GLB. It defends Huayna Pucará, evacuates Vilcabamba (the expedition burns it) and saves
 the court at the lower
   Urubamba; the capture and execution are told in the epilogue. Real-command test:
-  `tests/e2e/vilcabamba.spec.ts`. Open: human no-cheat playtest, art review and a performance row.
+  `tests/e2e/vilcabamba.spec.ts`. The procedural site was accepted as an abstraction on 2026-11-23 (Miguel
+  Amaya); open: human no-cheat playtest.
 
 Both have dossier, design document, tutorial, educational entry, own in-engine captures, epilogue and the
 generic completable path; they pass the scale and HUD layout guards. Play/Persistence/Tests remain Partial
@@ -544,12 +553,12 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Onboarding  | Met                  | Non-blocking tutorial, briefing, Codex and minimap pips.                                                                                                   |
 | Closure     | Met                  | Dusk epilogue capture narrates Cajamarca and the weakened empire.                                                                                          |
 | UX          | Met                  | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                                         |
-| Visuals     | Met locally          | Authored Cusco GLB, painted pampa and in-engine intro/epilogue captures in `public/media/cusco-inca/`.                                                     |
+| Visuals     | Met locally          | Shared Cusco plaza composition (`cuscoSite.ts`), painted pampa and in-engine intro/epilogue captures in `public/media/cusco-inca/`.                        |
 | Persistence | Met                  | Mid-capture save/load in `save-campaign.spec.ts` (capture progress and tutorial); v10 m6b saves are rejected (`SAVE_VERSION` 11).                          |
 | Tests       | Met                  | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                                          |
 | Docs        | Met                  | This document, dossier, `guerra-civil-model-mission.md`, experience table, site note, art docs and README aligned.                                         |
 | Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                              |
 | Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_cusco_inca_intro.mjs`; `MISSION_ART` uses the approved authored render.         |
-| Art         | Met                  | The authored ushnu-plaza intro render (`m6b_guerra_civil-intro`) was approved on 2026-11-17; the reused Cusco GLB and the captures keep their own status.   |
+| Art         | Met                  | The authored ushnu-plaza intro render (`m6b_guerra_civil-intro`) was approved on 2026-11-17; the site now draws the shared plaza composition instead of the grey ushnu GLB (2026-11-23). |
 | Performance | Met                  | `bench_scene.mjs`: opening ~703k tris / 436 calls, battle ~967k / 673; over the 600k art-direction target (as m7/m9), within the recorded first-pass caps. |
 | Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                         |

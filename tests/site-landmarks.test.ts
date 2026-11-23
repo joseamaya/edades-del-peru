@@ -14,13 +14,14 @@ function mission(id: string) {
 }
 
 describe('mission site landmarks', () => {
-  it('declares the Cusco plaza and Sacsayhuamán wall front', () => {
-    const kinds = mission('m_cusco_1536').layout?.siteLandmarks?.map((landmark) => landmark.kind);
-    expect(kinds).toEqual(['cusco-plaza', 'sacsayhuaman']);
-    // Quipaipan uses the same site GLB but must not inherit Cusco's landmarks.
-    expect(mission('m6b_guerra_civil').layout?.siteLandmarks).toBeUndefined();
-    expect(mission('m6b_guerra_civil').layout?.site?.hideModel).toBeUndefined();
-    expect(mission('m_cusco_1536').layout?.site?.hideModel).toBe(true);
+  it('declares the Cusco plaza and Sacsayhuamán wall front for both missions on the site', () => {
+    // Quipaipán and Cusco 1536 share one authored site and one composition: showing the grey ushnu GLB in
+    // one campaign and the finished plaza in the other was the inconsistency this pins shut.
+    for (const id of ['m_cusco_1536', 'm6b_guerra_civil']) {
+      const kinds = mission(id).layout?.siteLandmarks?.map((landmark) => landmark.kind);
+      expect(kinds, id).toEqual(['cusco-plaza', 'sacsayhuaman']);
+      expect(mission(id).layout?.site?.hideModel, id).toBe(true);
+    }
     expect(getAuthoredSite('cusco_inca_site')?.hideModel).toBeUndefined();
   });
 

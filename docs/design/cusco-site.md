@@ -13,7 +13,12 @@ Quipaipan. It is **not** a survey and **not** a historical photograph.
 
 ## Runtime source
 
-- GLB: `src/assets/sites/cusco/cusco_inca_lod0.glb` / `cusco_inca_lod1.glb`.
+Both missions that use this site (`m6b_guerra_civil` and `m_cusco_1536`) set `hideModel`, so the GLB is a
+registry fallback that is never drawn: its ushnu is a bare grey block, and the drawn composition is the
+procedural `cusco-plaza` + `sacsayhuaman` pair in `src/campaign/defs/cuscoSite.ts` (shared by both missions,
+so the same city does not look like two different places).
+
+- GLB (fallback, not loaded): `src/assets/sites/cusco/cusco_inca_lod0.glb` / `cusco_inca_lod1.glb`.
 - Source: `art-src/blender/mission-decor/cusco_inca_lod0.blend` /
   `cusco_inca_lod1.blend` (Git LFS).
 - Build/export: `scripts/blender/build_mission_decor.py`.
