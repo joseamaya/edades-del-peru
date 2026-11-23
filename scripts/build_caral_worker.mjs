@@ -377,9 +377,10 @@ try {
       femaleBrows?.removeFromParent();
 
       // Bake the art-direction proportions into the visible skin before the garments are derived from it.
-      // The head and hands are +12 % around their bone pivots and the waist/chest get a gentle taper. This
-      // is the same pass `scripts/blender/bake_character_proportions.py` bakes into the hero; doing it here
-      // keeps the worker's welded vertices (a Blender round-trip split them and grew the GLB by 0.17 MB).
+      // The head and hands are +12 % around their bone pivots and the waist/chest get a gentle taper. Keep
+      // the constants and bands in sync with `scripts/blender/bake_character_proportions.py`, the hero path;
+      // doing it here keeps the worker's welded vertices (a Blender round-trip split them and grew the GLB
+      // by 0.17 MB).
       const bakeProportions = (meshes) => {
         const head = skeleton.bones.find((bone) => bone.name === 'Head');
         const pelvis = skeleton.bones.find((bone) => bone.name === 'pelvis');
@@ -431,10 +432,23 @@ try {
           position.needsUpdate = true;
         }
       };
-      const proportionMeshes = ['Body_f', 'Body_m', 'Hair_f', 'Hair_m', 'Eyes_f', 'Eyes_m', 'Eyebrows_f', 'Eyebrows_m']
-        .map((name) => baseGltf.scene.getObjectByName(name))
-        .filter((object) => object?.isSkinnedMesh);
-      bakeProportions(proportionMeshes);
+      if (!hero) {
+        // The hero base intentionally stays unscaled: `bake_character_proportions.py` applies the same pass
+        // once in Blender, so running it here too would double the head/hand scale and the taper.
+        const proportionMeshes = [
+          'Body_f',
+          'Body_m',
+          'Hair_f',
+          'Hair_m',
+          'Eyes_f',
+          'Eyes_m',
+          'Eyebrows_f',
+          'Eyebrows_m',
+        ]
+          .map((name) => baseGltf.scene.getObjectByName(name))
+          .filter((object) => object?.isSkinnedMesh);
+        bakeProportions(proportionMeshes);
+      }
 
       // A short-sleeved cotton tunic derived from the body surface: same skin weights,
       // slightly offset along the normals, with the arms and neck excluded.
@@ -624,12 +638,17 @@ try {
         return mesh;
       };
       const tunicF = addSkinned(makeTunic(femaleBody), cotton, 'attire_tunic_f');
-      const tunicM = addSkinned(makeTunic(maleBody, { sideX: 0.3 }), cotton, 'attire_tunic_m', maleBody.bindMatrix);
+      const tunicM = addSkinned(
+        makeTunic(addedMaleBody, { sideX: 0.3 }),
+        cotton,
+        'attire_tunic_m',
+        maleBody.bindMatrix,
+      );
       if (hero) {
         // The hero's uncu is longer than the worker's: a second silhouette layer under the mantle.
         tunicM.removeFromParent();
         addSkinned(
-          makeTunic(maleBody, { topY: 1.48, bottomY: 0.68, sideX: 0.34, offset: 0.04 }),
+          makeTunic(addedMaleBody, { topY: 1.48, bottomY: 0.68, sideX: 0.34, offset: 0.04 }),
           cotton.clone(),
           'attire_tunic_m',
           maleBody.bindMatrix,

@@ -2,7 +2,8 @@
 
 The CC0 Quaternius body reads as ~8 heads. This pass bakes the art-direction proportions into the mesh:
 the head and hands are scaled +12 % around their bone pivots and the shoulders/waist get a gentle taper,
-so the committed asset owns the silhouette. It does not retopologise the body.
+so the committed asset owns the silhouette. It does not retopologise the body. Keep the constants and the
+taper bands in sync with `bakeProportions` in `scripts/build_caral_worker.mjs` (the worker path).
 
 Run after the base hero build, then meshopt with the hero tunic budget:
 
@@ -30,8 +31,8 @@ def arg(name, fallback):
     return fallback
 
 
-SRC = arg('in', 'review/caral_worker_base.glb')
-OUT = arg('out', 'src/assets/models/caral_worker.glb')
+SRC = arg('in', 'review/tambotoco_hero_base.glb')
+OUT = arg('out', 'src/assets/models/tambotoco_hero.glb')
 HEAD_SCALE = 1.12
 HAND_SCALE = 1.12
 

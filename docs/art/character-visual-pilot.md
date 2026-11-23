@@ -284,20 +284,28 @@ so every humanoid variant shares the new silhouette.
 
 | Measure | Before | After |
 | --- | --- | --- |
-| `Body_f` head height | 0.247 m | 0.284 m (+15 %, including the pivot distribution) |
+| `Body_f` head/body | 7.77 heads | 7.04 heads |
+| `Body_m` head/body | 7.94 heads | 7.21 heads |
 | Head/hand scale | 1.00 | 1.12 around the bone pivots |
-| Head-to-body ratio | ~8 heads | ~7.1 heads |
-| `caral_worker.glb` | 2,571,908 bytes | 2,572,456 bytes |
+| `caral_worker.glb` | 2,571,908 bytes | 2,572,416 bytes |
 | `dist` | 27.80 MB | 27.80 MB (1024-based) |
+
+The ratio is measured on the dominant-`Head` vertices against the body bbox in the bind pose; the absolute
+head height depends on which vertices are counted, so the table uses the ratio the art direction specifies.
+The taper is a global x scale in the pelvis–head band (it also nudges the arms slightly), the same pass the
+hero already had.
 
 The pass is applied in the browser build rather than a Blender round-trip: importing/exporting the worker
 through Blender splits its welded vertices and grew the shared GLB by ~0.17 MB (`dist` reached 27.96 MB), while
 the browser pass adds ~0.5 KB. The hero keeps the Blender authoring path because it is a separate asset.
 
-**Remaining gap.** ~7.1 heads is inside the 6.5–7 band only at the edge; a true 6.5–7-head character needs a
-body-specific sculpt/retopology, not another uniform scale. The face is still the painted source texture: no
-geometric nose, jaw or eyelids. `tests/visual/baseline.json` was regenerated for the 26 affected scenes; the
-change is intentional and is the evidence for this pass.
+**Remaining gap.** ~7.0–7.2 heads is inside the 6.5–7 band only at the edge; a true 6.5–7-head character needs
+a body-specific sculpt/retopology, not another uniform scale. The face is still the painted source texture: no
+geometric nose, jaw or eyelids. The **mounted rider** is a separate procedural Blender rig
+(`build_mounted_rig.py`) and keeps ~8 heads; it is a follow-up, not part of this pass.
+`tests/visual/baseline.json` was regenerated for the 26 affected scenes with `yarn visual:update` on the
+authoring host; the wide region/landscape scenes also carry capture drift, which is why the diff is larger than
+the silhouette change alone.
 
 ## 11. Pending issues
 

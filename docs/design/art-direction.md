@@ -87,7 +87,7 @@ No asset is accepted because it looks good at close range. It must read at 54 fi
 - **Proportions:** 6.5–7 heads tall, not the 8+ heroic proportion of the CC0 bodies. Head and hands are
   +10–15 % relative to a realistic body so faces and gestures survive the RTS zoom. The shared worker and hero
   now bake +12 % (head/hands around the bone pivots) and a waist/chest taper, which lands at ~7.1 heads; a
-  true 6.5–7-head body still needs a sculpt (§4.1 pilot note).
+  true 6.5–7-head body still needs a sculpt (pilot note below).
 - **Silhouette layers:** body, garment, headdress/prop. Each Ayar sibling must be identifiable by at least
   **two** layers at the default zoom, not by accent colour alone. Ayar Manco, Ayar Cachi and Mama Huaco are
   the first acceptance cases.
