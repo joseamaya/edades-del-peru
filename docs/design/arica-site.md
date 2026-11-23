@@ -68,5 +68,5 @@ documented attack, not a literal order of battle.
 The site, heightfield, painted ground, collision, heritage card, three-act documented path, no-cheat
 playtest and save/load path are implemented. The 256 m transect, the opening scenes in
 `scripts/bench_scene.mjs`, the in-engine intro/epilogue captures (`scripts/capture_arica_intro.mjs`) and
-`modelMission: true` are part of the model-mission pass. The `arica_site` GLB still awaits a human art
-review (#343); there is no CI pixel gate.
+`modelMission: true` are part of the model-mission pass. The `arica_site` GLB was approved on 2026-11-23
+(see the quality bar's Art review record); there is no CI pixel gate.

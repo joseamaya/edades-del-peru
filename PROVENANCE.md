@@ -1054,6 +1054,18 @@ slot is absent (offline / without assets).
 - **Review**: the composition is the one accepted for the procedural sites on 2026-11-23; no historical claim
   beyond the authored abstraction.
 
+### Site review pass: all 18 missions (in-engine)
+
+- **Location**: `docs/media/site-review-2026-11-23-all.webp`, 1920x2316 WebP q78 (3x6 contact sheet, one cell
+  per mission; the individual 1600x900 PNGs stay in `review/site-review-all/`, gitignored).
+- **Source**: `yarn capture:sites --only=all --out=review/site-review-all --sheet=docs/media/site-review-2026-11-23-all.webp`.
+- **Content**: every campaign mission's site at its final phase, HUD hidden, high preset. Approved by the human
+  review on 2026-11-23 with no Major or Blocker (record in `docs/design/campaign-quality-bar.md`).
+- **Supersedes**: `docs/media/site-review-2026-11-17.webp` (incomplete: four empty cells and no third row; the
+  file is removed). The seven-mission pack below is the subset for the 2026-11-18 arc.
+- **Review**: approved 2026-11-23 by Miguel Amaya with no Major or Blocker; the record is in
+  `docs/design/campaign-quality-bar.md`.
+
 ### Site review pack: the seven missions of 2026-11-18 (in-engine)
 
 - **Location**: `docs/media/site-review-2026-11-23-new-missions.webp`, 1920x1158 WebP q78 (3x3 contact sheet,
@@ -1067,8 +1079,8 @@ slot is absent (offline / without assets).
   historical photographs, and they are **review evidence**: the human decision is recorded in the quality bar,
   not in this file.
 - **Review**: the procedural sites of Real Felipe, Tarapacá and Vilcabamba were accepted as abstractions on
-  2026-11-23 (Miguel Amaya; recorded in `docs/design/campaign-quality-bar.md`). Miraflores and Breña keep their
-  reused-kit review open, and so does Lima 1821; the worksheet with one row per mission is
+  2026-11-23 (Miguel Amaya; recorded in `docs/design/campaign-quality-bar.md`), and the rest of the seven were
+  approved in the full campaign pass the same day. The worksheet with one row per mission is
   `review/site-review/decisions.md` and the procedure is `docs/design/asset-pipeline.md` §"In-engine site review".
 
 ### Late-view performance evidence (in-engine)
@@ -1206,14 +1218,18 @@ Used only as FLUX.2 multi-reference inputs (never redistributed) for the Andean 
   attested likenesses. Data and status live in `src/model/defs/commanders.ts`; pre-Hispanic figures are
   marked `abstraction`. Roles, dates and events follow [`docs/historia/`](./docs/historia/).
 
-## D2 model-mission site-review captures (in-engine evidence)
+## D2 model-mission site review (in-engine evidence)
 
-- **Location**: [`docs/media/site-review-2026-11-17.webp`](docs/media/site-review-2026-11-17.webp)
-  (1600×894 WebP q60 contact sheet).
-- **Source**: `node scripts/capture_site_review.mjs` on the current build, 1600×900, seed 777, HUD hidden,
-  each site advanced to its final phase; individual PNGs stay in the gitignored `review/site-review/`.
-- **Content**: one current site view per mission for m3–m9, m6b, Tambotoco, Lima and La Junta. These are
-  review evidence for the pending D2 art review, not approvals and not historical photographs.
+- **Location**: [`docs/media/site-review-2026-11-23-all.webp`](docs/media/site-review-2026-11-23-all.webp)
+  (1920×2316 WebP q78 contact sheet).
+- **Source**: `yarn capture:sites --only=all --out=review/site-review-all
+  --sheet=docs/media/site-review-2026-11-23-all.webp` on the current build, 1600×900 per cell, seed 777, HUD
+  hidden, each site advanced to its final phase; individual PNGs stay in the gitignored
+  `review/site-review-all/`.
+- **Content**: one current site view per released mission. These are review evidence; the approval itself is
+  recorded in `docs/design/campaign-quality-bar.md` (Art review record, 2026-11-23, Miguel Amaya).
+- **Review**: approved 2026-11-23, no Major or Blocker. It supersedes the 2026-11-17 sheet, which was
+  incomplete (four empty cells and no third row) and has been removed.
 
 ## External references (technical only, no code)
 

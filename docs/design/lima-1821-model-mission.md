@@ -1,7 +1,7 @@
 # Lima 1821 — model mission
 
 **Mission:** `m_lima_1821` · **Campaign:** La Independencia · **Period:** Independence (1821) ·
-**Status:** implemented, pending art review and a human playtest.
+**Status:** implemented and art-accepted (site view approved 2026-11-23); pending the human playtest.
 
 ## Historical problem
 

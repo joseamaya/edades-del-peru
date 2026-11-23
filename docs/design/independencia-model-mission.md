@@ -117,7 +117,8 @@ units are unchanged.
 
 ## Open items
 
-1. Human art review of the reused Ayacucho GLB and its Blender records (#343); the in-engine captures are
+1. Human art review of the mission's in-engine art: done on 2026-11-23 (site view approved); the in-engine
+   captures are
    recorded in PROVENANCE and are not a Blender-render claim.
 2. Real-GPU performance measured on the reference iGPU (the call counts are over art-direction §11's
    target): [`../development/site-view-performance.md`](../development/site-view-performance.md).

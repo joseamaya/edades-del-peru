@@ -118,9 +118,9 @@ playtest is still needed to measure the 20–30 min path. The model pattern's 30
 
 ## Open items
 
-1. Human art review of the mission's in-engine art; the Cusco site itself now draws the shared plaza
-   composition (`cuscoSite.ts`) instead of the bundled ushnu GLB, and the before/after is recorded in
-   PROVENANCE. The intro render (`m6b_guerra_civil-intro`) is already approved.
+1. Human art review: done on 2026-11-23 (site view approved, see the quality bar's Art review record). The
+   Cusco site draws the shared plaza composition (`cuscoSite.ts`) instead of the bundled ushnu GLB, and the
+   before/after is recorded in PROVENANCE. The intro render (`m6b_guerra_civil-intro`) is approved.
 2. Real-GPU performance measured on the reference iGPU:
    [`../development/site-view-performance.md`](../development/site-view-performance.md).
 3. A human playtest to measure the full path.
