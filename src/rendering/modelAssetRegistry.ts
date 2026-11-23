@@ -28,6 +28,8 @@ export interface ModelAssetDefinition {
   readonly runSpeedThreshold?: number;
   /** Optional one-shot clip used by `RigInstance.playDeath`. */
   readonly deathClip?: string;
+  /** Optional one-shot hit reaction, played as a presentation overlay. */
+  readonly hitClip?: string;
   /** Ground the bind-pose feet at y=0 (units and terrestrial fauna). */
   readonly ground: boolean;
   /** Extra world-space lift after grounding (avoids clip-driven foot penetration). */
@@ -78,6 +80,7 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
       build: 'Fixing_Kneeling',
       attack: 'Sword_Attack',
     },
+    hitClip: 'Hit_Chest',
   },
   /**
    * Caral worker/scout: Quaternius Universal Base Characters body/hair (CC0)
@@ -98,11 +101,13 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
       idle: 'Idle_Loop',
       walk: 'Walk_Loop',
       walk_carry: 'Walk_Carry_Loop',
+      run: 'Jog_Fwd_Loop',
       gather: 'Farm_Harvest',
       build: 'Push_Loop',
       attack: 'Punch_Jab',
     },
     deathClip: 'Death01',
+    hitClip: 'Hit_Chest',
   },
   /**
    * Tambotoco hero: male-only derivation of the Caral worker with the Killke outfit and the
@@ -119,9 +124,11 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
       idle: 'Idle_Loop',
       walk: 'Walk_Loop',
       walk_carry: 'Walk_Loop',
+      run: 'Jog_Fwd_Loop',
       attack: 'Sword_Regular_A',
     },
     deathClip: 'Death01',
+    hitClip: 'Hit_Chest',
   },
   /**
    * Project-authored low-poly horse and rider. The source is

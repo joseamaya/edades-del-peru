@@ -316,6 +316,7 @@ export class UnitView {
         running,
       });
       this.rig.play(state);
+      if (!u.dead && u.hitReact > 0 && !this.rig.hitPlaying) this.rig.playHit();
       this.animateFishing(state === 'gather', time);
       const reference = this.rig.referenceSpeed(state);
       const maxRate = state === 'run' ? RUN_CLIP_RATE_MAX : WALK_CLIP_RATE_MAX;

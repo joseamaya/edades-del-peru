@@ -45,6 +45,7 @@ const SOURCES = {
 const CLIPS = [
   ['ual1', 'Idle_Loop'],
   ['ual1', 'Walk_Loop'],
+  ['ual1', 'Jog_Fwd_Loop'],
   ['ual2', 'Farm_Harvest'],
   ['ual2', 'TreeChopping_Loop'],
   ['ual2', 'Walk_Carry_Loop'],
@@ -55,9 +56,10 @@ const CLIPS = [
   ['ual2', 'Sword_Regular_A'],
   ['ual2', 'OverhandThrow'],
   ['ual1', 'Death01'],
+  ['ual1', 'Hit_Chest'],
 ];
 const hero = process.argv.includes('--hero');
-const HERO_CLIPS = ['Idle_Loop', 'Walk_Loop', 'Sword_Regular_A', 'Death01'];
+const HERO_CLIPS = ['Idle_Loop', 'Walk_Loop', 'Jog_Fwd_Loop', 'Sword_Regular_A', 'Death01', 'Hit_Chest'];
 const outFile = path.resolve(cliArg('out', 'review/caral_worker_test.glb'));
 
 const { base, close } = await withViteServer({ optimizeDeps: { noDiscovery: true } });
@@ -674,7 +676,7 @@ try {
           baseGltf.scene.getObjectByName(name)?.removeFromParent();
         }
         animations = animations.filter((clip) => heroClips.includes(clip.name));
-        if (skinned(baseGltf.scene).length !== 7 || animations.length !== 4) {
+        if (skinned(baseGltf.scene).length !== 7 || animations.length !== 6) {
           throw new Error(`hero filter: ${skinned(baseGltf.scene).length} meshes / ${animations.length} clips`);
         }
       }

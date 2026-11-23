@@ -84,6 +84,20 @@ describe('rigged model assets', () => {
     expect(materials.size).toBeGreaterThan(0);
   });
 
+  it('plays the one-shot hit reaction as an overlay and returns to the current state', async () => {
+    await load();
+    const rig = acquireRig('ual_mannequin')!;
+    rig.play('walk', 0);
+    rig.update(0.1);
+    expect(rig.hitPlaying).toBe(false);
+    rig.playHit(0);
+    expect(rig.hitPlaying).toBe(true);
+    rig.update(0.5);
+    expect(rig.hitPlaying).toBe(false);
+    expect(rig.currentState).toBe('walk');
+    rig.dispose();
+  });
+
   it('clones skeletons and mixers independently for each instance', async () => {
     const asset = await load();
     const a = acquireRig('ual_mannequin');
@@ -860,6 +874,7 @@ describe('rigged model assets', () => {
       expect.arrayContaining([
         'Idle_Loop',
         'Walk_Loop',
+        'Jog_Fwd_Loop',
         'Farm_Harvest',
         'Walk_Carry_Loop',
         'Punch_Jab',
@@ -867,8 +882,11 @@ describe('rigged model assets', () => {
         'Sword_Regular_A',
         'OverhandThrow',
         'Death01',
+        'Hit_Chest',
       ]),
     );
+    expect(MODEL_ASSET_DEFS.caral_worker.clips.run).toBe('Jog_Fwd_Loop');
+    expect(MODEL_ASSET_DEFS.caral_worker.hitClip).toBe('Hit_Chest');
     expect(json.nodes.map((node) => node.name)).toEqual(
       expect.arrayContaining([
         'Body_f',

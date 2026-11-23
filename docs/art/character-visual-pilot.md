@@ -233,7 +233,37 @@ Wari straps are merged per bone (14 / 16 / 12 draws before).
 the bottom); the existing Moche/Wari/Chimú E2E specs keep asserting the documented gear names.
 `scripts/bench_character_pilot.mjs` and `scripts/capture_character_pilot.mjs` cover the seven units.
 
-## 9. Pending issues
+## 9. Animation pass: run and hit reaction
+
+![Idle, run and hit reaction on the shared rig](../media/character-animation-pass.webp)
+
+The shared worker had no jog and no hit reaction, so a charging soldier and a running scout both replayed the
+walk, and damage had no pose. Both clips are CC0 UAL1 clips already used by the project; they are added at
+**build time** in `scripts/build_caral_worker.mjs` (not by re-exporting the finished GLB), so the skin, the
+skeleton and the bind matrices are untouched:
+
+- `Jog_Fwd_Loop` (0.93 s) and `Hit_Chest` (0.33 s) are appended to the worker and the hero GLBs.
+- `run: 'Jog_Fwd_Loop'` is registered for `caral_worker` and `tambotoco_hero`; `UnitView` already asked the rig
+  for `run` when a unit charges or exceeds the speed threshold, so scouts and charging infantry now jog.
+- `Hit_Chest` plays as a **presentation-only overlay**: `Unit.takeDamage` sets a 0.3 s `hitReact` timer,
+  `UnitView` calls `RigInstance.playHit()`, and the rig resumes the latest requested state when the clip ends.
+  It is not serialized and cannot affect the simulation, replay determinism or balance.
+- `build_caral_worker.mjs` now records the two clips in its clip list and the hero filter (4 → 6 clips).
+
+### Costs
+
+| Gate | Result |
+| --- | --- |
+| `caral_worker.glb` | 2.36 → 2.45 MiB (2 clips) |
+| `tambotoco_hero.glb` | 1.38 → 1.48 MiB (2 clips) |
+| `dist` | 27.61 → 27.80 MiB / 28 MiB; first play 1.88 MiB gzip |
+| Unit cost | unchanged (the clips do not add draws or triangles) |
+
+`tests/e2e/caral-worker.spec.ts` now damages a worker and checks that the hit overlay starts and returns to
+`Idle_Loop`. The Caral and Inca scout specs now expect `run`/`Jog_Fwd_Loop` for a moving scout, which is the
+intended behaviour change. `yarn test` (1,092 tests) and `yarn test:e2e:fast` (349 tests) are green.
+
+## 10. Pending issues
 
 1. **Body proportions and face.** The shared CC0 body is still ~8 heads and texture-faced. The pilot improves
    clothing and equipment, not anatomy. The art direction asks for 6.5–7 heads and a stronger head/hand
@@ -241,11 +271,9 @@ the bottom); the existing Moche/Wari/Chimú E2E specs keep asserting the documen
 2. **Bind-matrix-safe GLB export.** Re-exporting the finished worker GLB remains blocked by the shared-skeleton
    problem in §2. A future body replacement should start from the original Quaternius sources (the
    `tambotoco_hero.glb` path) or prove that its export preserves the inverse bind matrices and tracks.
-3. **Per-role animation.** `run` and a hit reaction are still missing from the shared worker; the recent
-   `Pistol_Shoot` covers the firearm attack, but it is a one-handed pistol clip rather than a two-handed
-   musket/rifle aim. `Death01` is registered and `playDeath` freezes it; the death column is in the contact
-   sheet above. Adding `Jog_Fwd_Loop`/`Hit_Chest` would require rebuilding the worker GLB and wiring a
-   presentation-only reaction.
+3. **Two-handed firearm aim.** §9 added `run` and the hit reaction. The firearm attack is still the shared
+   one-handed `Pistol_Shoot`, not a two-handed musket/rifle aim; UAL1 has `Pistol_Aim_*` poses, but wiring a
+   two-handed aim/recoil state is a separate animation change.
 4. **Rigid cloth at joints.** Sleeves and breeches are rigid bone attachments; deep poses can show a crease
    at the elbow/knee. At the RTS camera it is not visible; a skinned garment needs the bind-safe path.
 5. **Shared dressers.** `dressUniform` serves every post-colonial variant and `dressCaralWorker` every Andean
@@ -256,15 +284,16 @@ the bottom); the existing Moche/Wari/Chimú E2E specs keep asserting the documen
 6. **Draw-call headroom.** The Spanish and the late realista are at 22 draws. A third accessory per bone
    should be merged into an existing gear draw, not added as a new mesh.
 
-## 10. Recommendation
+## 11. Recommendation
 
 **The runtime equipment standard is worth keeping and extending, but it is not yet a complete character
 standard.**
 
 - The standard now covers seven units (Inca, 16th-century Spanish, 1879 Republican/Chilean, Moche, Wari,
-  Chimú/Recuay and the late realista) with documented, shaped gear, the proven rig and every gate green.
-  Extend the rest of the infantry culture by culture with the `yarn bench:characters` ceiling, and stop
-  wherever the dossier says «no documentado» instead of inventing a garment.
+  Chimú/Recuay and the late realista) with documented, shaped gear, `run` and a hit reaction on the shared
+  rig, and every gate green. Extend the rest of the infantry culture by culture with the
+  `yarn bench:characters` ceiling, and stop wherever the dossier says «no documentado» instead of inventing a
+  garment.
 - The next real quality step is the body: proportions (~8 heads today, 6.5–7 asked), hands and face. Until
   that pass lands the result reads as a well-equipped mannequin, and no amount of gear will change it.
 - Keep the shared `caral_worker` body and clips for now. A new body must come with a bind-safe GLB export

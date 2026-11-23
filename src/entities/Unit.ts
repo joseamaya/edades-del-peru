@@ -232,6 +232,8 @@ export class Unit {
 
   targetEntityId: number | null = null;
   attackCooldown = 0;
+  /** Presentation-only hit reaction timer; set by damage, never read by the simulation. */
+  hitReact = 0;
   gatherCarry: Resources = { ...ZERO_RESOURCES };
   carryCapacity = 10;
   private gatherTimer = 0;
@@ -850,6 +852,7 @@ export class Unit {
 
   takeDamage(dmg: number, fromId?: number): void {
     if (this.dead) return;
+    this.hitReact = 0.3;
     // Fire is answered: remember the shooter so an idle defensive unit can return fire from just
     // outside its leash instead of watching its squad die without reacting.
     if (fromId !== undefined && fromId !== this.id) {
@@ -899,6 +902,7 @@ export class Unit {
 
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
     this.retaliationTimer = Math.max(0, this.retaliationTimer - dt);
+    this.hitReact = Math.max(0, this.hitReact - dt);
     this.repathTimer -= dt;
 
     const order = this.orderQueue[0];
