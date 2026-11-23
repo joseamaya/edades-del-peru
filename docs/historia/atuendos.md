@@ -77,6 +77,12 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
   protección anti-flecha; chaqueta azul, divisa roja, gorra; armado con **fusil corto, pistolas, arco
   y flechas, espada, lanza y escudo de piel**. — Wikipedia, *Soldado de cuera* (fuente secundaria).
 
+> **Siglo XVI (1532–1572).** El repositorio no documenta una uniformidad de regimiento para la
+> conquista. La representación del soldado de este período usa **morrión, jubón/coleto, calzas, botas
+> altas, espada y arcabuz de mecha**, en tonos de lana y cuero, con faja roja. Es una **reconstrucción
+> plausible**, no un uniforme documentado. La casaca/chupa azul con divisa roja de la tabla siguiente
+> corresponde al siglo XVIII (Borbones) y se reserva para los realistas tardíos (1780–1826).
+
 ## 4. República / Guerra del Pacífico (s. XIX)
 
 - **Perú (1879)**: infantería con **guerrera/dormán azul** con vivos, botones con escudo peruano;
@@ -118,7 +124,7 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
   sin maskapaycha ni metal imperial. Los honderos y porras son la abstracción de juego del señorío
   (`docs/design/tambotoco-model-mission.md`); no hay una prenda Killke documentada pieza por pieza.
 
-| Virreinato (Realistas) | casaca/chupa azul, divisa roja | morrión (1535–1572) / bicornio (1780–1826) | fusil/arcabuz + sable/lanza | cuera (frontera) | — |
+| Virreinato (Realistas) | s. XVI: jubón/calzas/botas (reconstrucción plausible); s. XVIII: casaca/chupa azul, divisa roja | morrión (1535–1572) / bicornio (1780–1826) | fusil/arcabuz + sable/lanza | cuera (frontera) | — |
 | República (Patriotas/Guerra del Pacífico) | guerrera/dormán azul, pantalón | kepí (chacó en gala) | fusil Comblain/Peabody-Martini + bayoneta | — | — |
 | Contemporáneo (Perú) | uniforme de campaña | casco | fusil de asalto | chaleco | — |
 

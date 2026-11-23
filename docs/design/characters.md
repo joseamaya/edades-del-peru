@@ -129,6 +129,9 @@ which falls back to `walk`. `eat` is fauna-only.
 
 ## Current gaps
 
+- The 2026-11 character visual pilot ([`../art/character-visual-pilot.md`](../art/character-visual-pilot.md))
+  implements shaped runtime equipment for the Inca warrior, the 16th-century Spanish infantry and the 1879
+  line infantry. Body proportions, faces and a bind-matrix-safe character GLB remain pending.
 - `m1`–`m4` have no named cast by design; their narrators are anonymous.
 - The eight Ayar heroes share the ayllu rig; unique outfits and headdresses are pending. Tambotoco's Ayar
   Manco has an opt-in male-only GLB with a longer tunic, a baked proportion pass (head/hands +12% and a

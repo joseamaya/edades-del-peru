@@ -18,6 +18,7 @@ The map is deliberately a router, not a summary. Detailed rules live in the docu
 | Check a historical fact, name or date | [`historia/README.md`](./historia/README.md) and the matching dossier |
 | Model something in Blender or retouch in GIMP | [`design/asset-pipeline.md`](./design/asset-pipeline.md), then [`design/authoring-tools.md`](./design/authoring-tools.md) and [`design/blender-art.md`](./design/blender-art.md) |
 | Design a named character or audit the cast | [`design/characters.md`](./design/characters.md) |
+| Audit or extend the character visual standard | [`art/character-visual-pilot.md`](./art/character-visual-pilot.md), then [`design/art-direction.md`](./design/art-direction.md) §4.1 |
 | Set or audit the visual direction | [`design/art-direction.md`](./design/art-direction.md), then [`design/tambotoco-art-pilot.md`](./design/tambotoco-art-pilot.md) |
 | Audit or design the geography of the missions | [`design/mission-geographic-identity.md`](./design/mission-geographic-identity.md), then [`design/geographic-families.md`](./design/geographic-families.md) |
 | Understand the engine, subsystems or a code trap | [`development.md`](./development.md) |
@@ -92,6 +93,7 @@ and new records change.
 | [`design/campaign-quality-bar.md`](./design/campaign-quality-bar.md) | The gates a finished mission must pass, plus the live audit of all 20 missions | Living |
 | [`design/campaign-experiences.md`](./design/campaign-experiences.md) | What each campaign must teach and how the player learns it | Living |
 | [`design/characters.md`](./design/characters.md) | Cast, likeness certainty, hero treatment and animation minimums | Living |
+| [`art/character-visual-pilot.md`](./art/character-visual-pilot.md) | Character pilot: audit, three units, runtime equipment, before/after, cost and the decision to extend | Living |
 | [`design/asset-pipeline.md`](./design/asset-pipeline.md) | Start-here route for Blender/GIMP assets, ingest commands, provenance and review | Living |
 | [`design/campaign-redesign.md`](./design/campaign-redesign.md) | Approved structure for the Tahuantinsuyo, Virreinato, Independencia and República chapters, including the four-mission launch catalogue and the 13-mission expansion | Approved (partially implemented) |
 | [`design/art-direction.md`](./design/art-direction.md) | Stylized-realism rules: camera, palette, characters, architecture, landscape, light, budgets (Tambotoco reference) | Living |

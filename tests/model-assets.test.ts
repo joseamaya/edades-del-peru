@@ -545,8 +545,8 @@ describe('rigged model assets', () => {
     await load();
     const rig = acquireRig('ual_mannequin', 'rebelde_soldier_m')!;
     expect(rig.root.getObjectByName('attire_post_weapon')).toBeDefined();
-    expect(rig.root.getObjectByName('attire_post_coat')).toBeDefined();
-    expect(rig.root.getObjectByName('attire_post_hat')).toBeUndefined();
+    expect(rig.root.getObjectByName('attire_post_sleeve_upper_l')).toBeDefined();
+    expect(rig.root.getObjectByName('attire_post_morion')).toBeUndefined();
     rig.dispose();
 
     // The Amauta's tech is Late Horizon-only, so m7 never offers it (#327).
@@ -762,17 +762,16 @@ describe('rigged model assets', () => {
     rockets.dispose();
   });
 
-  it('adds a coat, hat and firearm to a post-colonial rig', async () => {
+  it('adds period headwear, sleeves and a firearm to a post-colonial rig', async () => {
     await load();
     const rig = acquireRig('ual_mannequin', 'realistas_soldier_m')!;
-    expect(rig.root.getObjectByName('attire_post_coat')).toBeDefined();
-    expect(rig.root.getObjectByName('attire_post_hat')).toBeDefined();
-    expect(rig.root.getObjectByName('attire_post_hat')?.userData.hat).toBe('morion');
+    expect(rig.root.getObjectByName('attire_post_sleeve_upper_l')).toBeDefined();
+    expect(rig.root.getObjectByName('attire_post_morion')).toBeDefined();
     expect(rig.root.getObjectByName('attire_post_weapon')).toBeDefined();
     rig.dispose();
 
     const late = acquireRig('ual_mannequin', 'realistas_bicorn_soldier_m')!;
-    expect(late.root.getObjectByName('attire_post_hat')?.userData.hat).toBe('bicorn');
+    expect(late.root.getObjectByName('attire_post_bicorn')).toBeDefined();
     late.dispose();
   });
 
