@@ -8,7 +8,7 @@ import { CARAL_WORKER_SHADOW_SKIP_MESHES, type ModelAssetId, type RigClipState }
 import alpacaUrl from '../assets/models/quaternius_alpaca.glb?url';
 import caralWorkerUrl from '../assets/models/caral_worker.glb?url';
 import tambotocoHeroUrl from '../assets/models/tambotoco_hero.glb?url';
-import mountedRigUrl from '../assets/models/mounted_rig.glb?url';
+import mountedHorseUrl from '../assets/models/quaternius_horse.glb?url';
 import siegeRigUrl from '../assets/models/siege_rig.glb?url';
 import vehicleRigUrl from '../assets/models/vehicle_rig.glb?url';
 
@@ -42,7 +42,7 @@ export interface ModelAssetDefinition {
 
 const ALPACA_URL = alpacaUrl;
 const CARAL_WORKER_URL = caralWorkerUrl;
-const MOUNTED_RIG_URL = mountedRigUrl;
+const MOUNTED_RIG_URL = mountedHorseUrl;
 const SIEGE_RIG_URL = siegeRigUrl;
 const VEHICLE_RIG_URL = vehicleRigUrl;
 
@@ -135,20 +135,22 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     hitClip: 'Hit_Chest',
   },
   /**
-   * Project-authored low-poly horse and rider. The source is
-   * `art-src/blender/scenes/mounted_rig.blend`, built by
-   * `scripts/blender/build_mounted_rig.py`.
+   * Cavalry mount: Quaternius' CC0 «Horse» (Ultimate Animated Animal Pack), slimmed by
+   * `scripts/build_mounted_horse.mjs`. The rider is the shared infantry body, seated by `dressMounted`.
+   * `scale` brings the withers to ~1.6 m against the 1.86 m person (art direction §4.1).
    */
   mounted_rig: {
     url: MOUNTED_RIG_URL,
-    ...PLATFORM_RIG,
-    clips: { ...PLATFORM_RIG.clips, run: 'Gallop_Loop' },
-    // The horse's Walk_Loop is a working trot and Gallop_Loop a full gallop;
-    // their cadence follows the unit speed instead of the shared infantry 1.4.
-    // Heavy cavalry (3.6) trots; hussars and default-scale matches gallop, and
-    // an attack/attack_move order charges regardless of speed.
+    scale: 0.46,
+    yawOffset: 0,
+    ground: true,
+    groundClearance: 0.02,
+    deathClip: 'Death',
+    clips: { idle: 'Idle', walk: 'Walk', walk_carry: 'Walk', run: 'Gallop', attack: 'Attack_Headbutt' },
+    // Walk is a working trot and Gallop a full gallop; their cadence follows the unit speed. Heavy cavalry
+    // (3.6) trots; hussars and default-scale matches gallop, and an attack/attack_move order charges.
     walkReferenceSpeed: 2.4,
-    runReferenceSpeed: 2.2,
+    runReferenceSpeed: 4.2,
     runSpeedThreshold: 3.8,
   },
   /**

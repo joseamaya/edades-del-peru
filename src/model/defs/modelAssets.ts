@@ -159,8 +159,17 @@ const PLATFORM_CLIPS: Partial<Record<RigClipState, string | null>> = {
   attack: 'Attack',
 };
 
+/** The Quaternius horse's clips: `Walk` is the trot, the head strike is the charge. */
+const HORSE_CLIPS: Partial<Record<RigClipState, string | null>> = {
+  walk: 'Walk',
+  walk_carry: 'Walk',
+  gather: null,
+  build: null,
+  attack: 'Attack_Headbutt',
+};
+
 const MOUNTED_VARIANT_CLIPS = Object.fromEntries(
-  MOUNTED_VARIANTS.map((variant) => [variant, PLATFORM_CLIPS] as const),
+  MOUNTED_VARIANTS.map((variant) => [variant, HORSE_CLIPS] as const),
 ) as Partial<Record<MountedRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
 const SIEGE_VARIANT_CLIPS = Object.fromEntries(

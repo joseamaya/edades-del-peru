@@ -353,7 +353,7 @@ standard.**
 ## 13. Cavalry rider on the shared body
 
 The mounted units (`HUSSAR`/`CAVALRY` of the realistas, patriotas, Republic, Chile and the m7 rebels) were the
-last humanoids outside this standard: `mounted_rig.glb` carried its own low-poly rider (sphere head, tube
+last humanoids outside this standard: the former `mounted_rig.glb` carried its own low-poly rider (sphere head, tube
 limbs, no face), so a horseman read as a peg doll next to the equipped infantry.
 
 - **Change:** `dressMounted` (`src/rendering/mountedAttire.ts`) now seats a second `RigInstance` of the shared
@@ -407,6 +407,27 @@ the m7 rebel red-brown (`0x6a3a2a`), so those soldiers read as bare-chested at a
   Andean warriors keep their own dressers.
 
 ![Before and after: six sides at close range](../media/uniform-closure-before-after.webp)
+
+## 15. The horse
+
+The low-poly mount of `mounted_rig.glb` (a lofted barrel with a wedge head and tube legs) is replaced by
+Quaternius' CC0 animated horse, from the same pack as the alpaca (sources and hashes in `PROVENANCE.md`).
+
+- **Asset:** `scripts/build_mounted_horse.mjs` keeps five clips (`Idle`, `Walk` trot, `Gallop`,
+  `Attack_Headbutt` charge, `Death`) and drops the constant tracks: 319 KB against the retired GLB's 207 KB, so
+  `dist/` measures 27.98 of 28 MB with the old mount removed. The budget was not raised.
+- **Fit:** `scale` 0.46 puts the back at ~1.6 m. The back's surface is 0.31 m above the `Torso2` bone (measured
+  on the skinned mesh); the saddle cloth (trim colour) and leather saddle sit 2 cm over it and the rider's hip
+  joint 9 cm more (`RIDER_SEAT_POSE.seatLift` 0.42). Coat, light/dark shades and mane/tail follow the side's
+  palette.
+- **Without the worker** the horse goes riderless; the legacy rider and hats left with the old GLB.
+- **Cost:** `yarn bench --scenario=mounted` 189 / 317 / 513 draws for 4 / 12 / 24 units (465 with the old
+  horse, 609 with the old horse and rider), 14.7k triangles per horseman; the mounted cap tightens to 15,500.
+  `bench:check`, `verify:fast` and the rig E2E specs are green.
+- **Open:** the gallop's reference speed (4.2) is set by eye; the rider does not lean with the gallop; there
+  are no reins or stirrups.
+
+![Before and after: the block horse and the Quaternius horse](../media/cavalry-horse-before-after.webp)
 
 ## See also
 

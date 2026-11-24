@@ -173,12 +173,10 @@ test('cavalry seats the shared infantry body astride the mount', async ({ page }
     return cavalry.map((unit) => {
       const root = unit.rig!.root;
       let rider: Obj | null = null;
-      const legacyVisible: string[] = [];
       root.traverse((o) => {
         if (o.name === 'rig:caral_worker') rider = o;
-        if (o.isMesh && o.visible && /^GEO-(Merged-Rider-|Rider-|Hat-)/.test(o.name)) legacyVisible.push(o.name);
       });
-      if (!rider) return { rider: false, legacyVisible, seatParent: '', thighForward: 0, pelvisLift: 0 };
+      if (!rider) return { rider: false, seatParent: '', thighForward: 0, pelvisLift: 0 };
       const r = rider as Obj;
       // three's Vector3, reached through an existing vector: the page does not expose the module.
       const V = (r as unknown as { position: Vec }).position.constructor as new () => Vec;
@@ -189,7 +187,6 @@ test('cavalry seats the shared infantry body astride the mount', async ({ page }
       const femur = calf.clone().sub(thigh).normalize();
       return {
         rider: true,
-        legacyVisible,
         seatParent: r.parent?.name ?? '',
         // The femur points forward along the rider's facing, not down to the ground.
         thighForward: femur.dot(facing),
@@ -200,11 +197,10 @@ test('cavalry seats the shared infantry body astride the mount', async ({ page }
   expect(riders.length).toBeGreaterThan(0);
   for (const rider of riders) {
     expect(rider.rider).toBe(true);
-    expect(rider.seatParent).toBe('rider_hip');
-    expect(rider.legacyVisible).toEqual([]);
+    expect(rider.seatParent).toBe('Torso2');
     expect(rider.thighForward).toBeGreaterThan(0.6);
     // Seated on a ~1.6 m back, not standing on the ground beside it.
-    expect(rider.pelvisLift).toBeGreaterThan(1.3);
+    expect(rider.pelvisLift).toBeGreaterThan(1.5);
   }
 });
 

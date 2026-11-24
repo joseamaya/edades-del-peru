@@ -2,18 +2,12 @@ import * as THREE from 'three';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import { MOUNTED_SPECS, isMountedVariant, type MountedRigVariant } from '../model/defs/mountedCharacters';
 import type { RigInstance } from './RigInstance';
-import { createRigAttireTools } from './rigAttire';
+import { createRigAttireTools, mergeColoredGeometry } from './rigAttire';
 import type { RigVariantHandle } from './rigVariants';
 
-const HAT_NAMES = {
-  bicorn: 'GEO-Hat-Bicorn',
-  morion: 'GEO-Hat-Morion',
-  kepi: 'GEO-Hat-Kepi',
-} as const;
-
 /**
- * The rider is the infantry's shared body in the same uniform, seated on the mount. The low-poly rider of
- * `mounted_rig.glb` (sphere head, tube limbs) only remains as the fallback when the shared body is missing.
+ * The rider is the infantry's shared body in the same uniform, seated on the mount. Without the shared body
+ * (an asset that failed to load) the horse goes riderless rather than showing a placeholder.
  */
 export const MOUNTED_RIDER_VARIANTS: Record<MountedRigVariant, RigVariant> = {
   mounted_realistas: 'realistas_soldier_m',
@@ -34,10 +28,19 @@ export function setMountedRiderFactory(factory: (variant: RigVariant) => RigInst
   riderFactory = factory;
 }
 
-/** The mount's own rider meshes: hidden when the shared body takes the saddle. */
-const LEGACY_RIDER_PREFIXES = ['GEO-Merged-Rider-', 'GEO-Rider-', 'GEO-Hat-'];
-/** Bone of the mount the rider sits on; it carries the trot and gallop bob. */
-const SEAT_BONE = 'rider_hip';
+/** Bone of the mount's mid-back the saddle and rider sit on; it carries the trot and gallop bob. */
+const SEAT_BONE = 'Torso2';
+
+/**
+ * Horse materials (Quaternius) -> coat role. The coat and its light/dark shades follow the side's bay or
+ * chestnut; mane, tail and lower legs take the points colour; eyes, muzzle and hooves keep the source.
+ */
+const HORSE_MATERIAL_ROLES: Record<string, 'coat' | 'light' | 'dark' | 'points'> = {
+  Main: 'coat',
+  Main_Light: 'light',
+  Main_Dark: 'dark',
+  Hair: 'points',
+};
 
 /**
  * The seated pose, as rotations in the rider's own space (+Z forward, +X the rider's left), applied on top
@@ -46,14 +49,17 @@ const SEAT_BONE = 'rider_hip';
  */
 export const RIDER_SEAT_POSE = {
   thighForward: -78,
-  thighSpread: 24,
+  thighSpread: 30,
   kneeBend: 84,
   upperArmForward: -28,
   forearmForward: -52,
-  /** Pelvis above the seat bone, in metres: the hip joint sits a little above the saddle tree. */
-  seatLift: 0.04,
+  /**
+   * Pelvis above the seat bone, in metres. The bone runs inside the barrel: the back's surface is 0.31 above
+   * it at the game scale (measured on the skinned mesh), the saddle 2 cm over that, the hip joint ~9 cm more.
+   */
+  seatLift: 0.42,
   /** Pelvis behind the seat bone, so the thighs fall on the saddle and not on the withers. */
-  seatBack: 0.06,
+  seatBack: 0.04,
 } as const;
 
 export function dressMounted(rig: RigInstance, variant: RigVariant): RigVariantHandle | null {
@@ -61,21 +67,28 @@ export function dressMounted(rig: RigInstance, variant: RigVariant): RigVariantH
   const spec = MOUNTED_SPECS[variant];
   const root = rig.root;
   const tools = createRigAttireTools(root);
-  const { tint, dispose } = tools;
+  const { dispose } = tools;
 
-  tint('GEO-Merged-Rider-Coat', spec.coat);
-  tint('GEO-Merged-Rider-Trousers', spec.trousers);
-  tint('GEO-Merged-Rider-Trim', spec.trim);
-  tint('GEO-Merged-Horse', spec.horseCoat);
-  tint('GEO-Merged-Horse-Dark', spec.horsePoints);
+  const coat = new THREE.Color(spec.horseCoat);
+  const shades = {
+    coat,
+    light: coat.clone().offsetHSL(0, -0.05, 0.08),
+    dark: coat.clone().offsetHSL(0, 0, -0.08),
+    points: new THREE.Color(spec.horsePoints),
+  };
+  root.traverse((object) => {
+    const mesh = object as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    const source = mesh.material as THREE.MeshStandardMaterial;
+    const role = HORSE_MATERIAL_ROLES[source.name];
+    if (!role) return;
+    const mat = source.clone();
+    mat.color.copy(shades[role]);
+    tools.ownedMaterials.push(mat);
+    mesh.material = mat;
+  });
 
-  for (const [hat, name] of Object.entries(HAT_NAMES)) {
-    root.traverse((object) => {
-      if (!object.name.startsWith(name)) return;
-      object.visible = hat === spec.hat;
-      if (!object.name.endsWith('-Trim') && !object.name.endsWith('-Comb')) tint(object.name, spec.hatColor);
-    });
-  }
+  addSaddle(tools, spec.trim);
 
   const rider = seatRider(rig, MOUNTED_RIDER_VARIANTS[variant]);
   if (!rider) return { dispose };
@@ -97,6 +110,39 @@ export function dressMounted(rig: RigInstance, variant: RigVariant): RigVariantH
   };
 }
 
+/**
+ * Saddle cloth in the side's trim colour and a leather saddle with pommel and cantle, curved over the back
+ * on the seat bone. Presentation tack, not a documented regimental saddle.
+ */
+function addSaddle(tools: ReturnType<typeof createRigAttireTools>, trim: number): void {
+  const at = tools.bonePosition(SEAT_BONE);
+  if (!at) return;
+  const parts: [THREE.BufferGeometry, THREE.Color][] = [];
+  const arc = (radius: number, length: number, spread: number, y: number) => {
+    // theta = π is the cylinder's -z side; turned about x, the axis runs along the horse and that side is up.
+    const g = new THREE.CylinderGeometry(radius, radius, length, 14, 1, true, Math.PI - spread / 2, spread);
+    g.rotateX(Math.PI / 2);
+    g.translate(0, y, 0);
+    return g;
+  };
+  parts.push([arc(0.29, 0.66, Math.PI * 0.8, 0), new THREE.Color(trim)]);
+  parts.push([arc(0.302, 0.44, Math.PI * 0.52, 0.004), new THREE.Color(0x3a2616)]);
+  const pommel = new THREE.BoxGeometry(0.16, 0.08, 0.05).translate(0, 0.32, 0.2);
+  const cantle = new THREE.BoxGeometry(0.2, 0.1, 0.05).translate(0, 0.33, -0.21);
+  parts.push([pommel, new THREE.Color(0x3a2616)], [cantle, new THREE.Color(0x3a2616)]);
+  const merged = mergeColoredGeometry(parts);
+  if (!merged) return;
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 });
+  tools.ownedMaterials.push(mat);
+  const saddle = new THREE.Mesh(tools.track(merged), mat);
+  saddle.name = 'attire_mounted_saddle';
+  // The bone runs inside the barrel; the saddle sits on the back above it, facing the horse's head.
+  // The cloth's crown (radius 0.29) sits 2 cm over the back, which is 0.31 above the bone.
+  const position = new THREE.Vector3(at.x, at.y + 0.33 - 0.29, at.z);
+  saddle.position.copy(position);
+  tools.attach(SEAT_BONE, saddle, position);
+}
+
 interface SeatedRider {
   setState(state: RigClipState): void;
   update(dt: number): void;
@@ -106,17 +152,11 @@ interface SeatedRider {
 
 function seatRider(mount: RigInstance, riderVariant: RigVariant): SeatedRider | null {
   const seat = mount.root.getObjectByName(SEAT_BONE);
-  const body = mount.root.getObjectByName('body');
-  const head = mount.root.getObjectByName('head');
+  const body = mount.root.getObjectByName('Body');
+  const head = mount.root.getObjectByName('Head');
   if (!seat || !body || !head) return null;
   const rider = riderFactory?.(riderVariant) ?? null;
   if (!rider) return null;
-
-  mount.root.traverse((object) => {
-    if ((object as THREE.Mesh).isMesh && LEGACY_RIDER_PREFIXES.some((p) => object.name.startsWith(p))) {
-      object.visible = false;
-    }
-  });
 
   // Place the rider in the mount's space with its pelvis on the seat, facing the horse's head, then hand it
   // to the seat bone so the trot and gallop carry it.
