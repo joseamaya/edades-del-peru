@@ -86,6 +86,31 @@ function earSpool(): THREE.BufferGeometry {
 }
 
 /** A shallow domed round shield (rodela) with a raised rim; the lathe axis is +Y. */
+/**
+ * A sling held at rest, built hanging from its grip at the origin: two cords (the retained one in the fibre
+ * colour, the release one in the accent band of the braid) down to a woven pouch holding a stone.
+ */
+export function andeanSlingPieces(accent: THREE.Color): [THREE.BufferGeometry, THREE.Color][] {
+  const fibre = new THREE.Color(0x8a7356);
+  const length = 0.42;
+  const cord = (x0: number, x1: number) => {
+    const top = new THREE.Vector3(x0, 0, 0);
+    const bottom = new THREE.Vector3(x1, -length, 0);
+    const g = new THREE.CylinderGeometry(0.0065, 0.0065, top.distanceTo(bottom), 4, 1);
+    g.rotateZ(Math.atan2(x1 - x0, length));
+    g.translate((x0 + x1) / 2, -length / 2, 0);
+    return g;
+  };
+  const pouch = new THREE.SphereGeometry(0.034, 8, 5).scale(1.25, 0.55, 0.8).translate(0, -length - 0.012, 0);
+  const stone = new THREE.SphereGeometry(0.022, 6, 4).translate(0, -length + 0.004, 0);
+  return [
+    [cord(-0.008, -0.03), fibre],
+    [cord(0.008, 0.03), accent.clone().multiplyScalar(0.75)],
+    [pouch, fibre.clone().multiplyScalar(0.85)],
+    [stone, new THREE.Color(0x8a8172)],
+  ];
+}
+
 function rodela(): THREE.BufferGeometry {
   // Points run rim-to-centre so the lathe winding faces outward; the reverse order culls the face.
   return latheProfile(
@@ -446,10 +471,13 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       attach('hand_r', macanaHead, new THREE.Vector3(hand.x, hand.y - 0.42, hand.z));
     }
     if (role === 'ranged' && hand) {
-      const slingMat = makeMaterial(palette.accent, 0.9);
-      const sling = addMesh(new THREE.TorusGeometry(0.16, 0.012, 5, 16), slingMat, 'attire_andean_sling');
-      sling.rotation.x = Math.PI / 2;
-      attach('hand_r', sling, new THREE.Vector3(hand.x, hand.y - 0.35, hand.z));
+      // The warak'a hangs from the hand at rest: two thin braided cords down to a woven pouch with its stone.
+      // A flat ring at the hand read as a floating hoop from the RTS camera.
+      const slingGeometry = mergeColoredGeometry(andeanSlingPieces(new THREE.Color(palette.accent)));
+      if (slingGeometry) {
+        const sling = addMesh(slingGeometry, vertexMaterial(0.95), 'attire_andean_sling');
+        attach('hand_r', sling, new THREE.Vector3(hand.x, hand.y - 0.04, hand.z));
+      }
     }
   }
 
