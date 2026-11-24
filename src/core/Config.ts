@@ -1,5 +1,6 @@
 import { CivId, Era, MapType, HistoricalPeriod, Resources } from './types';
 import { DEFAULT_KEYMAP, type HotkeyMap } from './hotkeys';
+import { DEFAULT_VOLUMES } from '../audio/mix';
 import { t } from '../i18n';
 
 export interface GameSettings {
@@ -20,6 +21,11 @@ export interface GameSettings {
   fogOfWar: boolean;
   soundEnabled: boolean;
   musicEnabled: boolean;
+  /** Mixer bus volumes, 0..1 (the toggles above mute the bus). */
+  masterVolume: number;
+  sfxVolume: number;
+  musicVolume: number;
+  ambienceVolume: number;
   showHints: boolean;
   /** Persistent FPS/quality overlay (also `?fps=1` for debugging). */
   showFps: boolean;
@@ -57,7 +63,7 @@ export const STARTING_BANKS: Record<StartingResourcePreset, Resources> = {
 };
 
 /** Current settings schema version; bump when stored defaults must migrate. */
-export const SETTINGS_VERSION = 2;
+export const SETTINGS_VERSION = 3;
 
 /** Open ground kept clear around every opening base before random scatter. */
 export const OPENING_BASE_CLEARANCE = 14;
@@ -78,6 +84,10 @@ export const DEFAULT_SETTINGS: GameSettings = {
   fogOfWar: true,
   soundEnabled: true,
   musicEnabled: true,
+  masterVolume: DEFAULT_VOLUMES.master,
+  sfxVolume: DEFAULT_VOLUMES.sfx,
+  musicVolume: DEFAULT_VOLUMES.music,
+  ambienceVolume: DEFAULT_VOLUMES.ambience,
   showHints: true,
   showFps: false,
   cinematic: true,

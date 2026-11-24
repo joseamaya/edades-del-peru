@@ -231,6 +231,8 @@ export interface EntityRef {
 
 type EmptyEvent = Record<string, never>;
 type HarvestEvent = { x: number; z: number; owner: number };
+/** A presentation-only world sound; coordinates let the mixer place it around the camera. */
+type SpatialEvent = { x: number; z: number };
 
 /** Why a player-owned unit could not make progress on its current order. */
 export type AlertReason = 'no-route' | 'stuck' | 'no-dropsite';
@@ -259,13 +261,13 @@ export type GameEvents = {
     reason?: AlertReason;
     order?: OrderKind;
   };
-  'fx:shot': EmptyEvent;
-  'fx:artillery': EmptyEvent;
-  'fx:bow': EmptyEvent;
-  'fx:sling': EmptyEvent;
-  'fx:explosion': EmptyEvent;
-  'fx:death': EmptyEvent;
-  'fx:hit': EmptyEvent;
+  'fx:shot': SpatialEvent;
+  'fx:artillery': SpatialEvent;
+  'fx:bow': SpatialEvent;
+  'fx:sling': SpatialEvent;
+  'fx:explosion': SpatialEvent;
+  'fx:death': SpatialEvent;
+  'fx:hit': SpatialEvent;
   /** A worker's harvest stroke on wood (axe) or stone/silver (pick); food harvests make no sound. */
   'fx:wood': HarvestEvent;
   'fx:mine': HarvestEvent;

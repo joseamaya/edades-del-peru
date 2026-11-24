@@ -20,6 +20,7 @@ The map is deliberately a router, not a summary. Detailed rules live in the docu
 | Design a named character or audit the cast | [`design/characters.md`](./design/characters.md) |
 | Audit or extend the character visual standard | [`art/character-visual-pilot.md`](./art/character-visual-pilot.md), then [`design/art-direction.md`](./design/art-direction.md) §4.1 |
 | Set or audit the visual direction | [`design/art-direction.md`](./design/art-direction.md), then [`design/tambotoco-art-pilot.md`](./design/tambotoco-art-pilot.md) |
+| Set or audit the sound, music or ambience | [`design/audio.md`](./design/audio.md) |
 | Audit or design the geography of the missions | [`design/mission-geographic-identity.md`](./design/mission-geographic-identity.md), then [`design/geographic-families.md`](./design/geographic-families.md) |
 | Understand the engine, subsystems or a code trap | [`development.md`](./development.md) |
 | Contribute code, docs or tests | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) and [`../AGENTS.md`](../AGENTS.md) |
