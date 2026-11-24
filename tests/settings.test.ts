@@ -17,4 +17,15 @@ describe('game settings defaults', () => {
   it('enables edge scrolling by default', () => {
     expect(DEFAULT_SETTINGS.edgeScroll).toBe(true);
   });
+
+  it('carries a volume for every mixer bus within 0..1', () => {
+    for (const bus of ['masterVolume', 'sfxVolume', 'musicVolume', 'ambienceVolume'] as const) {
+      expect(DEFAULT_SETTINGS[bus]).toBeGreaterThanOrEqual(0);
+      expect(DEFAULT_SETTINGS[bus]).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('bumps the settings schema for the volume buses', () => {
+    expect(SETTINGS_VERSION).toBe(3);
+  });
 });

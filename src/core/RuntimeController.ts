@@ -392,6 +392,7 @@ export class RuntimeController {
       elevation: elevated,
     });
     target.takeDamage(final, attackerId);
+    bus.emit('fx:hit', { x: target.pos.x, z: target.pos.z });
     const dmgH = target instanceof Unit ? 2.2 : 2.6;
     this.game.hud?.addDamageNumber(
       target.pos.x,
@@ -462,7 +463,7 @@ export class RuntimeController {
         attackerPlayer.kills++;
         attackerPlayer.stats.destroyed++;
       }
-      bus.emit('fx:death', {});
+      bus.emit('fx:death', { x: target.pos.x, z: target.pos.z });
     }
   }
 
@@ -486,10 +487,11 @@ export class RuntimeController {
   }
 
   spawnProjectile(o: any): void {
-    if (o.kind === 'howitzer_shell' || o.kind === 'nuclear') bus.emit('fx:artillery', {});
-    else if (o.kind === 'arrow') bus.emit('fx:bow', {});
-    else if (o.kind === 'sling_stone') bus.emit('fx:sling', {});
-    else bus.emit('fx:shot', {});
+    const at = o.from ? { x: o.from.x, z: o.from.z } : {};
+    if (o.kind === 'howitzer_shell' || o.kind === 'nuclear') bus.emit('fx:artillery', at);
+    else if (o.kind === 'arrow') bus.emit('fx:bow', at);
+    else if (o.kind === 'sling_stone') bus.emit('fx:sling', at);
+    else bus.emit('fx:shot', at);
     const p = new Projectile({
       ...o,
       getTargetPos: () => {
@@ -540,7 +542,7 @@ export class RuntimeController {
         size: 3,
       });
       this.game.camera.addShake(0.5);
-      bus.emit('fx:explosion', {});
+      bus.emit('fx:explosion', { x: impact.x, z: impact.z });
     } else if (targetId !== undefined) {
       const target = this.game.units.get(targetId) ?? this.game.buildings.get(targetId);
       if (target && !target.dead) {
