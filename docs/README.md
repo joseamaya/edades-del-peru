@@ -14,7 +14,7 @@ The map is deliberately a router, not a summary. Detailed rules live in the docu
 | See what is being built now | [`plan/ROADMAP.md`](./plan/ROADMAP.md) and [`plan/backlog.md`](./plan/backlog.md) |
 | Design or rebuild a campaign mission | [`design/model-mission-pattern.md`](./design/model-mission-pattern.md), then [`design/campaign-quality-bar.md`](./design/campaign-quality-bar.md) |
 | Check the live mission status | [`design/campaign-quality-bar.md`](./design/campaign-quality-bar.md) |
-| Decide whether the build is ready to publish | [`release/0.2.0-readiness-audit.md`](./release/0.2.0-readiness-audit.md) |
+| Decide whether the build is ready to publish | [`plan/ROADMAP.md`](./plan/ROADMAP.md) §D6 and [`release/0.2.0-readiness-audit.md`](./release/0.2.0-readiness-audit.md) |
 | Check a historical fact, name or date | [`historia/README.md`](./historia/README.md) and the matching dossier |
 | Model something in Blender or retouch in GIMP | [`design/asset-pipeline.md`](./design/asset-pipeline.md), then [`design/authoring-tools.md`](./design/authoring-tools.md) and [`design/blender-art.md`](./design/blender-art.md) |
 | Design a named character or audit the cast | [`design/characters.md`](./design/characters.md) |
@@ -155,6 +155,7 @@ All twenty released missions have a model-mission document. For the live status 
 | [`release/0.2.0-narrative-audit.md`](./release/0.2.0-narrative-audit.md) | The 0.2.0 narrative and historical audit: five campaigns, twenty missions, sources, continuity and findings (Spanish) | Snapshot |
 | [`release/0.2.0-asset-historical-audit.md`](./release/0.2.0-asset-historical-audit.md) | The 0.2.0 asset historical and visual audit: buildings, structures, objects, weapons and reuse across five campaigns and twenty missions (Spanish) | Snapshot |
 | [`release/0.2.0-release-notes.md`](./release/0.2.0-release-notes.md) | Player-facing 0.2.0 release notes, known limitations and verification summary | Snapshot |
+| [`release/0.2.1-release-notes.md`](./release/0.2.1-release-notes.md) | Player-facing 0.2.1 release notes, known limitations and verification summary (Spanish) | Snapshot |
 | [`design/release-candidate.md`](./design/release-candidate.md) | Release status, art gate and publish checklist from 2026-10-30 | Archived |
 | [`itch-description.md`](./itch-description.md) | Draft itch.io page | Proposal |
 | [`modding/README.md`](./modding/README.md) | Mod format and loading | Living |

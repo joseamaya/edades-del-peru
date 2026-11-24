@@ -15,11 +15,13 @@ with Chimú).
 
 **Play all five campaigns:** <https://joseamaya.github.io/edades-del-peru/>
 
-## Release 0.2.0
+## Release 0.2.1
 
-The current release is **0.2.0**, campaign-only: five campaigns and twenty missions. `v0.1.0` (October
-2026) is kept as the earlier nine-mission demo. The evidence, the performance numbers and the closeout
-checklist are in [`docs/release/0.2.0-readiness-audit.md`](./docs/release/0.2.0-readiness-audit.md).
+The current release is **0.2.1**, campaign-only: five campaigns and twenty missions, with the 0.2.0 asset
+corrections, a cinema intro for every mission, period equipment for the troops and the reworked enemy
+forces ([`docs/release/0.2.1-release-notes.md`](./docs/release/0.2.1-release-notes.md)). `v0.2.0` is the first
+full campaign release and `v0.1.0` (October 2026) the earlier nine-mission demo. The 0.2.0 evidence and
+closeout checklist are in [`docs/release/0.2.0-readiness-audit.md`](./docs/release/0.2.0-readiness-audit.md).
 
 **Requires a desktop browser with WebGL2** (recent Chrome, Edge, Firefox or Safari), a mouse and a
 keyboard. The interface and the historical content are in Spanish. Quality adapts automatically; the
@@ -28,7 +30,7 @@ fallback (36–50 FPS on the tightest views). All 24 site views have a real-GPU 
 missions of the last arc have their openings measured
 ([`docs/development/site-view-performance.md`](./docs/development/site-view-performance.md)).
 
-Known limitations for 0.2.0:
+Known limitations for 0.2.1:
 
 - The seven missions added on 2026-11-18 have an automated no-cheat full path
   (`tests/e2e/release-playtest.spec.ts`) and are **pending a final human no-cheat playtest**; their save
