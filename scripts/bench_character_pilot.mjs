@@ -1,20 +1,16 @@
-import { launchChromium, withViteServer } from './lib.mjs';
-import { CHARACTER_CASES, ensureRiggedUnit } from './character_pilot_cases.mjs';
+import { cliArg, launchChromium, withViteServer } from './lib.mjs';
+import { ensureRiggedUnit, selectCases } from './character_pilot_cases.mjs';
 
 /**
  * Structural cost of the dressed infantry standard. It isolates one unit (main + shadow pass),
  * then a 12-unit formation, and measures the mixer update for that formation. The ceiling is the
  * art-direction common-unit budget, not the looser worker bench cap.
  *
- * Usage: node scripts/bench_character_pilot.mjs [--assert]
+ * Usage: node scripts/bench_character_pilot.mjs [--assert] [--only=inca,moche]
  */
 
 const BUDGET = { drawCalls: 25, triangles: 25_000 };
-const only = (process.argv.find((arg) => arg.startsWith('--only='))?.split('=')[1] ?? '')
-  .split(',')
-  .map((name) => name.trim())
-  .filter(Boolean);
-const CASES = only.length ? CHARACTER_CASES.filter((entry) => only.includes(entry.name)) : CHARACTER_CASES;
+const CASES = selectCases(cliArg('only', ''));
 const assert = process.argv.includes('--assert');
 
 const { base, close } = await withViteServer({ optimizeDeps: { noDiscovery: true } });

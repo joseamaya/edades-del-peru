@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { launchChromium, withViteServer, cliArg } from './lib.mjs';
-import { CHARACTER_CASES, ensureRiggedUnit } from './character_pilot_cases.mjs';
+import { ensureRiggedUnit, selectCases } from './character_pilot_cases.mjs';
 
 /**
  * Character-standard captures: the dressed infantry in their missions/skirmishes at a fixed noon
@@ -11,15 +11,11 @@ import { CHARACTER_CASES, ensureRiggedUnit } from './character_pilot_cases.mjs';
  *   node scripts/capture_character_pilot.mjs --out=review/pilot [--only=inca,slinger]
  *
  * The before set is produced by running the same script from a worktree at `origin/main` (the old
- * `workerAttire.ts`/`uniformAttire.ts`) with `--out=review/pilot-before`; the committed comparison is
- * `docs/media/character-pilot-before-after.webp`.
+ * `workerAttire.ts`/`uniformAttire.ts`) with `--out=review/pilot-before`; the committed comparison for the
+ * equipment pass is `docs/media/character-equipment-before-after.webp` (§18).
  */
 const OUT = path.resolve(cliArg('out', 'review/pilot'));
-const only = cliArg('only', '')
-  .split(',')
-  .map((name) => name.trim())
-  .filter(Boolean);
-const CASES = only.length ? CHARACTER_CASES.filter((entry) => only.includes(entry.name)) : CHARACTER_CASES;
+const CASES = selectCases(cliArg('only', ''));
 fs.mkdirSync(OUT, { recursive: true });
 
 const { base, close } = await withViteServer({ optimizeDeps: { noDiscovery: true } });

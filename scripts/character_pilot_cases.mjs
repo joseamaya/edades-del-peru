@@ -111,6 +111,21 @@ export const CHARACTER_CASES = [
 ];
 
 /**
+ * The cases for `--only=a,b`, or all of them. An unknown name throws instead of silently capturing the whole
+ * set: a typo used to look like a successful run.
+ */
+export function selectCases(only) {
+  const names = String(only ?? '')
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean);
+  if (!names.length) return CHARACTER_CASES;
+  const unknown = names.filter((name) => !CHARACTER_CASES.some((entry) => entry.name === name));
+  if (unknown.length) throw new Error(`unknown character case(s): ${unknown.join(', ')}`);
+  return CHARACTER_CASES.filter((entry) => names.includes(entry.name));
+}
+
+/**
  * Spawn one player-owned rigged unit of `kind` and remember its spawn point. Always spawning (instead of
  * reusing a mission unit) keeps the capture frame identical between the before and after runs. Fails when
  * the rig does not match `entry.variant`: the variant follows the player's civilization and the period.

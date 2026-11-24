@@ -69,7 +69,7 @@ coast; Vilcabamba → jungle; Tarapacá → altiplano; the rest → Andes). A ma
 ## What is not in this phase
 
 - **No recorded samples, voices or licensed music.** Adding them needs a provenance entry per file, a
-  licence review and a size-budget decision: the shipped build is close to the 28 MB `dist` cap, so audio
+  licence review and a size-budget decision: the shipped build is close to the 40 MB `dist` cap, so audio
   must be compressed and lazy-loaded per period. That is a separate, explicitly approved phase.
 - No audio in replay mode beyond what the match itself triggers; the mixer is presentation-only and never
   affects the simulation, the state hash or `REPLAY_VERSION`.

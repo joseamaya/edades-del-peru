@@ -9,6 +9,7 @@ import {
   HERO_HIDDEN_PARTS,
   HERO_WEAPON_PARTS,
   bodyOnlyShadows,
+  boneToRoot,
   createRigAttireTools,
   extrudedPlate,
   latheProfile,
@@ -82,10 +83,24 @@ function starPlate(outer: number, inner: number, points: number, thickness: numb
  * 0.145 dome was centred on the bone and 3 cm behind the skull). Everything on the head is fitted here,
  * as the sash is fitted to the waist.
  */
-export const HEAD_FIT = {
+export interface HeadFit {
+  crown: number;
+  brow: number;
+  radius: number;
+  centreZ: number;
+}
+
+export const HEAD_FIT: Record<'m' | 'f', HeadFit> = {
   m: { crown: 0.292, brow: 0.12, radius: 0.102, centreZ: 0.04 },
   f: { crown: 0.25, brow: 0.11, radius: 0.105, centreZ: 0.033 },
-} as const;
+};
+
+/** Ear-spool base in head-local space: inside the skull at ear height, so only its flange reads. */
+const EAR_FIT = { x: 0.088, y: 0.115, z: 0.02 } as const;
+
+function headFit(male: boolean): HeadFit {
+  return HEAD_FIT[male ? 'm' : 'f'];
+}
 
 /** A fitted cap from the brow to the crown, as `[radius, y]` pairs; the caller scales and centres it. */
 function capProfile(brow: number, crown: number, radius: number): [number, number][] {
@@ -99,6 +114,23 @@ function capProfile(brow: number, crown: number, radius: number): [number, numbe
     [radius * 0.33, brow + span * 0.95],
     [0, crown],
   ];
+}
+
+/**
+ * The lathe cap and its rim, fitted to the head: shared by the quilted cotton cap and the conical helmet,
+ * which differ only in how high they rise and what they add above the crown.
+ */
+function fittedCap(
+  fit: HeadFit,
+  crown: number,
+  radius: number,
+  tube = 0.012,
+): [THREE.BufferGeometry, THREE.BufferGeometry] {
+  const cap = latheProfile(capProfile(fit.brow, crown, radius), 18);
+  cap.scale(1, 1, 1.1).translate(0, 0, fit.centreZ);
+  const rim = new THREE.TorusGeometry(radius, tube, 5, 18).rotateX(Math.PI / 2);
+  rim.scale(1, 1, 1.1).translate(0, fit.brow + 0.006, fit.centreZ);
+  return [cap, rim];
 }
 
 /**
@@ -204,14 +236,7 @@ function andeanWeaponGrip(rig: RigInstance, weapon: THREE.Object3D): AndeanWeapo
   const root = rig.root;
   const hand = root.getObjectByName('hand_r');
   if (!hand || weapon.parent !== hand) return null;
-  const toRoot = (bone: THREE.Object3D, out: THREE.Matrix4): THREE.Matrix4 => {
-    out.identity();
-    for (let q: THREE.Object3D | null = bone; q && q !== root; q = q.parent) {
-      q.updateMatrix();
-      out.premultiply(q.matrix);
-    }
-    return out;
-  };
+  const toRoot = (bone: THREE.Object3D, out: THREE.Matrix4): THREE.Matrix4 => boneToRoot(root, bone, out);
   const handM = new THREE.Matrix4();
   const handQ = new THREE.Quaternion();
   const target = new THREE.Quaternion();
@@ -307,7 +332,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     // Band + face paint in one vertex-coloured mesh: the old two-to-four head attachments were
     // separate draws on every Andean unit. The band is fitted to the skull instead of the bone: the old
     // 0.098 ring sat inside the temples, so only its front arc showed as a bar across the face.
-    const fit = HEAD_FIT[male ? 'm' : 'f'];
+    const fit = headFit(male);
     // At the hairline, not the brow: a ring there is the widest cross-section of the head, so it hugs it
     // instead of passing in front of the eyes like a visor.
     const bandGeometry = new THREE.TorusGeometry(fit.radius * 1.06, 0.011, 6, 20).rotateX(Math.PI / 2);
@@ -515,11 +540,8 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       // Conical metal helmet with a rim and a top knob; the dossier documents the conical shape. It is a
       // fitted cap that rises to a point, not a plain cone: a straight cone narrower than the skull sank
       // into the crown and only its tip showed.
-      const fit = HEAD_FIT[male ? 'm' : 'f'];
-      const cap = latheProfile(capProfile(fit.brow, fit.crown + 0.11, fit.radius * 1.1), 14);
-      cap.scale(1, 1, 1.1).translate(0, 0, fit.centreZ);
-      const rim = new THREE.TorusGeometry(fit.radius * 1.1, 0.014, 6, 18).rotateX(Math.PI / 2);
-      rim.scale(1, 1, 1.1).translate(0, fit.brow + 0.008, fit.centreZ);
+      const fit = headFit(male);
+      const [cap, rim] = fittedCap(fit, fit.crown + 0.11, fit.radius * 1.1, 0.014);
       const helmetGeometry = mergePieces([
         cap,
         rim,
@@ -527,7 +549,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       ]);
       if (helmetGeometry) {
         const helmet = addMesh(helmetGeometry, metalMat, 'attire_andean_helmet');
-        attach('Head', helmet, new THREE.Vector3(headBone.x, headBone.y, headBone.z));
+        attach('Head', helmet, headBone);
       }
     }
     if (spec.backflap && soldier && spine) {
@@ -539,20 +561,20 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       attach('spine_03', backflap, new THREE.Vector3(spine.x, spine.y - 0.1, spine.z - 0.18));
     }
     if (spec.ear && headBone && metalMat) {
-      // The spool base sits inside the skull at ear height (0.088 at y 0.115; the temples are only 0.08
-      // wide there) so only the flange reads, instead of a hoop floating behind the jaw.
+      // The spool base sits inside the skull at ear height (the temples are only 0.08 wide there), so only
+      // the flange reads, instead of a hoop floating behind the jaw.
       const spools: THREE.BufferGeometry[] = [];
       for (const side of [-1, 1]) {
         spools.push(
           earSpool()
             .rotateZ((-side * Math.PI) / 2)
-            .translate(side * 0.088, 0.115, 0.02),
+            .translate(side * EAR_FIT.x, EAR_FIT.y, EAR_FIT.z),
         );
       }
       const spoolGeometry = mergePieces(spools);
       if (spoolGeometry) {
         const ears = addMesh(spoolGeometry, metalMat, 'attire_andean_ear');
-        attach('Head', ears, new THREE.Vector3(headBone.x, headBone.y, headBone.z));
+        attach('Head', ears, headBone);
       }
     }
     if (soldier && pelvis && spec.belt) {
@@ -639,13 +661,10 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     // The quilted cotton cap covers the skull from the brow to the crown, so the hair goes under it.
     show(male ? 'Hair_m' : 'Hair_f', false);
     if (headBone) {
-      const fit = HEAD_FIT[male ? 'm' : 'f'];
+      const fit = headFit(male);
       // An ellipsoidal cap on the measured skull, not a hemisphere on the bone: the old 0.145 dome with
       // three hoops sat on the crown like a bowl and left the hair showing under its rim.
-      const cap = latheProfile(capProfile(fit.brow, fit.crown, fit.radius), 18);
-      cap.scale(1, 1, 1.1).translate(0, 0, fit.centreZ);
-      const rim = new THREE.TorusGeometry(fit.radius, 0.012, 5, 18).rotateX(Math.PI / 2);
-      rim.scale(1, 1, 1.1).translate(0, fit.brow + 0.006, fit.centreZ);
+      const [cap, rim] = fittedCap(fit, fit.crown, fit.radius);
       const seam = new THREE.TorusGeometry(fit.radius * 0.94, 0.009, 4, 18).rotateX(Math.PI / 2);
       seam.scale(1, 1, 1.1).translate(0, fit.brow + (fit.crown - fit.brow) * 0.45, fit.centreZ);
       const helmet = mergeColoredGeometry([

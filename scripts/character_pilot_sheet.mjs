@@ -19,9 +19,9 @@ const after = path.resolve(cliArg('after', 'review/pilot-after'));
 const out = path.resolve(cliArg('out', 'docs/media/character-equipment-before-after.webp'));
 const CROP = { left: 455, top: 195, width: 340, height: 520 };
 const COLUMNS = [
-  { file: 'inca-idle-front.png', caption: 'Inca · reposo' },
-  { file: 'inca-run-front.png', caption: 'Inca · carrera' },
-  { file: 'moche-idle-front.png', caption: 'Moche · reposo' },
+  { file: 'inca-idle-front.png', caption: 'Inca · rest' },
+  { file: 'inca-run-front.png', caption: 'Inca · run' },
+  { file: 'moche-idle-front.png', caption: 'Moche · rest' },
 ];
 const PAD = 14;
 const LABEL = 104;
@@ -50,9 +50,9 @@ const text = `
     (column, index) =>
       `<text class="cap" x="${LABEL + PAD + index * (CROP.width + PAD) + CROP.width / 2}" y="30" text-anchor="middle">${column.caption}</text>`,
   ).join('')}
-  <text class="row" x="${LABEL / 2}" y="${HEADER + PAD + CROP.height / 2}" text-anchor="middle">ANTES</text>
-  <text class="row" x="${LABEL / 2}" y="${HEADER + 2 * PAD + CROP.height + CROP.height / 2}" text-anchor="middle">DESPUÉS</text>
-  <text class="foot" x="${LABEL + PAD}" y="${height - 10}">Cascos medidos contra la cabeza, porra asida por el mango y rodela al puño · docs/art/character-visual-pilot.md §18</text>
+  <text class="row" x="${LABEL / 2}" y="${HEADER + PAD + CROP.height / 2}" text-anchor="middle">BEFORE</text>
+  <text class="row" x="${LABEL / 2}" y="${HEADER + 2 * PAD + CROP.height + CROP.height / 2}" text-anchor="middle">AFTER</text>
+  <text class="foot" x="${LABEL + PAD}" y="${height - 10}">Headpieces fitted to the measured head, the club held by its grip, the shield at the hand · docs/art/character-visual-pilot.md §18</text>
 </svg>`;
 
 const composites = [];
