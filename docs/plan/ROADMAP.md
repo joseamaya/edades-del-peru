@@ -124,7 +124,8 @@ unchanged since `v0.2.0`; the only save change is the optional `fireCounts` fiel
 - [ ] Tag `v0.2.1` on that commit and publish the GitHub release with the notes and the itch zip.
 - [ ] Deploy GitHub Pages (`Deploy GitHub Pages`, `workflow_dispatch`) from the tagged commit.
 - [ ] Recommended before or right after publishing: the human no-cheat playtest of the seven 2026-11-18
-  missions, declared as a known limitation in the notes.
+  missions, declared as a known limitation in the notes, plus the manual no-cheat playtest of `m2_chavin`
+  (its Play gate stays `P` in the quality bar until then).
 
 ## Risks
 
