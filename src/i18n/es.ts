@@ -5,7 +5,7 @@
 export const es = {
   'app.title': 'EDADES DEL PERÚ',
   'app.series': 'LA SENDA DEL SOL',
-  'app.version': 'La Senda del Sol · v0.2.0',
+  'app.version': 'La Senda del Sol · v0.2.1',
 
   'resource.food': 'Comida',
   'resource.wood': 'Madera',

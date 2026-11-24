@@ -1,6 +1,6 @@
 # Development roadmap
 
-**Status:** living · **Last updated:** 2026-11-20
+**Status:** living · **Last updated:** 2026-11-24
 
 This is the engineering roadmap, not the content proposal. The live per-mission status is
 [`../design/campaign-quality-bar.md`](../design/campaign-quality-bar.md); the future campaign structure is
@@ -8,7 +8,7 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
 
 ## Where we are
 
-- **Release:** `0.2.0`, campaign-only, five campaigns and twenty missions. Launch catalogue: four missions
+- **Release:** `0.2.1` in preparation (§D6); `0.2.0` is published, campaign-only, five campaigns and twenty missions. Launch catalogue: four missions
   per campaign (20 playable + 0 in development); the other thirteen approved missions are reserved for an
   expansion.
 - **Gold master:** Caral (`m1_caral`) meets every gate of the campaign quality bar.
@@ -24,7 +24,8 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
   ([`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md)).
 - **Open release work:** the itch package and the human playtests (art review closed 2026-11-23; the real-GPU pass covers all 24 site views).
 - **Asset audit:** the 0.2.0 asset audit closed with three P0 (late-era architecture and the Inca outfit of
-  1536–1572). They are scheduled for 0.2.1 in [`./0.2.1-asset-corrections.md`](./0.2.1-asset-corrections.md).
+  1536–1572); they and the P1 were corrected on 2026-11-20 ([`./0.2.1-asset-corrections.md`](./0.2.1-asset-corrections.md))
+  and ship in 0.2.1.
 
 The audit is the authority. If this summary and the quality bar disagree, the quality bar wins.
 
@@ -108,6 +109,22 @@ before the site art. No new missions and no save/URL changes.
 
 Exit (2026-11-20): the P0 test and the four era captures are green; the P1 labels, site art and the
 colonial-andean profile and the realistas era split are closed with captures; no P1 remains.
+
+## D6 · Release 0.2.1 (closeout)
+
+Player-facing notes: [`../release/0.2.1-release-notes.md`](../release/0.2.1-release-notes.md). The version is
+`0.2.1` in `package.json` and in the menu (`app.version`). Save keys, `SAVE_VERSION` (12) and mission ids are
+unchanged since `v0.2.0`; the only save change is the optional `fireCounts` field, which older saves omit.
+
+- [x] `yarn verify:fast`, `yarn art:validate` and `yarn dist:check` green on the release branch.
+- [x] `yarn bench:check` green (B13 brought the late rows back under their caps).
+- [ ] The required E2E tier green on the merged release commit (`E2E` workflow on `main`).
+- [ ] Re-run `yarn bench:site-views` on the reference GPU if any scene weight landed after #616.
+- [ ] Build the Pages artifact and the itch package (`yarn package:itch`) from the same commit.
+- [ ] Tag `v0.2.1` on that commit and publish the GitHub release with the notes and the itch zip.
+- [ ] Deploy GitHub Pages (`Deploy GitHub Pages`, `workflow_dispatch`) from the tagged commit.
+- [ ] Recommended before or right after publishing: the human no-cheat playtest of the seven 2026-11-18
+  missions, declared as a known limitation in the notes.
 
 ## Risks
 
