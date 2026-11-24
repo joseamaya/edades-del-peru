@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { MissionSiteLandmark } from '../model/defs/siteLandmarks';
+import type { Obstacle } from '../game/Pathfinding';
 import { applyGeneratedPbr } from './Biomes';
 import { scaleUv } from '../util/uv';
 
@@ -62,9 +63,14 @@ class LandmarkBuilder {
   private readonly geometries: THREE.BufferGeometry[] = [];
   private readonly materials = new Map<MatKey, THREE.MeshStandardMaterial>();
 
+  /** Ground footprint of every hall (house, chapel, kallanka): the buildings units must walk around. */
+  readonly halls: Obstacle[] = [];
+
+  /** `footprintsOnly` runs the composition for its hall footprints without building any geometry. */
   constructor(
     private readonly heightAt: (x: number, z: number) => number,
     private readonly baseY: number,
+    private readonly footprintsOnly = false,
   ) {}
 
   ground(x: number, z: number): number {
@@ -115,6 +121,7 @@ class LandmarkBuilder {
   }
 
   addBox(key: MatKey, w: number, h: number, d: number, x: number, y: number, z: number, rx = 0, ry = 0, rz = 0): void {
+    if (this.footprintsOnly) return;
     const geometry = new THREE.BoxGeometry(w, h, d);
     const tile = MATERIALS[key].tile;
     scaleUv(geometry, Math.max(w, d) / tile, Math.max(h, 0.5) / tile);
@@ -136,6 +143,7 @@ class LandmarkBuilder {
     z: number,
     ry = 0,
   ): void {
+    if (this.footprintsOnly) return;
     const geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, segments);
     const tile = MATERIALS[key].tile;
     scaleUv(geometry, (Math.PI * 2 * Math.max(radiusTop, radiusBottom)) / tile, height / tile);
@@ -161,6 +169,11 @@ class LandmarkBuilder {
     roof: MatKey,
     baseY?: number,
   ): void {
+    // The walls' axis-aligned bounds (the grid is axis-aligned; the halls turn at most a few degrees or a
+    // quarter turn, so the box stays tight).
+    const c = Math.abs(Math.cos(yaw));
+    const sn = Math.abs(Math.sin(yaw));
+    this.halls.push({ x, z, w: c * w + sn * d, d: sn * w + c * d });
     const y = baseY ?? this.padHeight(x, z, w / 2, d / 2);
     this.addBox(wall, w, h, d, x, y + h / 2, z, 0, yaw, 0);
     const [dx, dz] = this.offset(x, z, yaw, 0, d / 2 + 0.04);
@@ -434,7 +447,7 @@ function tarapacaHeights(b: LandmarkBuilder, x: number, z: number, s: number, ya
 
 function tarapacaPachica(b: LandmarkBuilder, x: number, z: number, s: number, yaw: number): void {
   // The hamlet the reinforcements marched from: a few adobe houses around a short street and a
-  // stone corral. It is a landmark, not a second town: no walls, no towers, no gameplay footprint.
+  // stone corral. It is a landmark, not a second town: no walls or towers; only its houses block movement.
   const pad = b.padHeight(x, z, 10 * s, 8 * s);
   b.addBox('path', 18 * s, 0.08 * s, 3 * s, x, pad + 0.05 * s, z, 0, yaw);
   for (const [dx, dz, w, d, rot] of [
@@ -528,4 +541,21 @@ export class SiteLandmarks {
     this.group.removeFromParent();
     this.builder.dispose();
   }
+}
+
+/**
+ * The halls of the procedural landmarks as pathfinding obstacles. The landmarks are drawn only with a
+ * renderer, but the simulation must see the same buildings headless, so this replays the composition for
+ * its footprints alone. Walls, terraces, trenches and corrals stay walkable: they shape the missions'
+ * battlefields and their gates; only the closed buildings are solid.
+ */
+export function siteLandmarkObstacles(
+  specs: readonly MissionSiteLandmark[],
+  mapSize: number,
+  heightAt: (x: number, z: number) => number,
+  baseY: number,
+): Obstacle[] {
+  const builder = new LandmarkBuilder(heightAt, baseY, true);
+  for (const spec of specs) buildOne(builder, spec, mapSize);
+  return builder.halls;
 }

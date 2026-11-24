@@ -958,7 +958,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     pathCellSize: 1,
     heritageProxies: [],
     // The village is the battlefield: its plaza and streets stay walkable so both lines can close
-    // and fight. The houses are decorative landmark geometry, not a solid fort footprint.
+    // and fight. There is no fort footprint; the houses themselves block movement through the landmark
+    // halls (`siteLandmarkObstacles`).
     blockers: [],
     blockerPadding: 0.5,
     buildKeepout: [...TARAPACA_BUILD_KEEPOUT],

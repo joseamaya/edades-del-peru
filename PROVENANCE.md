@@ -1132,6 +1132,13 @@ slot is absent (offline / without assets).
   default RTS zoom; `docs/art/character-visual-pilot.md` §16.
 - **Review**: no new historical claim; the rebel coat stays an undocumented earth-tone abstraction.
 
+### Horse legs (in-engine evidence)
+
+- **Location**: `docs/media/horse-legs-before-after.webp`, 1200x450 WebP q72.
+- **Source**: a local close capture of one `m_lima` cavalry unit in the gallop at two clip times, left with the
+  first horse build (`b829322a…`), right with the rebuild; same camera, light and frame.
+- **Content**: `docs/art/character-visual-pilot.md` §17. **Review**: no new historical claim.
+
 ### Character proportions (in-engine evidence)
 
 - **Location**: `docs/media/character-proportions-before-after.webp`, 2240x940 WebP q84.
@@ -1170,9 +1177,11 @@ slot is absent (offline / without assets).
     `fae7a7ec91e0d6a33554efb896fac9c4e8c632644183bcb8cc962f673d3ce609` (1,108,124 bytes; 8 materials, ~2.1k
     triangles, 50 joints, 13 clips plus FBX duplicates).
   - Built by `node scripts/build_mounted_horse.mjs`: keeps `Idle`, `Walk` (trot), `Gallop`, `Attack_Headbutt`
-    (the charge) and `Death`, drops the scale tracks and the non-root translation tracks, resamples and
-    re-encodes with meshopt. Output `src/assets/models/quaternius_horse.glb`, SHA-256
-    `b829322a9fbc1504f8324f3199920356907bb39923c50067d672199b666e8a5f` (319,340 bytes).
+    (the charge) and `Death`, drops only the translation and scale tracks that do not move (the leg IK bones
+    carry the hooves by translation, so theirs stay), resamples and re-encodes with meshopt. Output
+    `src/assets/models/quaternius_horse.glb`, SHA-256
+    `505334a4db94a04aad6af9548e2bdfce72001238b375b416149b61076452f6c3` (327,616 bytes). The first build
+    (`b829322a…`, 319,340 bytes) dropped every non-root translation and left the hooves behind the legs.
   - Fit: `scale` 0.46 puts the back at ~1.6 m against the 1.86 m person. `src/rendering/mountedAttire.ts` tints
     the coat, its light/dark shades and the mane/tail per side (`mountedCharacters.ts`), adds a code-generated
     saddle cloth in the side's trim colour and a leather saddle, and seats the shared infantry body on the

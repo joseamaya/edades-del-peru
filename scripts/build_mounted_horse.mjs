@@ -33,17 +33,30 @@ const kept = doc
   .map((a) => a.getName());
 const missing = HORSE_CLIPS.filter((name) => !kept.includes(name));
 if (missing.length) throw new Error(`horse source lacks clips: ${missing.join(', ')}`);
-// Only rotations carry the gait; the bones' translation and scale tracks are constant or near it, so dropping
-// them (the root's translation excepted) halves the animation data without a visible change.
+// Drop only the tracks that do not move. The leg IK bones (`IKFrontLeg.*`, `IKBackLeg.*`) carry the hooves and
+// lower legs by translation, so their translation tracks are the gait: dropping every non-root translation
+// left the hooves behind while the legs swung.
+const CONSTANT = 1e-4;
 for (const animation of doc.getRoot().listAnimations()) {
   for (const channel of animation.listChannels()) {
     const path = channel.getTargetPath();
-    const node = channel.getTargetNode()?.getName() ?? '';
-    if (path === 'scale' || (path === 'translation' && node !== 'Body')) {
-      const sampler = channel.getSampler();
-      channel.dispose();
-      if (sampler && sampler.listParents().length <= 1) sampler.dispose();
+    if (path !== 'scale' && path !== 'translation') continue;
+    const sampler = channel.getSampler();
+    const values = sampler?.getOutput()?.getArray();
+    if (!values) continue;
+    let range = 0;
+    for (let k = 0; k < 3; k++) {
+      let lo = Infinity;
+      let hi = -Infinity;
+      for (let i = k; i < values.length; i += 3) {
+        lo = Math.min(lo, values[i]);
+        hi = Math.max(hi, values[i]);
+      }
+      range = Math.max(range, hi - lo);
     }
+    if (range > CONSTANT) continue;
+    channel.dispose();
+    if (sampler.listParents().length <= 1) sampler.dispose();
   }
 }
 await doc.transform(
