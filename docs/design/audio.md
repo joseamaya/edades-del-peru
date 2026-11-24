@@ -17,8 +17,8 @@ music layers, the ambience beds and the boundary for a future recorded-audio pha
 
 - The four values live in `peru-settings` as `masterVolume`, `sfxVolume`, `musicVolume`,
   `ambienceVolume` (0..1). The settings schema is `SETTINGS_VERSION = 3`.
-- `soundEnabled` (M) mutes effects **and** ambience; `musicEnabled` (F) mutes the score. A muted bus keeps
-  its slider value.
+- The **Sonido** toggle mutes effects **and** ambience; the **Música** toggle mutes the score. Neither has a
+  keyboard shortcut. A muted bus keeps its slider value.
 - Sliders are in the options panel; a change applies immediately and persists without a restart.
 
 ## Spatial effects
@@ -80,8 +80,9 @@ coast; Vilcabamba → jungle; Tarapacá → altiplano; the rest → Andes). A ma
   gains, intensity state).
 - `tests/settings.test.ts` covers the volume defaults and the schema bump.
 - The settings panel is captured for evidence:
-  [`../media/audio-options-2026-11-24.webp`](../media/audio-options-2026-11-24.webp). Audio itself is
-  documented with a short clip because a screenshot cannot prove sound.
+  [`../media/audio-options-2026-11-24.webp`](../media/audio-options-2026-11-24.webp). The sound graph is
+  verified in the browser through the layer and ambience gains; a screenshot cannot prove audio, so a human
+  clip is still recommended before closing the mix.
 
 ## Code map
 

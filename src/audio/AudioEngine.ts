@@ -247,6 +247,7 @@ export class AudioEngine {
   }
 
   shot(at?: SoundAt): void {
+    if (this.mixFor(at).gain < 0.02) return;
     const t = this.now();
     if (t - this.lastShot < 0.08) return;
     this.lastShot = t;
@@ -275,6 +276,7 @@ export class AudioEngine {
   }
 
   hit(at?: SoundAt): void {
+    if (this.mixFor(at).gain < 0.02) return;
     const t = this.now();
     if (t - this.lastHit < 0.05) return;
     this.lastHit = t;
@@ -426,6 +428,8 @@ export class AudioEngine {
     const step = this.musicStep;
     const freq = scale[step % scale.length];
     if (this.intensity !== 'calm' && step % 2 === 0) this.percussionHit(step % 8 === 0);
+    // The drone sounds in every era, including the flute-led archaic Andes.
+    this.droneNote(root);
     // The ancient Andes (era 0): a breathy flute line in a pentatonic mode. Flutes and trumpets were
     // found in Caral's Amphitheatre; the melody itself is generative, not a reconstruction.
     if (this.era === 0 && step % 2 === 0) {
@@ -447,8 +451,13 @@ export class AudioEngine {
       o.start(now);
       o.stop(now + 1.3);
     }
-    const b = this.ctx.createOscillator();
-    const bg = this.ctx.createGain();
+    this.musicStep++;
+  }
+
+  /** Low pulse of the score; it survives the era-0 early return so the drone layer is never silent. */
+  private droneNote(root: number): void {
+    const b = this.ctx!.createOscillator();
+    const bg = this.ctx!.createGain();
     b.type = 'triangle';
     b.frequency.value = root / 2;
     const bn = this.now();
@@ -459,7 +468,6 @@ export class AudioEngine {
     bg.connect(this.droneGain!);
     b.start(bn);
     b.stop(bn + 1.5);
-    this.musicStep++;
   }
 
   /** Tinya-like drum: a short filtered noise burst; combat adds the answering stroke. */
