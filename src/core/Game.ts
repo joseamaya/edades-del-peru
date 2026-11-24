@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { bus } from './EventBus';
-import { createRenderer, createPostFX } from '../rendering/Renderer';
+import { createRenderer, createPostFX, keepSkinningCurrent } from '../rendering/Renderer';
 import { PostFX } from '../rendering/PostFX';
 import { SHADOW_MAP_SIZE } from '../rendering/shadowFrame';
 import { Sky } from '../rendering/Sky';
@@ -513,6 +513,7 @@ export class Game {
 
   private initRenderer(): void {
     this.renderer = createRenderer();
+    keepSkinningCurrent(this.renderer, this.scene);
     // Software rasterizers (SwiftShader/llvmpipe) cannot afford the cinematic set.
     // Apply the safe *render profile* without touching the saved player settings;
     // `?cine=1` skips this fallback.

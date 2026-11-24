@@ -11,6 +11,7 @@ import {
   showSharedHumanoidBody,
 } from './rigAttire';
 import { consolidateRig } from './modelConsolidation';
+import { paintBodyUnderGarments, type PaintRegion } from './bodyPaint';
 
 /**
  * The 1532–1572 coleto: dark leather. The earlier buff (0xb39a72) and a mid brown (0x6e5236) both read as the
@@ -348,6 +349,7 @@ export function dressUniform(
     mergeGear(pelvisParts, 'pelvis', new THREE.Vector3(pelvis.x, pelvis.y, pelvis.z), 'attire_post_gear_pelvis');
   }
 
+  let firearm: FirearmGrip | null = null;
   if (hand && armed) {
     const parts: [THREE.BufferGeometry, number][] = [];
     const isRifle = spec.weapon === 'rifle';
@@ -372,6 +374,7 @@ export function dressUniform(
     }
     const weapon = mergeGear(parts, 'hand_r', hand.clone(), 'attire_post_weapon');
     if (weapon) weapon.rotation.set(-0.2, 0, 0);
+    if (weapon && (spec.weapon === 'musket' || isRifle)) firearm = firearmGrip(rig, weapon, role === 'ranged');
   }
 
   let carry: THREE.Group | null = null;
@@ -396,6 +399,7 @@ export function dressUniform(
   });
   tools.ownedGeometries.push(...consolidated.geometries);
   tools.ownedMaterials.push(...consolidated.materials);
+  if (!civilian) paintCoveredBody(rig, variant, male, coatColor, trouserColor);
   // Only the body silhouette is in the shadow pass: the merged garments and gear would be a second copy of
   // every soldier in the shadow map (both flags go, as in the worker rule).
   bodyOnlyShadows(root);
@@ -414,6 +418,107 @@ export function dressUniform(
       const weapon = root.getObjectByName('attire_post_weapon');
       if (weapon) weapon.visible = task !== 'build';
     },
+    update(): void {
+      firearm?.update(task);
+    },
     dispose,
+  };
+}
+
+/**
+ * The closed uniform covers the torso and arms to the cuffs (coat), the hips and legs (breeches) and the lower
+ * calves and feet (boots): paint the body there, so a bulge through a rigid sleeve shows cloth, not skin.
+ */
+function paintCoveredBody(rig: RigInstance, variant: RigVariant, male: boolean, coat: number, trousers: number): void {
+  const root = rig.root;
+  const body = root.getObjectByName(male ? 'Body_m' : 'Body_f') as THREE.SkinnedMesh | undefined;
+  if (!body?.isSkinnedMesh) return;
+  const calf = { l: new THREE.Vector3(), r: new THREE.Vector3() };
+  const foot = { l: new THREE.Vector3(), r: new THREE.Vector3() };
+  for (const side of ['l', 'r'] as const) {
+    root.getObjectByName(`calf_${side}`)?.getWorldPosition(calf[side]);
+    root.getObjectByName(`foot_${side}`)?.getWorldPosition(foot[side]);
+  }
+  const along = new THREE.Vector3();
+  const regionOf = (bone: string, position: THREE.Vector3): PaintRegion => {
+    if (/^(spine_0[123]|clavicle_[lr]|upperarm_[lr]|lowerarm_[lr])$/.test(bone)) return 'coat';
+    if (/^(pelvis|thigh_[lr])$/.test(bone)) return 'trousers';
+    if (/^(foot_[lr]|ball_[lr]|ball_leaf_[lr])$/.test(bone)) return 'boots';
+    const shin = /^calf_([lr])$/.exec(bone);
+    if (shin) {
+      // The boot starts 30% down the shin (`attire_post_boot_*`).
+      const side = shin[1] as 'l' | 'r';
+      const axis = along.copy(foot[side]).sub(calf[side]);
+      const t = position.clone().sub(calf[side]).dot(axis) / Math.max(axis.lengthSq(), 1e-6);
+      return t > 0.3 ? 'boots' : 'trousers';
+    }
+    return null;
+  };
+  paintBodyUnderGarments(body, `uniform:${variant}`, { coat, trousers, boots: 0x2a1e16 }, regionOf);
+}
+
+interface FirearmGrip {
+  update(task: RigClipState): void;
+}
+
+/**
+ * Hold the musket or rifle like a long arm, not like the pistol the shared clips were made for.
+ *
+ * Fixed to the hand bone, the gun followed the wrist: the one-handed `Pistol_Shoot` turned it muzzle-down and
+ * the idle hang left it pointing at the ground behind. Each frame, after the clip, the gun is re-aimed in the
+ * hand: upright at the side, muzzle up (order/support arms) at rest and on the march; along the forearm, the
+ * way the arm points, when a ranged soldier fires. The grip stays at the hand; only the orientation changes.
+ */
+function firearmGrip(rig: RigInstance, weapon: THREE.Object3D, ranged: boolean): FirearmGrip | null {
+  const root = rig.root;
+  const hand = root.getObjectByName('hand_r');
+  const forearm = root.getObjectByName('lowerarm_r');
+  if (!hand || !forearm || weapon.parent !== hand) return null;
+  // Everything is solved in the rig root's space (+Z forward, +Y up, as the attire was dressed), from the
+  // bones' local transforms only: no world-matrix walk per unit per frame.
+  const toRoot = (bone: THREE.Object3D, out: THREE.Matrix4): THREE.Matrix4 => {
+    out.identity();
+    for (let q: THREE.Object3D | null = bone; q && q !== root; q = q.parent) {
+      q.updateMatrix();
+      out.premultiply(q.matrix);
+    }
+    return out;
+  };
+  const handM = new THREE.Matrix4();
+  const forearmM = new THREE.Matrix4();
+  const handQ = new THREE.Quaternion();
+  const target = new THREE.Quaternion();
+  const look = new THREE.Matrix4();
+  const aim = new THREE.Vector3();
+  const up = new THREE.Vector3();
+  const a = new THREE.Vector3();
+  const b = new THREE.Vector3();
+  const scale = new THREE.Vector3();
+  const origin = new THREE.Vector3();
+  // At rest: muzzle up, tipped 12° forward so the barrel clears the shoulder, sights facing forward.
+  const restAim = new THREE.Vector3(0, Math.cos(0.21), Math.sin(0.21));
+  const restUp = new THREE.Vector3(0, -Math.sin(0.21), Math.cos(0.21));
+  // The melee soldier's thrust/swing clip already carries the arm: keep the gun as dressed for it.
+  const dressed = weapon.quaternion.clone();
+  return {
+    update(task) {
+      if (!ranged && task === 'attack') {
+        weapon.quaternion.copy(dressed);
+        return;
+      }
+      toRoot(hand, handM).decompose(b, handQ, scale);
+      if (ranged && task === 'attack') {
+        a.setFromMatrixPosition(toRoot(forearm, forearmM));
+        aim.copy(b).sub(a).normalize();
+        up.set(0, 1, 0);
+      } else {
+        aim.copy(restAim);
+        up.copy(restUp);
+      }
+      // A rotation whose -Z (the barrel, as modelled) is `aim` and whose +Y (the sights) is nearest `up`.
+      look.lookAt(origin, aim, up);
+      target.setFromRotationMatrix(look);
+      weapon.quaternion.copy(handQ.invert().multiply(target));
+    },
   };
 }

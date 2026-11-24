@@ -446,8 +446,13 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     }
     if (soldier && pelvis && spec.belt) {
       const beltMat = makeMaterial(palette.accent, 0.9);
-      const belt = addMesh(new THREE.CylinderGeometry(0.255, 0.26, 0.045, 20), beltMat, 'attire_andean_belt');
-      attach('pelvis', belt, new THREE.Vector3(pelvis.x, pelvis.y + 0.39, pelvis.z));
+      // A sash around the waist of the tunic, measured on the shared body: the narrowest band is 0.25 above
+      // the pelvis, ~0.18 (male) / 0.15 (female) half-wide, 0.13 half-deep and 3.5 cm forward of the spine.
+      // It rides the waist bone so it bends with the torso; a 0.26 ring on the pelvis at chest height floated
+      // off the body as soon as the unit leaned into a run or a swing.
+      const beltGeometry = new THREE.CylinderGeometry(1, 1, 0.05, 20).scale(male ? 0.195 : 0.165, 1, 0.14);
+      const belt = addMesh(beltGeometry, beltMat, 'attire_andean_belt');
+      attach('spine_02', belt, new THREE.Vector3(pelvis.x, pelvis.y + 0.24, pelvis.z + 0.035));
     }
     if (soldier && boneL && spec.shield) {
       // Wooden disc and stone umbo in one vertex-coloured mesh: still reads as two materials, one draw.

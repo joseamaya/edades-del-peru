@@ -10,7 +10,7 @@ import { FISHERS_PER_GROUND, HARVEST_STAND_RANGE } from '../entities/Unit';
 import { disposeStaticGltf } from '../rendering/StaticModel';
 import { loadSceneryModel } from '../rendering/sceneryModels';
 import { loadSiteModel } from '../rendering/siteModels';
-import { SiteLandmarks } from '../rendering/SiteLandmarks';
+import { SiteLandmarks, siteLandmarkObstacles } from '../rendering/SiteLandmarks';
 import { mergeStaticByMaterial } from '../rendering/mergeStatic';
 import { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
 import { AylluSite } from '../rendering/AylluSite';
@@ -255,6 +255,7 @@ export class WorldViewDecor {
     }
     this.game.siteAnchor = { ...def.anchor };
     this.addSiteObstacles(def);
+    this.addSiteLandmarkObstacles(site.y ?? 0);
     this.addSiteHeritageProxies(group, def.heritageProxies);
     this.spawnSiteLandmarks(site.y ?? 0);
     if (def.hideModel || site.hideModel) {
@@ -443,6 +444,19 @@ export class WorldViewDecor {
    * Real Felipe bastions, the Tarapacá village and the Vilcabamba refuge. They live in their own
    * scene group so texture disposal never touches the shared generated PBR sets.
    */
+  /** The landmarks' houses and halls block movement, headless too (they are drawn only with a renderer). */
+  private addSiteLandmarkObstacles(baseY: number): void {
+    const specs = this.game.missionLayout?.siteLandmarks;
+    if (!specs?.length) return;
+    const obstacles = siteLandmarkObstacles(
+      specs,
+      this.game.settings.mapSize,
+      (x, z) => this.game.terrain.getHeight(x, z),
+      baseY,
+    );
+    for (const obstacle of obstacles) this.game.pathfinder.addObstacle(obstacle);
+  }
+
   spawnSiteLandmarks(baseY: number): void {
     if (this.game.headless) return;
     const specs = this.game.missionLayout?.siteLandmarks;

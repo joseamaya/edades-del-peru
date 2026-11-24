@@ -655,7 +655,8 @@ export class InputController {
   private issueMoveFormation(units: Unit[], target: OrderTarget): void {
     const n = units.length;
     const yaw = Math.atan2(target.z - units[0].pos.z, target.x - units[0].pos.x);
-    const spacing = 1.5;
+    // Slots as wide as the bulkiest member: 1.5 m for foot soldiers, more for horses and guns.
+    const spacing = Math.max(1.5, ...units.map((u: Unit) => u.spacing + 0.1));
     const cols = Math.ceil(Math.sqrt(n));
     const rows = Math.ceil(n / cols);
     // One A* for the whole order; separation keeps the members from overlapping.

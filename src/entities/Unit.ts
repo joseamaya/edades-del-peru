@@ -12,7 +12,14 @@ import {
   AlertReason,
   ResourceKind,
 } from '../core/types';
-import { getUnitStats, projectileHasMuzzleFlash, UnitStats, DamageClass, UnitClass } from '../model/defs/units';
+import {
+  getUnitStats,
+  projectileHasMuzzleFlash,
+  unitClassFor,
+  UnitStats,
+  DamageClass,
+  UnitClass,
+} from '../model/defs/units';
 import type { BuildContext } from '../model/ProceduralModel';
 import type { RigInstance } from '../rendering/RigInstance';
 import type { UnitView } from '../rendering/UnitView';
@@ -152,7 +159,18 @@ export function gatherApproachFor(
 export const FISHERS_PER_GROUND = 4;
 /** Distance at which a plain move/attack-move order counts as arrived. */
 const MOVE_ARRIVAL_DIST = 1.2;
+/** Personal space of a soldier on foot: two units closer than this push apart while they move. */
 const SEPARATION = 1.4;
+/**
+ * Personal space by body: a horse is ~2.4 m nose to tail and a gun carriage or a tank ~2 m, so with the foot
+ * soldier's 1.4 m a squadron marched and charged with the horses run through each other.
+ */
+export function unitSpacing(kind: UnitKind): number {
+  const unitClass = unitClassFor(kind);
+  if (unitClass === 'cavalry') return 2.4;
+  if (unitClass === 'siege') return 2.0;
+  return SEPARATION;
+}
 /** Look-ahead (world units) validated before a pathless direct approach. */
 const DIRECT_LOOKAHEAD = 3;
 /** Seconds without a route before a stuck move/combat order gives up. */
@@ -208,6 +226,8 @@ export class Unit {
   dead = false;
   selected = false;
   radius = 0.42;
+  /** Personal space kept from other units while moving (`unitSpacing`). */
+  spacing = SEPARATION;
   /** Mission tag (for objectives/triggers). */
   tag?: string;
 
@@ -275,6 +295,7 @@ export class Unit {
     this.radius = this.stats.range === 0 ? 0.45 : 0.5;
     if (kind === UnitKind.TANK) this.radius = 0.9;
     if (kind === UnitKind.ARTILLERY || kind === UnitKind.MORTAR || kind === UnitKind.NUCLEAR) this.radius = 0.8;
+    this.spacing = unitSpacing(kind);
   }
 
   removeFromScene(): void {
@@ -1128,7 +1149,9 @@ export class Unit {
 
   private applySeparation(dt: number): void {
     if (this.walkCycle <= 0.01) return;
-    const nearby = this.ctx.unitsNear(this.pos.x, this.pos.z, SEPARATION);
+    // Each pair keeps the larger of the two spacings. The query stays at the unit's own spacing (a foot
+    // soldier's search does not grow), so a horse or a gun clears the room it needs from its own side.
+    const nearby = this.ctx.unitsNear(this.pos.x, this.pos.z, this.spacing);
     let fx = 0;
     let fz = 0;
     for (const u of nearby) {
@@ -1137,8 +1160,9 @@ export class Unit {
       const dx = this.pos.x - u.pos.x;
       const dz = this.pos.z - u.pos.z;
       const d = Math.sqrt(dx * dx + dz * dz);
-      if (d < SEPARATION && d > 0.001) {
-        const f = (SEPARATION - d) / SEPARATION;
+      const space = Math.max(this.spacing, u.spacing);
+      if (d < space && d > 0.001) {
+        const f = (space - d) / space;
         fx += (dx / d) * f;
         fz += (dz / d) * f;
       }

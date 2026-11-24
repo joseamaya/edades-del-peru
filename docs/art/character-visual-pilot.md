@@ -414,7 +414,7 @@ The low-poly mount of `mounted_rig.glb` (a lofted barrel with a wedge head and t
 Quaternius' CC0 animated horse, from the same pack as the alpaca (sources and hashes in `PROVENANCE.md`).
 
 - **Asset:** `scripts/build_mounted_horse.mjs` keeps five clips (`Idle`, `Walk` trot, `Gallop`,
-  `Attack_Headbutt` charge, `Death`) and drops the constant tracks: 319 KB against the retired GLB's 207 KB, so
+  `Attack_Headbutt` charge, `Death`) and drops the constant tracks: 320 KiB (§17) against the retired GLB's 207 KB, so
   `dist/` measures 27.98 of 28 MB with the old mount removed. The budget was not raised.
 - **Fit:** `scale` 0.46 puts the back at ~1.6 m. The back's surface is 0.31 m above the `Torso2` bone (measured
   on the skinned mesh); the saddle cloth (trim colour) and leather saddle sit 2 cm over it and the rider's hip
@@ -454,6 +454,43 @@ full frame plus a crop of the squad).
   draws do not carry; the m_lima coleto and the bay horse still share a value on dark ground.
 
 ![Before and after at the RTS zoom: the Inca slingers and the m7 rebels](../media/character-legibility-before-after.webp)
+
+## 17. Trailer review: horse legs, floating gear, grip and collisions
+
+The 98 s trailer of 2026-11-24 showed thin, bent horse legs, helmets and weapons drifting off the bodies,
+patches of skin through the coats, muskets held like pistols and units walking through houses and through each
+other. Each one had its own cause.
+
+- **Horse legs.** The hooves and lower legs are weighted to the leg IK bones (`IKFrontLeg.*`, `IKBackLeg.*`),
+  which move by translation. The build dropped every non-root translation track as "constant", so the hooves
+  stayed behind while the upper legs swung. `scripts/build_mounted_horse.mjs` now drops only the tracks that do
+  not move (range under 1e-4); the GLB grows from 319 to 320 KiB.
+- **Floating helmets, hair and weapons.** three (r185) updates a skeleton during the cull, before it advances
+  `info.render.frame`, and the shadow pass then updates the casters under the new value; the next render
+  sees the body, the only caster, as already updated. With `shadowMap.autoUpdate` off, a render without a
+  shadow pass (captures, the trailer, the direct render) drew the body with the previous frame's bones and the
+  merged gear with the current ones: a running soldier left his hat, hair and musket a step behind.
+  `keepSkinningCurrent` (`Renderer.ts`) advances the counter at the start of each render.
+- **Skin through the coat.** The sleeves, breeches and yoke are rigid shells and the skinned body bulges
+  through them as a limb bends. `bodyPaint.ts` paints the body under a closed uniform in the colour of the
+  garment over it (coat, breeches, boots) by the vertex's strongest covered bone, so a bulge shows cloth.
+- **The Andean sash** was a 0.26 m ring on the pelvis at chest height and floated away from the torso in a
+  run or a swing. It is now fitted to the measured waist of the tunic and rides `spine_02`.
+- **Grip.** Fixed to the hand, the musket followed the one-handed pistol clips: muzzle down in `Pistol_Shoot`,
+  pointing at the ground at rest. The long arm is now re-aimed in the hand after each clip update: upright,
+  muzzle up, at rest and on the march; along the forearm, at the target, when a ranged soldier fires. The
+  melee thrust keeps the clip's grip. A two-handed aim clip is still the real fix (§11.3).
+- **Units through each other.** Every unit kept 1.4 m of personal space, so horses (2.4 m nose to tail) ran
+  through one another. `unitSpacing` gives cavalry 2.4 m and guns 2 m, each pair keeps the larger, and a
+  formation's slots are as wide as its bulkiest member.
+- **Units through houses.** The procedural landmarks (Cusco's halls, Tarapacá and Pachica, Vilcabamba,
+  the Real Felipe) were drawn only with a renderer and never reached the navigation grid. Their halls now
+  block movement in every mode (`siteLandmarkObstacles`); walls, terraces, trenches and corrals stay walkable,
+  as the missions' battlefields need.
+
+`verify:fast`, `bench:check`, `bench:characters`, the rig, mission and movement E2E specs are the gate.
+
+![Gallop before and after: the hooves left behind, and the rebuilt legs](../media/horse-legs-before-after.webp)
 
 ## See also
 
