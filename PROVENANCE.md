@@ -1106,6 +1106,15 @@ slot is absent (offline / without assets).
 - **Review**: no new historical claim; the rider palette and headwear are the existing abstractions of
   `src/model/defs/postColonialCharacters.ts`.
 
+### Closed uniforms (in-engine evidence)
+
+- **Location**: `docs/media/uniform-closure-before-after.webp`, 1200x1120 WebP q72.
+- **Source**: `node scripts/capture_uniform_lineup.mjs --gpu`, top half before the change (with
+  `--out=review/uniforms-before`), bottom half after; same missions, seed, placement and camera.
+- **Content**: four units per side (Hueste 1536, rebeldes and realistas 1780, patriotas 1814, Perú and Chile
+  1879) at close range; `docs/art/character-visual-pilot.md` §14.
+- **Review**: no new historical claim; colours stay within the abstractions of `docs/historia/atuendos.md` §3–4.
+
 ### Character proportions (in-engine evidence)
 
 - **Location**: `docs/media/character-proportions-before-after.webp`, 2240x940 WebP q84.

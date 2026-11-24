@@ -377,6 +377,37 @@ limbs, no face), so a horseman read as a peg doll next to the equipped infantry.
 
 ![Before and after: Sucre's cavalry at Junín and Pizarro at Lima](../media/cavalry-rider-before-after.webp)
 
+## 14. Closed uniforms (1532–1883)
+
+At close range the post-1532 uniforms showed skin: the coat is the shared worker tunic (low neckline, no
+shoulders), and the sleeves, breeches and boots were short rigid tubes that left the shoulder, elbow, hip,
+knee and foot bare. Two coats also matched the shared skin (`#6b3f22`): the 1536 buff coleto (`0xb39a72`) and
+the m7 rebel red-brown (`0x6a3a2a`), so those soldiers read as bare-chested at any distance.
+
+- **Garments** (`src/rendering/uniformAttire.ts`, every `realistas_*`, `patriotas_*`, `republica_*`, `chile_*`
+  and `rebelde_*` armed role, and so every cavalry rider): a yoke from mid-chest to a standing collar with a
+  sloped shoulder line, sized for both presentation bodies and set ~5 cm in front of the spine (the spine runs
+  along the back); shoulder, elbow and knee caps; full-length sleeves with trim cuffs; a seat under the coat;
+  breeches from inside the hip; boots; and shoes over heel, instep and toe. All are rigid bone attachments,
+  merged by `consolidateRig`, so the draw count does not change.
+- **Colours:** the coleto is a dark leather `EARLY_SPANISH_COAT` (`0x4a3a2c`) and the rebel coat undyed dark
+  wool (`0x4b4640`); both are still the documented abstractions of
+  [`../historia/atuendos.md`](../historia/atuendos.md) §3 («tonos de lana y cuero», rebel earth tones), not new
+  claims. `tests/uniform-palette.test.ts` keeps every coat away from the skin tone.
+- **Bicorn:** the points curl up less (0.05 instead of 0.11) and the brim is deeper, so the hat no longer reads
+  as horns from the front.
+- **Evidence:** `node scripts/capture_uniform_lineup.mjs` lines up four units per side (both bodies, two
+  roles) facing a close camera; `--nobody=1` hides the skin to check the garments alone.
+- **Cost:** `yarn bench:characters` is unchanged in draws (6) and rises by ~1.1k triangles (Spanish 10.5k →
+  11.7k, 1879 fusilier 9.5k → 10.7k, late realista 9.7k → 10.9k), under the 25k ceiling. The mounted bench cap
+  moves to 17,000 (16.2k per horseman). Every `bench:check` row, `visual:check` and the rig E2E specs stay
+  green.
+- **Still open:** the shared body's chest occasionally grazes the yoke in deep poses; women still serve in the
+  line at the deterministic 50 % presentation split of `atuendos.md` (a policy decision, not changed here); the
+  Andean warriors keep their own dressers.
+
+![Before and after: six sides at close range](../media/uniform-closure-before-after.webp)
+
 ## See also
 
 [`../design/art-direction.md`](../design/art-direction.md) §4.1 ·
