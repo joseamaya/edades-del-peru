@@ -350,6 +350,33 @@ standard.**
   the shared skinned draws, so a unit costs 8–9 draws with or without it (list it in `dynamic` only if it
   toggles visibility).
 
+## 13. Cavalry rider on the shared body
+
+The mounted units (`HUSSAR`/`CAVALRY` of the realistas, patriotas, Republic, Chile and the m7 rebels) were the
+last humanoids outside this standard: `mounted_rig.glb` carried its own low-poly rider (sphere head, tube
+limbs, no face), so a horseman read as a peg doll next to the equipped infantry.
+
+- **Change:** `dressMounted` (`src/rendering/mountedAttire.ts`) now seats a second `RigInstance` of the shared
+  worker in the infantry soldier variant of the same side (`MOUNTED_RIDER_VARIANTS`, always the male body) on
+  the mount's `rider_hip` bone, and hides the legacy rider meshes. The trot and gallop bob carry it.
+- **Seat:** a seated pose (`RIDER_SEAT_POSE`) is applied after the rider's clip, as rotations in the rider's
+  own space: thighs forward and apart around the barrel, knees down along the flank, forearms forward to the
+  reins. The rider plays `idle` while the horse walks, trots or gallops, its own sword attack when the horse
+  attacks (the arms are then left to the clip) and its death clip with the horse.
+- **Fallback:** the loader registers the rider factory (`setMountedRiderFactory`), which keeps the dresser free
+  of an import cycle. When the worker asset is not cached, the mount keeps its legacy rider.
+- **Cost:** the consolidated rider cuts the draws (`yarn bench --scenario=mounted`: 205 → 181, 365 → 293 and
+  609 → 465 for 4, 12 and 24 units) and raises the triangles from ~8.4k to 14.1k per unit. The mounted bench
+  cap moves from 12,000 to 15,000 triangles, under the 25k common-unit ceiling of the art direction; the step
+  time stays within run-to-run noise.
+- **Test:** `tests/e2e/models.spec.ts` checks that every m7 horseman has the shared body under `rider_hip`, no
+  visible legacy rider mesh, femurs pointing forward and the pelvis above 1.3 m.
+- **Not done here:** the rider wears the infantry uniform as it is today, so the open uniform issues (bare
+  shoulders on the late uniforms, the 1536 cuirass over a bare torso) show on horseback too; the horse itself is
+  still the low-poly barrel. Both are the next steps.
+
+![Before and after: Sucre's cavalry at Junín and Pizarro at Lima](../media/cavalry-rider-before-after.webp)
+
 ## See also
 
 [`../design/art-direction.md`](../design/art-direction.md) §4.1 ·

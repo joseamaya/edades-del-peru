@@ -97,7 +97,9 @@ const RIG_BUDGETS = {
   // worker baseline is the dressed mannequin; the animal baseline is the
   // consolidated alpaca (2 draws: mesh + shadow).
   worker: { drawCalls: 40, triangles: 40000 },
-  mounted: { drawCalls: 40, triangles: 12000 },
+  // The rider is the shared infantry body (~9.4k with its uniform) on the ~4.7k horse: 14.1k per unit,
+  // under the art-direction 25k common-unit ceiling. Its consolidated draws cut the calls by a fifth.
+  mounted: { drawCalls: 40, triangles: 15000 },
   siege: { drawCalls: 24, triangles: 12000 },
   tank: { drawCalls: 12, triangles: 12000 },
   vehicles: { drawCalls: 20, triangles: 6000 },

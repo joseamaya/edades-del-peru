@@ -1095,6 +1095,17 @@ slot is absent (offline / without assets).
   (898 → 615 and 912 → 593). Numbers and decision: `docs/development/site-view-performance.md` §"B13 follow-up".
 - **Review**: no historical claim; these are performance captures of an existing scene.
 
+### Cavalry rider (in-engine evidence)
+
+- **Location**: `docs/media/cavalry-rider-before-after.webp`, 1520x856 WebP q72.
+- **Source**: in-engine frames of `m8_independencia` (Sucre's cavalry) and `m_lima` (Pizarro) from the local
+  trailer capture (`scripts/trailer_full.mjs`, untracked like the other trailer tools), before on `main` and
+  after on this change, same seed, camera and frame. Left column before, right column after.
+- **Content**: the low-poly GLB rider replaced by the shared infantry body seated on the mount
+  (`docs/art/character-visual-pilot.md` §13). The uniforms are the infantry's current ones.
+- **Review**: no new historical claim; the rider palette and headwear are the existing abstractions of
+  `src/model/defs/postColonialCharacters.ts`.
+
 ### Character proportions (in-engine evidence)
 
 - **Location**: `docs/media/character-proportions-before-after.webp`, 2240x940 WebP q84.
@@ -1134,7 +1145,9 @@ slot is absent (offline / without assets).
     hat), five clips (`Idle_Loop`, `Walk_Loop` trot, `Gallop_Loop`, `Attack`, `Death`), 5,370 GLB triangles,
     ~2.7 m tall at the hat with a 1.62 m withers. The horse is a lofted low-poly barrel with a tapered neck,
     wedge head, jointed legs, mane/tail and period tack; the rider has a 0.945 m hip-to-crown seated height
-    against the 1.86 m infantry, so the mount is not a pony with a child-sized rider.
+    against the 1.86 m infantry, so the mount is not a pony with a child-sized rider. Since 2026-11-24 the game seats the shared
+    worker body on the `rider_hip` bone and hides these rider meshes; they remain in the GLB as the fallback
+    when the worker is not loaded (`src/rendering/mountedAttire.ts`).
   - Historical basis: horses and firearms are post-1532 only. The horse/tack silhouette is stylized, not a
     breed or a specific historical mount; the rider palette/headwear follows the documented abstractions in
     `docs/historia/atuendos.md` §6 and `src/model/defs/mountedCharacters.ts`. The bay/chestnut/dark-bay coats

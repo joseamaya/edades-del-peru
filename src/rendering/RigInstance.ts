@@ -195,6 +195,7 @@ export class RigInstance {
     this.preHitState = null;
     this.mixer.stopAllAction();
     this.current = null;
+    this.variant?.onDeath?.();
     if (!this.deathAction) return;
     this.deathAction.reset();
     this.deathAction.setEffectiveWeight(1);
@@ -254,6 +255,7 @@ export class RigInstance {
       }
     }
     this.mixer.update(dt);
+    this.variant?.update?.(dt);
   }
 
   /** Release the instance's skeleton/mixer; shared resources stay cached. */
