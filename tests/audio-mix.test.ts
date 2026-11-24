@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   DEFAULT_VOLUMES,
+  listenerFor,
   ambienceForMap,
   ambienceForSite,
   attenuationFor,
@@ -40,6 +41,17 @@ describe('world sound placement', () => {
     expect(panFor(0, 10, 0, 1, 40)).toBeCloseTo(0.25);
     expect(panFor(80, 0, 1, 0, 40)).toBe(1);
     expect(panFor(-80, 0, 1, 0, 40)).toBe(-1);
+  });
+
+  it('builds the listener frame from the camera yaw and zoom', () => {
+    const listener = listenerFor({ x: 12, z: -4 }, 0, 20);
+    expect(listener.x).toBe(12);
+    expect(listener.z).toBe(-4);
+    expect(listener.rightX).toBeCloseTo(1);
+    expect(listener.rightZ).toBeCloseTo(0);
+    expect(listener.range).toBe(18);
+    expect(listenerFor({ x: 0, z: 0 }, Math.PI / 2, 100).rightX).toBeCloseTo(0);
+    expect(listenerFor({ x: 0, z: 0 }, Math.PI / 2, 100).rightZ).toBeCloseTo(-1);
   });
 
   it('treats a degenerate range as a point source', () => {

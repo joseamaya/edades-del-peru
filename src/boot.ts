@@ -70,7 +70,7 @@ function sanitizeSettings(raw: unknown): GameSettings {
   // explicitly toggled it off at the current version keeps it.
   const storedVersion = Number.isFinite(r.settingsVersion) ? (r.settingsVersion as number) : 0;
   if (storedVersion < 2) s.cinematic = true;
-  s.settingsVersion = SETTINGS_VERSION;
+  s.settingsVersion = Math.max(storedVersion, SETTINGS_VERSION);
   if (typeof r.rotateCamera === 'boolean') s.rotateCamera = r.rotateCamera;
   if (['slow', 'normal', 'fast'].includes(r.cameraSpeed as string)) {
     s.cameraSpeed = r.cameraSpeed as GameSettings['cameraSpeed'];

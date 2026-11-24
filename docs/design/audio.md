@@ -17,7 +17,8 @@ music layers, the ambience beds and the boundary for a future recorded-audio pha
 
 - The four values live in `peru-settings` as `masterVolume`, `sfxVolume`, `musicVolume`,
   `ambienceVolume` (0..1). The settings schema is `SETTINGS_VERSION = 3`.
-- `soundEnabled` and `musicEnabled` stay as mute shortcuts (M/F). A muted bus keeps its slider value.
+- `soundEnabled` (M) mutes effects **and** ambience; `musicEnabled` (F) mutes the score. A muted bus keeps
+  its slider value.
 - Sliders are in the options panel; a change applies immediately and persists without a restart.
 
 ## Spatial effects
@@ -44,8 +45,8 @@ modes for the following eras). It mixes three layers under the music bus:
 | Melody (flute/pluck) | 0.85 | 0.45 | 0.25 |
 | Percussion (tinya-like) | 0.00 | 0.30 | 0.85 |
 
-- Intensity comes from presentation events: a combat hit keeps `combat` for 3 s; a warning alert or a
-  recent hit keeps `tension` for up to 8 s; otherwise it returns to `calm`.
+- Intensity comes from presentation events near the camera: a hit keeps `combat` for 3 s; afterwards a
+  recent hit keeps `tension` for up to 8 s and a warning alert for 6 s; otherwise it returns to `calm`.
 - Layers crossfade (≈1.2 s), they never cut. The percussion is silent in `calm` and adds an answering
   stroke in `combat`.
 - The melody is generative, **not a reconstruction**: the instruments are documented, the tunes are not.
@@ -78,8 +79,9 @@ coast; Vilcabamba → jungle; Tarapacá → altiplano; the rest → Andes). A ma
 - `tests/audio-mix.test.ts` covers the pure mixer rules (clamp, attenuation, pan, ambience mapping, layer
   gains, intensity state).
 - `tests/settings.test.ts` covers the volume defaults and the schema bump.
-- The settings panel is captured for evidence; audio itself is documented with a short clip because a
-  screenshot cannot prove sound.
+- The settings panel is captured for evidence:
+  [`../media/audio-options-2026-11-24.webp`](../media/audio-options-2026-11-24.webp). Audio itself is
+  documented with a short clip because a screenshot cannot prove sound.
 
 ## Code map
 

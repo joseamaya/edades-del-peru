@@ -27,7 +27,7 @@ const AMBIENCE_PRESETS: Record<Exclude<AmbienceKind, 'none'>, AmbiencePreset> = 
   jungle: { filter: 'bandpass', frequency: 2200, lfoHz: 4.5, depth: 0.05, level: 0.09 },
 };
 
-interface SfxMix {
+interface SoundMix {
   gain: number;
   pan: number;
 }
@@ -81,7 +81,7 @@ export class AudioEngine {
       this.musicGain.gain.value = this.musicEnabled ? this.volumes.music : 0;
       this.musicGain.connect(this.master);
       this.ambienceGain = this.ctx.createGain();
-      this.ambienceGain.gain.value = this.volumes.ambience;
+      this.ambienceGain.gain.value = this.enabled ? this.volumes.ambience : 0;
       this.ambienceGain.connect(this.master);
       this.droneGain = this.layerGain();
       this.melodyGain = this.layerGain();
@@ -131,7 +131,7 @@ export class AudioEngine {
     this.master?.gain.setTargetAtTime(this.volumes.master, t, 0.05);
     this.sfxGain?.gain.setTargetAtTime(this.enabled ? this.volumes.sfx : 0, t, 0.05);
     this.musicGain?.gain.setTargetAtTime(this.musicEnabled ? this.volumes.music : 0, t, 0.08);
-    this.ambienceGain?.gain.setTargetAtTime(this.volumes.ambience, t, 0.08);
+    this.ambienceGain?.gain.setTargetAtTime(this.enabled ? this.volumes.ambience : 0, t, 0.08);
   }
 
   /** Camera-relative frame used to place world sounds; the range matches the audible radius. */
@@ -175,8 +175,8 @@ export class AudioEngine {
   // --- SFX ---
 
   /** Distance gain and stereo pan of a world sound, from the current camera listener. */
-  private mixFor(at?: SoundAt): SfxMix {
-    if (!at || at.x === undefined || at.z === undefined || !this.listener) return { gain: 1, pan: 0 };
+  private mixFor(at?: SoundAt): SoundMix {
+    if (!at || !this.listener) return { gain: 1, pan: 0 };
     const { x, z, rightX, rightZ, range } = this.listener;
     const dx = at.x - x;
     const dz = at.z - z;
@@ -193,7 +193,7 @@ export class AudioEngine {
   }
 
   /** Connect a voice to the effects bus, panning it when the sound came from world coordinates. */
-  private route(node: AudioNode, mix: SfxMix): AudioNode {
+  private pannedOutput(node: AudioNode, mix: SoundMix): AudioNode {
     if (mix.pan === 0) return node;
     const panner = this.ctx!.createStereoPanner();
     panner.pan.value = mix.pan;
@@ -214,7 +214,7 @@ export class AudioEngine {
     g.gain.setValueAtTime(level, this.now());
     g.gain.exponentialRampToValueAtTime(0.0001, this.now() + dur);
     o.connect(g);
-    this.route(g, mix).connect(this.sfxGain);
+    this.pannedOutput(g, mix).connect(this.sfxGain);
     o.start();
     o.stop(this.now() + dur + 0.02);
   }
@@ -234,7 +234,7 @@ export class AudioEngine {
     g.gain.exponentialRampToValueAtTime(0.0001, this.now() + dur);
     src.connect(f);
     f.connect(g);
-    this.route(g, mix).connect(this.sfxGain);
+    this.pannedOutput(g, mix).connect(this.sfxGain);
     src.start();
     src.stop(this.now() + dur + 0.02);
   }
@@ -345,19 +345,22 @@ export class AudioEngine {
    */
   setAmbience(kind: AmbienceKind, level: number): void {
     if (!this.ctx || !this.ambienceGain || !this.noiseBuffer) return;
-    const audible = kind !== 'none' && level > 0.001;
+    if (kind === 'none') {
+      this.stopAmbience();
+      return;
+    }
+    const audible = level > 0.001;
     if (!this.ambience || this.ambience.kind !== kind) {
       this.stopAmbience();
       if (!audible) return;
       this.ambience = this.buildAmbience(kind);
     }
-    const preset = kind === 'none' ? null : AMBIENCE_PRESETS[kind];
-    const target = preset ? Math.max(0, Math.min(1, level)) * preset.level : 0;
+    const target = Math.max(0, Math.min(1, level)) * AMBIENCE_PRESETS[kind].level;
     this.ambience.gain.gain.setTargetAtTime(target, this.now(), 1.2);
   }
 
-  private buildAmbience(kind: AmbienceKind): NonNullable<AudioEngine['ambience']> {
-    const preset = AMBIENCE_PRESETS[kind as Exclude<AmbienceKind, 'none'>];
+  private buildAmbience(kind: Exclude<AmbienceKind, 'none'>): NonNullable<AudioEngine['ambience']> {
+    const preset = AMBIENCE_PRESETS[kind];
     const ctx = this.ctx!;
     const source = ctx.createBufferSource();
     source.buffer = this.noiseBuffer;

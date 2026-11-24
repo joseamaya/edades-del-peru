@@ -487,7 +487,7 @@ export class RuntimeController {
   }
 
   spawnProjectile(o: any): void {
-    const at = o.from ? { x: o.from.x, z: o.from.z } : {};
+    const at = { x: o.from.x, z: o.from.z };
     if (o.kind === 'howitzer_shell' || o.kind === 'nuclear') bus.emit('fx:artillery', at);
     else if (o.kind === 'arrow') bus.emit('fx:bow', at);
     else if (o.kind === 'sling_stone') bus.emit('fx:sling', at);

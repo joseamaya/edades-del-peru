@@ -1,4 +1,5 @@
 import type { MapType } from '../core/types';
+import { clamp } from '../util/math';
 
 /** Volume of each mixer bus, 0..1. */
 export interface VolumeSettings {
@@ -12,13 +13,13 @@ export const DEFAULT_VOLUMES: VolumeSettings = { master: 0.9, sfx: 0.8, music: 0
 
 export function clampVolume(value: number): number {
   if (!Number.isFinite(value)) return 0;
-  return Math.min(1, Math.max(0, value));
+  return clamp(value, 0, 1);
 }
 
-/** World position of a sound; absent means the sound is not spatialised (UI, music). */
+/** World position of a sound. */
 export interface SoundAt {
-  x?: number;
-  z?: number;
+  x: number;
+  z: number;
 }
 
 /** Where the mix is heard from: camera target, its right axis and the audible radius. */
@@ -28,6 +29,22 @@ export interface Listener {
   rightX: number;
   rightZ: number;
   range: number;
+}
+
+/** Audible radius of a world sound at the current camera zoom; the listener and the combat clock share it. */
+export function audibleRange(zoom: number): number {
+  return Math.max(18, zoom * 0.9);
+}
+
+/** Listener frame from the camera: target, right axis (yaw = 0 looks down -Z) and audible range. */
+export function listenerFor(target: { x: number; z: number }, yaw: number, zoom: number): Listener {
+  return {
+    x: target.x,
+    z: target.z,
+    rightX: Math.cos(yaw),
+    rightZ: -Math.sin(yaw),
+    range: audibleRange(zoom),
+  };
 }
 
 /** Full volume at the listener, silent at `range`; the curve keeps nearby hits louder than distant ones. */
@@ -100,9 +117,9 @@ export function intensityFor(secondsSinceCombat: number, secondsSinceAlert: numb
 }
 
 function clamp01(value: number): number {
-  return Math.min(1, Math.max(0, value));
+  return clamp(value, 0, 1);
 }
 
 function clamp01Signed(value: number): number {
-  return Math.min(1, Math.max(-1, value));
+  return clamp(value, -1, 1);
 }

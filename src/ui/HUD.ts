@@ -3229,7 +3229,7 @@ export class HUD {
     label: string,
     get: () => number,
     set: (v: number) => void,
-    commit?: () => void,
+    commit: () => void,
   ): void {
     const wrap = document.createElement('div');
     wrap.className = 'ed-volume';
@@ -3247,7 +3247,7 @@ export class HUD {
     });
     input.addEventListener('change', () => {
       set(Number(input.value) / 100);
-      commit?.();
+      commit();
     });
     wrap.append(input, value);
     parent.appendChild(this.field(label, wrap));
