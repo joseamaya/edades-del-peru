@@ -53,7 +53,9 @@ game integration               StaticModel / modelAssets / UI
 4. Copy the LODs to their `src/assets/...` folder.
 5. Run `yarn art:models --only=<asset>` to meshopt-compress the committed game copy in place; `--dry-run`
    first.
-6. Integrate the compressed GLB through `StaticModel` or the owning site/registry.
+6. Integrate the compressed GLB through `StaticModel` or the owning site/registry. Models that keep
+   Draco (`KHR_draco_mesh_compression`, the Caral/Chavín/Moche/Wari sites) load the shared decoder from
+   `public/draco/`; the build does not ship a second copy from Three's loader.
 7. Record id, LOD, scale, triangles, materials, bytes, pivot, orientation, collision, confidence and sources in
    `PROVENANCE.md` and, where the kit uses one, the source CSV.
 8. Preview the RTS view; capture it for the PR. `yarn bench:check` for the structural budget.

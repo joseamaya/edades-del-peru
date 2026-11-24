@@ -1318,8 +1318,12 @@ and confirm that `draco_wasm_wrapper.js`, `draco_decoder.wasm`, GLB files,
 `media/` and `mods/` return 200. Assets under `public/` must resolve through
 `src/util/publicAsset.ts`; do not hardcode `/draco/` or other root paths.
 `public/draco/` ships only the WebAssembly decoder (`draco_wasm_wrapper.js` + `draco_decoder.wasm`):
-the pure-JavaScript fallback `draco_decoder.js` (0.7 MB) was dropped from the bundle because every
-supported browser has WebAssembly, and Three's `DRACOLoader` only fetches it without WebAssembly.
+the pure-JavaScript fallback `draco_decoder.js` (0.7 MB) was dropped because every supported browser
+has WebAssembly, and Three's `DRACOLoader` only fetches it without WebAssembly. Three's module also
+embeds its own decoder URLs, so Vite emitted a second copy under `dist/assets/draco_*`; the
+`prune-bundled-draco` plugin in `vite.config.ts` drops those assets (1.25 MB) while the game keeps
+calling `setDecoderPath(DRACO_DECODER_PATH)`. The plugin aborts if `public/draco/draco_decoder.wasm`
+or the `setDecoderPath` call disappears.
 The manual `GitHub Pages build (manual)` workflow produces a downloadable `dist`
 artifact with the project base and checks the Draco files; it does not deploy.
 The `Deploy GitHub Pages` workflow is the explicit release path. Pages is now
