@@ -122,6 +122,9 @@ camera, scale, terrain, materials, vegetation and light rules are in
   [`design/asset-pipeline.md`](./design/asset-pipeline.md).
 - **Every third-party asset** is recorded with its source and licence in [`../PROVENANCE.md`](../PROVENANCE.md).
 - Audio is procedural through the WebAudio engine; no external music or sound pack is required to run.
+  Four mixer buses (master, effects, music, ambience), camera-relative attenuation and panning for world
+  sounds, a three-layer score that moves between calm, tension and combat, and one ambience bed per biome.
+  The rules live in [`design/audio.md`](./design/audio.md).
 
 ## 7. Technical frame
 
