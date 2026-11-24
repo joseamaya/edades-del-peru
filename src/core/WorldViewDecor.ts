@@ -30,6 +30,7 @@ import {
   CARAL_CITY_LAYOUT,
 } from '../model/defs/caralCity';
 import { CHAVIN_CITY_LAYOUT, CHAVIN_PHASE_PLAN } from '../model/defs/chavinCity';
+import { CUSCO_CITY_LAYOUT, CUSCO_PHASE_PLAN } from '../model/defs/cuscoCity';
 import { standsIn } from '../model/defs/sitePhases';
 import { fishingApproach, type Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
@@ -387,6 +388,19 @@ export class WorldViewDecor {
           CHAVIN_PHASE_PLAN,
         );
         attachCity(city, () => (this.game.chavinCity = city));
+      }
+    }
+    if (def.id === 'cusco_inca_site') {
+      if (!this.game.headless) {
+        // The Blender kit draws the plaza, its buildings and Sacsayhuamán; the bare source GLB stays hidden.
+        const city = new ArchitectureCity(
+          'cusco_city',
+          'cusco',
+          [...CUSCO_CITY_LAYOUT],
+          (x, z) => this.game.terrain.getHeight(x, z) - (site.y ?? 0),
+          CUSCO_PHASE_PLAN,
+        );
+        attachCity(city, () => (this.game.cuscoCity = city));
       }
     }
     if (def.hideModel || site.hideModel) return;

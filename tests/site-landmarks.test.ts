@@ -7,7 +7,7 @@ import { getAuthoredSite } from '../src/model/defs/sites';
 import { SiteLandmarks } from '../src/rendering/SiteLandmarks';
 import type { SiteLandmarkKind } from '../src/model/defs/siteLandmarks';
 import { CUSCO_SITE_POINT, CUSCO_SITE_SACSAY } from '../src/campaign/defs/cuscoSite';
-import { CUSCO_INCA_MAP_SIZE } from '../src/model/defs/cuscoIncaSite';
+import { CUSCO_CITY_LAYOUT } from '../src/model/defs/cuscoCity';
 
 function mission(id: string) {
   const found = MISSIONS.find((m) => m.id === id);
@@ -16,24 +16,22 @@ function mission(id: string) {
 }
 
 describe('mission site landmarks', () => {
-  it('declares the Cusco plaza and Sacsayhuamán wall front for both missions on the site', () => {
-    // Quipaipán and Cusco 1536 share one authored site and one composition: showing the grey ushnu GLB in
-    // one campaign and the finished plaza in the other was the inconsistency this pins shut.
+  it('draws Cusco from the architecture kit for both missions on the site, not from code', () => {
+    // Quipaipán and Cusco 1536 share one authored site and one composition (cuscoCity.ts): showing the grey
+    // ushnu GLB in one campaign and the finished city in the other was the inconsistency this pins shut.
     for (const id of ['m_cusco_1536', 'm6b_guerra_civil']) {
-      const kinds = mission(id).layout?.siteLandmarks?.map((landmark) => landmark.kind);
-      expect(kinds, id).toEqual(['cusco-plaza', 'sacsayhuaman']);
+      expect(mission(id).layout?.siteLandmarks, id).toBeUndefined();
+      expect(mission(id).layout?.site?.id, id).toBe('cusco_inca_site');
       expect(mission(id).layout?.site?.hideModel, id).toBe(true);
     }
     expect(getAuthoredSite('cusco_inca_site')?.hideModel).toBeUndefined();
-    // The composition is anchored on the site point, not on a copy of its coordinates: a drift here would
-    // put the plaza off the ushnu in one of the two missions.
-    for (const id of ['m_cusco_1536', 'm6b_guerra_civil']) {
-      const [plaza, sacsay] = mission(id).layout!.siteLandmarks!;
-      expect(plaza.x, id).toBeCloseTo(CUSCO_SITE_POINT.x / CUSCO_INCA_MAP_SIZE, 6);
-      expect(plaza.z, id).toBeCloseTo(CUSCO_SITE_POINT.z / CUSCO_INCA_MAP_SIZE, 6);
-      expect(sacsay.x, id).toBeCloseTo(CUSCO_SITE_SACSAY.x / CUSCO_INCA_MAP_SIZE, 6);
-      expect(sacsay.z, id).toBeCloseTo(CUSCO_SITE_SACSAY.z / CUSCO_INCA_MAP_SIZE, 6);
-    }
+    // The kit is anchored on the site points the missions use.
+    const ushnu = CUSCO_CITY_LAYOUT.find((p) => p.asset === 'ushnu')!;
+    expect(ushnu.x).toBeCloseTo(CUSCO_SITE_POINT.x, 6);
+    expect(ushnu.z).toBeCloseTo(CUSCO_SITE_POINT.z, 6);
+    const sacsay = CUSCO_CITY_LAYOUT.find((p) => p.asset === 'sacsay_round')!;
+    expect(sacsay.x).toBeCloseTo(CUSCO_SITE_SACSAY.x, 6);
+    expect(sacsay.z).toBeCloseTo(CUSCO_SITE_SACSAY.z, 6);
   });
 
   it('replaces the borrowed GLBs with procedural landmarks', () => {
@@ -64,8 +62,6 @@ describe('mission site landmarks', () => {
 
   it('builds visible geometry for every landmark kind', () => {
     const kinds: SiteLandmarkKind[] = [
-      'cusco-plaza',
-      'sacsayhuaman',
       'real-felipe',
       'tarapaca-village',
       'tarapaca-heights',

@@ -10,6 +10,7 @@ import {
   chavinKeepout,
   chavinPoint,
 } from './chavinCity';
+import { CUSCO_CITY_BLOCKERS } from './cuscoCity';
 import type { SitePhasePlan } from './sitePhases';
 import {
   CARAL_COAST_STEP,
@@ -1014,8 +1015,9 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
         h: cuscoIncaLength(6),
       },
     ],
-    blockers: [{ ...cuscoIncaPoint({ x: 124.8, z: 130.6 }), w: cuscoIncaLength(13), d: cuscoIncaLength(10) }],
-    blockerPadding: cuscoIncaLength(0.5),
+    // Every building of the Blender composition (cuscoCity.ts), from the same layout the renderer bakes.
+    blockers: CUSCO_CITY_BLOCKERS,
+    blockerPadding: 0.4,
     buildKeepout: [{ x: 0.65, z: 0.68, rx: 0.08, rz: 0.07 }],
     wallCollision: {
       meshPatterns: [/cusco/i],

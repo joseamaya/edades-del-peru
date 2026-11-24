@@ -1,0 +1,75 @@
+{
+  "asset_id": "cusco_kancha_wall",
+  "source_scene": "scenes/cusco_architecture_kit.blend",
+  "script": "scripts/blender/build_cusco_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/civilizaciones/inca.md",
+    "docs/historia/campanas/cusco_1536.md"
+  ],
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 2362,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_IncaAshlar",
+        "MAT-Arch_IncaJoint"
+      ],
+      "bounds": {
+        "min": [
+          -6.072,
+          -0.495,
+          0.0
+        ],
+        "max": [
+          6.072,
+          0.495,
+          2.56
+        ],
+        "size": [
+          12.143,
+          0.99,
+          2.56
+        ]
+      },
+      "file": "cusco_kancha_wall_lod0.glb",
+      "bytes": 205652
+    },
+    "LOD1": {
+      "triangles": 490,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_IncaAshlar",
+        "MAT-Arch_IncaJoint"
+      ],
+      "bounds": {
+        "min": [
+          -6.03,
+          -0.455,
+          0.0
+        ],
+        "max": [
+          6.03,
+          0.455,
+          2.56
+        ],
+        "size": [
+          12.06,
+          0.909,
+          2.56
+        ]
+      },
+      "file": "cusco_kancha_wall_lod1.glb",
+      "bytes": 44644
+    }
+  }
+}

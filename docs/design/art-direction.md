@@ -123,6 +123,16 @@ No asset is accepted because it looks good at close range. It must read at 54 fi
 
 ### 4.2 Architecture
 
+**Standard (2026-11-24): every building is a Blender kit piece placed from data.** One script per site in
+`scripts/blender/` models the pieces (two LODs, the Caral method: modelled stones, box-projected UVs, a vertex
+tint, shared PBR detail sets at runtime); one layout file in `src/model/defs/` places them; the same layout
+yields the site's pathfinding blockers (`layoutBlockers` in `architectureKit.ts`), so what is drawn and what
+blocks cannot drift apart and no building can be walked through, headless included. Code-built geometry is
+kept only for continuous ground: terrain paint, paths, ground cover and scatter. Where the record is silent the
+kit takes a licence and its manifest says so (`confidence`, sources). Caral (m1), Chavín (m2) and Cusco
+(m_cusco_1536, m6b) follow it; the colonial cities, Arica/Real Felipe/Tarapacá, Independencia/Breña, the
+Moche/Wari/Chimú/Chanca sites, Vilcabamba and the rest of Tambotoco are to be moved to it in that order.
+
 The Tambotoco site uses a **domestic Killke/ayllu language**, not imperial Inca (see
 [`../historia/arquitectura.md`](../historia/arquitectura.md) §1):
 
@@ -149,7 +159,8 @@ The Tambotoco site uses a **domestic Killke/ayllu language**, not imperial Inca 
 | Inticancha hero house, altar, plaza furniture       | Blender GLB or hybrid modules      | Unique forms that carry the foundation moment             |
 | Ayar headdresses, props, garments                   | Blender GLB + runtime accessories | Identity at close range; shared skeleton                  |
 | Highland trees, shrubs, reeds                       | Blender GLB kit                   | Organic silhouettes and wind; two LODs                    |
-| Repeated huts, qollqas, canchas, terraces, fields   | Procedural                        | Variation, terrain-conformity and per-material merging    |
+| Repeated huts, qollqas, canchas, terraces          | Blender kit modules from data     | The §4.2 standard: one source for look and collision      |
+| Fields                                              | Procedural                        | Variation, terrain-conformity and per-material merging    |
 | Paths, ground cover, wear, decals                   | Terrain paint / procedural        | Cheap, continuous and easy to revise                      |
 | Stone outcrops and quarry props                     | Blender GLB kit                   | Readable material break; instanced                        |
 

@@ -1,7 +1,7 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import { highValleyVegetation } from '../../../model/defs/profiles';
 import { CUSCO1536_HEIGHTFIELD } from '../../../model/defs/cusco1536Heightmap';
-import { CUSCO_SITE_POINT, CUSCO_SITE_SACSAY, cuscoSiteLandmarks } from '../cuscoSite';
+import { CUSCO_SITE_POINT, CUSCO_SITE_SACSAY } from '../cuscoSite';
 import type { MissionDef } from '../../types';
 
 // Cusco 1536: the Inca camp, Sacsayhuamán, the city and the withdrawal road. Ollantaytambo lies
@@ -45,7 +45,9 @@ export const mCusco1536: MissionDef = {
     ],
     base: { x: CUSCO_1536_CAMP.x / 256, z: CUSCO_1536_CAMP.z / 256 },
     opening: { x: 0.42, z: 0.42 },
-    enemyBase: { x: CUSCO_SITE_POINT.x / 256, z: CUSCO_SITE_POINT.z / 256 },
+    // The Spaniards hold the city: their headquarters stand on the open ground east of the plaza, outside the
+    // kancha walls; on the plaza itself it would sink into the ushnu (cuscoCity.ts).
+    enemyBase: { x: (CUSCO_SITE_POINT.x + 30) / 256, z: CUSCO_SITE_POINT.z / 256 },
     discoveries: [],
     terrain: {
       flats: [
@@ -66,7 +68,6 @@ export const mCusco1536: MissionDef = {
     },
     // The Cusco platform is the ushnu; the plaza and the Sacsayhuamán wall front complete it. Shared with
     // Quipaipán so both missions show the same city instead of one of them keeping the grey placeholder GLB.
-    siteLandmarks: cuscoSiteLandmarks(),
     roads: [
       {
         from: { dx: CUSCO_1536_CAMP.x, dz: CUSCO_1536_CAMP.z },

@@ -27,9 +27,16 @@ const chavinUrls = import.meta.glob('../assets/architecture/chavin/*.glb', {
   import: 'default',
 }) as Record<string, string>;
 
+const cuscoUrls = import.meta.glob('../assets/architecture/cusco/*.glb', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
+
 const KIT_URLS: Record<ArchitectureKitId, Record<string, string>> = {
   caral: caralUrls,
   chavin: chavinUrls,
+  cusco: cuscoUrls,
 };
 
 export function archKitUrl(kit: ArchitectureKitId, id: ArchAssetId, lod: 0 | 1): string | undefined {
@@ -126,6 +133,15 @@ const ARCH_SURFACES: Record<
   'MAT-Arch_ChavinDark': { set: 'plaster_detail', normal: 0.7, keepColor: true },
   'MAT-Arch_ChavinPlaster': { set: 'plaster_detail', normal: 0.6, keepColor: true },
   'MAT-Arch_ChavinEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
+  // Cusco: each cut stone is modelled, so the stones keep their colour under the fine grit of the plaster
+  // set (a coursed-stone texture would draw a second set of joints across them).
+  'MAT-Arch_IncaAshlar': { set: 'plaster_detail', normal: 0.8, keepColor: true },
+  'MAT-Arch_IncaMegalith': { set: 'plaster_detail', normal: 0.9, keepColor: true },
+  'MAT-Arch_IncaJoint': { set: 'plaster_detail', normal: 0.5, keepColor: true },
+  'MAT-Arch_IncaAdobe': { set: 'plaster_detail', normal: 0.7, keepColor: true },
+  'MAT-Arch_IncaThatch': { set: 'roof_thatch', tint: 0xd9bf86, normal: 0.9 },
+  'MAT-Arch_IncaEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
+  'MAT-Arch_IncaSand': { set: 'plaster_detail', normal: 0.4, keepColor: true },
 };
 
 export function applyArchSurface(material: THREE.MeshStandardMaterial, name: string): void {

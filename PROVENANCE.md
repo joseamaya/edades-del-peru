@@ -475,7 +475,7 @@ slot is absent (offline / without assets).
 - **Locations**: `docs/media/geographic-identity-closeout.webp` (2100x788 WebP q78, 102 KB) and
   `docs/media/geographic-identity-closeout-before-after.webp` (2100x788 WebP q78, 91 KB).
 - **Source**: `yarn shot blind-<id> --url="/?mission=<id>&seed=777&fog=0&intro=0" --click --site --height=78
-  --no-hud --no-labels --wait=6000` for `m_vilcabamba`, `m6b_guerra_civil`, `m_lima_1821`, `m_miraflores`,
+--no-hud --no-labels --wait=6000` for `m_vilcabamba`, `m6b_guerra_civil`, `m_lima_1821`, `m_miraflores`,
   `m_tarapaca` and `m_real_felipe`; tiled 3x2 with Pillow at 700x394 per cell. The before row reuses the
   `audit-*` captures taken with the same camera before the slice (they still carry the in-world place names,
   because `--no-labels` did not exist yet).
@@ -936,6 +936,40 @@ slot is absent (offline / without assets).
   some reliefs are inferred; the Lanzón is an interpretation, not the scan. See
   `docs/design/chavin-sacred-site.md`.
 
+### Cusco architecture kit (m_cusco_1536, m6b)
+
+- **Location**: `src/assets/architecture/cusco/cusco_<piece>_lod0.glb` and `_lod1.glb`: `kallanka` (great
+  hall), `wasi` (house), `kancha_wall` (12 m enclosure wall), `ushnu`, `plaza` (sand floor and kerb),
+  `sacsay_round` and `sacsay_square` (14 m sections of the three zig-zag terraces of Sacsayhuamán with Muyuq
+  Marka or a rectangular tower on the summit).
+- **Source**: generated in Blender 5.3 by `scripts/blender/build_cusco_architecture_kit.py`; kit scene
+  `art-src/blender/scenes/cusco_architecture_kit.blend` (Git LFS). Uncompressed exports and per-piece manifests
+  (triangles, materials, bounds, budget, `confidence`, sources, review state) live in
+  `art-src/blender/exports/cusco/architecture/`; the game copies were meshopt-compressed with
+  `yarn art:models --only=<file>` (~760 KB for the 14 files).
+- **Content**: project-owned procedural geometry. Every cut stone is modelled (a cushioned face inset from
+  its joint): coursed, battered ashlar on the halls, walls, ushnu and towers; fitted polygonal megaliths on the
+  terrace faces. 7 Principled materials (ashlar, megalith, joint, adobe, ichu thatch, earth, sand) with
+  world-scale box-projected UVs and a per-vertex tint (grime at the foot, a shade per stone); no textures in
+  the GLBs. At runtime the game maps the shared `plaster_detail` grit onto stone, adobe, earth and sand and
+  `roof_thatch` onto the ichu. LOD0 ≤ 5000 / LOD1 ≤ 1500 triangles per piece (Sacsayhuamán sections ≤ 8000 /
+  2400, the monument allowance).
+- **Historical basis**: documented: rectangular halls with coursed stone socles, adobe upper walls and gable
+  ends, steep ichu gable roofs and trapezoidal doorways; walled kancha blocks; the stepped ushnu on the plaza;
+  the sand-spread Haukaypata; Sacsayhuamán's three superposed zig-zag terraces of polygonal megaliths facing the
+  city and its summit towers (Muyuq Marka round, two rectangular). Assumed (licences recorded in the
+  manifests): sizes, door counts, the ushnu's tiers and seat stone, terrace heights compressed to 9 m for the
+  RTS scale, one salient per section, tower sizes and flat tops, the layout of the plaza. Sources:
+  `docs/historia/civilizaciones/inca.md`, `docs/historia/campanas/cusco_1536.md`; Hyslop, _Inka Settlement
+  Planning_; Gasparini & Margolies, _Inca Architecture_; Protzen, _Inca Architecture and Construction at
+  Ollantaytambo_.
+- **Runtime**: `src/model/defs/cuscoCity.ts` places the pieces (`CUSCO_CITY_LAYOUT`) and derives the site's
+  pathfinding blockers from the same placements (`layoutBlockers`, headless too); `WorldViewDecor` bakes the
+  city with `ArchitectureCity`. It replaces the procedural `cusco-plaza` and `sacsayhuaman` landmarks; the
+  bundled `cusco_inca_site` GLB stays hidden.
+- **Evidence**: `docs/media/cusco-kit-before-after.webp` (1600x1000 WebP q72): top row the procedural boxes,
+  bottom row the kit, same camera and light, from `m_cusco_1536`.
+
 ### Chavín architecture kit and in-engine captures (m2)
 
 - **Runtime (briefing)**: the briefing uses the approved Blender render
@@ -1046,7 +1080,7 @@ slot is absent (offline / without assets).
 
 - **Location**: `docs/media/m6b-cusco-plaza-before-after.webp`, 1520x486 WebP q82.
 - **Source**: `node scripts/bench_scene.mjs --mission=m6b_guerra_civil --stage=late --gpu --frames
-  --viewport=1600x900 --shot=<file>` before (`review/b13-shots/m6b-after.png`) and after
+--viewport=1600x900 --shot=<file>` before (`review/b13-shots/m6b-after.png`) and after
   (`review/m6b-plaza-late.png`).
 - **Content**: the Quipaipán late view. Left, the bundled grey ushnu GLB; right, the plaza, tiered ushnu and
   Sacsayhuamán wall front shared with `m_cusco_1536` (`src/campaign/defs/cuscoSite.ts`). Same mission, seed,
@@ -1087,7 +1121,7 @@ slot is absent (offline / without assets).
 
 - **Location**: `docs/media/late-view-before-after.webp`, 1520x944 WebP q82.
 - **Source**: `node scripts/bench_scene.mjs --mission=m6b_guerra_civil --stage=late --gpu --frames
-  --viewport=1600x900 --shot=review/b13-shots/m6b-after.png` (the same command for `m8_independencia`), and the
+--viewport=1600x900 --shot=review/b13-shots/m6b-after.png` (the same command for `m8_independencia`), and the
   `before` row with the `src/` changes stashed. `--shot` writes a PNG of the exact framing the structural
   numbers come from.
 - **Content**: the two tightest late views at the bench framing. The change is a rendering cost, not a look:
@@ -1111,8 +1145,7 @@ slot is absent (offline / without assets).
 - **Location**: `docs/media/uniform-closure-before-after.webp`, 1200x1120 WebP q72.
 - **Source**: `node scripts/capture_uniform_lineup.mjs --gpu`, top half before the change (with
   `--out=review/uniforms-before`), bottom half after; same missions, seed, placement and camera.
-- **Content**: four units per side (Hueste 1536, rebeldes and realistas 1780, patriotas 1814, Perú and Chile
-  1879) at close range; `docs/art/character-visual-pilot.md` §14.
+- **Content**: four units per side (Hueste 1536, rebeldes and realistas 1780, patriotas 1814, Perú and Chile 1879) at close range; `docs/art/character-visual-pilot.md` §14.
 - **Review**: no new historical claim; colours stay within the abstractions of `docs/historia/atuendos.md` §3–4.
 
 ### Cavalry horse (in-engine evidence)
@@ -1274,7 +1307,7 @@ Used only as FLUX.2 multi-reference inputs (never redistributed) for the Andean 
 - **Location**: [`docs/media/site-review-2026-11-23-all.webp`](docs/media/site-review-2026-11-23-all.webp)
   (1920×2316 WebP q78 contact sheet).
 - **Source**: `yarn capture:sites --only=all --out=review/site-review-all
-  --sheet=docs/media/site-review-2026-11-23-all.webp` on the current build, 1600×900 per cell, seed 777, HUD
+--sheet=docs/media/site-review-2026-11-23-all.webp` on the current build, 1600×900 per cell, seed 777, HUD
   hidden, each site advanced to its final phase; individual PNGs stay in the gitignored
   `review/site-review-all/`.
 - **Content**: one current site view per released mission. These are review evidence; the approval itself is

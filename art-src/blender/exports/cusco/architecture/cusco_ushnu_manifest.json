@@ -1,0 +1,79 @@
+{
+  "asset_id": "cusco_ushnu",
+  "source_scene": "scenes/cusco_architecture_kit.blend",
+  "script": "scripts/blender/build_cusco_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/civilizaciones/inca.md",
+    "docs/historia/campanas/cusco_1536.md"
+  ],
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 4480,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_IncaAshlar",
+        "MAT-Arch_IncaEarth",
+        "MAT-Arch_IncaJoint",
+        "MAT-Arch_IncaMegalith"
+      ],
+      "bounds": {
+        "min": [
+          -10.069,
+          -7.569,
+          0.0
+        ],
+        "max": [
+          10.069,
+          7.569,
+          5.1
+        ],
+        "size": [
+          20.139,
+          15.139,
+          5.1
+        ]
+      },
+      "file": "cusco_ushnu_lod0.glb",
+      "bytes": 389988
+    },
+    "LOD1": {
+      "triangles": 1064,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_IncaAshlar",
+        "MAT-Arch_IncaEarth",
+        "MAT-Arch_IncaJoint",
+        "MAT-Arch_IncaMegalith"
+      ],
+      "bounds": {
+        "min": [
+          -10.03,
+          -7.53,
+          0.0
+        ],
+        "max": [
+          10.03,
+          7.53,
+          5.1
+        ],
+        "size": [
+          20.059,
+          15.059,
+          5.1
+        ]
+      },
+      "file": "cusco_ushnu_lod1.glb",
+      "bytes": 96192
+    }
+  }
+}
