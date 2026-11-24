@@ -28,6 +28,7 @@ import {
   type RigAttireTools,
 } from './rigAttire';
 import { limitShadowCasters } from './shadowCasters';
+import { andeanSlingPieces } from './workerAttire';
 import { clamp } from '../util/math';
 import type { Resources } from '../core/types';
 
@@ -234,8 +235,7 @@ export class UnitView {
       propPieces.push([new THREE.BoxGeometry(0.3, 0.2, 0.2).translate(0, -0.78, 0), stone]);
       propPieces.push([new THREE.CylinderGeometry(0.05, 0.05, 0.06, 6).translate(0, -0.68, 0), dark]);
     } else if (commander.weapon === 'sling') {
-      propPieces.push([new THREE.TorusGeometry(0.15, 0.013, 5, 14).rotateX(Math.PI / 2), accent]);
-      propPieces.push([new THREE.SphereGeometry(0.055, 6, 5).translate(0, -0.16, 0), stone]);
+      propPieces.push(...andeanSlingPieces(accent));
     } else if (commander.weapon === 'digging') {
       propPieces.push([new THREE.CylinderGeometry(0.028, 0.034, 1.3, 6).translate(0, -0.35, 0), wood]);
       propPieces.push([new THREE.ConeGeometry(0.055, 0.22, 5).rotateX(Math.PI).translate(0, -1.0, 0), stone]);

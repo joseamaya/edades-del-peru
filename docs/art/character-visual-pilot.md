@@ -391,7 +391,7 @@ the m7 rebel red-brown (`0x6a3a2a`), so those soldiers read as bare-chested at a
   breeches from inside the hip; boots; and shoes over heel, instep and toe. All are rigid bone attachments,
   merged by `consolidateRig`, so the draw count does not change.
 - **Colours:** the coleto is a dark leather `EARLY_SPANISH_COAT` (`0x4a3a2c`) and the rebel coat undyed dark
-  wool (`0x4b4640`); both are still the documented abstractions of
+  wool (`0x4b4640`, lightened in §16); both are still the documented abstractions of
   [`../historia/atuendos.md`](../historia/atuendos.md) §3 («tonos de lana y cuero», rebel earth tones), not new
   claims. `tests/uniform-palette.test.ts` keeps every coat away from the skin tone.
 - **Bicorn:** the points curl up less (0.05 instead of 0.11) and the brim is deeper, so the hat no longer reads
@@ -428,6 +428,32 @@ Quaternius' CC0 animated horse, from the same pack as the alpaca (sources and ha
   are no reins or stirrups.
 
 ![Before and after: the block horse and the Quaternius horse](../media/cavalry-horse-before-after.webp)
+
+## 16. Legibility at the strategic camera
+
+Step 3 of the stylisation plan, measured where the player sees the units: a squad of each era in its own
+mission at the default zoom (34) and noon, with the HUD hidden (`node scripts/capture_rts_legibility.mjs`,
+full frame plus a crop of the squad).
+
+- **Sling.** The slinger's sling was a flat ring in the accent colour at the hand, which read as a floating
+  yellow hoop at the RTS zoom. It now hangs from the grip at rest: two thin cords (one in the fibre colour,
+  one in the accent band of the braid) down to a woven pouch holding its stone (`andeanSlingPieces` in
+  `workerAttire.ts`), and follows the arm in the overhand throw. Sling heroes use the same pieces.
+- **Rebels of 1780.** The dark grey coat (0x4b4640) sank into the olive puna of m7; it is now an undyed
+  homespun wool (0x857c6c), still an undocumented earth-tone abstraction and still far from the skin
+  (`tests/uniform-palette.test.ts`).
+- **Rim light: tried and dropped.** A view-dependent rim on every rig material was tested in two forms. Added
+  light (strength 0.32–0.5) lowered the contrast of the dark coleto and the horses against the pale coastal
+  ground, and washed the horses at the higher value; an edge darkening (0.45) changed almost nothing at this
+  pitch, because from the steep camera most of a unit faces the lens. Neither earned a shader variant on every
+  rig material, so separation stays a matter of garment value and colour against the mission's ground.
+- **Cost:** the hanging sling is ~150 triangles, like the ring it replaces; `yarn bench:characters` is
+  unchanged (6–9 draws, 9.1–11.7k triangles per unit), and `bench:check`, `verify:fast` and the Andean rig E2E
+  specs are green.
+- **Open:** a cloth texture on the shared garments needs UVs on the runtime gear, which the merged vertex-colour
+  draws do not carry; the m_lima coleto and the bay horse still share a value on dark ground.
+
+![Before and after at the RTS zoom: the Inca slingers and the m7 rebels](../media/character-legibility-before-after.webp)
 
 ## See also
 

@@ -1123,6 +1123,15 @@ slot is absent (offline / without assets).
   seated shared-body rider, right column the Quaternius horse.
 - **Content**: `docs/art/character-visual-pilot.md` §15. **Review**: no new historical claim.
 
+### Character legibility (in-engine evidence)
+
+- **Location**: `docs/media/character-legibility-before-after.webp`, 1520x856 WebP q72.
+- **Source**: `node scripts/capture_rts_legibility.mjs`, left column before the change (with
+  `--out=review/legibility-before`), right column after; same missions, placement, zoom and light.
+- **Content**: the Inca warriors and slingers of `m_cusco_1536` and the m7 rebel infantry and cavalry at the
+  default RTS zoom; `docs/art/character-visual-pilot.md` §16.
+- **Review**: no new historical claim; the rebel coat stays an undocumented earth-tone abstraction.
+
 ### Character proportions (in-engine evidence)
 
 - **Location**: `docs/media/character-proportions-before-after.webp`, 2240x940 WebP q84.
