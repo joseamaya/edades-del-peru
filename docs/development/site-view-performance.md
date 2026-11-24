@@ -1,7 +1,8 @@
 # Site-view performance (real GPU)
 
-**Status:** living · **Measured:** 2026-11-17 (m3–m9, m6b, La Junta) and 2026-11-23 (the seven missions added
-on 2026-11-18) · **Scope:** every campaign site view that rested on SwiftShader numbers.
+**Status:** living · **Measured:** 2026-11-17 (m3–m9, m6b, La Junta), 2026-11-23 (the seven missions added
+on 2026-11-18) and 2026-11-24 (full re-measure after the shared-body rider) · **Scope:** every campaign site
+view that rested on SwiftShader numbers.
 
 This is the roadmap D3 pass. It records the shipped frame at 1280×800 and 1600×900 on the project's
 reference iGPU and decides what to do with the result. The per-mission structural caps stay in
@@ -218,3 +219,24 @@ no cap was raised and the row is green again:
 refraction cadence and the culling of merged rig draws) and one was rejected: a view-dependent refraction gate
 (skip the pass when no water is on screen) would save the same ~9 ms on inland views — m6b's late frame has no
 water at all — but it pops the reflection on and off while panning, which the art direction does not accept.
+
+## 2026-11-24 pass (0.2.1)
+
+Full `yarn bench:site-views` run on the reference iGPU (Intel RPL-S, hardware; no row fell back to
+SwiftShader) after #621 replaced the mounted rig with the shared-body rider and the CC0 horse, which can
+change the late crowds. The 0.2.1 build also prunes the duplicated Draco decoder (#624), which has no
+runtime effect.
+
+| Measure | 1280×800 | 1600×900 |
+| --- | ---: | ---: |
+| FPS p50 range | 35.1–59.5 | 30.7–46.7 |
+| Lowest view | m6b late (35.1) | m_lima_1821 (30.7) |
+| Next tightest | — | m6b late (32.1), m6_chimu_inca late (32.3) |
+| Scene triangles / calls | — | 331k–1.24M / 144–619 |
+
+- **No regression against D3.** The 2026-11-17 pass recorded 28–38 FPS at 1600×900 and 32–48 at 1280×800;
+  this pass is at or above that floor in every row, with the same host and quality preset.
+- The lowest rows remain `m_lima_1821` (the Republican Lima composition) and the two heaviest late crowds
+  (m6b, m6_chimu_inca), all above the governor's fallback threshold.
+- Raw rows and `summary.md` are in `review/site-views/` (gitignored). Command:
+  `yarn bench:site-views`.
