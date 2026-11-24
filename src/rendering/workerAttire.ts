@@ -328,6 +328,11 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   if (typeof document !== 'undefined') applyGeneratedPbr(carryMat, 'textile', { tint: 0x8a6a3a });
 
   const head = bone('Head');
+  // A helmet replaces the headband: worn under it, the ring poked through the cap and, with the head
+  // pitched into a swing, cut across the eyes.
+  const helmeted =
+    (spec?.helmet === true && role === 'soldier') ||
+    (andeanCulture === 'inca' && (role === 'soldier' || role === 'ranged'));
   if (head) {
     // Band + face paint in one vertex-coloured mesh: the old two-to-four head attachments were
     // separate draws on every Andean unit. The band is fitted to the skull instead of the bone: the old
@@ -337,7 +342,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     // instead of passing in front of the eyes like a visor.
     const bandGeometry = new THREE.TorusGeometry(fit.radius * 1.06, 0.011, 6, 20).rotateX(Math.PI / 2);
     bandGeometry.scale(1, 1, 1.12).translate(0, fit.brow + (fit.crown - fit.brow) * 0.4, fit.centreZ);
-    const pieces: [THREE.BufferGeometry, THREE.Color][] = [[bandGeometry, bandColor]];
+    const pieces: [THREE.BufferGeometry, THREE.Color][] = helmeted ? [] : [[bandGeometry, bandColor]];
     if (spec?.facePaint && (role === 'soldier' || role === 'ranged')) {
       for (const side of [-1, 1]) {
         pieces.push([
@@ -346,7 +351,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
         ]);
       }
     }
-    const merged = mergeColoredGeometry(pieces);
+    const merged = pieces.length ? mergeColoredGeometry(pieces) : null;
     if (merged) {
       const details = new THREE.Mesh(trackGeometry(merged), makeMaterial(0xffffff, 0.9));
       (details.material as THREE.MeshStandardMaterial).vertexColors = true;
@@ -541,7 +546,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       // fitted cap that rises to a point, not a plain cone: a straight cone narrower than the skull sank
       // into the crown and only its tip showed.
       const fit = headFit(male);
-      const [cap, rim] = fittedCap(fit, fit.crown + 0.11, fit.radius * 1.1, 0.014);
+      const [cap, rim] = fittedCap(fit, fit.crown + 0.11, fit.radius * 1.05, 0.014);
       const helmetGeometry = mergePieces([
         cap,
         rim,

@@ -900,10 +900,15 @@ describe('rigged model assets', () => {
     const ears = localBox(rig.root.getObjectByName('attire_andean_ear') as THREE.Mesh);
     expect(Math.abs(ears.getCenter(new THREE.Vector3()).y - 0.115)).toBeLessThan(0.05);
     expect(ears.max.x - ears.min.x).toBeGreaterThan(0.18);
-    // The band rides the hairline, above the brows it used to cover.
-    const band = localBox(rig.root.getObjectByName('attire_headband') as THREE.Mesh);
-    expect(band.getCenter(new THREE.Vector3()).y).toBeGreaterThan(0.15);
+    // A helmet replaces the band: nothing may poke through the cap.
+    expect(rig.root.getObjectByName('attire_headband')).toBeUndefined();
     rig.dispose();
+
+    // On a bare-headed warrior the band rides the hairline, above the brows it used to cover.
+    const bare = acquireRig('ual_mannequin', 'recuay_soldier_m')!;
+    const band = localBox(bare.root.getObjectByName('attire_headband') as THREE.Mesh);
+    expect(band.getCenter(new THREE.Vector3()).y).toBeGreaterThan(0.15);
+    bare.dispose();
   });
 
   it('holds the porra by its grip, head up at rest and on the march', async () => {

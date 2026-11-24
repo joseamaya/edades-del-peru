@@ -515,7 +515,7 @@ What changed:
 | Inca padded cap | 0.145 hemisphere at +0.13, three hoops | lathe cap from the brow (0.12/0.11) to the crown (0.292/0.250), rim + one seam, hair hidden |
 | Moche conical helmet | straight 0.135 × 0.25 cone sunk in the skull | fitted cap that rises to a point above the crown |
 | Ear spools | base at 0.096, 0.13, behind the jaw | base at 0.088, 0.115, inside the skull so only the flange reads |
-| Shared headband | 0.098 ring inside the temples | 0.108 ring at the hairline, ellipse in depth |
+| Shared headband | 0.098 ring inside the temples | 0.108 ring at the hairline, ellipse in depth, dropped under a helmet |
 | Porra | two meshes, fixed rest angle | one grip group, shaft down local −Z, star crossed on two planes |
 | Porra aim | clip only | head up and outboard at rest/run (`update()` per frame); the swing owns it at attack; released on death |
 | Rodela | 0.28 below the hand, edge-on | at the hand, outboard of the arm, facing forward-outward |
@@ -537,6 +537,9 @@ the attack as sequences (three and four frames), not one pose each, and frames c
 and forward centre against `HEAD_FIT`; the Moche cap rising above the crown; the spools at ear height; the
 headband above the brows; the porra head above the hand in `idle` and two `run` frames; the rodela centred on
 `hand_l`.
+
+The headband is worn only by bare-headed warriors: under the Moche cone and the Inca cap it poked through the
+shell, and with the head pitched into a swing it crossed the eyes.
 
 **Still open.** The shield is rigid to the hand, so a cross-body swing still cuts the disc through the torso;
 a forearm strap with its own pose is the real fix. The sling is deliberately untouched: §16's hanging sling

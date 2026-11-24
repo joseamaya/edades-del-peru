@@ -1,6 +1,6 @@
 # 0008 · A 28 MB `dist/` budget for the cinema intros
 
-**Status:** Accepted · **Date:** 2026-11-22 · Amends the size budget of [0001](./0001-three-js-vite-typescript.md)
+**Status:** Accepted · Amended by [0009](./0009-dist-budget-40mb.md) · **Date:** 2026-11-22 · Amends the size budget of [0001](./0001-three-js-vite-typescript.md)
 
 ## Context
 
