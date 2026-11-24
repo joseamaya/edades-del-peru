@@ -8,14 +8,18 @@ import { CHARACTER_CASES, ensureRiggedUnit } from './character_pilot_cases.mjs';
  * light, with the HUD hidden.
  *
  * Usage:
- *   node scripts/capture_character_pilot.mjs --out=review/pilot
+ *   node scripts/capture_character_pilot.mjs --out=review/pilot [--only=inca,slinger]
  *
  * The before set is produced by running the same script from a worktree at `origin/main` (the old
  * `workerAttire.ts`/`uniformAttire.ts`) with `--out=review/pilot-before`; the committed comparison is
  * `docs/media/character-pilot-before-after.webp`.
  */
 const OUT = path.resolve(cliArg('out', 'review/pilot'));
-const CASES = CHARACTER_CASES;
+const only = cliArg('only', '')
+  .split(',')
+  .map((name) => name.trim())
+  .filter(Boolean);
+const CASES = only.length ? CHARACTER_CASES.filter((entry) => only.includes(entry.name)) : CHARACTER_CASES;
 fs.mkdirSync(OUT, { recursive: true });
 
 const { base, close } = await withViteServer({ optimizeDeps: { noDiscovery: true } });
@@ -37,11 +41,11 @@ try {
         if (root) root.style.display = 'none';
       });
 
-      await ensureRiggedUnit(page, entry.kind);
+      await ensureRiggedUnit(page, entry.kind, entry);
 
-      const place = async (yaw, state) => {
+      const place = async (yaw, state, phase = 0, frameIndex = 1) => {
         await page.evaluate(
-          ({ kind, yaw: rotation, state: pose }) => {
+          ({ kind, yaw: rotation, state: pose, at, frame }) => {
             const g = window.game;
             g.loop.stop();
             g.settings.timeOfDay = 'noon';
@@ -54,7 +58,9 @@ try {
               );
             if (!unit?.rig) throw new Error(`no rigged ${kind}`);
             const origin = window.__captureOrigin ?? { x: unit.pos.x, z: unit.pos.z };
-            const point = g.findLandNear(origin.x + 40, origin.z + 40, 70);
+            // Stay near the spawn (which the game already picked on walkable land): a 40 m jump landed
+            // the subject on a shoreline or a cliff in the coastal and highland maps.
+            const point = g.findLandNear(origin.x + 6, origin.z + 6, 16);
             unit.clearOrders();
             unit.pos.set(point.x, g.terrain.getHeight(point.x, point.z), point.z);
             unit.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
@@ -69,27 +75,38 @@ try {
               unit.rig.update(0.12);
             } else {
               const clip = { idle: 'idle', run: 'run', attack: 'attack' }[pose] ?? 'idle';
-              const at = { idle: 0.4, run: 0.35, attack: 0.25 }[pose] ?? 0.4;
+              // A one-shot hit owns the pose for its whole duration and makes `play` defer: run it out
+              // first, or the side view would still be the hit.
+              if (unit.rig.hitPlaying) unit.rig.update(1.2);
               unit.rig.play(clip, 0);
+              // Each frame advances from the previous one: `play` does not reset a clip that is already
+              // current, so the run and attack frames are sampled as a sequence, not as one pose.
               unit.rig.update(at);
             }
             const subject = { x: unit.pos.x, y: unit.pos.y, z: unit.pos.z };
-            g.camera.camera.position.set(subject.x + 2.6, subject.y + 1.55, subject.z + 3.2);
-            g.camera.camera.lookAt(subject.x, subject.y + 1.0, subject.z);
+            const distance = frame?.distance ?? 4.1;
+            const height = frame?.height ?? 1.55;
+            const lookAt = frame?.lookAt ?? 1.0;
+            g.camera.camera.position.set(subject.x + distance * 0.63, subject.y + height, subject.z + distance * 0.78);
+            g.camera.camera.lookAt(subject.x, subject.y + lookAt, subject.z);
             g.renderer.render(g.scene, g.camera.camera);
           },
-          { kind: entry.kind, yaw, state },
+          { kind: entry.kind, yaw, state, at: phase, frame: entry.frame },
         );
-        await page.screenshot({ path: path.join(OUT, `${entry.name}-${state}-${yaw > 0 ? 'side' : 'front'}.png`) });
+        const suffix = frameIndex > 1 ? `-${frameIndex}` : '';
+        await page.screenshot({
+          path: path.join(OUT, `${entry.name}-${state}-${yaw > 0 ? 'side' : 'front'}${suffix}.png`),
+        });
       };
 
-      // Death last: its clamped action would otherwise blend into the following pose.
-      await place(0, 'idle');
-      await place(0, 'run');
-      await place(0, 'attack');
-      await place(0, 'hit');
-      await place(Math.PI / 2, 'idle');
-      await place(0, 'death');
+      // Death last: its clamped action would otherwise blend into the following pose. Run and attack are
+      // sampled as sequences: the worst frame of a swing is never the first one.
+      await place(0, 'idle', 0.4);
+      for (const [index, at] of [0.12, 0.23, 0.23].entries()) await place(0, 'run', at, index + 1);
+      for (const [index, at] of [0.06, 0.14, 0.14, 0.14].entries()) await place(0, 'attack', at, index + 1);
+      await place(0, 'hit', 0);
+      await place(Math.PI / 2, 'idle', 0.4);
+      await place(0, 'death', 0);
 
       await page.evaluate((kind) => {
         const g = window.game;

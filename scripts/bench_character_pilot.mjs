@@ -10,7 +10,11 @@ import { CHARACTER_CASES, ensureRiggedUnit } from './character_pilot_cases.mjs';
  */
 
 const BUDGET = { drawCalls: 25, triangles: 25_000 };
-const CASES = CHARACTER_CASES;
+const only = (process.argv.find((arg) => arg.startsWith('--only='))?.split('=')[1] ?? '')
+  .split(',')
+  .map((name) => name.trim())
+  .filter(Boolean);
+const CASES = only.length ? CHARACTER_CASES.filter((entry) => only.includes(entry.name)) : CHARACTER_CASES;
 const assert = process.argv.includes('--assert');
 
 const { base, close } = await withViteServer({ optimizeDeps: { noDiscovery: true } });
@@ -28,7 +32,7 @@ try {
         .click({ timeout: 3_000 })
         .catch(() => {});
       await page.waitForTimeout(400);
-      await ensureRiggedUnit(page, entry.kind);
+      await ensureRiggedUnit(page, entry.kind, entry);
       const cost = await page.evaluate((kind) => {
         const g = window.game;
         g.loop.stop();

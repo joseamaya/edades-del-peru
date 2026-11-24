@@ -68,6 +68,40 @@ function starPlate(outer: number, inner: number, points: number, thickness: numb
 }
 
 /**
+ * The shared worker head, measured once in its idle pose from the dominant-`Head` vertices of
+ * `Body_m`/`Body_f` and the hair, relative to the `Head` bone (the jaw joint, not the crown):
+ *
+ * | measure            | male  | female |
+ * | ------------------ | ----- | ------ |
+ * | skull top          | 0.292 | 0.250 |
+ * | half-width         | 0.102 | 0.105 |
+ * | skull centre (+Z)  | 0.040 | 0.033 |
+ * | hair front (+Z)    | 0.168 | 0.175 |
+ *
+ * A headpiece built around the bone origin instead of this centre reads as a bowl tipped back (the old
+ * 0.145 dome was centred on the bone and 3 cm behind the skull). Everything on the head is fitted here,
+ * as the sash is fitted to the waist.
+ */
+export const HEAD_FIT = {
+  m: { crown: 0.292, brow: 0.12, radius: 0.102, centreZ: 0.04 },
+  f: { crown: 0.25, brow: 0.11, radius: 0.105, centreZ: 0.033 },
+} as const;
+
+/** A fitted cap from the brow to the crown, as `[radius, y]` pairs; the caller scales and centres it. */
+function capProfile(brow: number, crown: number, radius: number): [number, number][] {
+  const span = crown - brow;
+  return [
+    [radius * 0.99, brow],
+    [radius, brow + span * 0.2],
+    [radius * 0.96, brow + span * 0.45],
+    [radius * 0.84, brow + span * 0.65],
+    [radius * 0.62, brow + span * 0.84],
+    [radius * 0.33, brow + span * 0.95],
+    [0, crown],
+  ];
+}
+
+/**
  * A flared metal ear spool (orejón), the status insignia documented for Moche, Wari, Recuay and Chimú
  * (`atuendos.md` §1 §2). The lathe axis is +Y, so the caller turns it towards the side of the head.
  */
@@ -145,6 +179,69 @@ const WORKER_DYNAMIC_PARTS = [
  * (`docs/historia/atuendos.md`); the exact garments and props are plausible
  * abstractions, not reconstructions. No metal or footwear.
  */
+/**
+ * The rest basis shared by the dressed weapon and the per-frame grip: head up, leaning 25° out to the
+ * character's right and just forward, so the club stands clear of the shoulder instead of across the jaw.
+ */
+const ANDEAN_REST_AIM = new THREE.Vector3(-0.42, 0.9, 0.1).normalize();
+const ANDEAN_REST_UP = new THREE.Vector3(0.1, 0, 1).normalize();
+
+interface AndeanWeaponGrip {
+  update(task: RigClipState): void;
+  /** The rig started dying: stop re-aiming so the club falls with the hand. */
+  release(): void;
+}
+
+/**
+ * Keep the porra/macana upright in the hand, the way `firearmGrip` keeps the musket's muzzle up.
+ *
+ * Fixed to the wrist, the club followed the hand: the shared clips swing the arm down and back, so the
+ * star head dropped to the ankle on every run. Each frame after the clip the grip group is re-aimed from
+ * the hand's local matrices (no world-matrix walk per unit): shaft up, head above the hand, at rest and
+ * on the march. In a melee attack the clip owns the weapon, exactly as the musket's does.
+ */
+function andeanWeaponGrip(rig: RigInstance, weapon: THREE.Object3D): AndeanWeaponGrip | null {
+  const root = rig.root;
+  const hand = root.getObjectByName('hand_r');
+  if (!hand || weapon.parent !== hand) return null;
+  const toRoot = (bone: THREE.Object3D, out: THREE.Matrix4): THREE.Matrix4 => {
+    out.identity();
+    for (let q: THREE.Object3D | null = bone; q && q !== root; q = q.parent) {
+      q.updateMatrix();
+      out.premultiply(q.matrix);
+    }
+    return out;
+  };
+  const handM = new THREE.Matrix4();
+  const handQ = new THREE.Quaternion();
+  const target = new THREE.Quaternion();
+  const look = new THREE.Matrix4();
+  const position = new THREE.Vector3();
+  const scale = new THREE.Vector3();
+  const origin = new THREE.Vector3();
+  // A melee swing keeps the club out of the fist (`dressed` in the musket's sense): the shaft runs along
+  // the hand's -Z, so the clip's swing carries it. Holding the rest basis instead buried the star in the
+  // torso when the arm extended.
+  const alongFist = new THREE.Quaternion();
+  let released = false;
+  return {
+    update(task) {
+      if (released) return;
+      if (task === 'attack') {
+        weapon.quaternion.copy(alongFist);
+        return;
+      }
+      toRoot(hand, handM).decompose(position, handQ, scale);
+      look.lookAt(origin, ANDEAN_REST_AIM, ANDEAN_REST_UP);
+      target.setFromRotationMatrix(look);
+      weapon.quaternion.copy(handQ.invert().multiply(target));
+    },
+    release() {
+      released = true;
+    },
+  };
+}
+
 export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_worker_f'): CaralWorkerHandle {
   const root = rig.root;
   const chasqui = variant.startsWith('inca_chasqui');
@@ -208,10 +305,14 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   const head = bone('Head');
   if (head) {
     // Band + face paint in one vertex-coloured mesh: the old two-to-four head attachments were
-    // separate draws on every Andean unit.
-    const pieces: [THREE.BufferGeometry, THREE.Color][] = [
-      [new THREE.TorusGeometry(0.098, 0.011, 6, 20).rotateX(Math.PI / 2).translate(0, 0.16, 0), bandColor],
-    ];
+    // separate draws on every Andean unit. The band is fitted to the skull instead of the bone: the old
+    // 0.098 ring sat inside the temples, so only its front arc showed as a bar across the face.
+    const fit = HEAD_FIT[male ? 'm' : 'f'];
+    // At the hairline, not the brow: a ring there is the widest cross-section of the head, so it hugs it
+    // instead of passing in front of the eyes like a visor.
+    const bandGeometry = new THREE.TorusGeometry(fit.radius * 1.06, 0.011, 6, 20).rotateX(Math.PI / 2);
+    bandGeometry.scale(1, 1, 1.12).translate(0, fit.brow + (fit.crown - fit.brow) * 0.4, fit.centreZ);
+    const pieces: [THREE.BufferGeometry, THREE.Color][] = [[bandGeometry, bandColor]];
     if (spec?.facePaint && (role === 'soldier' || role === 'ranged')) {
       for (const side of [-1, 1]) {
         pieces.push([
@@ -294,6 +395,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   let net: THREE.Group | null = null;
   let carrying = false;
   let task: RigClipState = 'idle';
+  let weapon: AndeanWeaponGrip | null = null;
   let gatherKind: string | null = null;
   let netInHand = true;
   const syncTool = (): void => {
@@ -410,15 +512,22 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       }
     }
     if (spec.helmet && soldier && headBone && metalMat) {
-      // Conical metal helmet with a rim and a top knob; the dossier documents the conical shape.
+      // Conical metal helmet with a rim and a top knob; the dossier documents the conical shape. It is a
+      // fitted cap that rises to a point, not a plain cone: a straight cone narrower than the skull sank
+      // into the crown and only its tip showed.
+      const fit = HEAD_FIT[male ? 'm' : 'f'];
+      const cap = latheProfile(capProfile(fit.brow, fit.crown + 0.11, fit.radius * 1.1), 14);
+      cap.scale(1, 1, 1.1).translate(0, 0, fit.centreZ);
+      const rim = new THREE.TorusGeometry(fit.radius * 1.1, 0.014, 6, 18).rotateX(Math.PI / 2);
+      rim.scale(1, 1, 1.1).translate(0, fit.brow + 0.008, fit.centreZ);
       const helmetGeometry = mergePieces([
-        new THREE.ConeGeometry(0.135, 0.25, 12).translate(0, 0.125, 0),
-        new THREE.TorusGeometry(0.135, 0.014, 6, 18).rotateX(Math.PI / 2),
-        new THREE.SphereGeometry(0.026, 8, 6).translate(0, 0.255, 0),
+        cap,
+        rim,
+        new THREE.SphereGeometry(0.026, 8, 6).translate(0, fit.crown + 0.112, fit.centreZ),
       ]);
       if (helmetGeometry) {
         const helmet = addMesh(helmetGeometry, metalMat, 'attire_andean_helmet');
-        attach('Head', helmet, new THREE.Vector3(headBone.x, headBone.y + 0.08, headBone.z));
+        attach('Head', helmet, new THREE.Vector3(headBone.x, headBone.y, headBone.z));
       }
     }
     if (spec.backflap && soldier && spine) {
@@ -430,12 +539,14 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       attach('spine_03', backflap, new THREE.Vector3(spine.x, spine.y - 0.1, spine.z - 0.18));
     }
     if (spec.ear && headBone && metalMat) {
+      // The spool base sits inside the skull at ear height (0.088 at y 0.115; the temples are only 0.08
+      // wide there) so only the flange reads, instead of a hoop floating behind the jaw.
       const spools: THREE.BufferGeometry[] = [];
       for (const side of [-1, 1]) {
         spools.push(
           earSpool()
             .rotateZ((-side * Math.PI) / 2)
-            .translate(side * 0.096, 0.13, -0.005),
+            .translate(side * 0.088, 0.115, 0.02),
         );
       }
       const spoolGeometry = mergePieces(spools);
@@ -461,19 +572,52 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
         [new THREE.SphereGeometry(0.035, 10, 6).translate(0, 0.055, 0), new THREE.Color(0x8a8f94)],
       ]);
       if (shieldGeometry) {
+        // Grip it at the hand, facing forward and a little outward: the old piece hung 0.28 below the
+        // wrist and faced sideways, so it read as a plate floating at the thigh. The shield sits outboard
+        // of the arm (the direction from the spine to the hand), so a swing carries it beside the torso
+        // instead of through it.
+        shieldGeometry.rotateX(Math.PI / 2);
         const shield = addMesh(shieldGeometry, vertexMaterial(0.92), 'attire_andean_shield');
-        shield.rotation.z = Math.PI / 2;
-        attach('hand_l', shield, new THREE.Vector3(boneL.x, boneL.y - 0.28, boneL.z));
+        shield.rotation.y = 0.55;
+        const outward = spine
+          ? new THREE.Vector3(boneL.x - spine.x, 0, boneL.z - spine.z).normalize()
+          : new THREE.Vector3(1, 0, 0);
+        attach(
+          'hand_l',
+          shield,
+          new THREE.Vector3(boneL.x + outward.x * 0.1, boneL.y - 0.05, boneL.z + outward.z * 0.1),
+        );
       }
     }
     if (soldier && hand) {
-      const shaft = addMesh(new THREE.CylinderGeometry(0.018, 0.022, 0.6, 8), woodMat, 'attire_andean_macana');
-      shaft.rotation.z = 0.9;
-      attach('hand_r', shaft, new THREE.Vector3(hand.x, hand.y - 0.22, hand.z));
+      // One rigid weapon under a grip group, built like the musket: the shaft runs down local -Z, so the
+      // per-frame grip only has to orient the group and the head can never drift off its handle. The two
+      // meshes keep their names: the hero shows/hides them, and both stay out of the merged gear draw.
+      const shaft = new THREE.Mesh(
+        trackGeometry(new THREE.CylinderGeometry(0.018, 0.022, 0.62, 8).rotateX(Math.PI / 2).translate(0, 0, -0.25)),
+        woodMat,
+      );
+      shaft.name = 'attire_andean_macana';
       const macanaHeadMat = spec.macanaHead === 'stone' ? stoneMat : makeMaterial(palette.accent, 0.9);
-      const macanaHead = addMesh(starPlate(0.115, 0.052, 6, 0.05), macanaHeadMat, 'attire_andean_macana_head');
-      macanaHead.rotation.z = 0.9;
-      attach('hand_r', macanaHead, new THREE.Vector3(hand.x, hand.y - 0.42, hand.z));
+      // Six-point stone head crossed on two planes, so it reads as a star from the front and from the RTS
+      // camera instead of disappearing edge-on.
+      const plaque = starPlate(0.105, 0.05, 6, 0.05);
+      const macanaHeadGeometry = mergePieces([plaque, plaque.clone().rotateX(Math.PI / 2)]);
+      if (macanaHeadGeometry) {
+        const macanaHead = new THREE.Mesh(trackGeometry(macanaHeadGeometry), macanaHeadMat);
+        macanaHead.name = 'attire_andean_macana_head';
+        macanaHead.position.z = -0.56;
+        const grip = new THREE.Group();
+        grip.name = 'attire_andean_weapon';
+        grip.add(shaft, macanaHead);
+        enableShadows(grip);
+        // The same rest basis the per-frame grip keeps: head up, tipped 10° forward.
+        grip.quaternion.setFromRotationMatrix(
+          new THREE.Matrix4().lookAt(new THREE.Vector3(), ANDEAN_REST_AIM, ANDEAN_REST_UP),
+        );
+        attach('hand_r', grip, new THREE.Vector3(hand.x, hand.y, hand.z));
+        weapon = andeanWeaponGrip(rig, grip);
+      }
     }
     if (role === 'ranged' && hand) {
       // The warak'a hangs from the hand at rest: two thin braided cords down to a woven pouch with its stone.
@@ -492,13 +636,22 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     const headBone = bonePosition('Head');
     const spineBone = bonePosition('spine_03');
     const cream = new THREE.Color(0xe0d2b4);
+    // The quilted cotton cap covers the skull from the brow to the crown, so the hair goes under it.
+    show(male ? 'Hair_m' : 'Hair_f', false);
     if (headBone) {
+      const fit = HEAD_FIT[male ? 'm' : 'f'];
+      // An ellipsoidal cap on the measured skull, not a hemisphere on the bone: the old 0.145 dome with
+      // three hoops sat on the crown like a bowl and left the hair showing under its rim.
+      const cap = latheProfile(capProfile(fit.brow, fit.crown, fit.radius), 18);
+      cap.scale(1, 1, 1.1).translate(0, 0, fit.centreZ);
+      const rim = new THREE.TorusGeometry(fit.radius, 0.012, 5, 18).rotateX(Math.PI / 2);
+      rim.scale(1, 1, 1.1).translate(0, fit.brow + 0.006, fit.centreZ);
+      const seam = new THREE.TorusGeometry(fit.radius * 0.94, 0.009, 4, 18).rotateX(Math.PI / 2);
+      seam.scale(1, 1, 1.1).translate(0, fit.brow + (fit.crown - fit.brow) * 0.45, fit.centreZ);
       const helmet = mergeColoredGeometry([
-        [new THREE.SphereGeometry(0.145, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.52).translate(0, 0.13, 0), cream],
-        ...[0.07, 0.12, 0.17].map((y): [THREE.BufferGeometry, THREE.Color] => [
-          new THREE.TorusGeometry(0.132, 0.012, 5, 18).rotateX(Math.PI / 2).translate(0, y, 0),
-          cream,
-        ]),
+        [cap, cream],
+        [rim, cream],
+        [seam, cream],
       ]);
       if (helmet) {
         const mat = makeMaterial(0xffffff, 0.95);
@@ -575,6 +728,12 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       if (inHand === netInHand) return;
       netInHand = inHand;
       syncTool();
+    },
+    update(): void {
+      weapon?.update(task);
+    },
+    onDeath(): void {
+      weapon?.release();
     },
     dispose(): void {
       disposeAttire();
