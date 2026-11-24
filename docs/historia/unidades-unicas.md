@@ -119,7 +119,7 @@ escuadra blindada (Cochrane) dominó el mar. El «Infante de Línea» es una inf
 disciplinada; «Escuadra Blindada» amplía la visión. — [`civilizaciones/chile.md`](./civilizaciones/chile.md),
 [`atuendos.md`](./atuendos.md) §4.
 
-> **Implementación con rigs compartidos.** Los dragones y montoneras reutilizan `mounted_rig.glb` con las
+> **Implementación con rigs compartidos.** Los dragones y montoneras reutilizan el rig montado (`mounted_rig`: caballo Quaternius CC0 con el cuerpo de infantería como jinete) con las
 > variantes `mounted_realistas` y `mounted_patriotas`; los infantes reutilizan el rig humanoide
 > `caral_worker` con las variantes `republica_ranged_*` y `chile_ranged_*`. No se modelan piezas ni uniformes
 > únicos para estas unidades; el caballo montado sí se reconstruyó como rig compartido de toda la caballería

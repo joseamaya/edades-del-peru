@@ -13,6 +13,12 @@ import {
 import { consolidateRig } from './modelConsolidation';
 
 /**
+ * The 1532–1572 coleto: dark leather. The earlier buff (0xb39a72) and a mid brown (0x6e5236) both read as the
+ * skin, so the jerkin looked like a bare torso; this brown stays clear of it (tests/uniform-palette.test.ts).
+ */
+export const EARLY_SPANISH_COAT = 0x4a3a2c;
+
+/**
  * Shared uniform dresser for the documented post-1532 cultures and the m7 rebels.
  * Coat/hat/weapon colours and silhouettes follow the abstractions in
  * `docs/historia/atuendos.md` §3–4; no new historical claim is introduced.
@@ -33,7 +39,7 @@ export function dressUniform(
   const male = variant.endsWith('_m');
   // 1532–1572 is a field kit (buff wool, leather, steel), not the 18th-century Bourbon blue.
   const earlySpanish = spec.hat === 'morion';
-  const coatColor = earlySpanish ? 0xb39a72 : spec.coat;
+  const coatColor = earlySpanish ? EARLY_SPANISH_COAT : spec.coat;
   const trouserColor = earlySpanish ? 0x5a4632 : spec.trousers;
   const tools = createRigAttireTools(root);
   const { track, material, tint, show, bonePosition, attach, dispose } = tools;
@@ -127,28 +133,88 @@ export function dressUniform(
     }
   }
 
-  // Breeches and boots: the worker tunic is the coat, these cover the legs.
+  /** A ball over a joint, so a rigid sleeve or leg never opens a gap of skin when the limb bends. */
+  const jointCap = (boneName: string, radius: number, materialRef: THREE.Material, name: string): void => {
+    const at = bonePosition(boneName);
+    if (!at) return;
+    const mesh = new THREE.Mesh(track(new THREE.SphereGeometry(radius, 8, 6)), materialRef);
+    mesh.name = name;
+    mesh.position.copy(at);
+    attach(boneName, mesh, at);
+  };
+
+  // The worker tunic is the coat body; the shared tunic has a low neckline and no shoulders, and the earlier
+  // short tubes left skin at the shoulder, elbow, hip, knee and foot. Everything below closes those gaps.
   if (!civilian) {
-    for (const [side, thigh, calf, foot] of [
-      ['l', 'thigh_l', 'calf_l', 'foot_l'],
-      ['r', 'thigh_r', 'calf_r', 'foot_r'],
-    ]) {
-      limbTube(thigh, calf, 0.115, 0.09, trouserMat, `attire_post_breeches_${side}`);
-      limbTube(calf, foot, 0.095, 0.075, leatherMat, `attire_post_boot_${side}`, 0.35, 1);
-      const footPos = bonePosition(foot);
-      if (footPos) {
-        const shoe = new THREE.Mesh(track(new THREE.BoxGeometry(0.1, 0.07, 0.28)), leatherMat);
-        shoe.name = `attire_post_shoe_${side}`;
-        attach(foot, shoe, new THREE.Vector3(footPos.x, footPos.y - 0.02, footPos.z + 0.06));
-      }
+    const neck = bonePosition('neck_01');
+    if (spine && neck) {
+      // Yoke: chest, back and shoulders up to a standing collar.
+      const bottom = spine.y - 0.08;
+      // The trapezius rises above the neck joint: the yoke closes in a sloped shoulder line up to the collar.
+      const top = neck.y + 0.07;
+      const shoulderLine = neck.y - 0.03;
+      const r = male ? 0.205 : 0.19;
+      const profile = [
+        [r * 0.98, bottom],
+        [r, shoulderLine - 0.04],
+        [r * 0.86, shoulderLine + 0.02],
+        [r * 0.55, shoulderLine + 0.06],
+        [0.085, top - 0.02],
+        [0.08, top],
+      ].map(([x, y]) => new THREE.Vector2(x, y - (top + bottom) / 2));
+      const yoke = new THREE.LatheGeometry(profile, 18);
+      yoke.scale(1, 1, male ? 0.8 : 0.9);
+      const yokeMesh = new THREE.Mesh(track(yoke), coatMat);
+      yokeMesh.name = 'attire_post_yoke';
+      const yokeAt = new THREE.Vector3(spine.x, (top + bottom) / 2, spine.z + (male ? 0.05 : 0.065));
+      yokeMesh.position.copy(yokeAt);
+      attach('spine_03', yokeMesh, yokeAt);
+      const collar = new THREE.Mesh(
+        track(new THREE.CylinderGeometry(0.068, 0.078, 0.08, 12)),
+        material(spec.trim, 0.9),
+      );
+      collar.name = 'attire_post_collar';
+      const collarAt = new THREE.Vector3(neck.x, neck.y + 0.03, neck.z);
+      collar.position.copy(collarAt);
+      attach('neck_01', collar, collarAt);
     }
-    // Sleeves and cuffs: the shared tunic is short-sleeved, the period coat is not.
-    for (const [side, upper, lower, handBone] of [
-      ['l', 'upperarm_l', 'lowerarm_l', 'hand_l'],
-      ['r', 'upperarm_r', 'lowerarm_r', 'hand_r'],
-    ]) {
-      limbTube(upper, lower, 0.075, 0.06, coatMat, `attire_post_sleeve_upper_${side}`, 0.02, 1);
-      limbTube(lower, handBone, 0.06, 0.05, coatMat, `attire_post_sleeve_lower_${side}`, 0.02, 0.9);
+    for (const side of ['l', 'r']) {
+      jointCap(`upperarm_${side}`, 0.12, coatMat, `attire_post_shoulder_${side}`);
+      limbTube(`upperarm_${side}`, `lowerarm_${side}`, 0.084, 0.068, coatMat, `attire_post_sleeve_upper_${side}`, 0, 1);
+      jointCap(`lowerarm_${side}`, 0.066, coatMat, `attire_post_elbow_${side}`);
+      limbTube(`lowerarm_${side}`, `hand_${side}`, 0.066, 0.056, coatMat, `attire_post_sleeve_lower_${side}`, 0, 0.84);
+      limbTube(
+        `lowerarm_${side}`,
+        `hand_${side}`,
+        0.064,
+        0.062,
+        material(spec.trim, 0.9),
+        `attire_post_cuff_${side}`,
+        0.8,
+        0.94,
+      );
+    }
+    if (pelvis) {
+      // The seat of the breeches/trousers, under the coat: it closes the hip between the coat and the legs.
+      const seat = new THREE.Mesh(
+        track(new THREE.CylinderGeometry(male ? 0.18 : 0.19, male ? 0.19 : 0.2, 0.26, 18, 1, false)),
+        trouserMat,
+      );
+      seat.scale.set(1, 1, 0.78);
+      seat.name = 'attire_post_seat';
+      const seatAt = new THREE.Vector3(pelvis.x, pelvis.y - 0.07, pelvis.z + 0.06);
+      seat.position.copy(seatAt);
+      attach('pelvis', seat, seatAt);
+    }
+    for (const side of ['l', 'r']) {
+      limbTube(`thigh_${side}`, `calf_${side}`, 0.148, 0.098, trouserMat, `attire_post_breeches_${side}`, -0.12, 1);
+      jointCap(`calf_${side}`, 0.092, trouserMat, `attire_post_knee_${side}`);
+      limbTube(`calf_${side}`, `foot_${side}`, 0.092, 0.08, trouserMat, `attire_post_leg_${side}`, 0, 0.4);
+      limbTube(`calf_${side}`, `foot_${side}`, 0.1, 0.085, leatherMat, `attire_post_boot_${side}`, 0.3, 1.02);
+      // Shoes over the whole foot: heel, instep and toe follow the foot and ball bones.
+      jointCap(`foot_${side}`, 0.07, leatherMat, `attire_post_heel_${side}`);
+      limbTube(`foot_${side}`, `ball_${side}`, 0.066, 0.058, leatherMat, `attire_post_shoe_${side}`, 0, 1);
+      jointCap(`ball_${side}`, 0.056, leatherMat, `attire_post_toe_${side}`);
     }
   }
 
@@ -186,14 +252,15 @@ export function dressUniform(
       const half = 0.24;
       const lens = new THREE.Shape();
       lens.moveTo(-half, 0);
-      lens.quadraticCurveTo(0, 0.12, half, 0);
-      lens.quadraticCurveTo(0, -0.12, -half, 0);
+      lens.quadraticCurveTo(0, 0.15, half, 0);
+      lens.quadraticCurveTo(0, -0.15, -half, 0);
       const brim = extrudedPlate(lens, 0.03, 10);
       brim.rotateX(-Math.PI / 2);
       // Upswept corners: a flat plate reads as a sombrero; a bicorn's points curl up.
       const brimPosition = brim.getAttribute('position');
       for (let i = 0; i < brimPosition.count; i++) {
-        const lift = 0.11 * (Math.abs(brimPosition.getX(i)) / half) ** 2;
+        // A gentle curl: steeper points read as horns from the front at close range.
+        const lift = 0.05 * (Math.abs(brimPosition.getX(i)) / half) ** 2;
         brimPosition.setY(i, brimPosition.getY(i) + lift);
       }
       brim.computeVertexNormals();
