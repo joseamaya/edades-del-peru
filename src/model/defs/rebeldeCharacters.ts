@@ -4,7 +4,9 @@ import { POST_COLONIAL_ROLES, type PostColonialRole, type PostColonialSpec } fro
 
 /** Earth-tone palette shared by the m7 rebel infantry, cavalry and siege abstractions. */
 export const REBELDE_PALETTE = {
-  coat: 0x6a3a2a,
+  // Undyed dark wool. The earlier red-brown (0x6a3a2a) matched the shared skin (#6b3f22), so the coat
+  // read as a bare torso; the palette stays an undocumented earth-tone abstraction.
+  coat: 0x4b4640,
   trim: 0xd8a040,
   trousers: 0x3a2a1a,
   hatColor: 0x2a1c12,

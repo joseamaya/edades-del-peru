@@ -350,6 +350,85 @@ standard.**
   the shared skinned draws, so a unit costs 8–9 draws with or without it (list it in `dynamic` only if it
   toggles visibility).
 
+## 13. Cavalry rider on the shared body
+
+The mounted units (`HUSSAR`/`CAVALRY` of the realistas, patriotas, Republic, Chile and the m7 rebels) were the
+last humanoids outside this standard: the former `mounted_rig.glb` carried its own low-poly rider (sphere head, tube
+limbs, no face), so a horseman read as a peg doll next to the equipped infantry.
+
+- **Change:** `dressMounted` (`src/rendering/mountedAttire.ts`) now seats a second `RigInstance` of the shared
+  worker in the infantry soldier variant of the same side (`MOUNTED_RIDER_VARIANTS`, always the male body) on
+  the mount's `rider_hip` bone, and hides the legacy rider meshes. The trot and gallop bob carry it.
+- **Seat:** a seated pose (`RIDER_SEAT_POSE`) is applied after the rider's clip, as rotations in the rider's
+  own space: thighs forward and apart around the barrel, knees down along the flank, forearms forward to the
+  reins. The rider plays `idle` while the horse walks, trots or gallops, its own sword attack when the horse
+  attacks (the arms are then left to the clip) and its death clip with the horse.
+- **Fallback:** the loader registers the rider factory (`setMountedRiderFactory`), which keeps the dresser free
+  of an import cycle. When the worker asset is not cached, the mount keeps its legacy rider.
+- **Cost:** the consolidated rider cuts the draws (`yarn bench --scenario=mounted`: 205 → 181, 365 → 293 and
+  609 → 465 for 4, 12 and 24 units) and raises the triangles from ~8.4k to 14.1k per unit. The mounted bench
+  cap moves from 12,000 to 15,000 triangles, under the 25k common-unit ceiling of the art direction; the step
+  time stays within run-to-run noise.
+- **Test:** `tests/e2e/models.spec.ts` checks that every m7 horseman has the shared body under `rider_hip`, no
+  visible legacy rider mesh, femurs pointing forward and the pelvis above 1.3 m.
+- **Not done here:** the rider wears the infantry uniform as it is today, so the open uniform issues (bare
+  shoulders on the late uniforms, the 1536 cuirass over a bare torso) show on horseback too; the horse itself is
+  still the low-poly barrel. Both are the next steps.
+
+![Before and after: Sucre's cavalry at Junín and Pizarro at Lima](../media/cavalry-rider-before-after.webp)
+
+## 14. Closed uniforms (1532–1883)
+
+At close range the post-1532 uniforms showed skin: the coat is the shared worker tunic (low neckline, no
+shoulders), and the sleeves, breeches and boots were short rigid tubes that left the shoulder, elbow, hip,
+knee and foot bare. Two coats also matched the shared skin (`#6b3f22`): the 1536 buff coleto (`0xb39a72`) and
+the m7 rebel red-brown (`0x6a3a2a`), so those soldiers read as bare-chested at any distance.
+
+- **Garments** (`src/rendering/uniformAttire.ts`, every `realistas_*`, `patriotas_*`, `republica_*`, `chile_*`
+  and `rebelde_*` armed role, and so every cavalry rider): a yoke from mid-chest to a standing collar with a
+  sloped shoulder line, sized for both presentation bodies and set ~5 cm in front of the spine (the spine runs
+  along the back); shoulder, elbow and knee caps; full-length sleeves with trim cuffs; a seat under the coat;
+  breeches from inside the hip; boots; and shoes over heel, instep and toe. All are rigid bone attachments,
+  merged by `consolidateRig`, so the draw count does not change.
+- **Colours:** the coleto is a dark leather `EARLY_SPANISH_COAT` (`0x4a3a2c`) and the rebel coat undyed dark
+  wool (`0x4b4640`); both are still the documented abstractions of
+  [`../historia/atuendos.md`](../historia/atuendos.md) §3 («tonos de lana y cuero», rebel earth tones), not new
+  claims. `tests/uniform-palette.test.ts` keeps every coat away from the skin tone.
+- **Bicorn:** the points curl up less (0.05 instead of 0.11) and the brim is deeper, so the hat no longer reads
+  as horns from the front.
+- **Evidence:** `node scripts/capture_uniform_lineup.mjs` lines up four units per side (both bodies, two
+  roles) facing a close camera; `--nobody=1` hides the skin to check the garments alone.
+- **Cost:** `yarn bench:characters` is unchanged in draws (6) and rises by ~1.1k triangles (Spanish 10.5k →
+  11.7k, 1879 fusilier 9.5k → 10.7k, late realista 9.7k → 10.9k), under the 25k ceiling. The mounted bench cap
+  moves to 17,000 (16.2k per horseman). Every `bench:check` row, `visual:check` and the rig E2E specs stay
+  green.
+- **Still open:** the shared body's chest occasionally grazes the yoke in deep poses; women still serve in the
+  line at the deterministic 50 % presentation split of `atuendos.md` (a policy decision, not changed here); the
+  Andean warriors keep their own dressers.
+
+![Before and after: six sides at close range](../media/uniform-closure-before-after.webp)
+
+## 15. The horse
+
+The low-poly mount of `mounted_rig.glb` (a lofted barrel with a wedge head and tube legs) is replaced by
+Quaternius' CC0 animated horse, from the same pack as the alpaca (sources and hashes in `PROVENANCE.md`).
+
+- **Asset:** `scripts/build_mounted_horse.mjs` keeps five clips (`Idle`, `Walk` trot, `Gallop`,
+  `Attack_Headbutt` charge, `Death`) and drops the constant tracks: 319 KB against the retired GLB's 207 KB, so
+  `dist/` measures 27.98 of 28 MB with the old mount removed. The budget was not raised.
+- **Fit:** `scale` 0.46 puts the back at ~1.6 m. The back's surface is 0.31 m above the `Torso2` bone (measured
+  on the skinned mesh); the saddle cloth (trim colour) and leather saddle sit 2 cm over it and the rider's hip
+  joint 9 cm more (`RIDER_SEAT_POSE.seatLift` 0.42). Coat, light/dark shades and mane/tail follow the side's
+  palette.
+- **Without the worker** the horse goes riderless; the legacy rider and hats left with the old GLB.
+- **Cost:** `yarn bench --scenario=mounted` 189 / 317 / 513 draws for 4 / 12 / 24 units (465 with the old
+  horse, 609 with the old horse and rider), 14.7k triangles per horseman; the mounted cap tightens to 15,500.
+  `bench:check`, `verify:fast` and the rig E2E specs are green.
+- **Open:** the gallop's reference speed (4.2) is set by eye; the rider does not lean with the gallop; there
+  are no reins or stirrups.
+
+![Before and after: the block horse and the Quaternius horse](../media/cavalry-horse-before-after.webp)
+
 ## See also
 
 [`../design/art-direction.md`](../design/art-direction.md) §4.1 ·

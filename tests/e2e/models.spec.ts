@@ -127,6 +127,83 @@ test('m7 cavalry, rebel infantry and riflemen load their rigs instead of procedu
   expect(warnings).toEqual([]);
 });
 
+test('cavalry seats the shared infantry body astride the mount', async ({ page }) => {
+  await page.goto('/?play=1&mission=m7_tupac_amaru&seed=1780&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.getByRole('button', { name: /Comenzar misión/i }).click();
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game: { units: Map<string, { kind: string; rig: unknown }> } }).game;
+      const cavalry = [...g.units.values()].filter((unit) => unit.kind === 'cavalry');
+      return cavalry.length > 0 && cavalry.every((unit) => unit.rig !== null);
+    },
+    null,
+    { timeout: 15_000 },
+  );
+  // Let the mixers run a few frames so the seated pose is applied over the playing clip.
+  await page.waitForTimeout(500);
+  const riders = await page.evaluate(() => {
+    type Obj = {
+      name: string;
+      visible: boolean;
+      isMesh?: boolean;
+      parent: Obj | null;
+      traverse(fn: (o: Obj) => void): void;
+      getObjectByName(name: string): Obj | undefined;
+      getWorldPosition(v: Vec): Vec;
+      getWorldDirection(v: Vec): Vec;
+    };
+    type Vec = {
+      x: number;
+      y: number;
+      z: number;
+      clone(): Vec;
+      sub(v: Vec): Vec;
+      normalize(): Vec;
+      dot(v: Vec): number;
+    };
+    const g = (
+      window as unknown as {
+        game: { units: Map<string, { kind: string; pos: { y: number }; rig: { root: Obj } | null }> };
+      }
+    ).game;
+    const cavalry = [...g.units.values()].filter((unit) => unit.kind === 'cavalry' && unit.rig);
+    return cavalry.map((unit) => {
+      const root = unit.rig!.root;
+      let rider: Obj | null = null;
+      root.traverse((o) => {
+        if (o.name === 'rig:caral_worker') rider = o;
+      });
+      if (!rider) return { rider: false, seatParent: '', thighForward: 0, pelvisLift: 0 };
+      const r = rider as Obj;
+      // three's Vector3, reached through an existing vector: the page does not expose the module.
+      const V = (r as unknown as { position: Vec }).position.constructor as new () => Vec;
+      const pelvis = r.getObjectByName('pelvis')!.getWorldPosition(new V());
+      const thigh = r.getObjectByName('thigh_l')!.getWorldPosition(new V());
+      const calf = r.getObjectByName('calf_l')!.getWorldPosition(new V());
+      const facing = r.getWorldDirection(new V());
+      const femur = calf.clone().sub(thigh).normalize();
+      return {
+        rider: true,
+        seatParent: r.parent?.name ?? '',
+        // The femur points forward along the rider's facing, not down to the ground.
+        thighForward: femur.dot(facing),
+        pelvisLift: pelvis.y - root.getWorldPosition(new V()).y,
+      };
+    });
+  });
+  expect(riders.length).toBeGreaterThan(0);
+  for (const rider of riders) {
+    expect(rider.rider).toBe(true);
+    expect(rider.seatParent).toBe('Torso2');
+    expect(rider.thighForward).toBeGreaterThan(0.6);
+    // Seated on a ~1.6 m back, not standing on the ground beside it.
+    expect(rider.pelvisLift).toBeGreaterThan(1.5);
+  }
+});
+
 test('contemporary Republic vehicles load their rigs', async ({ page }) => {
   const warnings: string[] = [];
   page.on('console', (msg) => {

@@ -1,46 +1,158 @@
 import { Era } from '../core/types';
+import {
+  DEFAULT_VOLUMES,
+  attenuationFor,
+  clampVolume,
+  musicLayerGains,
+  panFor,
+  type AmbienceKind,
+  type Listener,
+  type MusicIntensity,
+  type SoundAt,
+  type VolumeSettings,
+} from './mix';
+
+interface AmbiencePreset {
+  filter: BiquadFilterType;
+  frequency: number;
+  lfoHz: number;
+  depth: number;
+  level: number;
+}
+
+const AMBIENCE_PRESETS: Record<Exclude<AmbienceKind, 'none'>, AmbiencePreset> = {
+  coast: { filter: 'lowpass', frequency: 520, lfoHz: 0.14, depth: 0.06, level: 0.16 },
+  andes: { filter: 'lowpass', frequency: 380, lfoHz: 0.08, depth: 0.04, level: 0.11 },
+  altiplano: { filter: 'bandpass', frequency: 700, lfoHz: 0.05, depth: 0.05, level: 0.12 },
+  jungle: { filter: 'bandpass', frequency: 2200, lfoHz: 4.5, depth: 0.05, level: 0.09 },
+};
+
+interface SoundMix {
+  gain: number;
+  pan: number;
+}
 
 /**
- * 100% procedural audio via WebAudio: synthesized SFX and generative
- * music per era. No external files.
+ * Procedural audio via WebAudio: synthesised SFX, generative music and ambience. No external files.
+ * Four buses (master, effects, music, ambience) carry the player's volume settings; world sounds are
+ * attenuated and panned from the camera, and the music mixes calm, tension and combat layers.
  */
 export class AudioEngine {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private sfxGain: GainNode | null = null;
   private musicGain: GainNode | null = null;
+  private ambienceGain: GainNode | null = null;
+  private droneGain: GainNode | null = null;
+  private melodyGain: GainNode | null = null;
+  private percussionGain: GainNode | null = null;
   enabled = true;
   musicEnabled = true;
+  private volumes: VolumeSettings = { ...DEFAULT_VOLUMES };
   private musicTimer: number | null = null;
   private musicStep = 0;
   private timers: number[] = [];
   private noiseBuffer: AudioBuffer | null = null;
   private era = 0;
   private lastShot = 0;
+  private lastHit = 0;
   private lastHarvest = -Infinity;
-  private surf: { source: AudioBufferSourceNode; gain: GainNode; lfo: OscillatorNode } | null = null;
+  private intensity: MusicIntensity = 'calm';
+  private listener: Listener | null = null;
+  private voiceEnds: number[] = [];
+  private ambience: {
+    kind: AmbienceKind;
+    source: AudioBufferSourceNode;
+    lfo: OscillatorNode;
+    gain: GainNode;
+  } | null = null;
 
   init(): void {
     if (this.ctx) return;
     try {
       this.ctx = new AudioContext();
       this.master = this.ctx.createGain();
-      this.master.gain.value = 0.9;
+      this.master.gain.value = this.volumes.master;
       this.master.connect(this.ctx.destination);
       this.sfxGain = this.ctx.createGain();
-      this.sfxGain.gain.value = 0.8;
+      this.sfxGain.gain.value = this.enabled ? this.volumes.sfx : 0;
       this.sfxGain.connect(this.master);
       this.musicGain = this.ctx.createGain();
-      this.musicGain.gain.value = 0.25;
+      this.musicGain.gain.value = this.musicEnabled ? this.volumes.music : 0;
       this.musicGain.connect(this.master);
+      this.ambienceGain = this.ctx.createGain();
+      this.ambienceGain.gain.value = this.enabled ? this.volumes.ambience : 0;
+      this.ambienceGain.connect(this.master);
+      this.droneGain = this.layerGain();
+      this.melodyGain = this.layerGain();
+      this.percussionGain = this.layerGain();
       this.noiseBuffer = this.buildNoise();
+      this.applyIntensity(this.intensity);
     } catch {
       this.ctx = null;
     }
   }
 
+  private layerGain(): GainNode {
+    const gain = this.ctx!.createGain();
+    gain.gain.value = 0;
+    gain.connect(this.musicGain!);
+    return gain;
+  }
+
   resume(): void {
     this.ctx?.resume();
+  }
+
+  /** Player volume settings, 0..1 per bus; unknown buses keep their current value. */
+  setVolumes(volumes: Partial<VolumeSettings>): void {
+    for (const key of Object.keys(volumes) as (keyof VolumeSettings)[]) {
+      const value = volumes[key];
+      if (typeof value === 'number') this.volumes[key] = clampVolume(value);
+    }
+    this.applyVolumes();
+  }
+
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+    this.applyVolumes();
+  }
+
+  setMusicEnabled(enabled: boolean): void {
+    this.musicEnabled = enabled;
+    if (enabled) this.startMusic();
+    else this.stopMusic();
+    this.applyVolumes();
+  }
+
+  private applyVolumes(): void {
+    if (!this.ctx) return;
+    const t = this.now();
+    this.master?.gain.setTargetAtTime(this.volumes.master, t, 0.05);
+    this.sfxGain?.gain.setTargetAtTime(this.enabled ? this.volumes.sfx : 0, t, 0.05);
+    this.musicGain?.gain.setTargetAtTime(this.musicEnabled ? this.volumes.music : 0, t, 0.08);
+    this.ambienceGain?.gain.setTargetAtTime(this.enabled ? this.volumes.ambience : 0, t, 0.08);
+  }
+
+  /** Camera-relative frame used to place world sounds; the range matches the audible radius. */
+  setListener(listener: Listener): void {
+    this.listener = listener;
+  }
+
+  /** Music mood; the layers crossfade, they never cut. */
+  setIntensity(intensity: MusicIntensity): void {
+    if (intensity === this.intensity) return;
+    this.intensity = intensity;
+    this.applyIntensity(intensity);
+  }
+
+  private applyIntensity(intensity: MusicIntensity): void {
+    if (!this.ctx || !this.droneGain || !this.melodyGain || !this.percussionGain) return;
+    const gains = musicLayerGains(intensity);
+    const t = this.now();
+    this.droneGain.gain.setTargetAtTime(gains.drone, t, 1.2);
+    this.melodyGain.gain.setTargetAtTime(gains.melody, t, 1.2);
+    this.percussionGain.gain.setTargetAtTime(gains.percussion, t, 1.2);
   }
 
   private buildNoise(): AudioBuffer {
@@ -62,34 +174,67 @@ export class AudioEngine {
 
   // --- SFX ---
 
-  private blip(freq: number, dur: number, type: OscillatorType, vol: number, slideTo?: number): void {
+  /** Distance gain and stereo pan of a world sound, from the current camera listener. */
+  private mixFor(at?: SoundAt): SoundMix {
+    if (!at || !this.listener) return { gain: 1, pan: 0 };
+    const { x, z, rightX, rightZ, range } = this.listener;
+    const dx = at.x - x;
+    const dz = at.z - z;
+    return { gain: attenuationFor(Math.hypot(dx, dz), range), pan: panFor(dx, dz, rightX, rightZ, range) };
+  }
+
+  /** Cap simultaneous voices so a large battle does not saturate the mixer. */
+  private reserveVoice(duration: number): boolean {
+    const t = this.now();
+    if (this.voiceEnds.length > 0) this.voiceEnds = this.voiceEnds.filter((end) => end > t);
+    if (this.voiceEnds.length >= 12) return false;
+    this.voiceEnds.push(t + duration);
+    return true;
+  }
+
+  /** Connect a voice to the effects bus, panning it when the sound came from world coordinates. */
+  private pannedOutput(node: AudioNode, mix: SoundMix): AudioNode {
+    if (mix.pan === 0) return node;
+    const panner = this.ctx!.createStereoPanner();
+    panner.pan.value = mix.pan;
+    node.connect(panner);
+    return panner;
+  }
+
+  private blip(freq: number, dur: number, type: OscillatorType, vol: number, slideTo?: number, at?: SoundAt): void {
     if (!this.ctx || !this.sfxGain || !this.enabled) return;
+    const mix = this.mixFor(at);
+    const level = vol * mix.gain;
+    if (level < 0.004 || !this.reserveVoice(dur)) return;
     const o = this.ctx.createOscillator();
     const g = this.ctx.createGain();
     o.type = type;
     o.frequency.setValueAtTime(freq, this.now());
     if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, this.now() + dur);
-    g.gain.setValueAtTime(vol, this.now());
+    g.gain.setValueAtTime(level, this.now());
     g.gain.exponentialRampToValueAtTime(0.0001, this.now() + dur);
     o.connect(g);
-    g.connect(this.sfxGain);
+    this.pannedOutput(g, mix).connect(this.sfxGain);
     o.start();
     o.stop(this.now() + dur + 0.02);
   }
 
-  private noise(dur: number, vol: number, filterFreq: number, type: BiquadFilterType = 'lowpass'): void {
+  private noise(dur: number, vol: number, filterFreq: number, type: BiquadFilterType = 'lowpass', at?: SoundAt): void {
     if (!this.ctx || !this.sfxGain || !this.noiseBuffer || !this.enabled) return;
+    const mix = this.mixFor(at);
+    const level = vol * mix.gain;
+    if (level < 0.004 || !this.reserveVoice(dur)) return;
     const src = this.ctx.createBufferSource();
     src.buffer = this.noiseBuffer;
     const f = this.ctx.createBiquadFilter();
     f.type = type;
     f.frequency.value = filterFreq;
     const g = this.ctx.createGain();
-    g.gain.setValueAtTime(vol, this.now());
+    g.gain.setValueAtTime(level, this.now());
     g.gain.exponentialRampToValueAtTime(0.0001, this.now() + dur);
     src.connect(f);
     f.connect(g);
-    g.connect(this.sfxGain);
+    this.pannedOutput(g, mix).connect(this.sfxGain);
     src.start();
     src.stop(this.now() + dur + 0.02);
   }
@@ -101,54 +246,58 @@ export class AudioEngine {
     return true;
   }
 
-  shot(): void {
+  shot(at?: SoundAt): void {
+    if (this.mixFor(at).gain < 0.02) return;
     const t = this.now();
     if (t - this.lastShot < 0.08) return;
     this.lastShot = t;
-    // shot: low noise + crack
-    this.noise(0.18, 0.5, 900, 'lowpass');
-    this.blip(160, 0.12, 'square', 0.25, 60);
+    this.noise(0.18, 0.5, 900, 'lowpass', at);
+    this.blip(160, 0.12, 'square', 0.25, 60, at);
   }
 
-  explosion(size = 1): void {
-    this.noise(0.7 * size, 0.8, 300, 'lowpass');
-    this.blip(80, 0.4, 'sawtooth', 0.4, 30);
+  explosion(size = 1, at?: SoundAt): void {
+    this.noise(0.7 * size, 0.8, 300, 'lowpass', at);
+    this.blip(80, 0.4, 'sawtooth', 0.4, 30, at);
   }
 
-  artillery(): void {
-    this.noise(1.1, 0.9, 220, 'lowpass');
-    this.blip(90, 0.8, 'sawtooth', 0.35, 25);
+  artillery(at?: SoundAt): void {
+    this.noise(1.1, 0.9, 220, 'lowpass', at);
+    this.blip(90, 0.8, 'sawtooth', 0.35, 25, at);
   }
 
-  bow(): void {
-    this.noise(0.12, 0.25, 1800, 'bandpass');
-    this.blip(320, 0.1, 'triangle', 0.18, 180);
+  bow(at?: SoundAt): void {
+    this.noise(0.12, 0.25, 1800, 'bandpass', at);
+    this.blip(320, 0.1, 'triangle', 0.18, 180, at);
   }
 
-  sling(): void {
-    this.noise(0.16, 0.2, 900, 'highpass');
-    this.blip(240, 0.08, 'sine', 0.12, 140);
+  sling(at?: SoundAt): void {
+    this.noise(0.16, 0.2, 900, 'highpass', at);
+    this.blip(240, 0.08, 'sine', 0.12, 140, at);
   }
 
-  hit(): void {
-    this.noise(0.1, 0.3, 1400, 'bandpass');
+  hit(at?: SoundAt): void {
+    if (this.mixFor(at).gain < 0.02) return;
+    const t = this.now();
+    if (t - this.lastHit < 0.05) return;
+    this.lastHit = t;
+    this.noise(0.1, 0.3, 1400, 'bandpass', at);
   }
 
-  woodChop(): void {
+  woodChop(at?: SoundAt): void {
     // Several workers share one stroke: at most one gather sound every 0.6 s.
     if (!this.harvestReady()) return;
-    this.noise(0.06, 0.35, 700, 'bandpass');
-    this.blip(220, 0.05, 'triangle', 0.15, 180);
+    this.noise(0.06, 0.35, 700, 'bandpass', at);
+    this.blip(220, 0.05, 'triangle', 0.15, 180, at);
   }
 
-  mineHit(): void {
+  mineHit(at?: SoundAt): void {
     if (!this.harvestReady()) return;
-    this.blip(500, 0.08, 'square', 0.2, 350);
+    this.blip(500, 0.08, 'square', 0.2, 350, at);
   }
 
-  build(): void {
-    this.noise(0.25, 0.3, 1000, 'bandpass');
-    this.blip(300, 0.15, 'triangle', 0.2, 450);
+  build(at?: SoundAt): void {
+    this.noise(0.25, 0.3, 1000, 'bandpass', at);
+    this.blip(300, 0.15, 'triangle', 0.2, 450, at);
   }
 
   select(): void {
@@ -186,44 +335,62 @@ export class AudioEngine {
     this.blip(420, 0.5, 'sine', 0.25, 840);
   }
 
-  death(): void {
-    this.blip(300, 0.3, 'sawtooth', 0.2, 60);
+  death(at?: SoundAt): void {
+    this.blip(300, 0.3, 'sawtooth', 0.2, 60, at);
   }
 
   // --- Ambience ---
 
   /**
-   * Surf on the shore: looped noise through a low-pass filter whose level swells like waves. `level`
-   * (0..1) follows how close the camera is to the sea; 0 keeps the loop silent.
+   * One looping bed per biome, mixed under the ambience bus. `level` (0..1) follows how close the
+   * camera is to the source (the Caral shoreline) or the scene's default, 0 keeps it silent.
    */
-  setSurf(level: number): void {
-    if (!this.ctx || !this.master || !this.noiseBuffer) return;
-    const target = Math.max(0, Math.min(1, level)) * 0.16;
-    if (!this.surf) {
-      if (target <= 0.001) return;
-      const source = this.ctx.createBufferSource();
-      source.buffer = this.noiseBuffer;
-      source.loop = true;
-      const filter = this.ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.value = 520;
-      const gain = this.ctx.createGain();
-      gain.gain.value = 0;
-      // A slow swell (about one wave every seven seconds) on top of the base level.
-      const lfo = this.ctx.createOscillator();
-      lfo.frequency.value = 0.14;
-      const lfoDepth = this.ctx.createGain();
-      lfoDepth.gain.value = 0.06;
-      lfo.connect(lfoDepth);
-      lfoDepth.connect(gain.gain);
-      source.connect(filter);
-      filter.connect(gain);
-      gain.connect(this.master);
-      source.start();
-      lfo.start();
-      this.surf = { source, gain, lfo };
+  setAmbience(kind: AmbienceKind, level: number): void {
+    if (!this.ctx || !this.ambienceGain || !this.noiseBuffer) return;
+    if (kind === 'none') {
+      this.stopAmbience();
+      return;
     }
-    this.surf.gain.gain.setTargetAtTime(target, this.now(), 0.8);
+    const audible = level > 0.001;
+    if (!this.ambience || this.ambience.kind !== kind) {
+      this.stopAmbience();
+      if (!audible) return;
+      this.ambience = this.buildAmbience(kind);
+    }
+    const target = Math.max(0, Math.min(1, level)) * AMBIENCE_PRESETS[kind].level;
+    this.ambience.gain.gain.setTargetAtTime(target, this.now(), 1.2);
+  }
+
+  private buildAmbience(kind: Exclude<AmbienceKind, 'none'>): NonNullable<AudioEngine['ambience']> {
+    const preset = AMBIENCE_PRESETS[kind];
+    const ctx = this.ctx!;
+    const source = ctx.createBufferSource();
+    source.buffer = this.noiseBuffer;
+    source.loop = true;
+    const filter = ctx.createBiquadFilter();
+    filter.type = preset.filter;
+    filter.frequency.value = preset.frequency;
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = preset.lfoHz;
+    const lfoDepth = ctx.createGain();
+    lfoDepth.gain.value = preset.depth;
+    lfo.connect(lfoDepth);
+    lfoDepth.connect(gain.gain);
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ambienceGain!);
+    source.start();
+    lfo.start();
+    return { kind, source, lfo, gain };
+  }
+
+  private stopAmbience(): void {
+    if (!this.ambience) return;
+    this.ambience.source.stop();
+    this.ambience.lfo.stop();
+    this.ambience = null;
   }
 
   // --- Generative music ---
@@ -232,6 +399,7 @@ export class AudioEngine {
     if (!this.ctx || !this.musicEnabled) return;
     this.stopMusic();
     this.musicStep = 0;
+    this.applyIntensity(this.intensity);
     this.scheduleMusic();
   }
 
@@ -244,24 +412,24 @@ export class AudioEngine {
     }, interval);
   }
 
-  /** Harmonic progression per era. */
+  /** Harmonic progression per era, split across the drone, melody and percussion layers. */
   private playMusicNote(): void {
     if (!this.ctx || !this.musicGain) return;
-    // modes per era
     const scales: Record<number, number[]> = {
       0: [220, 261.63, 293.66, 329.63, 392], // pentatonic (the ancient Andes: flute timbre)
       1: [196, 246.94, 293.66, 369.99, 440],
       2: [174.61, 220, 261.63, 311.13, 392], // martial
       3: [110, 164.81, 220, 261.63, 329.63],
       4: [130.81, 196, 246.94, 293.66, 392],
-      5: [98, 146.83, 220, 293.66, 440], // stellar
+      5: [98, 146.83, 220, 293.66, 440],
     };
     const scale = scales[Math.min(this.era, 5)] ?? scales[0];
     const root = scale[this.musicStep % 2 === 0 ? 0 : 1];
-    // pulsing low
     const step = this.musicStep;
-    const idx = step % scale.length;
-    const freq = scale[idx];
+    const freq = scale[step % scale.length];
+    if (this.intensity !== 'calm' && step % 2 === 0) this.percussionHit(step % 8 === 0);
+    // The drone sounds in every era, including the flute-led archaic Andes.
+    this.droneNote(root);
     // The ancient Andes (era 0): a breathy flute line in a pentatonic mode. Flutes and trumpets were
     // found in Caral's Amphitheatre; the melody itself is generative, not a reconstruction.
     if (this.era === 0 && step % 2 === 0) {
@@ -269,7 +437,6 @@ export class AudioEngine {
       this.musicStep++;
       return;
     }
-    // occasional melodic note
     if (step % 2 === 0) {
       const o = this.ctx.createOscillator();
       const g = this.ctx.createGain();
@@ -280,13 +447,17 @@ export class AudioEngine {
       g.gain.linearRampToValueAtTime(0.14, now + 0.03);
       g.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
       o.connect(g);
-      g.connect(this.musicGain);
+      g.connect(this.melodyGain!);
       o.start(now);
       o.stop(now + 1.3);
     }
-    // low
-    const b = this.ctx.createOscillator();
-    const bg = this.ctx.createGain();
+    this.musicStep++;
+  }
+
+  /** Low pulse of the score; it survives the era-0 early return so the drone layer is never silent. */
+  private droneNote(root: number): void {
+    const b = this.ctx!.createOscillator();
+    const bg = this.ctx!.createGain();
     b.type = 'triangle';
     b.frequency.value = root / 2;
     const bn = this.now();
@@ -294,10 +465,34 @@ export class AudioEngine {
     bg.gain.linearRampToValueAtTime(0.2, bn + 0.04);
     bg.gain.exponentialRampToValueAtTime(0.0001, bn + 1.4);
     b.connect(bg);
-    bg.connect(this.musicGain);
+    bg.connect(this.droneGain!);
     b.start(bn);
     b.stop(bn + 1.5);
-    this.musicStep++;
+  }
+
+  /** Tinya-like drum: a short filtered noise burst; combat adds the answering stroke. */
+  private percussionHit(strong: boolean): void {
+    if (!this.ctx || !this.percussionGain || !this.noiseBuffer) return;
+    const hit = (delay: number, level: number) => {
+      const src = this.ctx!.createBufferSource();
+      src.buffer = this.noiseBuffer;
+      const f = this.ctx!.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.value = 180;
+      f.Q.value = 1.1;
+      const g = this.ctx!.createGain();
+      const t = this.now() + delay;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(level, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      src.connect(f);
+      f.connect(g);
+      g.connect(this.percussionGain!);
+      src.start(t);
+      src.stop(t + 0.24);
+    };
+    hit(0, strong ? 0.5 : 0.3);
+    if (this.intensity === 'combat') hit(0.16, 0.22);
   }
 
   private fluteNote(freq: number, length: number): void {
@@ -317,7 +512,6 @@ export class AudioEngine {
     gain.gain.linearRampToValueAtTime(0.11, now + 0.12);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + length);
     tone.connect(gain);
-    // Breath: band-passed noise around the note.
     const breath = this.ctx.createBufferSource();
     breath.buffer = this.noiseBuffer;
     const band = this.ctx.createBiquadFilter();
@@ -330,8 +524,8 @@ export class AudioEngine {
     breathGain.gain.exponentialRampToValueAtTime(0.0001, now + length * 0.8);
     breath.connect(band);
     band.connect(breathGain);
-    breathGain.connect(this.musicGain);
-    gain.connect(this.musicGain);
+    breathGain.connect(this.melodyGain!);
+    gain.connect(this.melodyGain!);
     tone.start(now);
     vibrato.start(now);
     breath.start(now);
@@ -349,13 +543,10 @@ export class AudioEngine {
 
   dispose(): void {
     this.stopMusic();
-    if (this.surf) {
-      this.surf.source.stop();
-      this.surf.lfo.stop();
-      this.surf = null;
-    }
+    this.stopAmbience();
     for (const t of this.timers) clearTimeout(t);
     this.timers.length = 0;
+    this.voiceEnds = [];
     this.ctx?.close();
     this.ctx = null;
   }

@@ -31,7 +31,7 @@ import { MODEL_ASSET_DEFS } from '../src/rendering/modelAssetRegistry';
 
 const MODEL_URL = new URL('../src/assets/models/ual_mannequin.glb', import.meta.url);
 const WORKER_URL = new URL('../src/assets/models/caral_worker.glb', import.meta.url);
-const MOUNTED_URL = new URL('../src/assets/models/mounted_rig.glb', import.meta.url);
+const MOUNTED_URL = new URL('../src/assets/models/quaternius_horse.glb', import.meta.url);
 const SIEGE_URL = new URL('../src/assets/models/siege_rig.glb', import.meta.url);
 const VEHICLE_URL = new URL('../src/assets/models/vehicle_rig.glb', import.meta.url);
 let glb: ArrayBuffer;
@@ -598,14 +598,13 @@ describe('rigged model assets', () => {
     expect(missing).toEqual([]);
   });
 
-  it('loads the mounted rig and dresses cavalry variants', async () => {
+  it('loads the cavalry horse and dresses its coat and saddle per side', async () => {
     const data = fs.readFileSync(fileURLToPath(MOUNTED_URL));
     const buffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
     const asset = await loadModelAssetFromData('mounted_rig', buffer);
-    expect(asset.clipNames.has('Idle_Loop')).toBe(true);
-    expect(asset.clipNames.has('Walk_Loop')).toBe(true);
-    expect(asset.clipNames.has('Gallop_Loop')).toBe(true);
-    expect(asset.clipNames.has('Attack')).toBe(true);
+    for (const clip of ['Idle', 'Walk', 'Gallop', 'Attack_Headbutt', 'Death']) {
+      expect(asset.clipNames.has(clip), clip).toBe(true);
+    }
     const rig = acquireRig('mounted_rig', 'mounted_realistas')!;
     expect(rig.hasState('idle')).toBe(true);
     expect(rig.hasState('walk')).toBe(true);
@@ -613,32 +612,29 @@ describe('rigged model assets', () => {
     expect(rig.hasState('attack')).toBe(true);
     expect(rig.hasDeathClip()).toBe(true);
     expect(rig.referenceSpeed('walk')).toBe(2.4);
-    expect(rig.referenceSpeed('run')).toBe(2.2);
+    expect(rig.referenceSpeed('run')).toBe(4.2);
     expect(rig.runSpeedThreshold()).toBe(3.8);
-    expect(rig.root.getObjectByName('GEO-Hat-Morion-Crown')?.visible).toBe(true);
-    expect(rig.root.getObjectByName('GEO-Hat-Bicorn-Crown')?.visible).toBe(false);
-    const trousers = rig.root.getObjectByName('GEO-Merged-Rider-Trousers') as THREE.Mesh;
-    expect((trousers.material as THREE.MeshStandardMaterial).color.getHex()).toBe(
-      MOUNTED_SPECS.mounted_realistas.trousers,
-    );
-    const horse = rig.root.getObjectByName('GEO-Merged-Horse') as THREE.Mesh;
-    expect((horse.material as THREE.MeshStandardMaterial).color.getHex()).toBe(
-      MOUNTED_SPECS.mounted_realistas.horseCoat,
-    );
-    const sword = rig.root.getObjectByName('GEO-Rider-Sword-Blade') as THREE.Mesh;
-    expect((sword.material as THREE.MeshStandardMaterial).color.getHex()).not.toBe(
-      MOUNTED_SPECS.mounted_realistas.hatColor,
-    );
+    const coatOf = (root: THREE.Object3D): number | null => {
+      let hex: number | null = null;
+      root.traverse((o) => {
+        const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
+        if ((o as THREE.Mesh).isMesh && m?.name === 'Main') hex = m.color.getHex();
+      });
+      return hex;
+    };
+    expect(coatOf(rig.root)).toBe(MOUNTED_SPECS.mounted_realistas.horseCoat);
+    expect(rig.root.getObjectByName('attire_mounted_saddle')).toBeDefined();
+    // The shared worker is not cached in this test: the horse goes riderless instead of a placeholder.
+    let rider = false;
+    rig.root.traverse((o) => {
+      if (o.name === 'rig:caral_worker') rider = true;
+    });
+    expect(rider).toBe(false);
     rig.dispose();
 
-    const late = acquireRig('mounted_rig', 'mounted_realistas_bicorn')!;
-    expect(late.root.getObjectByName('GEO-Hat-Bicorn-Crown')?.visible).toBe(true);
-    expect(late.root.getObjectByName('GEO-Hat-Morion-Crown')?.visible).toBe(false);
-    const lateTrousers = late.root.getObjectByName('GEO-Merged-Rider-Trousers') as THREE.Mesh;
-    expect((lateTrousers.material as THREE.MeshStandardMaterial).color.getHex()).toBe(
-      MOUNTED_SPECS.mounted_realistas_bicorn.trousers,
-    );
-    late.dispose();
+    const patriot = acquireRig('mounted_rig', 'mounted_patriotas')!;
+    expect(coatOf(patriot.root)).toBe(MOUNTED_SPECS.mounted_patriotas.horseCoat);
+    patriot.dispose();
   });
 
   it('falls back from run to walk on rigs without a gallop', async () => {

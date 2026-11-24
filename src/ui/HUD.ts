@@ -258,6 +258,7 @@ const CSS = /* css */ `
   .ed-panel .row { display: flex; gap: 10px; justify-content: center; margin: 8px 0; flex-wrap: wrap; }
   /* Andean identity: chakana divider and stepped-fret edge (inline SVG, no assets) */
   .ed-panel { position: relative; }
+  .ed-options-panel { max-height: calc(100vh - 32px); overflow-y: auto; }
   .ed-panel::before { content: ''; display: block; width: 46px; height: 20px; margin: -6px auto 10px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 1h4v5h5v4h4v4h-4v4h-5v5h-4v-5H5v-4H1v-4h4V6h5z' fill='%23e8c36a' fill-opacity='0.55'/%3E%3C/svg%3E") center/contain no-repeat; }
   .ed-panel::after { content: ''; display: block; height: 6px; margin-top: 14px; background: var(--weave) repeat-x center; opacity: 0.8; }
   .ed-topbar::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 5px; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='6' viewBox='0 0 24 6'%3E%3Cpath d='M0 5h4V3h4v2h4V1h4v4h4V3h4' fill='none' stroke='%23e8c36a' stroke-opacity='0.28'/%3E%3C/svg%3E"); background-repeat: repeat-x; }
@@ -269,6 +270,9 @@ const CSS = /* css */ `
   .ed-cmd-info em { display: block; color: var(--gold-dim); font-size: 9px; font-style: normal; letter-spacing: .4px; margin-top: 2px; }
   .ed-field { display: flex; flex-direction: column; align-items: flex-start; font-size: 12px; color: var(--text-dim); gap: 3px; }
   .ed-field select, .ed-field input { pointer-events: auto; background: #0a0c10; border: 1px solid var(--line); color: var(--text); padding: 6px 8px; border-radius: 4px; font-size: 13px; min-width: 150px; }
+  .ed-volume { display: flex; align-items: center; gap: 8px; }
+  .ed-volume input[type='range'] { background: transparent; border: 0; padding: 0; min-width: 0; width: 150px; }
+  .ed-volume-value { min-width: 34px; text-align: right; font-size: 12px; color: var(--text-dim); }
   .ed-primary { pointer-events: auto; background: var(--gold); color: #14161a; border: none; padding: 10px 28px; font-size: 15px; font-weight: 800; border-radius: 4px; cursor: pointer; letter-spacing: 1px; }
   .ed-primary:hover { filter: brightness(1.1); }
   .ed-ghostbtn { pointer-events: auto; background: transparent; border: 1px solid var(--line); color: var(--text); padding: 8px 18px; border-radius: 4px; cursor: pointer; font-size: 13px; margin: 4px; }
@@ -3004,7 +3008,7 @@ export class HUD {
   private showOptions(from: 'main' | 'pause' = 'pause'): void {
     this.clearOverlays();
     const ov = this.el('div', 'ed-overlay');
-    const panel = this.el('div', 'ed-panel', ov);
+    const panel = this.el('div', 'ed-panel ed-options-panel', ov);
     panel.innerHTML = `<h2>${t('hud.menu.options.title')}</h2><div class="sub">${t('hud.menu.options.sub')}</div>`;
     const row = this.el('div', 'row', panel);
     const q = this.field(
@@ -3076,7 +3080,8 @@ export class HUD {
       () => this.game.settings.soundEnabled,
       (v) => {
         this.game.settings.soundEnabled = v;
-        this.game.audio.enabled = v;
+        this.game.audio.setEnabled(v);
+        this.game.saveSettings();
       },
     );
     this.toggle(
@@ -3086,10 +3091,37 @@ export class HUD {
       () => this.game.settings.musicEnabled,
       (v) => {
         this.game.settings.musicEnabled = v;
-        this.game.audio.musicEnabled = v;
-        if (v) this.game.audio.startMusic();
-        else this.game.audio.stopMusic();
+        this.game.audio.setMusicEnabled(v);
+        this.game.saveSettings();
       },
+    );
+    this.slider(
+      row,
+      t('hud.menu.options.masterVolume'),
+      () => this.game.settings.masterVolume,
+      (v) => this.game.setAudioVolumes({ master: v }),
+      () => this.game.saveSettings(),
+    );
+    this.slider(
+      row,
+      t('hud.menu.options.sfxVolume'),
+      () => this.game.settings.sfxVolume,
+      (v) => this.game.setAudioVolumes({ sfx: v }),
+      () => this.game.saveSettings(),
+    );
+    this.slider(
+      row,
+      t('hud.menu.options.musicVolume'),
+      () => this.game.settings.musicVolume,
+      (v) => this.game.setAudioVolumes({ music: v }),
+      () => this.game.saveSettings(),
+    );
+    this.slider(
+      row,
+      t('hud.menu.options.ambienceVolume'),
+      () => this.game.settings.ambienceVolume,
+      (v) => this.game.setAudioVolumes({ ambience: v }),
+      () => this.game.saveSettings(),
     );
     this.toggle(
       row,
@@ -3189,6 +3221,36 @@ export class HUD {
       render();
     });
     parent.appendChild(this.field(label, btn));
+  }
+
+  /** A 0–100 volume slider for a mixer bus; the value is shown next to the track. */
+  private slider(
+    parent: HTMLElement,
+    label: string,
+    get: () => number,
+    set: (v: number) => void,
+    commit: () => void,
+  ): void {
+    const wrap = document.createElement('div');
+    wrap.className = 'ed-volume';
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = '0';
+    input.max = '100';
+    input.step = '5';
+    input.value = String(Math.round(get() * 100));
+    const value = this.el('span', 'ed-volume-value');
+    value.textContent = `${input.value}%`;
+    input.addEventListener('input', () => {
+      value.textContent = `${input.value}%`;
+      set(Number(input.value) / 100);
+    });
+    input.addEventListener('change', () => {
+      set(Number(input.value) / 100);
+      commit();
+    });
+    wrap.append(input, value);
+    parent.appendChild(this.field(label, wrap));
   }
 
   private select<T extends string>(

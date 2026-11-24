@@ -17,6 +17,15 @@ import { Particles } from '../rendering/Particles';
 import { Debris } from '../rendering/Debris';
 import { RTSCamera } from './Camera';
 import { GameLoop } from './GameLoop';
+import {
+  ambienceForSite,
+  audibleRange,
+  clampVolume,
+  intensityFor,
+  listenerFor,
+  type MusicIntensity,
+  type VolumeSettings,
+} from '../audio/mix';
 import { Fow } from '../game/Fow';
 import { FowTexture } from '../rendering/FowTexture';
 import { Pathfinder, MAX_WALKABLE_SLOPE, fishingApproach } from '../game/Pathfinding';
@@ -994,7 +1003,13 @@ export class Game {
   private harvestAudible(e: { x: number; z: number; owner: number }): boolean {
     if (e.owner !== 0) return false;
     const target = this.camera.getTarget();
-    return distance2D(e.x, e.z, target.x, target.z) <= Math.max(18, this.camera.getZoom() * 0.9);
+    return distance2D(e.x, e.z, target.x, target.z) <= audibleRange(this.camera.getZoom());
+  }
+
+  /** Whether a fight is close enough to the camera to justify the tension and combat music layers. */
+  private combatAudible(e: { x: number; z: number }): boolean {
+    const target = this.camera.getTarget();
+    return distance2D(e.x, e.z, target.x, target.z) <= audibleRange(this.camera.getZoom());
   }
 
   /** Center of a player (its main building), else a base-less party's opening spot, else the map center. */
@@ -1402,10 +1417,6 @@ export class Game {
         size: 1.6,
         grow: 1.6,
       });
-    }
-    // Surf grows louder as the camera nears the sea on Caral's west edge, never on the highlands.
-    if (this.siteDef?.environs?.valley === 'caral') {
-      this.audio.setSurf?.(1 - Math.max(0, Math.min(1, (focus.x - 18) / 45)));
     }
     const mayor = this.siteDef?.anchor;
     if (!mayor) return;
@@ -2069,8 +2080,14 @@ export class Game {
   }
 
   private initAudio(): void {
-    this.audio.enabled = this.settings.soundEnabled;
-    this.audio.musicEnabled = this.settings.musicEnabled;
+    this.audio.setVolumes({
+      master: this.settings.masterVolume,
+      sfx: this.settings.sfxVolume,
+      music: this.settings.musicVolume,
+      ambience: this.settings.ambienceVolume,
+    });
+    this.audio.setEnabled(this.settings.soundEnabled);
+    this.audio.setMusicEnabled(this.settings.musicEnabled);
     const enable = () => {
       this.audio.init();
       this.audio.resume();
@@ -2078,16 +2095,62 @@ export class Game {
       window.removeEventListener('pointerdown', enable);
     };
     window.addEventListener('pointerdown', enable, { once: true });
-    bus.on('fx:shot', () => this.audio.shot());
-    bus.on('fx:artillery', () => this.audio.artillery());
-    bus.on('fx:bow', () => this.audio.bow());
-    bus.on('fx:sling', () => this.audio.sling());
-    bus.on('fx:explosion', () => this.audio.explosion());
-    bus.on('fx:death', () => this.audio.death());
-    bus.on('fx:hit', () => this.audio.hit());
+    bus.on('fx:shot', (e) => this.audio.shot(e));
+    bus.on('fx:artillery', (e) => this.audio.artillery(e));
+    bus.on('fx:bow', (e) => this.audio.bow(e));
+    bus.on('fx:sling', (e) => this.audio.sling(e));
+    bus.on('fx:explosion', (e) => this.audio.explosion(1, e));
+    bus.on('fx:death', (e) => {
+      if (this.combatAudible(e)) this.noteCombat();
+      this.audio.death(e);
+    });
+    bus.on('fx:hit', (e) => {
+      if (this.combatAudible(e)) this.noteCombat();
+      this.audio.hit(e);
+    });
+    bus.on('alert', (e) => {
+      if (e.warn) this.lastAlertAt = performance.now() / 1000;
+    });
     // Harvest strokes only sound for the player's own workers on screen (never the AI's, never off-screen).
-    bus.on('fx:wood', (e) => this.harvestAudible(e) && this.audio.woodChop());
-    bus.on('fx:mine', (e) => this.harvestAudible(e) && this.audio.mineHit());
+    bus.on('fx:wood', (e) => this.harvestAudible(e) && this.audio.woodChop(e));
+    bus.on('fx:mine', (e) => this.harvestAudible(e) && this.audio.mineHit(e));
+  }
+
+  private noteCombat(): void {
+    this.lastCombatAt = performance.now() / 1000;
+  }
+
+  /** Player volume settings: clamp and update the mixer; the options panel persists them on release. */
+  setAudioVolumes(volumes: Partial<VolumeSettings>): void {
+    const next: Partial<VolumeSettings> = {
+      master: volumes.master === undefined ? undefined : clampVolume(volumes.master),
+      sfx: volumes.sfx === undefined ? undefined : clampVolume(volumes.sfx),
+      music: volumes.music === undefined ? undefined : clampVolume(volumes.music),
+      ambience: volumes.ambience === undefined ? undefined : clampVolume(volumes.ambience),
+    };
+    if (next.master !== undefined) this.settings.masterVolume = next.master;
+    if (next.sfx !== undefined) this.settings.sfxVolume = next.sfx;
+    if (next.music !== undefined) this.settings.musicVolume = next.music;
+    if (next.ambience !== undefined) this.settings.ambienceVolume = next.ambience;
+    this.audio.setVolumes(next);
+  }
+
+  /** Camera listener, music mood and biome bed; presentation only, so it never touches the sim. */
+  private updateAudio(): void {
+    const target = this.camera.getTarget();
+    this.audio.setListener(listenerFor(target, this.camera.getYaw(), this.camera.getZoom()));
+    const now = performance.now() / 1000;
+    const intensity = intensityFor(now - this.lastCombatAt, now - this.lastAlertAt);
+    if (intensity !== this.musicIntensity) {
+      this.musicIntensity = intensity;
+      this.audio.setIntensity(intensity);
+    }
+    if (now - this.lastAmbienceAt < 0.25) return;
+    this.lastAmbienceAt = now;
+    const kind = ambienceForSite(this.siteDef?.id, this.settings.mapType);
+    const caralShore = kind === 'coast' && this.siteDef?.environs?.valley === 'caral';
+    const level = caralShore ? 1 - Math.max(0, Math.min(1, (target.x - 18) / 45)) : 0.7;
+    this.audio.setAmbience(kind, level);
   }
 
   // --- UnitContext context ---
@@ -2393,6 +2456,7 @@ export class Game {
 
   update(dt: number, time: number): boolean {
     const running = this.runtime.update(dt, time);
+    if (!this.headless) this.updateAudio();
     if (this.missionRings) {
       this.missionRings.sync(this.mission?.activeGoals() ?? []);
       this.missionRings.pulse(time);
@@ -2511,4 +2575,9 @@ export class Game {
     return true;
   }
   lastBattleEvent: number | null = null;
+  /** Presentation-only combat clock for the music layers (seconds, `performance.now()` based). */
+  private lastCombatAt = -Infinity;
+  private lastAlertAt = -Infinity;
+  private musicIntensity: MusicIntensity = 'calm';
+  private lastAmbienceAt = -Infinity;
 }

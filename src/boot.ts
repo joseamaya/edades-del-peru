@@ -2,6 +2,7 @@ import { Game, setAutoStart } from './core/Game';
 import { CAMPAIGN_ONLY } from './core/release';
 import * as THREE from 'three';
 import { GameSettings, DEFAULT_SETTINGS, SETTINGS_VERSION, STARTING_RESOURCES } from './core/Config';
+import { clampVolume } from './audio/mix';
 import { normalizeKeymap } from './core/hotkeys';
 import { BuildingKind, CivId, HistoricalPeriod } from './core/types';
 import { getBuildingStats } from './model/defs/buildings';
@@ -59,18 +60,17 @@ function sanitizeSettings(raw: unknown): GameSettings {
   if (typeof r.fogOfWar === 'boolean') s.fogOfWar = r.fogOfWar;
   if (typeof r.soundEnabled === 'boolean') s.soundEnabled = r.soundEnabled;
   if (typeof r.musicEnabled === 'boolean') s.musicEnabled = r.musicEnabled;
+  for (const bus of ['masterVolume', 'sfxVolume', 'musicVolume', 'ambienceVolume'] as const) {
+    if (Number.isFinite(r[bus])) s[bus] = clampVolume(r[bus] as number);
+  }
   if (typeof r.showHints === 'boolean') s.showHints = r.showHints;
   if (typeof r.cinematic === 'boolean') s.cinematic = r.cinematic;
   if (r.quality === 'high' || r.quality === 'medium' || r.quality === 'low') s.quality = r.quality;
-  // v<SETTINGS_VERSION stored the previous cinematic-off default; adopt the new on
-  // default once. A user who explicitly toggled it off at the current version keeps it.
+  // v<2 stored the previous cinematic-off default; adopt the new on default once. A user who
+  // explicitly toggled it off at the current version keeps it.
   const storedVersion = Number.isFinite(r.settingsVersion) ? (r.settingsVersion as number) : 0;
-  if (storedVersion < SETTINGS_VERSION) {
-    s.cinematic = true;
-    s.settingsVersion = SETTINGS_VERSION;
-  } else {
-    s.settingsVersion = storedVersion;
-  }
+  if (storedVersion < 2) s.cinematic = true;
+  s.settingsVersion = Math.max(storedVersion, SETTINGS_VERSION);
   if (typeof r.rotateCamera === 'boolean') s.rotateCamera = r.rotateCamera;
   if (['slow', 'normal', 'fast'].includes(r.cameraSpeed as string)) {
     s.cameraSpeed = r.cameraSpeed as GameSettings['cameraSpeed'];

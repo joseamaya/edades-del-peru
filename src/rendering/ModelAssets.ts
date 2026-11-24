@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import type { ModelAssetId, RigVariant } from '../model/defs/modelAssets';
+import { CARAL_WORKER_ASSET_ID, type ModelAssetId, type RigVariant } from '../model/defs/modelAssets';
 import { MODEL_ASSET_DEFS, type ModelAssetDefinition } from './modelAssetRegistry';
 import { RigInstance } from './RigInstance';
 import { consolidateSkinnedPrimitives } from './modelConsolidation';
+import { setMountedRiderFactory } from './mountedAttire';
 
 export interface LoadedModelAsset {
   readonly id: ModelAssetId;
@@ -206,6 +207,9 @@ export function acquireRig(id: ModelAssetId, variant?: RigVariant): RigInstance 
   }
   return null;
 }
+
+// Cavalry riders are the shared infantry body; a mount built before the worker is cached keeps its own rider.
+setMountedRiderFactory((variant) => acquireRig(CARAL_WORKER_ASSET_ID, variant));
 
 export function modelAssetStatus(
   ids: readonly ModelAssetId[] = Object.keys(MODEL_ASSET_DEFS) as ModelAssetId[],

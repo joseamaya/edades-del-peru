@@ -1004,20 +1004,17 @@ visible tunic and the macana material to tint them with the commander accent, an
 view; the shared rig geometry is untouched. The order-driven poses are captured by
 `node scripts/shots_evidence.mjs --scene=caral-worker-tasks --out=review/evidence/caral-worker-tasks`.
 
-The mounted rig (`mounted_rig.glb`) is a project-authored low-poly horse and rider built by
-`scripts/blender/build_mounted_rig.py`. It is a 34-bone rig with five clips (`Idle_Loop`, `Walk_Loop` trot,
-`Gallop_Loop`, `Attack`, `Death`), and it maps `HUSSAR`/`CAVALRY` in the Viceroyalty and Republic eras: the
-late-colonial rebel and the four post-colonial civilizations. The horse uses a 1.62 m withers and ~2.7 m
-mounted height against the 1.86 m infantry; its walk clip is a working trot and `run` switches to the gallop
-above the rig's `runSpeedThreshold` (or immediately for an `attack`/`attack_move` charge). Per-asset
-`walkReferenceSpeed`/`runReferenceSpeed` and the `RUN_CLIP_RATE_MAX` ceiling keep the cadence matched to the
-unit velocity instead of clamping the gallop at the infantry walk ceiling. The rider coat, trim, trousers and
-headwear are tinted/selected by
-`src/rendering/mountedAttire.ts` from `src/model/defs/mountedCharacters.ts`; the coat/points palette varies by
-variant as a presentation abstraction and is not a breed reconstruction. `Attack` is the mounted charge/sword
-swing; `Death` plays once during the topple when the rig provides it. There is no mounted mapping before 1532,
-and `modelAssetIdsForMatch` preloads the asset for the affected periods. The `.blend` source is in
-`art-src/blender/scenes/mounted_rig.blend` (Git LFS); the GLB SHA-256 is recorded in `PROVENANCE.md`. Measure it
+The mounted rig (asset id `mounted_rig`) is Quaternius' CC0 horse (`quaternius_horse.glb`, built by
+`scripts/build_mounted_horse.mjs` from `art-src/quaternius/horse.glb`) with five clips (`Idle`, `Walk` trot,
+`Gallop`, `Attack_Headbutt` charge, `Death`). It maps `HUSSAR`/`CAVALRY` in the Viceroyalty and Republic eras: the
+late-colonial rebel and the four post-colonial civilizations. Its back sits at ~1.6 m against the 1.86 m
+infantry; the walk clip is a working trot and `run` switches to the gallop above the rig's `runSpeedThreshold`
+(or immediately for an `attack`/`attack_move` charge). Per-asset `walkReferenceSpeed`/`runReferenceSpeed` and
+the `RUN_CLIP_RATE_MAX` ceiling keep the cadence matched to the unit velocity. `src/rendering/mountedAttire.ts`
+tints the coat and points per side from `src/model/defs/mountedCharacters.ts`, adds the saddle, and seats the
+shared infantry body in its side's soldier uniform on the `Torso2` bone (`docs/art/character-visual-pilot.md`
+§13–15); without the worker asset the horse goes riderless. There is no mounted mapping before 1532, and
+`modelAssetIdsForMatch` preloads the asset for the affected periods. The SHA-256 values are in `PROVENANCE.md`. Measure it
 with `yarn bench --scenario=mounted --units=4,12,24 --assert`; `yarn bench:check` includes the mounted, siege,
 tank and vehicles scenarios. The current merged rig renders at ~20 draws and ~8.4k triangles per unit including
 the shadow pass, inside the 40-draw / 12k-triangle budget.
