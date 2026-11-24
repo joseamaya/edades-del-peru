@@ -8,9 +8,9 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
 
 ## Where we are
 
-- **Release:** `0.2.1` in preparation (§D6); `0.2.0` is published, campaign-only, five campaigns and twenty missions. Launch catalogue: four missions
-  per campaign (20 playable + 0 in development); the other thirteen approved missions are reserved for an
-  expansion.
+- **Release:** `0.2.1` published on 2026-11-24 (§D6); `0.2.0` is the previous campaign-only release. Five
+  campaigns and twenty missions. Launch catalogue: four missions per campaign (20 playable + 0 in
+  development); the other thirteen approved missions are reserved for an expansion.
 - **Gold master:** Caral (`m1_caral`) meets every gate of the campaign quality bar.
 - **Model pattern:** every released mission follows it after the m5–m9, m6b and m8 rebuilds (closed
   2026-11-14); all twenty missions have a model-mission document.
@@ -22,7 +22,9 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
   soft banks/ford and paths, Killke/ayllu variants, the Manco GLB, hero/detail/wide beats and the 3 × 3
   validation set) and the pilot closed with the 2026-11-17 approval; E7 was delivered on 2026-11-17 (baked hero proportions, scoped terrain macro, Inticancha/shrine detail; the 3X recording wins with the optional goals missed), with unique Ayar outfits/portraits, a hand-sculpted body, an andes GLB and new fauna as future work
   ([`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md)).
-- **Open release work:** the itch package and the human playtests (art review closed 2026-11-23; the real-GPU pass covers all 24 site views).
+- **Open release work:** the itch.io upload (the zip ships on the GitHub release; `butler` is not installed)
+  and the human playtests. Art review closed 2026-11-23; the real-GPU pass covers all 24 site views and was
+  re-measured on 2026-11-24 after the shared-body rider.
 - **Asset audit:** the 0.2.0 asset audit closed with three P0 (late-era architecture and the Inca outfit of
   1536–1572); they and the P1 were corrected on 2026-11-20 ([`./0.2.1-asset-corrections.md`](./0.2.1-asset-corrections.md))
   and ship in 0.2.1.
@@ -110,22 +112,26 @@ before the site art. No new missions and no save/URL changes.
 Exit (2026-11-20): the P0 test and the four era captures are green; the P1 labels, site art and the
 colonial-andean profile and the realistas era split are closed with captures; no P1 remains.
 
-## D6 · Release 0.2.1 (closeout)
+## D6 · Release 0.2.1 (published 2026-11-24)
 
 Player-facing notes: [`../release/0.2.1-release-notes.md`](../release/0.2.1-release-notes.md). The version is
 `0.2.1` in `package.json` and in the menu (`app.version`). Save keys, `SAVE_VERSION` (12) and mission ids are
 unchanged since `v0.2.0`; the only save change is the optional `fireCounts` field, which older saves omit.
+Tag `v0.2.1` points at `a044a394`; the GitHub release carries the notes and `edades-del-peru-itch.zip`.
 
 - [x] `yarn verify:fast`, `yarn art:validate` and `yarn dist:check` green on the release branch.
 - [x] `yarn bench:check` green (B13 brought the late rows back under their caps).
-- [ ] The required E2E tier green on the merged release commit (`E2E` workflow on `main`).
-- [ ] Re-run `yarn bench:site-views` on the reference GPU if any scene weight landed after #616.
-- [ ] Build the Pages artifact and the itch package (`yarn package:itch`) from the same commit.
-- [ ] Tag `v0.2.1` on that commit and publish the GitHub release with the notes and the itch zip.
-- [ ] Deploy GitHub Pages (`Deploy GitHub Pages`, `workflow_dispatch`) from the tagged commit.
-- [ ] Recommended before or right after publishing: the human no-cheat playtest of the seven 2026-11-18
-  missions, declared as a known limitation in the notes, plus the manual no-cheat playtest of `m2_chavin`
-  (its Play gate stays `P` in the quality bar until then).
+- [x] The required E2E tier green on the merged release commit (`E2E` workflow on `main`, `a044a394`).
+- [x] Re-ran `yarn bench:site-views` on 2026-11-24 after the shared-body rider and horse (#621): 30.7–46.7
+  FPS p50 at 1600×900 and 35.1–59.5 at 1280×800, all rows on hardware; recorded in
+  [`../development/site-view-performance.md`](../development/site-view-performance.md) §"2026-11-24 pass".
+- [x] Built the Pages artifact and the itch package (`yarn package:itch`, 18.5 MB) from the same commit.
+- [x] Tagged `v0.2.1` and published the GitHub release with the notes and the itch zip.
+- [x] Deployed GitHub Pages from `main` at the tagged commit. The `github-pages` environment protects the
+  branch, so a `workflow_dispatch` with `--ref v0.2.1` is rejected; deploy from `main` only when the tag
+  and `main` point at the same commit.
+- [ ] The human no-cheat playtest of the seven 2026-11-18 missions and `m2_chavin` is still pending; it is
+  declared as a known limitation in the notes and `m2_chavin` keeps its Play `P` until then.
 
 ## Risks
 
