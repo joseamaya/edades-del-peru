@@ -323,8 +323,8 @@ the silhouette change alone.
 5. **Shared dressers.** `dressUniform` serves every post-colonial variant and `dressCaralWorker` every Andean
    one. The shaped gear now reaches the Moche, Wari, Recuay, Chimú, late realistas and patriotas. The other
    Andean cultures inherit the shared rodela and star macana but not their own culture-specific gear, and the
-   m7 rebels and modern roles are still unreviewed; the captures cover seven units, not every variant. Where
-   the dossier says «no documentado», the shared base stays and no garment is invented.
+   m7 rebels and modern roles are still unreviewed; §18 extends the captures to fourteen units, still not every
+   variant. Where the dossier says «no documentado», the shared base stays and no garment is invented.
 6. **Draw-call headroom.** Every unit now measures 6–9 draws, so a third accessory per bone is not a draw-call
    risk. Keep new gear on `attach()` and add its name to the attire's `dynamic` list only if it toggles
    visibility, or it will be merged into the shared draw.
@@ -491,6 +491,64 @@ other. Each one had its own cause.
 `verify:fast`, `bench:check`, `bench:characters`, the rig, mission and movement E2E specs are the gate.
 
 ![Gallop before and after: the hooves left behind, and the rebuilt legs](../media/horse-legs-before-after.webp)
+
+## 18. Equipment fit: measured headpieces, a grip for the club, the shield at the hand
+
+The 2026-11-24 equipment review found three kinds of drift in the close captures, all of them visible at the
+default RTS zoom as well:
+
+- **The Inca cotton helmet was a bowl.** A 0.145 m hemisphere centred on the `Head` bone, its rim at +0.13 and
+  three hoops around it. The skull is 0.10 m half-wide and its centre sits 4 cm forward of the bone, so the
+  dome rode on the crown, tipped back, with hair showing under the front rim. The Moche conical helmet was a
+  plain cone 0.135 wide: narrower than the skull at the crown, so only its tip emerged from the head.
+- **The porra hung from the wrist.** Shaft and star were two objects attached to `hand_r` with absolute world
+  offsets, so the club kept the rest angle in every pose and the star dropped to the ankle on every run.
+- **The rodela hung at the thigh.** Its disc sat 0.28 m below `hand_l`, facing sideways: a plate floating at
+  the hip. The shared headband was a 0.098 m ring inside the temples, so only its front arc showed, across the
+  eyes.
+
+What changed:
+
+| Piece | Before | After |
+| --- | --- | --- |
+| Head measurement | none (bone origin only) | dominant-`Head` vertices of `Body_m`/`Body_f`, recorded in `HEAD_FIT` |
+| Inca padded cap | 0.145 hemisphere at +0.13, three hoops | lathe cap from the brow (0.12/0.11) to the crown (0.292/0.250), rim + one seam, hair hidden |
+| Moche conical helmet | straight 0.135 × 0.25 cone sunk in the skull | fitted cap that rises to a point above the crown |
+| Ear spools | base at 0.096, 0.13, behind the jaw | base at 0.088, 0.115, inside the skull so only the flange reads |
+| Shared headband | 0.098 ring inside the temples | 0.108 ring at the hairline, ellipse in depth, dropped under a helmet |
+| Porra | two meshes, fixed rest angle | one grip group, shaft down local −Z, star crossed on two planes |
+| Porra aim | clip only | head up and outboard at rest/run (`update()` per frame); the swing owns it at attack; released on death |
+| Rodela | 0.28 below the hand, edge-on | at the hand, outboard of the arm, facing forward-outward |
+
+The two dresses now share one pattern: measure the body part, express the piece in that measurement, attach it
+to the bone that moves with the part, and re-aim it after the mixer when the shared clip would contradict it.
+`andeanWeaponGrip` is `firearmGrip`'s counterpart for melee: solved in the rig root's space from local
+matrices, no world-matrix walk per unit per frame, and the group's rest basis is what the dress frame draws
+before the first update.
+
+**Coverage.** `CHARACTER_CASES` now has fourteen units — the seven from §16 plus the Inca slinger, the
+Chanca, Recuay and Chilean line infantry, the patriots and the m7 rebels (which need the mission, not a
+skirmish, because the outfit is gated on `missionId`), and patriot cavalry. Each case declares the rig variant
+it must produce, and both the capture and the bench **fail** when the player's civilization and period dress
+someone else; the earlier list would have labelled a Peruvian as a Chilean. The capture samples the run and
+the attack as sequences (three and four frames), not one pose each, and frames cavalry wider than infantry.
+
+**Tests.** `tests/model-assets.test.ts` pins the fit instead of the pixels: the Inca cap's rim, crown, width
+and forward centre against `HEAD_FIT`; the Moche cap rising above the crown; the spools at ear height; the
+headband above the brows; the porra head above the hand in `idle` and two `run` frames; the rodela centred on
+`hand_l`.
+
+The headband is worn only by bare-headed warriors: under the Moche cone and the Inca cap it poked through the
+shell, and with the head pitched into a swing it crossed the eyes.
+
+**Still open.** The shield is rigid to the hand, so a cross-body swing still cuts the disc through the torso;
+a forearm strap with its own pose is the real fix. The sling is deliberately untouched: §16's hanging sling
+already works and re-aiming it would cost a draw call. The Moche helmet's rim stands ~1 cm off the brow where
+the skull narrows, which reads as padding, not a gap.
+
+`yarn verify:fast`, `yarn bench:characters` and the Andean unit E2E specs are the gate.
+
+![Equipment before and after: the bowl helmet, the star at the ankle and the shield at the thigh, then the fitted cap, the club at the shoulder and the shield in the hand](../media/character-equipment-before-after.webp)
 
 ## See also
 

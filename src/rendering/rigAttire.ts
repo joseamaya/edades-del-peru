@@ -64,6 +64,19 @@ export interface RigAttireTools {
   dispose(): void;
 }
 
+/**
+ * Compose a bone's transform up to (but excluding) the rig root. Both weapon grips solve their aim in the
+ * root's space from local matrices, so a per-frame update never walks world matrices per unit.
+ */
+export function boneToRoot(root: THREE.Object3D, bone: THREE.Object3D, out: THREE.Matrix4): THREE.Matrix4 {
+  out.identity();
+  for (let q: THREE.Object3D | null = bone; q && q !== root; q = q.parent) {
+    q.updateMatrix();
+    out.premultiply(q.matrix);
+  }
+  return out;
+}
+
 /** Show the shared humanoid body and hide every culture-specific attachment. */
 export function showSharedHumanoidBody(root: THREE.Object3D, male: boolean): void {
   const show = (name: string, visible: boolean): void => {
