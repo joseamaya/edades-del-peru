@@ -109,6 +109,7 @@ import {
 import { TAMBOTOCO_CAVE, TAMBOTOCO_INTICANCHA_HUTS, TAMBOTOCO_SHRINE, TAMBOTOCO_VILLAGES } from './tambotocoLayout';
 import { CUSCO_COLONIAL, LIMA_COLONIAL } from './colonialLayout';
 import { colonialCityBlockers } from './colonialCity';
+import { aricaCityBlockers, realFelipeCityBlockers, tarapacaCityBlockers } from './republicCity';
 import {
   LIMA_GROUND,
   LIMA_GROUND_SIZE,
@@ -282,7 +283,7 @@ export interface AuthoredSiteDef {
    */
   hideModel?: boolean;
   /** Authored presentation family; the renderer picks the overlay from it. */
-  style?: 'ayllu' | 'colonial';
+  style?: 'ayllu' | 'colonial' | 'republic';
   /** Source meshes hidden because the game heightfield/scene owns that layer. */
   hideNodePatterns?: readonly RegExp[];
   /** Clears an approach strip from the player base to the site anchor. */
@@ -416,26 +417,6 @@ export function caralKeepout(r: SiteKeepoutRect): SiteKeepoutRect {
 
 /** The battery point in the former 192 m frame, scaled into the 256 m map. */
 const ARICA_SITE_POINT = aricaPoint({ x: 134.8, z: 73 });
-
-// The procedural Real Felipe trace (src/rendering/SiteLandmarks.ts) leaves the south and west gates
-// open. These blockers mirror its curtains and bastions so the fort is not walk-through. They assume
-// the mission's default yaw 0 / scale 1; a rotated or scaled spec must rotate them alongside the mesh.
-const REAL_FELIPE_BLOCKERS: readonly SiteBlocker[] = [
-  { x: ARICA_SITE_POINT.x, z: ARICA_SITE_POINT.z - 12, w: 24, d: 1.4 },
-  { x: ARICA_SITE_POINT.x + 12, z: ARICA_SITE_POINT.z, w: 1.4, d: 24 },
-  { x: ARICA_SITE_POINT.x - 12, z: ARICA_SITE_POINT.z - 7.2, w: 1.4, d: 8.64 },
-  { x: ARICA_SITE_POINT.x - 12, z: ARICA_SITE_POINT.z + 7.2, w: 1.4, d: 8.64 },
-  { x: ARICA_SITE_POINT.x - 7.2, z: ARICA_SITE_POINT.z + 12, w: 8.64, d: 1.4 },
-  { x: ARICA_SITE_POINT.x + 7.2, z: ARICA_SITE_POINT.z + 12, w: 8.64, d: 1.4 },
-  ...([-1, 1] as const).flatMap((sx) =>
-    ([-1, 1] as const).map((sz) => ({
-      x: ARICA_SITE_POINT.x + sx * 12,
-      z: ARICA_SITE_POINT.z + sz * 12,
-      w: 6,
-      d: 6,
-    })),
-  ),
-];
 
 // The Tarapacá village spans ~44 x 26 m around its own anchor (96, 168); keep construction off it.
 const TARAPACA_BUILD_KEEPOUT: readonly SiteKeepoutRect[] = [{ x: 96 / 256, z: 168 / 256, rx: 0.095, rz: 0.075 }];
@@ -859,8 +840,9 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'arica_site',
     label: 'Terraza portuaria y batería de Arica',
     modelName: 'arica_site',
-    // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
-    // scale with it so the battery still covers its terrace.
+    hideModel: true,
+    style: 'republic',
+    // The kit is modelled in game metres; the site point is the 256 m transect anchor.
     scale: aricaLength(0.8),
     origin: ARICA_SITE_POINT,
     anchor: ARICA_SITE_POINT,
@@ -876,17 +858,19 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     heritageProxies: [
       {
         id: 'arica_battery',
-        ...ARICA_SITE_POINT,
-        w: aricaLength(13),
-        d: aricaLength(9),
+        x: ARICA_SITE_POINT.x - 7,
+        z: ARICA_SITE_POINT.z,
+        w: aricaLength(9),
+        d: aricaLength(10),
         h: aricaLength(3),
       },
     ],
-    blockers: [{ ...ARICA_SITE_POINT, w: aricaLength(13), d: aricaLength(9) }],
+    blockers: aricaCityBlockers(),
+    simulationCollision: true,
     blockerPadding: aricaLength(0.5),
     buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.08, rz: 0.07 }],
     wallCollision: {
-      meshPatterns: [/arica/i],
+      meshPatterns: [],
       maxStartYAboveBase: 1.2,
     },
     walkableCorridor: { width: aricaLength(8) },
@@ -896,13 +880,14 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       suppressSnow: true,
     },
   },
-  // Callao (1824–1826): the Arica battery GLB is kept as a registry fallback, but the mission draws a
-  // minimal bastioned trace of its own (mission-scoped `real-felipe` landmark).
+  // Callao (1824–1826): the Arica battery GLB is kept as a registry fallback, and the Republican kit
+  // draws the Real Felipe curtains, bastions and magazine.
   real_felipe_site: {
     id: 'real_felipe_site',
     label: 'Fortaleza del Real Felipe y el Callao',
     modelName: 'arica_site',
     hideModel: true,
+    style: 'republic',
     scale: aricaLength(0.8),
     origin: ARICA_SITE_POINT,
     anchor: ARICA_SITE_POINT,
@@ -916,7 +901,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     },
     pathCellSize: 1,
     heritageProxies: [],
-    blockers: [{ ...ARICA_SITE_POINT, w: aricaLength(13), d: aricaLength(9) }, ...REAL_FELIPE_BLOCKERS],
+    blockers: realFelipeCityBlockers(),
+    simulationCollision: true,
     blockerPadding: aricaLength(0.5),
     buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.08, rz: 0.07 }],
     wallCollision: {
@@ -931,12 +917,13 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     },
   },
   // Tarapacá (1879): the site moved to the village in the quebrada. The Arica GLB is not loaded; the
-  // mission draws the adobe village on its own heightfield.
+  // Republican kit draws the adobe village, the crest and the Pachica hamlet on this heightfield.
   tarapaca_site: {
     id: 'tarapaca_site',
     label: 'Quebrada y pueblo de Tarapacá',
     modelName: 'arica_site',
     hideModel: true,
+    style: 'republic',
     scale: aricaLength(0.8),
     origin: { x: 96, z: 168 },
     anchor: { x: 96, z: 168 },
@@ -950,10 +937,10 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     },
     pathCellSize: 1,
     heritageProxies: [],
-    // The village is the battlefield: its plaza and streets stay walkable so both lines can close
-    // and fight. There is no fort footprint; the houses themselves block movement through the landmark
-    // halls (`siteLandmarkObstacles`).
-    blockers: [],
+    // The village is the battlefield: its plaza and the east street stay walkable so both lines can
+    // close and fight; the houses, chapel, corral, parapet and outcrops block from the same layout.
+    blockers: tarapacaCityBlockers(),
+    simulationCollision: true,
     blockerPadding: 0.5,
     buildKeepout: [...TARAPACA_BUILD_KEEPOUT],
     wallCollision: { meshPatterns: [], maxStartYAboveBase: 1.2 },

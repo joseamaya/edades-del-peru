@@ -33,6 +33,7 @@ import {
 import { CHAVIN_CITY_LAYOUT, CHAVIN_PHASE_PLAN } from '../model/defs/chavinCity';
 import { CUSCO_CITY_LAYOUT, CUSCO_PHASE_PLAN } from '../model/defs/cuscoCity';
 import { COLONIAL_CITY_PHASE, COLONIAL_PHASE_PLAN, colonialLayoutAt } from '../model/defs/colonialCity';
+import { REPUBLIC_LAYOUTS, REPUBLIC_PHASE_PLAN } from '../model/defs/republicCity';
 import { standsIn, type SitePhasePlan } from '../model/defs/sitePhases';
 import { fishingApproach, type Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
@@ -347,6 +348,16 @@ export class WorldViewDecor {
         colonial.setPhase(this.game.sitePhase);
         applyFowToObject(colonial.group, this.game.fowUniforms);
         this.game.colonialSite = colonial;
+      }
+    }
+    if (def.style === 'republic') {
+      // Arica's terrace, the Real Felipe trace and the Tarapacá village share one kit and one
+      // placement/blocker source; the site's own composition is chosen by id.
+      const layout = REPUBLIC_LAYOUTS[def.id as keyof typeof REPUBLIC_LAYOUTS];
+      if (layout) {
+        spawnKitCity('republic_city', 'republic', layout, REPUBLIC_PHASE_PLAN, (city) => {
+          this.game.republicCity = city;
+        });
       }
     }
     if (def.style === 'ayllu') {

@@ -103,6 +103,7 @@ and new records change.
 | [`design/geographic-similarity-matrix.md`](./design/geographic-similarity-matrix.md) | Pairwise similarity of the 20 missions and the reuse clusters behind it | Snapshot |
 | [`design/tambotoco-art-pilot.md`](./design/tambotoco-art-pilot.md) | Pilot audit, reference scene, asset inventory, size ledger, backlog and staged plan | Living |
 | [`design/visual-language.md`](./design/visual-language.md) | Silhouettes, materials, emblems, rigged models and set-pieces | Living |
+| [`design/republic-sites.md`](./design/republic-sites.md) | The shared Republican kit: Arica, Real Felipe and Tarapacá pieces, compositions and collision | Living |
 | [`design/cultural-landscape.md`](./design/cultural-landscape.md) | Cultural-landscape layer: data model, rendering and integration | Living |
 | [`design/menu-ux.md`](./design/menu-ux.md) | Onboarding, campaign flow and menu behaviour | Living |
 | [`design/i18n.md`](./design/i18n.md) | Language split, keys and translation rules | Living |
@@ -129,10 +130,10 @@ document; a new mission is not complete without one. The quality bar is the live
 | El Virreinato | `m7_tupac_amaru` | [`tupac_amaru.md`](./historia/campanas/tupac_amaru.md) | [`colonial-model-mission.md`](./design/colonial-model-mission.md) | [`colonial-site.md`](./design/colonial-site.md) |
 | La Independencia | `m_junta_cusco` | [`junta_cusco.md`](./historia/campanas/junta_cusco.md) | [`junta-cusco-model-mission.md`](./design/junta-cusco-model-mission.md) | — |
 | La Independencia | `m_lima_1821` | [`lima_1821.md`](./historia/campanas/lima_1821.md) | [`lima-1821-model-mission.md`](./design/lima-1821-model-mission.md) | — |
-| La Independencia | `m_real_felipe` | [`real_felipe.md`](./historia/campanas/real_felipe.md) | [`real-felipe-model-mission.md`](./design/real-felipe-model-mission.md) | — |
+| La Independencia | `m_real_felipe` | [`real_felipe.md`](./historia/campanas/real_felipe.md) | [`real-felipe-model-mission.md`](./design/real-felipe-model-mission.md) | [`republic-sites.md`](./design/republic-sites.md) |
 | La Independencia | `m8_independencia` | [`independencia.md`](./historia/campanas/independencia.md) | [`independencia-model-mission.md`](./design/independencia-model-mission.md) | [`independence-site.md`](./design/independence-site.md) |
-| La República | `m9_guerra_pacifico` | [`guerra_del_pacifico.md`](./historia/campanas/guerra_del_pacifico.md) | [`arica-model-mission.md`](./design/arica-model-mission.md) | [`arica-site.md`](./design/arica-site.md) |
-| La República | `m_tarapaca` | [`tarapaca.md`](./historia/campanas/tarapaca.md) | [`tarapaca-model-mission.md`](./design/tarapaca-model-mission.md) | — |
+| La República | `m9_guerra_pacifico` | [`guerra_del_pacifico.md`](./historia/campanas/guerra_del_pacifico.md) | [`arica-model-mission.md`](./design/arica-model-mission.md) | [`arica-site.md`](./design/arica-site.md) · [`republic-sites.md`](./design/republic-sites.md) |
+| La República | `m_tarapaca` | [`tarapaca.md`](./historia/campanas/tarapaca.md) | [`tarapaca-model-mission.md`](./design/tarapaca-model-mission.md) | [`republic-sites.md`](./design/republic-sites.md) |
 | La República | `m_miraflores` | [`miraflores.md`](./historia/campanas/miraflores.md) | [`miraflores-model-mission.md`](./design/miraflores-model-mission.md) | — |
 | La República | `m_brena` | [`brena.md`](./historia/campanas/brena.md) | [`brena-model-mission.md`](./design/brena-model-mission.md) | — |
 

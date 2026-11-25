@@ -1,11 +1,10 @@
 /**
  * Mission-scoped landmark compositions for authored sites whose bundled GLB is a labelled
- * abstraction from another place (Arica's battery for Callao, the Chanca pucará for Vilcabamba).
- * The renderer draws them procedurally so the site keeps its
- * documented silhouette without shipping a new multi-megabyte model per mission.
+ * abstraction from another place (the Chanca pucará for Vilcabamba). The renderer draws them
+ * procedurally so the site keeps its documented silhouette without shipping a new multi-megabyte
+ * model per mission.
  */
-export type SiteLandmarkKind =
-  'real-felipe' | 'tarapaca-village' | 'tarapaca-heights' | 'tarapaca-pachica' | 'vilcabamba-refuge';
+export type SiteLandmarkKind = 'vilcabamba-refuge';
 
 export interface MissionSiteLandmark {
   kind: SiteLandmarkKind;

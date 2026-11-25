@@ -970,6 +970,43 @@ slot is absent (offline / without assets).
 - **Evidence**: `docs/media/cusco-kit-before-after.webp` (1600x1000 WebP q72): top row the procedural boxes,
   bottom row the kit, same camera and light, from `m_cusco_1536`.
 
+### Republican architecture kit (m9_guerra_pacifico, m_real_felipe, m_tarapaca)
+
+- **Location**: `src/assets/architecture/republic/republic_<piece>_lod0.glb` and `_lod1.glb`: `apron`
+  (packed port terrace/village plaza), `battery` (stone rampart, five guns and magazine), `warehouse`
+  (adobe port store), `pier` (timber landing), `curtain` (12 m brick curtain wall), `bastion` (pentagonal
+  Real Felipe corner), `magazine` (vaulted brick store), `fort_plaza` (paved courtyard), `well`, `chapel`
+  (adobe nave and espadaña), `adobe_house` (flat-roofed quebrada house), `corral_wall`, `parapet` (crest
+  wall) and `outcrop`.
+- **Source**: generated in Blender 5.3 by `scripts/blender/build_republic_architecture_kit.py`; kit scene
+  `art-src/blender/scenes/republic_architecture_kit.blend` (Git LFS). Uncompressed exports and per-piece
+  manifests (triangles, materials, bounds, budget, `confidence`, sources, collision, review state) live in
+  `art-src/blender/exports/republic/architecture/`; the game copies were meshopt-compressed with
+  `yarn art:models --only=<file>` (≈336 KB for the 28 game copies).
+- **Content**: project-owned procedural geometry. Eight Principled materials (brick, stone, adobe, earth,
+  wood, packed-earth paving, stone plaza paving and dark openings) with world-scale box-projected UVs and a
+  per-vertex tint (wall-foot grime, roof and paving variation; the horizontal paving and plaza skip the
+  grime); no textures in the GLBs. At runtime the game maps `wall_brick` (warm, lifted) onto the fort,
+  `wall_fieldstone` (lifted) onto the stone, `plaster_detail` onto adobe and earth, `wood` onto the timber,
+  `ground_plaza` onto the fort courtyard and `plaster_detail` (kept colour) onto the packed aprons. LOD0
+  ≤ 5000 / LOD1 ≤ 1500 triangles per piece; the chapel and the bastion are monument pieces (≤ 8000 / 2400).
+- **Historical basis**: documented: the port terrace, battery, warehouse and pier; the Real Felipe's
+  bastioned brick/stone trace with four corner bastions and sally gates; the Tarapacá quebrada village with
+  its chapel, flat-roofed adobe houses, stone corral and the crest line; Pachica as a hamlet on the road.
+  Assumed (licences in the manifests): the 24 m fort side, the five-gun battery, house sizes, roof pitch,
+  the espadaña and the number of pieces. Sources: `docs/historia/arquitectura.md`,
+  `docs/design/{republic-sites,arica-site,real-felipe-model-mission,tarapaca-model-mission}.md`,
+  `docs/historia/campanas/{guerra_del_pacifico,real_felipe,tarapaca}.md`.
+- **Runtime**: `src/model/defs/republicCity.ts` places the three compositions and derives each site's
+  pathfinding blockers from the same placements (`layoutBlockers`); `WorldViewDecor` bakes them with
+  `ArchitectureCity`. The three site definitions set `hideModel` and `simulationCollision`, so the headless
+  match blocks the same buildings. This retires the `arica_site` battery GLB as the drawn site (it remains a
+  registry fallback) and removes the mission-scoped `real-felipe`, `tarapaca-village`, `tarapaca-heights`
+  and `tarapaca-pachica` procedural landmarks.
+- **Evidence**: `docs/media/republic-sites-before-after.webp` (1652x1351 WebP q74): three rows, Arica, Real
+  Felipe and Tarapacá, before and after the kit, same mission, seed, camera and light; produced with the
+  `yarn shot` commands in `docs/design/republic-sites.md` and `scripts/republic_sites_sheet.mjs`.
+
 ### Colonial architecture kit (m_lima, m_lima_1821, m_miraflores, m_junta_cusco, m7_tupac_amaru)
 
 - **Location**: `src/assets/architecture/colonial/colonial_<piece>_lod0.glb` and `_lod1.glb`: `catedral`

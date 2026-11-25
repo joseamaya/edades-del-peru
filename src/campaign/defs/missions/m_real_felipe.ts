@@ -71,7 +71,6 @@ export const mRealFelipe: MissionDef = {
       keepout: [{ x: REAL_FELIPE.x, z: REAL_FELIPE.z, rx: 0.075, rz: 0.075 }],
       buildKeepout: [{ x: REAL_FELIPE.x, z: REAL_FELIPE.z, rx: 0.065, rz: 0.065 }],
     },
-    siteLandmarks: [{ kind: 'real-felipe', x: REAL_FELIPE.x, z: REAL_FELIPE.z }],
     roads: [
       {
         from: { dx: REAL_FELIPE_CAMP.x * 256, dz: REAL_FELIPE_CAMP.z * 256 },

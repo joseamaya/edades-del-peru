@@ -34,21 +34,23 @@ describe('mission site landmarks', () => {
     expect(sacsay.z).toBeCloseTo(CUSCO_SITE_SACSAY.z, 6);
   });
 
-  it('replaces the borrowed GLBs with procedural landmarks', () => {
-    for (const [missionId, kind] of [
-      ['m_real_felipe', 'real-felipe'],
-      ['m_vilcabamba', 'vilcabamba-refuge'],
-    ] as const) {
-      expect(mission(missionId).layout?.siteLandmarks?.map((landmark) => landmark.kind)).toEqual([kind]);
+  it('draws the Republican sites from the kit and hides the borrowed GLBs', () => {
+    // Arica, Real Felipe and Tarapacá no longer use mission-scoped procedural landmarks: the Republican
+    // kit draws their compositions from one shared layout-and-blocker source.
+    for (const id of ['m9_guerra_pacifico', 'm_real_felipe', 'm_tarapaca']) {
+      expect(mission(id).layout?.siteLandmarks, id).toBeUndefined();
     }
-    expect(mission('m_tarapaca').layout?.siteLandmarks?.map((landmark) => landmark.kind)).toEqual([
-      'tarapaca-village',
-      'tarapaca-heights',
-      'tarapaca-pachica',
+    for (const siteId of ['arica_site', 'real_felipe_site', 'tarapaca_site'] as const) {
+      const site = getAuthoredSite(siteId)!;
+      expect(site.hideModel, siteId).toBe(true);
+      expect(site.style, siteId).toBe('republic');
+      expect(site.simulationCollision, siteId).toBe(true);
+    }
+    // Vilcabamba keeps its procedural refuge until its own kit lands.
+    expect(mission('m_vilcabamba').layout?.siteLandmarks?.map((landmark) => landmark.kind)).toEqual([
+      'vilcabamba-refuge',
     ]);
-    for (const siteId of ['real_felipe_site', 'tarapaca_site', 'vilcabamba_site'] as const) {
-      expect(getAuthoredSite(siteId)?.hideModel, siteId).toBe(true);
-    }
+    expect(getAuthoredSite('vilcabamba_site')?.hideModel).toBe(true);
   });
 
   it('draws the colonial sites from the kit and hides the bundled GLB', () => {
@@ -69,14 +71,8 @@ describe('mission site landmarks', () => {
     expect(layout.site?.y).toBeCloseTo(6.942, 3);
   });
 
-  it('builds visible geometry for every landmark kind', () => {
-    const kinds: SiteLandmarkKind[] = [
-      'real-felipe',
-      'tarapaca-village',
-      'tarapaca-heights',
-      'tarapaca-pachica',
-      'vilcabamba-refuge',
-    ];
+  it('builds visible geometry for the Vilcabamba refuge', () => {
+    const kinds: SiteLandmarkKind[] = ['vilcabamba-refuge'];
     const heightAt = (x: number, z: number): number => 5 + Math.sin(x * 0.02) * 0.25 + Math.cos(z * 0.02) * 0.2;
     for (const kind of kinds) {
       const landmarks = new SiteLandmarks([{ kind, x: 0.5, z: 0.5 }], 256, heightAt, 5);
@@ -93,28 +89,40 @@ describe('mission site landmarks', () => {
     }
   });
 
-  it('sinks the Tarapacá foundations into the quebrada slope', () => {
-    const heightAt = (x: number, z: number): number => 5 + (x - 128) * 0.04 + (z - 168) * 0.02;
-    const landmarks = new SiteLandmarks([{ kind: 'tarapaca-village', x: 0.5, z: 0.5 }], 256, heightAt, 5);
-    const box = new THREE.Box3().setFromObject(landmarks.group);
-    const terrain = heightAt(box.min.x, box.min.z);
-    expect(box.min.y).toBeGreaterThan(terrain - 1.2);
-    expect(box.min.y).toBeLessThan(terrain + 0.8);
-    landmarks.dispose();
-  });
-
   it('registers the Real Felipe walls with the sally gates open', () => {
     const site = getAuthoredSite('real_felipe_site')!;
     const blockers = site.blockers;
-    expect(blockers.length).toBeGreaterThanOrEqual(10);
-    expect(blockers.some((blocker) => blocker.w === 24 && blocker.d === 1.4)).toBe(true);
-    expect(blockers.some((blocker) => blocker.w === 6 && blocker.d === 6)).toBe(true);
+    // Four curtains per side pair, four bastions, the magazine and the well.
+    expect(blockers).toHaveLength(14);
+    expect(
+      blockers.some((blocker) => blocker.w > 12 && blocker.d > 12),
+      'a bastion',
+    ).toBe(true);
     const anchor = site.anchor;
     const covers = (x: number, z: number): boolean =>
       blockers.some((blocker) => Math.abs(x - blocker.x) <= blocker.w / 2 && Math.abs(z - blocker.z) <= blocker.d / 2);
     expect(covers(anchor.x, anchor.z - 12), 'north curtain').toBe(true);
+    expect(covers(anchor.x + 12, anchor.z), 'east curtain').toBe(true);
+    expect(covers(anchor.x - 12, anchor.z - 12), 'north-west bastion').toBe(true);
     expect(covers(anchor.x, anchor.z + 12), 'south sally gate').toBe(false);
     expect(covers(anchor.x - 12, anchor.z), 'west sally gate').toBe(false);
+    // The courtyard stays open for the sortie.
+    expect(covers(anchor.x, anchor.z), 'courtyard').toBe(false);
+  });
+
+  it('keeps the Republican aprons and plaza floors walkable', () => {
+    const arica = getAuthoredSite('arica_site')!;
+    expect(arica.blockers).toHaveLength(2);
+    const tarapaca = getAuthoredSite('tarapaca_site')!;
+    const covers = (site: typeof tarapaca, x: number, z: number): boolean =>
+      site.blockers.some(
+        (blocker) => Math.abs(x - blocker.x) <= blocker.w / 2 && Math.abs(z - blocker.z) <= blocker.d / 2,
+      );
+    expect(covers(tarapaca, 96, 168), 'the village plaza').toBe(false);
+    expect(covers(tarapaca, 106, 168), 'the east street').toBe(false);
+    expect(covers(tarapaca, 96, 158), 'a village house').toBe(true);
+    expect(covers(tarapaca, 160, 123), 'the crest parapet').toBe(true);
+    expect(covers(tarapaca, 198, 158), 'the Pachica corral').toBe(true);
   });
 });
 

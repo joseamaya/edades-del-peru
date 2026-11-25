@@ -230,6 +230,8 @@ export class Game {
   cuscoCity: ArchitectureCity | null = null;
   /** The colonial Plaza Mayor from the colonial kit (Lima 1535/1821, Cusco 1780/1814, Miraflores). */
   colonialCity: ArchitectureCity | null = null;
+  /** The Republican kit composition (Arica, Real Felipe, Tarapacá), when the site uses it. */
+  republicCity: ArchitectureCity | null = null;
   /** The ayllu world of Tambotoco (cave, shrine, hamlets, planned Inticancha); null elsewhere. */
   aylluSite: AylluSite | null = null;
   /** The colonial life around Lima/Cusco (houses, market, people); null elsewhere. */
@@ -1546,6 +1548,7 @@ export class Game {
     this.cuscoCity?.setPhase(phase);
     this.aylluSite?.setPhase(phase);
     this.colonialCity?.setPhase(phase);
+    this.republicCity?.setPhase(phase);
     this.colonialSite?.setPhase(phase);
     this.syncSiteModelVisibility();
     this.siteCrew?.setPhase(phase as CaralMayorPhase);
@@ -2336,6 +2339,7 @@ export class Game {
       this.chavinCity = null;
       this.cuscoCity = null;
       this.colonialCity = null;
+      this.republicCity = null;
     }
     this.sitePhase = this.siteDef?.phases?.initial ?? 'in_use';
     this.sitePhaseRestored = false;

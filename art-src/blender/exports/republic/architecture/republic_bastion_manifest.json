@@ -1,0 +1,84 @@
+{
+  "asset_id": "republic_bastion",
+  "source_scene": "scenes/republic_architecture_kit.blend",
+  "script": "scripts/blender/build_republic_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "republicCityBlockers in src/model/defs/republicCity.ts",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/arica-site.md",
+    "docs/design/real-felipe-model-mission.md",
+    "docs/design/tarapaca-model-mission.md",
+    "docs/historia/campanas/guerra_del_pacifico.md",
+    "docs/historia/campanas/real_felipe.md",
+    "docs/historia/campanas/tarapaca.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 8000,
+    "LOD1": 2400
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 109,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_RepublicBrick",
+        "MAT-Arch_RepublicDark",
+        "MAT-Arch_RepublicStone"
+      ],
+      "bounds": {
+        "min": [
+          -5.0,
+          -5.05,
+          0.0
+        ],
+        "max": [
+          5.0,
+          3.5,
+          4.15
+        ],
+        "size": [
+          10.0,
+          8.55,
+          4.15
+        ]
+      },
+      "file": "republic_bastion_lod0.glb",
+      "bytes": 12764
+    },
+    "LOD1": {
+      "triangles": 109,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_RepublicBrick",
+        "MAT-Arch_RepublicDark",
+        "MAT-Arch_RepublicStone"
+      ],
+      "bounds": {
+        "min": [
+          -5.0,
+          -5.05,
+          0.0
+        ],
+        "max": [
+          5.0,
+          3.5,
+          4.15
+        ],
+        "size": [
+          10.0,
+          8.55,
+          4.15
+        ]
+      },
+      "file": "republic_bastion_lod1.glb",
+      "bytes": 12764
+    }
+  }
+}

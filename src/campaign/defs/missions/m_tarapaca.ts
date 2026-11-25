@@ -72,11 +72,6 @@ export const mTarapaca: MissionDef = {
       ],
       buildKeepout: [{ x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256, rx: 0.095, rz: 0.075 }],
     },
-    siteLandmarks: [
-      { kind: 'tarapaca-village', x: TARAPACA_VILLAGE.x / 256, z: TARAPACA_VILLAGE.z / 256 },
-      { kind: 'tarapaca-heights', x: TARAPACA_HEIGHTS.x / 256, z: TARAPACA_HEIGHTS.z / 256 },
-      { kind: 'tarapaca-pachica', x: TARAPACA_PACHICA.x / 256, z: TARAPACA_PACHICA.z / 256, scale: 0.9 },
-    ],
     roads: [
       {
         from: { dx: TARAPACA_VILLAGE.x, dz: TARAPACA_VILLAGE.z },

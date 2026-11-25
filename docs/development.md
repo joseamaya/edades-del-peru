@@ -146,14 +146,14 @@ Definition of Done and the building audit see
   (`scripts/build_geographic_heightmaps.py`). `cusco_inca_site` has no field of its own: both missions that use
   it supply one, which pays for the new data inside the `dist` budget.
 - **Mission-scoped site landmarks**: `MissionLayout.siteLandmarks`
-  (`src/model/defs/siteLandmarks.ts`) draws procedural landmark compositions for the sites whose bundled GLB is a
-  labelled abstraction from another place: Cusco's plaza/ushnu and Sacsayhuamán, the Real Felipe bastions, the
-  Tarapacá village, heights and Pachica hamlet, and the Vilcabamba refuge. `SiteLandmarks` merges geometry per material and lives in its own
-  scene group so disposing a match never touches the shared generated PBR textures. `MissionSite.hideModel`
-  drops the bundled GLB per mission (Cusco 1536) while `AuthoredSiteDef.hideModel` does it for a site used by
-  one mission (Real Felipe, Tarapacá, Vilcabamba); both are presentation-only. The Real Felipe trace also
-  registers its curtain/bastion blockers with the sally gates open; objectives, saves and the other sites'
-  collision are unchanged. Guarded by `tests/site-landmarks.test.ts`.
+  (`src/model/defs/siteLandmarks.ts`) draws procedural landmark compositions only for the sites whose bundled
+  GLB is a labelled abstraction from another place and whose kit has not landed yet: the Vilcabamba refuge.
+  Cusco's plaza and Sacsayhuamán are the Cusco kit; the Real Felipe bastions and the Tarapacá
+  village/heights/Pachica are the Republican kit (`src/model/defs/republicCity.ts`, which also owns their
+  blockers). `SiteLandmarks` merges geometry per material and lives in its own scene group so disposing a
+  match never touches the shared generated PBR textures. `MissionSite.hideModel` drops the bundled GLB per
+  mission (Cusco 1536) while `AuthoredSiteDef.hideModel` does it for a site used by one mission (Vilcabamba);
+  both are presentation-only. Guarded by `tests/site-landmarks.test.ts`.
 - **Palettized ground**: the model-mission pattern wants painted ground at ~2 m per point, and a 128 x 128 RGBA
   grid is 64 KB, so per-mission grids store a 4-bit index per cell into a 16-entry palette
   (`src/model/defs/groundCodec.ts`) and decode to the RGBA weights `sampleAuthoredGround` expects. The palette
@@ -605,6 +605,16 @@ Definition of Done and the building audit see
   the site's `blockerPadding`). Lima 1535's smaller keepout reopens the plaza apron for its cabildo while the
   kit footprints stay reserved from the opening. This changes placement, so `REPLAY_VERSION` is 45; guarded by
   `tests/headless-game.test.ts` and `tests/e2e/campaign-playtest.spec.ts`.
+- **Architecture-kit seating** (2026-11-25): `ArchitectureCity` seats a piece on the **lowest** ground under
+  its model bounding box and sinks it 0.08 m; lifted floors use the highest ground instead. A long thin
+  piece whose box reaches downhill (a 20 m wall plus a ditch) therefore sinks its wall into the crest — the
+  Tarapacá parapet dropped its ditch and keeps a tight wall footprint. Keep a wall's footprint on the wall,
+  not on the slope or the trench it faces.
+- **Republican kit collision** (2026-11-25): Arica, Real Felipe and Tarapacá take their blockers from
+  `republicCity.ts` and set `simulationCollision`, so the headless match blocks the same houses, fort walls,
+  parapets and outcrops; the mission-scoped procedural landmarks are retired. This changes pathing and
+  placement, so `REPLAY_VERSION` is 46; guarded by `tests/republic-architecture-kit.test.ts`,
+  `tests/tarapaca-battle.test.ts` and the three mission specs.
 - **Authored canal traces** (issue 384): `MissionCanal.path` (normalized) becomes `Game.canalPath` in world
   units; `canalIrrigationAt` measures the farm bonus by distance to the trace, `Game.canPlace` keeps buildings
   out of the channel, `Game.isReserved` keeps props out, and `spawnCanal` builds relief-following ribbons plus a

@@ -1,7 +1,7 @@
 # Real Felipe 1824–1826 — model mission
 
 **Mission:** `m_real_felipe` · **Campaign:** La Independencia · **Period:** Independence (1824–1826) ·
-**Status:** implemented and art-accepted (procedural site signed 2026-11-23); pending the human playtest.
+**Status:** implemented and art-accepted (the site is drawn by the Republican kit since 2026-11-25); pending the human playtest.
 
 ## Historical problem
 
@@ -31,9 +31,14 @@ Optional/failure: if Salom dies or the camp falls, the mission is lost.
 ## Map and site
 
 - 256 m coast transect, painted ground every 2 m, worker crossing ≈2:22.
-- New `real_felipe_site` reuses the Arica coastal-fort composition and heightfield as a **labelled
-  abstraction**: the real Real Felipe is a larger bastion, but the terrace, battery and sea approach read
-  correctly at RTS zoom. No heritage card is attached; the fortress is the objective area, not a museum.
+- `real_felipe_site` uses the Callao heightfield and draws the **Real Felipe** from the Republican kit
+  ([`republic-sites.md`](./republic-sites.md)): four curtains on a 24 m side, four corner bastions, a
+  magazine, a well and a paved courtyard. The south and west sides keep 4 m sally gates open for the
+  scripted sortie; the other curtains are closed. The kit is an abstraction — the real fort is larger — and
+  no heritage card is attached: the fortress is the objective area, not a museum.
+- The kit's blockers come from the same placements (`realFelipeCityBlockers`) and the site opts into
+  `simulationCollision`, so the headless match blocks the walls too. The procedural `real-felipe` landmark
+  is retired.
 - The bay of Callao **opens to the Pacific**: the heightfield (`scripts/build_geographic_heightmaps.py`)
   joins the bight to the western sea through a south-west mouth; before it, a ~27 m dry bar closed the bay
   into a lagoon. The fortress fronts the bay (its pad is ~32 m from the water) — the bay is the port, and
@@ -42,9 +47,9 @@ Optional/failure: if Salom dies or the camp falls, the mission is lost.
   on the Pacific shore 134 m away on the far side of the bay.
 - Player camp inland to the **south-west** of the fortress, two battery nodes between the camp and the
   fort, the bay on the west.
-- No new GLB. The reused site is recorded in `PROVENANCE.md`; the mission has its own in-engine captures
-  (`scripts/capture_independencia_arc.mjs`) for the bastion, the batteries and the siege camp. A dedicated
-  star-fort kit is future work.
+- The Arica battery GLB remains the site's registry fallback (`hideModel`); the mission keeps its own
+  in-engine captures (`scripts/capture_independencia_arc.mjs`) for the bastion, the batteries and the siege
+  camp.
 
 ## Economy and cast
 
@@ -81,5 +86,7 @@ Optional/failure: if Salom dies or the camp falls, the mission is lost.
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts` cover the briefing and act cards.
 - Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in
   `yarn bench:check`.
-- The procedural bastioned site was accepted as an abstraction on 2026-11-23 (Miguel Amaya); a dedicated
-  star-fort GLB stays a future upgrade, not a gate. Open: human no-cheat playtest.
+- Kit: `tests/republic-architecture-kit.test.ts` (budgets, materials, the sally gates and the site
+  collision) and `docs/design/republic-sites.md`.
+- The bastioned site was accepted as an abstraction on 2026-11-23 (Miguel Amaya) and is now drawn by the
+  Republican kit; the kit manifests record the assumed dimensions. Open: human no-cheat playtest.

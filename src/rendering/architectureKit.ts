@@ -39,11 +39,18 @@ const colonialUrls = import.meta.glob('../assets/architecture/colonial/*.glb', {
   import: 'default',
 }) as Record<string, string>;
 
+const republicUrls = import.meta.glob('../assets/architecture/republic/*.glb', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
+
 const KIT_URLS: Record<ArchitectureKitId, Record<string, string>> = {
   caral: caralUrls,
   chavin: chavinUrls,
   cusco: cuscoUrls,
   colonial: colonialUrls,
+  republic: republicUrls,
 };
 
 export function archKitUrl(kit: ArchitectureKitId, id: ArchAssetId, lod: 0 | 1): string | undefined {
@@ -166,6 +173,17 @@ export const ARCH_SURFACES: Record<
   'MAT-Arch_ColonialStone': { set: 'wall_cutstone', tint: 0xd8d2c2, normal: 0.8, lift: 1.25 },
   'MAT-Arch_ColonialPaving': { set: 'ground_plaza', tint: 0xf0e6d6, normal: 0.5, lift: 1.25 },
   'MAT-Arch_ColonialDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  // Republican: the fort's brick and stone, the quebrada's adobe and earth roofs, the timber of the
+  // pier and the paved aprons. The photographed brick is dark, so the runtime lifts and warms it; the
+  // adobe and earth keep their documented paint under the plaster detail set.
+  'MAT-Arch_RepublicBrick': { set: 'wall_brick', tint: 0xd8b7a8, normal: 0.7, lift: 1.35 },
+  'MAT-Arch_RepublicStone': { set: 'wall_fieldstone', tint: 0xd8d2c2, normal: 0.8, lift: 1.4 },
+  'MAT-Arch_RepublicAdobe': { set: 'plaster_detail', normal: 0.9, keepColor: true },
+  'MAT-Arch_RepublicEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
+  'MAT-Arch_RepublicWood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
+  'MAT-Arch_RepublicPaving': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  'MAT-Arch_RepublicPlaza': { set: 'ground_plaza', tint: 0xe8dcc6, normal: 0.5, lift: 1.2 },
+  'MAT-Arch_RepublicDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
 };
 
 /** Mix a sampled diffuse colour towards its luma; `saturation` 1 keeps the map, 0 is grey. */

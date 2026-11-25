@@ -232,9 +232,12 @@ describe('authored campaign sites', () => {
     expect(site.heightField?.worldSize).toBe(256);
     expect(site.heightField?.ground?.size).toBe(128);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['arica_battery']);
-    expect(site.heritageProxies[0]?.w).toBeCloseTo(17.333, 3);
-    expect(site.heritageProxies[0]?.d).toBeCloseTo(12, 3);
+    expect(site.heritageProxies[0]?.x).toBeCloseTo(site.anchor.x - 7, 3);
+    expect(site.heritageProxies[0]?.w).toBeCloseTo(12, 3);
+    expect(site.heritageProxies[0]?.d).toBeCloseTo(13.333, 3);
     expect(site.heritageProxies[0]?.h).toBeCloseTo(4, 3);
+    expect(site.style).toBe('republic');
+    expect(site.simulationCollision).toBe(true);
     expect(site.walkableCorridor?.width).toBeCloseTo(10.667, 3);
     const mission = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
     expect(mission.layout?.site?.id).toBe('arica_site');

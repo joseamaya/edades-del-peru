@@ -1,0 +1,82 @@
+{
+  "asset_id": "republic_pier",
+  "source_scene": "scenes/republic_architecture_kit.blend",
+  "script": "scripts/blender/build_republic_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "republicCityBlockers in src/model/defs/republicCity.ts",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/arica-site.md",
+    "docs/design/real-felipe-model-mission.md",
+    "docs/design/tarapaca-model-mission.md",
+    "docs/historia/campanas/guerra_del_pacifico.md",
+    "docs/historia/campanas/real_felipe.md",
+    "docs/historia/campanas/tarapaca.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 260,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_RepublicDark",
+        "MAT-Arch_RepublicWood"
+      ],
+      "bounds": {
+        "min": [
+          -2.8,
+          -8.98,
+          -1.6
+        ],
+        "max": [
+          2.8,
+          9.1,
+          1.35
+        ],
+        "size": [
+          5.6,
+          18.08,
+          2.95
+        ]
+      },
+      "file": "republic_pier_lod0.glb",
+      "bytes": 24068
+    },
+    "LOD1": {
+      "triangles": 210,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_RepublicDark",
+        "MAT-Arch_RepublicWood"
+      ],
+      "bounds": {
+        "min": [
+          -2.8,
+          -8.98,
+          -1.6
+        ],
+        "max": [
+          2.8,
+          9.1,
+          1.35
+        ],
+        "size": [
+          5.6,
+          18.08,
+          2.95
+        ]
+      },
+      "file": "republic_pier_lod1.glb",
+      "bytes": 19768
+    }
+  }
+}

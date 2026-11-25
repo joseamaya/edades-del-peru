@@ -1,0 +1,86 @@
+{
+  "asset_id": "republic_chapel",
+  "source_scene": "scenes/republic_architecture_kit.blend",
+  "script": "scripts/blender/build_republic_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "republicCityBlockers in src/model/defs/republicCity.ts",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/arica-site.md",
+    "docs/design/real-felipe-model-mission.md",
+    "docs/design/tarapaca-model-mission.md",
+    "docs/historia/campanas/guerra_del_pacifico.md",
+    "docs/historia/campanas/real_felipe.md",
+    "docs/historia/campanas/tarapaca.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 8000,
+    "LOD1": 2400
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 358,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_RepublicAdobe",
+        "MAT-Arch_RepublicDark",
+        "MAT-Arch_RepublicEarth",
+        "MAT-Arch_RepublicStone"
+      ],
+      "bounds": {
+        "min": [
+          -3.97,
+          -5.65,
+          0.0
+        ],
+        "max": [
+          3.97,
+          5.65,
+          6.72
+        ],
+        "size": [
+          7.94,
+          11.3,
+          6.72
+        ]
+      },
+      "file": "republic_chapel_lod0.glb",
+      "bytes": 32740
+    },
+    "LOD1": {
+      "triangles": 262,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_RepublicAdobe",
+        "MAT-Arch_RepublicDark",
+        "MAT-Arch_RepublicEarth",
+        "MAT-Arch_RepublicStone"
+      ],
+      "bounds": {
+        "min": [
+          -3.97,
+          -5.65,
+          0.0
+        ],
+        "max": [
+          3.97,
+          5.65,
+          6.72
+        ],
+        "size": [
+          7.94,
+          11.3,
+          6.72
+        ]
+      },
+      "file": "republic_chapel_lod1.glb",
+      "bytes": 24120
+    }
+  }
+}

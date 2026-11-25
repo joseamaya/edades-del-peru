@@ -72,6 +72,8 @@ them; no `Major` or `Blocker` was raised.
 1. The seven missions added on 2026-11-18, from
    [`../media/site-review-2026-11-23-new-missions.webp`](../media/site-review-2026-11-23-new-missions.webp):
    the procedural sites of `m_real_felipe`, `m_tarapaca` and `m_vilcabamba` are accepted as abstractions.
+   The 2026-11-25 Republican kit later replaced the procedural Real Felipe and Tarapacá sites
+   ([`republic-sites.md`](./republic-sites.md)); Vilcabamba keeps its refuge until its own kit lands.
 2. The full campaign — 18 in-engine RTS captures, one per mission at its final site phase, generated with
    `yarn capture:sites --only=all` — in
    [`../media/site-review-2026-11-23-all.webp`](../media/site-review-2026-11-23-all.webp). This closes the
@@ -408,7 +410,7 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 | Gate        | Status              | Evidence                                                                                                                                                                                           |
 | ----------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Opening     | Met                 | Three-beat in-engine intro (`capture_arica_intro.mjs`), `MISSION_ART` and an epilogue capture; PROVENANCE records the captures.                                                                    |
-| Art         | Met                 | Approved authored battery intro (`m9_guerra_pacifico-intro`); the `arica_site` GLB and the in-engine captures keep their own status.                                                               |
+| Art         | Met                 | Approved authored battery intro (`m9_guerra_pacifico-intro`); the Republican kit draws the terrace and battery, and the `arica_site` GLB remains the fallback.                                      |
 | Performance | Met                 | `bench_scene.mjs`: opening ~535k tris / 600 calls, late ~813k / 782, under the recorded first-pass caps; `yarn bench:check` green. The call count is over §11's 200 target, as Lima and the Junta. |
 | Scale       | Met                 | 256 m map, 128² painted ground over 256 m, `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                         |
 | Pacing      | Pending (exception) | The real-command bot reaches the ending in ~4 min of simulated time; a human 20–30 min path is still unmeasured. The 30–40 target is documented as an exception in `arica-model-mission.md`.       |
@@ -418,10 +420,11 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 
 The 2026-11-18 pass completed the 1879–1883 land arc:
 
-- **`m_tarapaca`** reuses the Arica desert terrace as a labelled quebrada and draws the adobe village on its
-  own heightfield. It holds the village without cavalry or artillery, recovers the heights with infantry,
-  receives captured guns and withdraws to Arica. Real-command test: `tests/e2e/tarapaca.spec.ts`. The
-  procedural site was accepted as an abstraction on 2026-11-23 (Miguel Amaya); open: human no-cheat playtest.
+- **`m_tarapaca`** reuses the Arica desert terrace as a labelled quebrada and draws the Republican kit's
+  village, crest and Pachica hamlet on its own heightfield. It holds the village without cavalry or
+  artillery, recovers the heights with infantry, receives captured guns and withdraws to Arica. Real-command
+  test: `tests/e2e/tarapaca.spec.ts`. The site was accepted as an abstraction on 2026-11-23 (Miguel Amaya)
+  and is drawn by the kit since 2026-11-25; open: human no-cheat playtest.
 - **`m_miraflores`** adds `miraflores_site` (the Lima colonial kit at the `ciudad` phase). It builds three redoubts, holds the line with
   reservists and withdraws Cáceres to the sierra. Real-command test: `tests/e2e/miraflores.spec.ts`.
   Open: human no-cheat playtest and a performance row.
@@ -431,8 +434,8 @@ The 2026-11-18 pass completed the 1879–1883 land arc:
 
 All three have dossier, design document, tutorial, educational entry, own in-engine captures, epilogue and
 the generic completable path; they pass the scale and HUD layout guards. Human no-cheat playtests remain
-pending; Tarapacá's procedural site is accepted, while the reused Lima and Ayacucho kits of Miraflores and
-Breña were approved on 2026-11-23 like the rest of the campaign.
+pending; Tarapacá's site is drawn by the Republican kit, while the reused Lima and Ayacucho kits of
+Miraflores and Breña were approved on 2026-11-23 like the rest of the campaign.
 
 ## La Junta del Cusco playable status (m_junta_cusco)
 
@@ -468,12 +471,13 @@ The 2026-11-18 pass closed the 1814–1826 arc with two model missions:
   montoneras cut the Lurín road, San Martín proclaims independence at the Plaza Mayor, and the player holds
   the first siege of Callao. Real-command test: `tests/e2e/lima-1821.spec.ts`. Captures are current in
   `public/media/lima-1821/`; the site view was approved on 2026-11-23.
-- **`m_real_felipe`** adds the `real_felipe_site` entry, which reuses the Arica coastal-fort heightfield and
-  draws a minimal bastioned trace of its own. The mechanic is siege economy: two batteries, a coastal
-  blockade, sorties against the camp and a food-consuming final hold. Real-command test:
-  `tests/e2e/real-felipe.spec.ts`. Captures are current in `public/media/real-felipe/`. The procedural site was
-  accepted as an abstraction on 2026-11-23 (Miguel Amaya); open: human no-cheat playtest. A dedicated star-fort
-  GLB stays a future upgrade, not a gate.
+- **`m_real_felipe`** adds the `real_felipe_site` entry, which reuses the Callao coastal heightfield and draws
+  the Real Felipe from the Republican kit ([`republic-sites.md`](./republic-sites.md)): four curtains, four
+  corner bastions, a magazine, a well and the open south/west sally gates. The mechanic is siege economy: two
+  batteries, a coastal blockade, sorties against the camp and a food-consuming final hold. Real-command test:
+  `tests/e2e/real-felipe.spec.ts`. Captures are current in `public/media/real-felipe/`. The site was accepted
+  as an abstraction on 2026-11-23 (Miguel Amaya) and is drawn by the kit since 2026-11-25; open: human
+  no-cheat playtest.
 
 Both have dossier, design document, tutorial, educational entry, briefing art, epilogue and the generic
 completable path; both pass `tests/campaign-scale.test.ts` and the HUD layout gate. The human no-cheat
