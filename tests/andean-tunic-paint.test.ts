@@ -8,11 +8,12 @@ import { COTTON_WEAVE } from '../src/rendering/workerAttire';
 
 const WORKER_URL = new URL('../src/assets/models/caral_worker.glb', import.meta.url);
 const textureLoad = THREE.TextureLoader.prototype.load;
+const previousSelf = (globalThis as { self?: unknown }).self;
 
 beforeAll(async () => {
   // Node has no `self` and no image decoding; the parser only needs a texture object here, and the paint
   // reads the material's tint, not its map.
-  (globalThis as unknown as { self: unknown }).self = globalThis;
+  (globalThis as { self?: unknown }).self = globalThis;
   THREE.TextureLoader.prototype.load = function (_url, onLoad) {
     const texture = new THREE.Texture();
     onLoad?.(texture);
@@ -25,6 +26,8 @@ beforeAll(async () => {
 
 afterAll(() => {
   THREE.TextureLoader.prototype.load = textureLoad;
+  if (previousSelf === undefined) delete (globalThis as { self?: unknown }).self;
+  else (globalThis as { self?: unknown }).self = previousSelf;
   clearModelAssets();
 });
 

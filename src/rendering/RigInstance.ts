@@ -224,8 +224,8 @@ export class RigInstance {
   }
 
   /** Follow a hero accent on the body painted under the Andean tunic and skirt. */
-  setClothColors(tunic: number, skirt: number): void {
-    this.variant?.setClothColors?.(tunic, skirt);
+  setClothColors(tunicTint: number, skirtTint: number): void {
+    this.variant?.setClothColors?.(tunicTint, skirtTint);
   }
 
   /**

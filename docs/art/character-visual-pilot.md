@@ -586,6 +586,10 @@ chasqui variants and checks the paint attribute: the torso and pelvis carry the 
 hands, lower arms, feet and head stay at alpha 0; a `setClothColors` call repaints the body after a hero
 retint.
 
+The paint adds no draw call: it is one `paint` vertex attribute on the body that was already drawn, and one
+painted geometry is cached per variant. `yarn verify:fast` (dist 27.66 / 40 MB), `yarn bench:characters`, the
+new test and the character/rig E2E specs are the gate.
+
 **Still open.** The paint hides the skin, but the tunic geometry is still a tight shell; a pose that stretches
 it further can still read as a bulge. A wider offset or a longer sleeve is an asset change, not a dresser one.
 

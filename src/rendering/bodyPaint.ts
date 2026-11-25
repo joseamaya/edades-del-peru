@@ -15,12 +15,11 @@ import * as THREE from 'three';
  * cached per body, key and colours for the session and never disposed, because disposing it would release
  * the shared buffers.
  */
-export type PaintRegion = string | null;
-export type PaintColors = Record<string, number>;
+export type PaintRegion = 'coat' | 'trousers' | 'boots' | null;
 
-export interface BodyPaintHandle {
+export interface BodyPaintHandle<R extends string = string> {
   /** Re-paint with new garment colours (a hero retint after the rig was dressed). */
-  setColors(colors: PaintColors): void;
+  setColors(colors: Record<R, number>): void;
 }
 
 const geometryCache = new Map<string, THREE.BufferGeometry>();
@@ -29,12 +28,10 @@ const sourceGeometries = new WeakMap<THREE.SkinnedMesh, THREE.BufferGeometry>();
 const sourceMaterials = new WeakMap<THREE.SkinnedMesh, THREE.Material | THREE.Material[]>();
 
 function paintedMaterial(source: THREE.Material): THREE.Material {
-  if (source.userData.bodyPaint === true) return source;
   const cached = materialCache.get(source);
   if (cached) return cached;
   const material = source.clone();
   material.name = `${source.name}:painted`;
-  material.userData.bodyPaint = true;
   material.onBeforeCompile = (shader) => {
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nattribute vec4 paint;\nvarying vec4 vPaint;')
@@ -69,7 +66,7 @@ function originalMaterial(body: THREE.SkinnedMesh): THREE.Material | THREE.Mater
   return material;
 }
 
-function colorKey(colors: PaintColors): string {
+function colorKey(colors: Record<string, number>): string {
   return Object.entries(colors)
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
     .map(([region, value]) => `${region}:${value.toString(16)}`)
@@ -81,12 +78,12 @@ function colorKey(colors: PaintColors): string {
  * covered bone and its posed, world-space position at dressing time, and returns the region key, or null
  * for skin.
  */
-export function paintBodyUnderGarments(
+export function paintBodyUnderGarments<R extends string>(
   body: THREE.SkinnedMesh,
   key: string,
-  colors: PaintColors,
-  regionOf: (bone: string, position: THREE.Vector3) => PaintRegion,
-): BodyPaintHandle {
+  colors: Record<R, number>,
+  regionOf: (bone: string, position: THREE.Vector3) => R | null,
+): BodyPaintHandle<R> {
   const source = originalGeometry(body);
   const cacheKey = `${source.uuid}|${key}|${colorKey(colors)}`;
   let geometry = geometryCache.get(cacheKey);
@@ -97,13 +94,15 @@ export function paintBodyUnderGarments(
     const paint = new Float32Array(count * 4);
     const bones = body.skeleton.bones;
     const linear: Record<string, THREE.Color> = {};
-    for (const [region, value] of Object.entries(colors)) linear[region] = new THREE.Color(value);
+    for (const [region, value] of Object.entries(colors) as [string, number][]) {
+      linear[region] = new THREE.Color(value);
+    }
     body.updateMatrixWorld(true);
     body.skeleton.update();
     const position = new THREE.Vector3();
     for (let i = 0; i < count; i++) {
       // Strongest bone among those that carry a garment.
-      let best: PaintRegion = null;
+      let best: R | null = null;
       let bestWeight = 0;
       let covered = 0;
       body.getVertexPosition(i, position).applyMatrix4(body.matrixWorld);
@@ -138,7 +137,7 @@ export function paintBodyUnderGarments(
   const material = originalMaterial(body);
   body.material = Array.isArray(material) ? material.map(paintedMaterial) : paintedMaterial(material);
   return {
-    setColors(next: PaintColors): void {
+    setColors(next: Record<R, number>): void {
       paintBodyUnderGarments(body, key, next, regionOf);
     },
   };

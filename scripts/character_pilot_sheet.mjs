@@ -11,7 +11,9 @@ import { cliArg } from './lib.mjs';
  *
  * Usage:
  *   node scripts/character_pilot_sheet.mjs --before=review/tmp/pilot --after=review/pilot-after \
- *     --out=docs/media/character-equipment-before-after.webp
+ *     --out=docs/media/character-equipment-before-after.webp [--footer="…"]
+ *
+ * The footer defaults to the equipment pass caption.
  */
 
 const before = path.resolve(cliArg('before', 'review/tmp/pilot'));

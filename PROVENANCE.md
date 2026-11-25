@@ -1218,7 +1218,9 @@ slot is absent (offline / without assets).
   --only=inca,moche`; the before row is the same harness and placement run from a scratch worktree at
   `b6b56812` with `--out=<worktree>/review/pilot-tunic-before`. Both rows were composed by
   `node scripts/character_pilot_sheet.mjs --before=<worktree>/review/pilot-tunic-before
-  --after=review/pilot-tunic-after --out=docs/media/character-tunic-before-after.webp --footer=…`. No Blender
+  --after=review/pilot-tunic-after --out=docs/media/character-tunic-before-after.webp
+  --footer="The body under the Andean tunic and skirt painted in the garment's own colour ·
+  docs/art/character-visual-pilot.md §19"`. No Blender
   or GIMP source: the paint is runtime geometry and a vertex attribute in `src/rendering/bodyPaint.ts` and
   `src/rendering/workerAttire.ts`.
 - **Content**: `docs/art/character-visual-pilot.md` §19. Top row the skin showing through the Inca and Moche
