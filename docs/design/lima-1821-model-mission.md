@@ -25,7 +25,9 @@ Sources and certainty: [`docs/historia/campanas/lima_1821.md`](../historia/campa
 
 - 256 m coast transect, painted ground every 2 m, worker crossing ≈2:22 (`unitSpeedScale: 0.75`).
 - Reuses `lima_site` (colonial city) with `phase: 'ciudad'`: Lima is a living capital in 1821, not the
-  traced plaza of 1535. The cathedral, Plaza Mayor and streets are the same authored kit used by `m_lima`.
+  traced plaza of 1535. The cathedral, Plaza Mayor, cabildo, portales and balconied houses are the colonial
+  Blender kit (`src/model/defs/colonialCity.ts`), shared with `m_lima`, `m_miraflores`, `m_junta_cusco` and
+  `m7_tupac_amaru`.
 - Player camp south-west of the city, Callao on the coast, Lurín and Carabayllo on the supply roads.
 - No new GLB. The site is a documented reuse; the mission has its own in-engine captures
   (`scripts/capture_independencia_arc.mjs`) for the Lurín road, the Plaza Mayor and the Callao coast,

@@ -38,10 +38,10 @@ Painted ground uses the authored `JUNTA_GROUND` weights (grass, dirt, sand, rock
 
 ## Site
 
-`cusco_junta_site` reuses the existing colonial plaza/temple GLB (`colonial_church`) on the new heightfield.
-The temple is the Junta's Cabildo card: an `inspect` objective with a radius, so the player must bring a unit
-to the plaza and open the card. The rest of the city is represented by the authored site, the painted basin
-and the colonial architecture of the period; no new Blender kit was required for this first pass.
+`cusco_junta_site` uses the colonial architecture kit (`src/model/defs/colonialCity.ts`) on the new
+heightfield: cathedral, cabildo, portales and balconied houses around the Plaza Mayor. The temple is the
+Junta's Cabildo card: an `inspect` objective with a radius, so the player must bring a unit to the plaza and
+open the card. The authoring kit, collision and evidence are recorded in `PROVENANCE.md`.
 
 ## Economy and units
 

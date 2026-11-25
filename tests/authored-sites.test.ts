@@ -107,9 +107,9 @@ describe('authored campaign sites', () => {
     expect(painted.reduce((sum, w) => sum + w, 0)).toBeCloseTo(1, 2);
     expect(painted[1], 'the Cusco plaza is painted dirt').toBeGreaterThan(0.2);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['colonial_church']);
-    expect(site.heritageProxies[0]?.w).toBeCloseTo(12, 3);
-    expect(site.heritageProxies[0]?.d).toBeCloseTo(12, 3);
-    expect(site.heritageProxies[0]?.h).toBeCloseTo(8, 3);
+    expect(site.heritageProxies[0]?.w).toBeCloseTo(25, 3);
+    expect(site.heritageProxies[0]?.d).toBeCloseTo(13.5, 3);
+    expect(site.heritageProxies[0]?.h).toBeCloseTo(15, 3);
     expect(site.walkableCorridor?.width).toBeCloseTo(10.667, 3);
     const mission = MISSIONS.find((m) => m.id === 'm7_tupac_amaru')!;
     expect(mission.layout?.site?.id).toBe('colonial_site');
@@ -149,7 +149,8 @@ describe('authored campaign sites', () => {
     expect(site.phases?.phases).toEqual(['traza', 'ciudad']);
     expect(site.phases?.initial).toBe('traza');
     expect(site.modelSince).toBe('ciudad');
-    expect(site.blockers.filter((b) => b.since === 'ciudad').length).toBeGreaterThan(10);
+    // Cathedral, cabildo, two portales, four casonas, the patio wall and the fountain: the city the kit draws.
+    expect(site.blockers.filter((b) => b.since === 'ciudad').length).toBe(10);
     const mission = MISSIONS.find((m) => m.id === 'm_lima')!;
     expect(mission.layout?.site?.id).toBe('lima_site');
   });

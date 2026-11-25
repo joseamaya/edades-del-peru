@@ -5,7 +5,8 @@ import { LIMA_SITE_ORIGIN } from '../../../model/defs/sites';
 
 // Miraflores: Lima, the redoubt line south of the city and the withdrawal road to the sierra.
 const MIRAFLORES_LIMA = LIMA_SITE_ORIGIN;
-const MIRAFLORES_CAMP = { x: 112, z: 160 } as const;
+// East of the colonial block (its casonas reach x ~113), clear of the redoubt line at z 190.
+const MIRAFLORES_CAMP = { x: 132, z: 162 } as const;
 const MIRAFLORES_ENEMY = { x: 196, z: 236 } as const;
 const MIRAFLORES_REDOUBT_1 = { x: 72, z: 190 } as const;
 const MIRAFLORES_REDOUBT_2 = { x: 112, z: 190 } as const;
@@ -70,11 +71,11 @@ export const mMiraflores: MissionDef = {
       // The site camera frames the redoubt line; the Lima colonial kit stays as the city backdrop north.
       focus: { x: MIRAFLORES_REDOUBT_2.x / 256, z: MIRAFLORES_REDOUBT_2.z / 256 },
       keepout: [
-        { x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256, rx: 0.06, rz: 0.05 },
+        { x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256, rx: 0.1, rz: 0.11 },
         // Clear of resources around the camp so no grove grows over the opening frame.
         { x: MIRAFLORES_CAMP.x / 256, z: MIRAFLORES_CAMP.z / 256, rx: 0.09, rz: 0.08 },
       ],
-      buildKeepout: [{ x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256, rx: 0.04, rz: 0.04 }],
+      buildKeepout: [{ x: MIRAFLORES_LIMA.x / 256, z: MIRAFLORES_LIMA.z / 256, rx: 0.1, rz: 0.11 }],
     },
     roads: [
       {

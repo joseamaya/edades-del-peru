@@ -1,7 +1,7 @@
 import type { SiteBlocker } from './sites';
 
 /** Shared data contract for the Blender architecture kits (Caral, Chavín, Cusco, colonial). */
-export type ArchitectureKitId = 'caral' | 'chavin' | 'cusco';
+export type ArchitectureKitId = 'caral' | 'chavin' | 'cusco' | 'colonial';
 export type ArchAssetId = string;
 
 export interface ArchPlacement {

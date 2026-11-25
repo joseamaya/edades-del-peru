@@ -33,10 +33,17 @@ const cuscoUrls = import.meta.glob('../assets/architecture/cusco/*.glb', {
   import: 'default',
 }) as Record<string, string>;
 
+const colonialUrls = import.meta.glob('../assets/architecture/colonial/*.glb', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
+
 const KIT_URLS: Record<ArchitectureKitId, Record<string, string>> = {
   caral: caralUrls,
   chavin: chavinUrls,
   cusco: cuscoUrls,
+  colonial: colonialUrls,
 };
 
 export function archKitUrl(kit: ArchitectureKitId, id: ArchAssetId, lod: 0 | 1): string | undefined {
@@ -142,6 +149,14 @@ const ARCH_SURFACES: Record<
   'MAT-Arch_IncaThatch': { set: 'roof_thatch', tint: 0xd9bf86, normal: 0.9 },
   'MAT-Arch_IncaEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
   'MAT-Arch_IncaSand': { set: 'plaster_detail', normal: 0.4, keepColor: true },
+  // Colonial: lime plaster and adobe keep their documented paint; the photographed tile and wood sets are
+  // brightened to the kit's base colours instead of being multiplied by them.
+  'MAT-Arch_ColonialPlaster': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  'MAT-Arch_ColonialAdobe': { set: 'plaster_detail', normal: 0.9, keepColor: true },
+  'MAT-Arch_ColonialTile': { set: 'tile', tint: 0xe0b09a, normal: 0.7 },
+  'MAT-Arch_ColonialWood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
+  'MAT-Arch_ColonialStone': { set: 'wall_cutstone', tint: 0xd8d2c2, normal: 0.8 },
+  'MAT-Arch_ColonialDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
 };
 
 export function applyArchSurface(material: THREE.MeshStandardMaterial, name: string): void {

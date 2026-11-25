@@ -1,0 +1,83 @@
+{
+  "asset_id": "colonial_portal",
+  "source_scene": "scenes/colonial_architecture_kit.blend",
+  "script": "scripts/blender/build_colonial_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "colonialCityBlockers(anchor) in src/model/defs/colonialCity.ts",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/colonial-site.md",
+    "docs/historia/campanas/lima.md",
+    "docs/historia/campanas/lima_1821.md",
+    "docs/historia/campanas/junta_cusco.md",
+    "docs/historia/campanas/miraflores.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 482,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_ColonialDark",
+        "MAT-Arch_ColonialPlaster",
+        "MAT-Arch_ColonialTile"
+      ],
+      "bounds": {
+        "min": [
+          -5.35,
+          -2.45,
+          0.0
+        ],
+        "max": [
+          5.35,
+          2.45,
+          5.29
+        ],
+        "size": [
+          10.7,
+          4.9,
+          5.29
+        ]
+      },
+      "file": "colonial_portal_lod0.glb",
+      "bytes": 39832
+    },
+    "LOD1": {
+      "triangles": 386,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_ColonialDark",
+        "MAT-Arch_ColonialPlaster",
+        "MAT-Arch_ColonialTile"
+      ],
+      "bounds": {
+        "min": [
+          -5.35,
+          -2.45,
+          0.0
+        ],
+        "max": [
+          5.35,
+          2.45,
+          5.29
+        ],
+        "size": [
+          10.7,
+          4.9,
+          5.29
+        ]
+      },
+      "file": "colonial_portal_lod1.glb",
+      "bytes": 31212
+    }
+  }
+}

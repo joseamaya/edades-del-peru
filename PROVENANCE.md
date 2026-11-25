@@ -970,6 +970,37 @@ slot is absent (offline / without assets).
 - **Evidence**: `docs/media/cusco-kit-before-after.webp` (1600x1000 WebP q72): top row the procedural boxes,
   bottom row the kit, same camera and light, from `m_cusco_1536`.
 
+### Colonial architecture kit (m_lima, m_lima_1821, m_miraflores, m_junta_cusco, m7_tupac_amaru)
+
+- **Location**: `src/assets/architecture/colonial/colonial_<piece>_lod0.glb` and `_lod1.glb`: `catedral`
+  (nave, bell tower and cross), `cabildo` (five-arch arcade, gallery and balcony), `casona` (two storeys with
+  the closed wooden balcony), `portal` (four-arch arcade), `plaza` (paving and kerb), `pileta` (fountain) and
+  `patio_wall`.
+- **Source**: generated in Blender 5.3 by `scripts/blender/build_colonial_architecture_kit.py`; kit scene
+  `art-src/blender/scenes/colonial_architecture_kit.blend` (Git LFS). Uncompressed exports and per-piece
+  manifests (triangles, materials, bounds, budget, `confidence`, sources, collision, review state) live in
+  `art-src/blender/exports/colonial/architecture/`; the game copies were meshopt-compressed with
+  `yarn art:models --only=<file>` (~220 KB for the 14 files).
+- **Content**: project-owned procedural geometry. Six Principled materials (lime plaster, adobe, tile, wood,
+  stone, dark openings) with world-scale box-projected UVs and a per-vertex tint (grime at the foot, a shade
+  per tile); no textures in the GLBs. At runtime the game maps the shared `plaster_detail` grit onto plaster,
+  adobe and openings, the photographed `tile`, `wood` and `wall_cutstone` sets onto the roofs, balconies and
+  stone. LOD0 ≤ 5000 / LOD1 ≤ 1500 triangles per piece; the cathedral is the monument piece (≤ 8000 / 2400).
+- **Historical basis**: documented: a nave with a tiled gable roof and an attached bell tower, an arcaded
+  cabildo, two-storey adobe/quincha houses, Lima's closed wooden balconies, the portales around the Plaza
+  Mayor, a paved square with a stone fountain and adobe patio walls with a coping. Assumed (licences in the
+  manifests): sizes, bay and window counts, the 17 m tower, the balcony depth and the composition of each
+  plaza. Sources: `docs/historia/arquitectura.md`, `docs/design/colonial-site.md`,
+  `docs/historia/campanas/{lima,lima_1821,junta_cusco,miraflores,tupac_amaru}.md`. Harth-Terré,
+  *Contribución al estudio de la arquitectura colonial*; Gutiérrez, *Arquitectura virreinal*.
+- **Runtime**: `src/model/defs/colonialCity.ts` places the pieces (`colonialLayoutAt`) and derives each
+  site's pathfinding blockers from the same placements (`colonialCityBlockers`, applied headless too);
+  `WorldViewDecor` bakes the city with `ArchitectureCity`. It replaces the approved `colonial_church` GLB on
+  the four colonial site definitions (`hideModel`); `ColonialLife` keeps the founding traza, the stalls and
+  the people.
+- **Evidence**: `docs/media/colonial-kit-before-after.webp` (1600x1942 WebP q74): top row the single
+  `colonial_church` GLB and its procedural houses, bottom row the kit, same mission, camera and light.
+
 ### Chavín architecture kit and in-engine captures (m2)
 
 - **Runtime (briefing)**: the briefing uses the approved Blender render

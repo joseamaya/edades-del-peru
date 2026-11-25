@@ -1,0 +1,85 @@
+{
+  "asset_id": "colonial_casona",
+  "source_scene": "scenes/colonial_architecture_kit.blend",
+  "script": "scripts/blender/build_colonial_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "colonialCityBlockers(anchor) in src/model/defs/colonialCity.ts",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/colonial-site.md",
+    "docs/historia/campanas/lima.md",
+    "docs/historia/campanas/lima_1821.md",
+    "docs/historia/campanas/junta_cusco.md",
+    "docs/historia/campanas/miraflores.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 450,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_ColonialDark",
+        "MAT-Arch_ColonialPlaster",
+        "MAT-Arch_ColonialTile",
+        "MAT-Arch_ColonialWood"
+      ],
+      "bounds": {
+        "min": [
+          -4.85,
+          -5.04,
+          0.0
+        ],
+        "max": [
+          4.85,
+          4.55,
+          8.44
+        ],
+        "size": [
+          9.7,
+          9.59,
+          8.44
+        ]
+      },
+      "file": "colonial_casona_lod0.glb",
+      "bytes": 41744
+    },
+    "LOD1": {
+      "triangles": 314,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_ColonialDark",
+        "MAT-Arch_ColonialPlaster",
+        "MAT-Arch_ColonialTile",
+        "MAT-Arch_ColonialWood"
+      ],
+      "bounds": {
+        "min": [
+          -4.85,
+          -5.04,
+          0.0
+        ],
+        "max": [
+          4.85,
+          4.55,
+          8.44
+        ],
+        "size": [
+          9.7,
+          9.59,
+          8.44
+        ]
+      },
+      "file": "colonial_casona_lod1.glb",
+      "bytes": 29680
+    }
+  }
+}

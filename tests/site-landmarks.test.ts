@@ -51,6 +51,15 @@ describe('mission site landmarks', () => {
     }
   });
 
+  it('draws the colonial sites from the kit and hides the bundled GLB', () => {
+    for (const id of ['lima_site', 'miraflores_site', 'cusco_junta_site', 'colonial_site'] as const) {
+      const site = getAuthoredSite(id)!;
+      expect(site.hideModel, id).toBe(true);
+      expect(site.style, id).toBe('colonial');
+      expect(site.simulationCollision, id).toBe(true);
+    }
+  });
+
   it('puts the Tarapacá site and its camera on the village, not the Arica terrace', () => {
     const site = getAuthoredSite('tarapaca_site')!;
     expect(site.origin).toEqual({ x: 96, z: 168 });

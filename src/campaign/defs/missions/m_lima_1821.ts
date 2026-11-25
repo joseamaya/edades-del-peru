@@ -58,8 +58,8 @@ export const mLima1821: MissionDef = {
       heightField: LIMA1821_HEIGHTFIELD,
       phase: 'ciudad',
       focus: { x: LIMA_1821_CITY.x / 256, z: LIMA_1821_CITY.z / 256 },
-      keepout: [{ x: LIMA_1821_CITY.x / 256, z: LIMA_1821_CITY.z / 256, rx: 0.06, rz: 0.05 }],
-      buildKeepout: [{ x: LIMA_1821_CITY.x / 256, z: LIMA_1821_CITY.z / 256, rx: 0.04, rz: 0.04 }],
+      keepout: [{ x: LIMA_1821_CITY.x / 256, z: LIMA_1821_CITY.z / 256, rx: 0.1, rz: 0.11 }],
+      buildKeepout: [{ x: LIMA_1821_CITY.x / 256, z: LIMA_1821_CITY.z / 256, rx: 0.1, rz: 0.11 }],
     },
     roads: [
       {

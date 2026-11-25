@@ -1482,7 +1482,7 @@ test('Lima grows from a traced plaza into the colonial city', async ({ page }) =
   await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   await briefing.waitFor({ state: 'detached' });
   await page.waitForFunction(
-    () => (window as unknown as { game?: { siteModel?: unknown } }).game?.siteModel != null,
+    () => (window as unknown as { game?: { colonialCity?: unknown } }).game?.colonialCity != null,
     null,
     { timeout: 60_000 },
   );
@@ -1500,7 +1500,11 @@ test('Lima grows from a traced plaza into the colonial city', async ({ page }) =
         name: group.children[0]?.name ?? '?',
         visible: group.visible,
       }));
-    const before = { phase: g.sitePhase, groups: groups(), model: g.siteModel?.visible ?? null };
+    const city = (): { phase: string | null; meshes: number } => ({
+      phase: g.colonialCity?.currentPhase ?? null,
+      meshes: g.colonialCity?.group.children[0]?.children.length ?? 0,
+    });
+    const before = { phase: g.sitePhase, groups: groups(), model: city() };
     let lifeCalls = 0;
     const life = g.colonialSite.updateLife.bind(g.colonialSite);
     g.colonialSite.updateLife = (...args: unknown[]) => {
@@ -1509,7 +1513,7 @@ test('Lima grows from a traced plaza into the colonial city', async ({ page }) =
     };
     for (let i = 0; i < 60; i++) g.update(1 / 60, i / 60);
     g.setSitePhase('ciudad');
-    const after = { phase: g.sitePhase, groups: groups(), model: g.siteModel?.visible ?? null };
+    const after = { phase: g.sitePhase, groups: groups(), model: city() };
     return { before, after, lifeCalls };
   });
   expect(out.before.phase).toBe('traza');
@@ -1517,12 +1521,15 @@ test('Lima grows from a traced plaza into the colonial city', async ({ page }) =
     { name: 'colonial:traza', visible: true },
     { name: 'colonial:ciudad', visible: false },
   ]);
-  expect(out.before.model).toBe(false);
+  // The founding draws the packed-earth traza only: the kit's plaza and buildings arrive with the city.
+  expect(out.before.model.phase).toBe('traza');
+  expect(out.before.model.meshes).toBe(0);
   expect(out.after.groups).toEqual([
     { name: 'colonial:traza', visible: false },
     { name: 'colonial:ciudad', visible: true },
   ]);
-  expect(out.after.model).toBe(true);
+  expect(out.after.model.phase).toBe('ciudad');
+  expect(out.after.model.meshes).toBeGreaterThan(0);
   expect(out.lifeCalls).toBeGreaterThan(0);
   expect(errors).toEqual([]);
 });

@@ -62,7 +62,7 @@ export const mJuntaCusco: MissionDef = {
       id: 'cusco_junta_site',
       y: 6,
       focus: { x: JUNTA_CUSCO.x / 256, z: JUNTA_CUSCO.z / 256 },
-      keepout: [{ x: JUNTA_CUSCO.x / 256, z: JUNTA_CUSCO.z / 256, rx: 0.08, rz: 0.07 }],
+      keepout: [{ x: JUNTA_CUSCO.x / 256, z: JUNTA_CUSCO.z / 256, rx: 0.1, rz: 0.11 }],
       buildKeepout: [{ x: JUNTA_CUSCO.x / 256, z: JUNTA_CUSCO.z / 256, rx: 0.065, rz: 0.065 }],
     },
     roads: [
