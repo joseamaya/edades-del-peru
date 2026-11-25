@@ -449,14 +449,11 @@ def tint(mesh):
         horizontal = name == 'MAT-Arch_ColonialPaving' or (
             name == 'MAT-Arch_ColonialStone' and poly.normal.z > 0.7
         )
+        base, amp, noise_amp = (0.92, 0.08, 0.05) if horizontal else (0.74, 0.26, 0.10)
         for li in poly.loop_indices:
             co = mesh.vertices[mesh.loops[li].vertex_index].co
-            if horizontal:
-                grime = 0.92 + 0.08 * max(0.0, min(1.0, co.z / 1.4))
-                mottle = 0.95 + 0.05 * (noise.noise(co * 0.35) * 0.5 + 0.5)
-            else:
-                grime = 0.74 + 0.26 * max(0.0, min(1.0, co.z / 1.4))
-                mottle = 0.9 + 0.1 * (noise.noise(co * 0.35) * 0.5 + 0.5)
+            grime = base + amp * max(0.0, min(1.0, co.z / 1.4))
+            mottle = (1.0 - noise_amp) + noise_amp * (noise.noise(co * 0.35) * 0.5 + 0.5)
             c = grime * mottle * shade
             col.data[li].color = (c, c, c, 1.0)
     mesh.color_attributes.active_color = col

@@ -980,7 +980,8 @@ slot is absent (offline / without assets).
   `art-src/blender/scenes/colonial_architecture_kit.blend` (Git LFS). Uncompressed exports and per-piece
   manifests (triangles, materials, bounds, budget, `confidence`, sources, collision, review state) live in
   `art-src/blender/exports/colonial/architecture/`; the game copies were meshopt-compressed with
-  `yarn art:models --only=<file>` (~228 KB for the 14 files).
+  `yarn art:models --only=<file>` (198,508 B ≈ 194 KB for the 14 game copies; the uncompressed exports are
+  394,640 B).
 - **Content**: project-owned procedural geometry. Seven Principled materials (lime plaster, adobe, tile,
   wood, stone, paving, dark openings) with world-scale box-projected UVs and a per-vertex tint (grime at the
   foot on the verticals, a shade per tile and paving slab; the horizontal paving skips the wall-foot grime);
@@ -1016,7 +1017,8 @@ slot is absent (offline / without assets).
 - **Content**: `docs/design/colonial-site.md` "Colour and surfaces". Before, the photographed tile multiplied
   by a warm tint read as saturated red and the `wall_cutstone` plaza at z ≈ 0 took the wall-foot grime; after,
   the tile is pulled towards luma behind a near-neutral tint and the plaza floor has its own `ground_plaza`
-  set. The geometry and the layout are unchanged apart from the plaza's material split.
+  set. The geometry and the layout are unchanged; the plaza gains its paving material and the stone up-faces
+  lose the wall-foot grime.
 - **Review**: no new historical claim; the change is colour, surface mapping and one material split.
 
 ### Chavín architecture kit and in-engine captures (m2)

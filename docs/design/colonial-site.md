@@ -42,9 +42,10 @@ shared PBR sets onto them (`ARCH_SURFACES` in `src/rendering/architectureKit.ts`
 | Stone (kerb, fountain, bands) | `wall_cutstone`, lifted 1.25 | the cut-stone mortar read black at the RTS zoom. |
 | Wood | `wood` | balconies and doors. |
 
-The plaza floor is the one place the Blender vertex tint skips the wall-foot grime (horizontal ground at
-z ≈ 0): it gets a light mottle instead. The kit is seven materials (the §4.2 ceiling is eight per kit and
-four per building). Evidence: `docs/media/colonial-kit-color-before-after.webp`.
+The plaza floor and the stone up-faces (kerb, fountain bowls, copings) skip the wall-foot grime in the
+Blender vertex tint: horizontal ground at z ≈ 0 would otherwise read nearly black, so it gets a light mottle
+instead. The kit is seven materials (the §4.2 ceiling is eight per kit and four per building). Evidence:
+`docs/media/colonial-kit-color-before-after.webp`.
 
 ## Attested elements and abstractions
 
