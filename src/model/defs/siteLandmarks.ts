@@ -1,17 +1,11 @@
 /**
  * Mission-scoped landmark compositions for authored sites whose bundled GLB is a labelled
- * abstraction from another place (Arica's battery for Callao, the Chanca pucará for Vilcabamba,
- * the bare ushnu platform for Cusco). The renderer draws them procedurally so the site keeps its
+ * abstraction from another place (Arica's battery for Callao, the Chanca pucará for Vilcabamba).
+ * The renderer draws them procedurally so the site keeps its
  * documented silhouette without shipping a new multi-megabyte model per mission.
  */
 export type SiteLandmarkKind =
-  | 'cusco-plaza'
-  | 'sacsayhuaman'
-  | 'real-felipe'
-  | 'tarapaca-village'
-  | 'tarapaca-heights'
-  | 'tarapaca-pachica'
-  | 'vilcabamba-refuge';
+  'real-felipe' | 'tarapaca-village' | 'tarapaca-heights' | 'tarapaca-pachica' | 'vilcabamba-refuge';
 
 export interface MissionSiteLandmark {
   kind: SiteLandmarkKind;

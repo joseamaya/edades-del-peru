@@ -483,8 +483,8 @@ playtest remains pending on both; their site views were approved on 2026-11-23.
 
 The 2026-11-18 pass completed the conquest-to-Vilcabamba arc:
 
-- **`m_cusco_1536`** reuses `cusco_inca_site`, drawing its own plaza, ushnu and Sacsayhuamán wall front
-  (shared with `m6b`). It takes Sacsayhuamán, holds the Cusco siege through a food-consuming «siembra» and
+- **`m_cusco_1536`** reuses `cusco_inca_site`, drawing its own plaza, ushnu and Sacsayhuamán wall front from
+  the Cusco Blender kit (shared with `m6b`). It takes Sacsayhuamán, holds the Cusco siege through a food-consuming «siembra» and
   withdraws to Ollantaytambo with Manco alive. Real-command test: `tests/e2e/cusco-1536.spec.ts`. Open: human
   no-cheat playtest and the mission's own art review.
 - **`m_vilcabamba`** adds `vilcabamba_site`, drawing a low cloud-forest platform and longhouses in place of the

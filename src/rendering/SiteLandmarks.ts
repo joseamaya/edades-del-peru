@@ -222,120 +222,6 @@ class LandmarkBuilder {
   }
 }
 
-function cuscoPlaza(b: LandmarkBuilder, x: number, z: number, s: number, yaw: number): void {
-  const y = b.padHeight(x, z, 19 * s, 15 * s);
-  b.addBox('plaza', 38 * s, 0.16 * s, 30 * s, x, y + 0.08 * s, z, 0, yaw);
-  // The ushnu: three cut-stone tiers with a frontal stair and a small shrine on top.
-  const base = y + 0.16 * s;
-  let top = base;
-  for (const [w, d] of [
-    [20, 15],
-    [16, 11],
-    [12, 8],
-  ] as const) {
-    b.addBox('cutstone', w * s, 1.8 * s, d * s, x, top + 0.9 * s, z, 0, yaw);
-    top += 1.8 * s;
-  }
-  for (let i = 0; i < 4; i++) {
-    b.addBox(
-      'cutstone',
-      2.4 * s,
-      0.48 * s,
-      1.0 * s,
-      x,
-      base + 0.24 * s + i * 0.48 * s,
-      z + (7.5 - i * 0.55) * s,
-      0,
-      yaw,
-    );
-  }
-  b.addHall(x, z, 5.5 * s, 3.8 * s, 2.6 * s, yaw, 'cutstone', 'thatch', top);
-  // Low perimeter walls on the long sides, with a central gate on each.
-  for (const side of [-1, 1]) {
-    for (const segment of [-1, 1]) {
-      const [wx, wz] = b.offset(x, z, yaw, segment * 11 * s, side * 14.6 * s);
-      b.addBox('cutstone', 12 * s, 1.4 * s, 0.6 * s, wx, y + 0.7 * s, wz, 0, yaw);
-    }
-  }
-  const floorY = y + 0.16 * s;
-  b.addHall(x, z - 11 * s, 15 * s, 6 * s, 3.6 * s, yaw, 'cutstone', 'thatch', floorY);
-  b.addHall(x - 15 * s, z - 4 * s, 7 * s, 10 * s, 3.4 * s, yaw, 'cutstone', 'thatch', floorY);
-  b.addHall(x + 15 * s, z - 3 * s, 7 * s, 9 * s, 3.2 * s, yaw, 'cutstone', 'thatch', floorY);
-  b.addHall(x - 10 * s, z + 12 * s, 9 * s, 5 * s, 3 * s, yaw, 'cutstone', 'thatch', floorY);
-  b.addHall(x + 10 * s, z + 12 * s, 9 * s, 5 * s, 3 * s, yaw, 'cutstone', 'thatch', floorY);
-}
-
-function sacsayhuaman(b: LandmarkBuilder, x: number, z: number, s: number, yaw: number): void {
-  // Three cyclic terraces facing Cusco (+z), each one a retaining wall with a flat fill behind.
-  const tiers = [
-    { dz: 9, w: 34, h: 2.4 },
-    { dz: 5, w: 27, h: 2.2 },
-    { dz: 1, w: 20, h: 2.0 },
-  ];
-  for (const tier of tiers) {
-    const base = b.ground(x, z + tier.dz * s);
-    for (const segment of [-1, 0, 1]) {
-      const segW = (tier.w * s) / 3;
-      const zz = tier.dz + (segment === 0 ? 0 : 0.8);
-      const segYaw = yaw + segment * 0.11;
-      b.addBox(
-        'megalith',
-        segW * 1.02,
-        tier.h * s,
-        1.8 * s,
-        x + segment * segW,
-        base + (tier.h * s) / 2,
-        z + zz * s,
-        0,
-        segYaw,
-      );
-      b.addBox(
-        'flatstone',
-        segW * 1.02,
-        0.22 * s,
-        3.4 * s,
-        x + segment * segW,
-        base + tier.h * s + 0.11 * s,
-        z + (zz - 2) * s,
-        0,
-        segYaw,
-      );
-    }
-    for (let i = -3; i <= 3; i++) {
-      b.addBox(
-        'megalith',
-        1.7 * s,
-        1.05 * s,
-        0.55 * s,
-        x + i * 4.4 * s,
-        base + 0.55 * s,
-        z + (tier.dz + 1.15) * s,
-        0,
-        yaw,
-      );
-    }
-  }
-  // The three documented towers sit on the top platform, not on the lower terraces.
-  for (const [dx, radius, height] of [
-    [-10, 2.1, 4.2],
-    [0, 2.5, 4.8],
-    [10, 2.1, 4.0],
-  ] as const) {
-    const base = b.ground(x + dx * s, z);
-    b.addCylinder('megalith', radius * s, radius * 1.1 * s, height * s, 10, x + dx * s, base + (height * s) / 2, z);
-    b.addCylinder(
-      'flatstone',
-      radius * 0.8 * s,
-      radius * 0.8 * s,
-      0.3 * s,
-      10,
-      x + dx * s,
-      base + height * s + 0.15 * s,
-      z,
-    );
-  }
-}
-
 function realFelipe(b: LandmarkBuilder, x: number, z: number, s: number, yaw: number): void {
   const side = 24 * s;
   const height = 3 * s;
@@ -495,12 +381,6 @@ function buildOne(b: LandmarkBuilder, spec: MissionSiteLandmark, mapSize: number
   const s = spec.scale ?? 1;
   const yaw = spec.yaw ?? 0;
   switch (spec.kind) {
-    case 'cusco-plaza':
-      cuscoPlaza(b, x, z, s, yaw);
-      break;
-    case 'sacsayhuaman':
-      sacsayhuaman(b, x, z, s, yaw);
-      break;
     case 'real-felipe':
       realFelipe(b, x, z, s, yaw);
       break;

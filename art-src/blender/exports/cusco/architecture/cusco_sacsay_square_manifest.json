@@ -1,0 +1,81 @@
+{
+  "asset_id": "cusco_sacsay_square",
+  "source_scene": "scenes/cusco_architecture_kit.blend",
+  "script": "scripts/blender/build_cusco_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "layoutBlockers(CUSCO_CITY_LAYOUT, CUSCO_KIT_FOOTPRINTS) in src/model/defs/cuscoCity.ts",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/civilizaciones/inca.md",
+    "docs/historia/campanas/cusco_1536.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 8000,
+    "LOD1": 2400
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 2589,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_IncaAshlar",
+        "MAT-Arch_IncaEarth",
+        "MAT-Arch_IncaJoint",
+        "MAT-Arch_IncaMegalith"
+      ],
+      "bounds": {
+        "min": [
+          -7.034,
+          -10.594,
+          0.0
+        ],
+        "max": [
+          7.034,
+          5.572,
+          12.8
+        ],
+        "size": [
+          14.067,
+          16.166,
+          12.8
+        ]
+      },
+      "file": "cusco_sacsay_square_lod0.glb",
+      "bytes": 226900
+    },
+    "LOD1": {
+      "triangles": 621,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_IncaAshlar",
+        "MAT-Arch_IncaEarth",
+        "MAT-Arch_IncaJoint",
+        "MAT-Arch_IncaMegalith"
+      ],
+      "bounds": {
+        "min": [
+          -7.034,
+          -10.594,
+          0.0
+        ],
+        "max": [
+          7.034,
+          5.55,
+          12.8
+        ],
+        "size": [
+          14.067,
+          16.144,
+          12.8
+        ]
+      },
+      "file": "cusco_sacsay_square_lod1.glb",
+      "bytes": 57620
+    }
+  }
+}

@@ -1,6 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import { QUIPAIPAN_HEIGHTFIELD } from '../../../model/defs/quipaipanHeightmap';
-import { cuscoSiteLandmarks } from '../cuscoSite';
 import type { MissionDef } from '../../types';
 import { CUSCO_INCA_MAP_SIZE, cuscoIncaLength } from '../../../model/defs/cuscoIncaSite';
 
@@ -9,7 +8,8 @@ const QUIPAIPAN_CAMP = { ref: 'player' as const, dx: 0, dz: 0 };
 /** Atahualpa's camp on the Quito road, the Quipaipan pampa and Huáscar's headquarters (normalized). */
 const QUIPAIPAN_BASE = { x: 0.35, z: 0.3 } as const;
 const QUIPAIPAN_FIELD = { x: 0.65, z: 0.68 } as const;
-const QUIPAIPAN_HQ = { x: 0.71, z: 0.68 } as const;
+// East of the Cusco plaza, past its kancha walls: at 0.71 the headquarters stood inside the east house.
+const QUIPAIPAN_HQ = { x: 0.75, z: 0.68 } as const;
 // Behind the line, on the Quito road: the column that was following the army cuts the camp off.
 const QUIPAIPAN_REAR_COLUMN = { ref: 'player' as const, dx: -cuscoIncaLength(26), dz: -cuscoIncaLength(22) };
 
@@ -115,14 +115,13 @@ export const m6bGuerraCivil: MissionDef = {
       id: 'cusco_inca_site',
       y: 5,
       // Same city, same composition as m_cusco_1536: the bundled GLB is a bare grey ushnu, so both missions
-      // hide it and draw the plaza, the tiered ushnu and the Sacsayhuamán wall front (`cuscoSite.ts`).
+      // hide it and draw the Cusco architecture kit (`model/defs/cuscoCity.ts`).
       hideModel: true,
       heightField: QUIPAIPAN_HEIGHTFIELD,
       focus: { x: QUIPAIPAN_FIELD.x, z: QUIPAIPAN_FIELD.z },
       keepout: [{ x: QUIPAIPAN_FIELD.x, z: QUIPAIPAN_FIELD.z, rx: 0.09, rz: 0.08 }],
       buildKeepout: [{ x: QUIPAIPAN_FIELD.x, z: QUIPAIPAN_FIELD.z, rx: 0.08, rz: 0.07 }],
     },
-    siteLandmarks: cuscoSiteLandmarks(),
     terrain: {
       flats: [
         { name: 'Ruta de Quito al Cusco', x: QUIPAIPAN_BASE.x, z: QUIPAIPAN_BASE.z, rx: 0.16, rz: 0.12 },

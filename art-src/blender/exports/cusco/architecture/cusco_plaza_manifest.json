@@ -1,0 +1,79 @@
+{
+  "asset_id": "cusco_plaza",
+  "source_scene": "scenes/cusco_architecture_kit.blend",
+  "script": "scripts/blender/build_cusco_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "layoutBlockers(CUSCO_CITY_LAYOUT, CUSCO_KIT_FOOTPRINTS) in src/model/defs/cuscoCity.ts",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/civilizaciones/inca.md",
+    "docs/historia/campanas/cusco_1536.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 50,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_IncaAshlar",
+        "MAT-Arch_IncaEarth",
+        "MAT-Arch_IncaSand"
+      ],
+      "bounds": {
+        "min": [
+          -19.005,
+          -15.005,
+          0.0
+        ],
+        "max": [
+          19.005,
+          15.005,
+          0.24
+        ],
+        "size": [
+          38.01,
+          30.01,
+          0.24
+        ]
+      },
+      "file": "cusco_plaza_lod0.glb",
+      "bytes": 7740
+    },
+    "LOD1": {
+      "triangles": 50,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_IncaAshlar",
+        "MAT-Arch_IncaEarth",
+        "MAT-Arch_IncaSand"
+      ],
+      "bounds": {
+        "min": [
+          -19.005,
+          -15.005,
+          0.0
+        ],
+        "max": [
+          19.005,
+          15.005,
+          0.24
+        ],
+        "size": [
+          38.01,
+          30.01,
+          0.24
+        ]
+      },
+      "file": "cusco_plaza_lod1.glb",
+      "bytes": 7740
+    }
+  }
+}

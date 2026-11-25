@@ -25,9 +25,10 @@ The Cusco centre stays standing: the victory is the capture, not the destruction
 narrates Cajamarca and the weakened empire.
 
 The enemy base is labelled «Ejército de Huáscar», not «Cusco»: the capture is Huáscar's field headquarters at
-Quipaipan. The site draws the city's civic centre as the shared composition, and the plaza is walkable (the
-GLB-derived wall collision goes with the GLB; the explicit ushnu blocker stays), as in `m_cusco_1536`. The Quipaipan garrison deploys from the pampa's edge instead of appearing on it, and the Act III relief
-column enters on the Quito road,
+Quipaipan. The site draws the city's civic centre as the shared composition: the plaza floor and the gateways
+stay walkable, and every building, the ushnu included, blocks from the kit layout, as in `m_cusco_1536`. The
+Quipaipan garrison deploys from the pampa's edge instead of appearing on it, and the Act III relief column
+enters on the Quito road,
 behind the line, and marches on the camp — it used to appear beside the advance and still announce a rear
 attack.
 
@@ -50,7 +51,7 @@ Both are presentation trade-offs, not a survey.
 
 `cusco_inca_site` (scale `0.7 × 256/192`, anchor `(166.4, 174.1)`, camera height 77.3) hides the bare grey
 ushnu GLB and draws the same plaza, tiered ushnu and Sacsayhuamán wall front as `m_cusco_1536`
-(`src/campaign/defs/cuscoSite.ts`), plus its heritage proxy and the explicit ushnu blocker, scaled with the
+(`src/model/defs/cuscoCity.ts`), plus its heritage proxy and the explicit ushnu blocker, scaled with the
 terrace.
 Before/after: [`../media/m6b-cusco-plaza-before-after.webp`](../media/m6b-cusco-plaza-before-after.webp).
 The site has **no construction phases**: Cusco is a living capital and Quipaipan a battlefield, not a monument

@@ -10,6 +10,7 @@ import {
   chavinKeepout,
   chavinPoint,
 } from './chavinCity';
+import { CUSCO_CITY_BLOCKERS } from './cuscoCity';
 import type { SitePhasePlan } from './sitePhases';
 import {
   CARAL_COAST_STEP,
@@ -258,6 +259,8 @@ export interface AuthoredSiteDef {
   /** Phase from which each heritage card stands; omitted entries stand from the opening. */
   heritageSince?: Partial<Record<HeritageBuildingId, string>>;
   blockers: readonly SiteBlocker[];
+  /** The blockers come from the kit layout, so a headless match must apply them too. */
+  simulationCollision?: boolean;
   blockerPadding: number;
   buildKeepout: readonly SiteKeepoutRect[];
   wallCollision: SiteWallCollision;
@@ -1008,14 +1011,18 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     heritageProxies: [
       {
         id: 'cusco_ushnu',
+        // The drawn ushnu is the 20 x 15 m kit piece at 3/4: its pick volume matches the model, not the
+        // old full-size footprint that stuck ~1 m out and 3 m up.
         ...cuscoIncaPoint({ x: 124.8, z: 130.6 }),
-        w: cuscoIncaLength(13),
-        d: cuscoIncaLength(10),
-        h: cuscoIncaLength(6),
+        w: cuscoIncaLength(11.4),
+        d: cuscoIncaLength(8.55),
+        h: cuscoIncaLength(3.9),
       },
     ],
-    blockers: [{ ...cuscoIncaPoint({ x: 124.8, z: 130.6 }), w: cuscoIncaLength(13), d: cuscoIncaLength(10) }],
-    blockerPadding: cuscoIncaLength(0.5),
+    // Every building of the Blender composition (cuscoCity.ts), from the same layout the renderer bakes.
+    blockers: CUSCO_CITY_BLOCKERS,
+    simulationCollision: true,
+    blockerPadding: 0.4,
     buildKeepout: [{ x: 0.65, z: 0.68, rx: 0.08, rz: 0.07 }],
     wallCollision: {
       meshPatterns: [/cusco/i],

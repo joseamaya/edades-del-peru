@@ -226,6 +226,8 @@ export class Game {
   caralCity: CaralCity | null = null;
   /** The Chavín ceremonial centre built by phases, when the mission site is Chavín. */
   chavinCity: ArchitectureCity | null = null;
+  /** The Inca capital and Sacsayhuamán from the Cusco architecture kit (m_cusco_1536, m6b). */
+  cuscoCity: ArchitectureCity | null = null;
   /** The ayllu world of Tambotoco (cave, shrine, hamlets, planned Inticancha); null elsewhere. */
   aylluSite: AylluSite | null = null;
   /** The colonial life around Lima/Cusco (houses, market, people); null elsewhere. */
@@ -459,6 +461,10 @@ export class Game {
       marketTrade: (resource, action, amount) => this.tradeMarket(0, resource, action, amount),
       replantFarm: (buildingId) => this.replantFarm(buildingId),
     });
+    if (this.headless && this.missionLayout?.site) {
+      // A layout-converted site blocks in the simulation too (sim, benches, probes).
+      this.world.applyHeadlessSiteCollision(this.missionLayout.site);
+    }
     if (!this.headless) {
       if (this.missionLayout?.site) {
         this.world.spawnAuthoredSite(this.missionLayout.site);
@@ -2324,6 +2330,7 @@ export class Game {
       this.landmarkOwnsStatic = false;
       this.caralCity = null;
       this.chavinCity = null;
+      this.cuscoCity = null;
     }
     this.sitePhase = this.siteDef?.phases?.initial ?? 'in_use';
     this.sitePhaseRestored = false;

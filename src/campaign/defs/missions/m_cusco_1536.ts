@@ -1,7 +1,7 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import { highValleyVegetation } from '../../../model/defs/profiles';
 import { CUSCO1536_HEIGHTFIELD } from '../../../model/defs/cusco1536Heightmap';
-import { CUSCO_SITE_POINT, CUSCO_SITE_SACSAY, cuscoSiteLandmarks } from '../cuscoSite';
+import { CUSCO_SITE_POINT, CUSCO_SITE_SACSAY } from '../cuscoSite';
 import type { MissionDef } from '../../types';
 
 // Cusco 1536: the Inca camp, Sacsayhuamán, the city and the withdrawal road. Ollantaytambo lies
@@ -13,6 +13,9 @@ const CUSCO_1536_ROAD_BEND = { x: 135, z: 150 } as const;
 // The Act II sortie enters from the city outskirts, clear of both the 24 m siege ring and the spread it
 // spawns over (40 m > 4√2 + 10, and 40 - 4√2 > 24), then marches on the closing ring.
 const CUSCO_1536_SORTIE = { dx: CUSCO_SITE_POINT.x + 40, dz: CUSCO_SITE_POINT.z } as const;
+
+/** Metres east of the plaza anchor where the 1536 royalist headquarters stands. */
+const ENEMY_BASE_OFFSET_X = 30;
 
 export const mCusco1536: MissionDef = {
   id: 'm_cusco_1536',
@@ -45,7 +48,10 @@ export const mCusco1536: MissionDef = {
     ],
     base: { x: CUSCO_1536_CAMP.x / 256, z: CUSCO_1536_CAMP.z / 256 },
     opening: { x: 0.42, z: 0.42 },
-    enemyBase: { x: CUSCO_SITE_POINT.x / 256, z: CUSCO_SITE_POINT.z / 256 },
+    // The Spaniards hold the city: their headquarters stand on the open ground east of the plaza, outside the
+    // kancha walls; on the plaza itself it would sink into the ushnu (cuscoCity.ts).
+    // East of the ushnu, clear of its footprint (the kit's blockers cover the plaza centre).
+    enemyBase: { x: (CUSCO_SITE_POINT.x + ENEMY_BASE_OFFSET_X) / 256, z: CUSCO_SITE_POINT.z / 256 },
     discoveries: [],
     terrain: {
       flats: [
@@ -66,7 +72,6 @@ export const mCusco1536: MissionDef = {
     },
     // The Cusco platform is the ushnu; the plaza and the Sacsayhuamán wall front complete it. Shared with
     // Quipaipán so both missions show the same city instead of one of them keeping the grey placeholder GLB.
-    siteLandmarks: cuscoSiteLandmarks(),
     roads: [
       {
         from: { dx: CUSCO_1536_CAMP.x, dz: CUSCO_1536_CAMP.z },

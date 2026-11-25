@@ -13,6 +13,7 @@ import { loadSiteModel } from '../rendering/siteModels';
 import { SiteLandmarks, siteLandmarkObstacles } from '../rendering/SiteLandmarks';
 import { mergeStaticByMaterial } from '../rendering/mergeStatic';
 import { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
+import type { ArchitectureKitId, ArchPlacement } from '../model/defs/architectureKit';
 import { AylluSite } from '../rendering/AylluSite';
 import { loadTambotocoHeroAssets } from '../rendering/tambotocoHeroKit';
 import { ColonialLife } from '../rendering/ColonialLife';
@@ -30,7 +31,8 @@ import {
   CARAL_CITY_LAYOUT,
 } from '../model/defs/caralCity';
 import { CHAVIN_CITY_LAYOUT, CHAVIN_PHASE_PLAN } from '../model/defs/chavinCity';
-import { standsIn } from '../model/defs/sitePhases';
+import { CUSCO_CITY_LAYOUT, CUSCO_PHASE_PLAN } from '../model/defs/cuscoCity';
+import { standsIn, type SitePhasePlan } from '../model/defs/sitePhases';
 import { fishingApproach, type Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
 import { SiteCrew } from '../rendering/SiteCrew';
@@ -233,6 +235,18 @@ export class WorldViewDecor {
     this.game.pathfinder.blockCells(mask);
   }
 
+  /**
+   * Site collision for a match with no renderer. Only sites whose blockers come from their kit layout opt in
+   * (`simulationCollision`): that layout is the single source of what blocks, so the headless simulation
+   * must see it. Procedural sites keep their renderer-only blockers until they are converted.
+   */
+  applyHeadlessSiteCollision(site: MissionSite): void {
+    const def = this.game.siteDef;
+    if (!def?.simulationCollision) return;
+    this.addSiteObstacles(def);
+    this.addSiteLandmarkObstacles(site.y ?? 0);
+  }
+
   /** Load the authored campaign site; monumental volumes block pathing, not the whole footprint. */
   spawnAuthoredSite(site: MissionSite): void {
     const def = this.game.siteDef;
@@ -286,6 +300,25 @@ export class WorldViewDecor {
         if (siteModel) siteModel.visible = false;
       });
     };
+    /** Load a kit city for this site and hand it to the game; one path for every converted site. */
+    const spawnKitCity = (
+      name: string,
+      kit: ArchitectureKitId,
+      layout: readonly ArchPlacement[],
+      plan: SitePhasePlan,
+      assign: (city: ArchitectureCity) => void,
+    ): void => {
+      if (this.game.headless) return;
+      const city = new ArchitectureCity(
+        name,
+        kit,
+        [...layout],
+        (x, z) => this.game.terrain.getHeight(x, z) - (site.y ?? 0),
+        plan,
+      );
+      attachCity(city, () => assign(city));
+    };
+
     if (def.style === 'colonial') {
       const layout = COLONIAL_LAYOUTS[def.id as keyof typeof COLONIAL_LAYOUTS];
       if (layout && def.phases && !this.game.headless) {
@@ -376,18 +409,17 @@ export class WorldViewDecor {
       }
     }
     if (def.id === 'chavin_site') {
-      if (!this.game.headless) {
-        // The kit draws the temple in its construction phase; the source GLB stays hidden and keeps the
-        // heritage click proxies.
-        const city = new ArchitectureCity(
-          'chavin_city',
-          'chavin',
-          [...CHAVIN_CITY_LAYOUT],
-          (x, z) => this.game.terrain.getHeight(x, z) - (site.y ?? 0),
-          CHAVIN_PHASE_PLAN,
-        );
-        attachCity(city, () => (this.game.chavinCity = city));
-      }
+      // The kit draws the temple in its construction phase; the source GLB stays hidden and keeps the
+      // heritage click proxies.
+      spawnKitCity('chavin_city', 'chavin', CHAVIN_CITY_LAYOUT, CHAVIN_PHASE_PLAN, (city) => {
+        this.game.chavinCity = city;
+      });
+    }
+    if (def.id === 'cusco_inca_site') {
+      // The Blender kit draws the plaza, its buildings and Sacsayhuamán; the bare source GLB stays hidden.
+      spawnKitCity('cusco_city', 'cusco', CUSCO_CITY_LAYOUT, CUSCO_PHASE_PLAN, (city) => {
+        this.game.cuscoCity = city;
+      });
     }
     if (def.hideModel || site.hideModel) return;
     void loadSiteModel(def.id)

@@ -1,0 +1,81 @@
+{
+  "asset_id": "cusco_wasi",
+  "source_scene": "scenes/cusco_architecture_kit.blend",
+  "script": "scripts/blender/build_cusco_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "layoutBlockers(CUSCO_CITY_LAYOUT, CUSCO_KIT_FOOTPRINTS) in src/model/defs/cuscoCity.ts",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/civilizaciones/inca.md",
+    "docs/historia/campanas/cusco_1536.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 1802,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_IncaAdobe",
+        "MAT-Arch_IncaAshlar",
+        "MAT-Arch_IncaJoint",
+        "MAT-Arch_IncaThatch"
+      ],
+      "bounds": {
+        "min": [
+          -4.95,
+          -3.2,
+          0.0
+        ],
+        "max": [
+          4.95,
+          3.2,
+          5.16
+        ],
+        "size": [
+          9.9,
+          6.4,
+          5.16
+        ]
+      },
+      "file": "cusco_wasi_lod0.glb",
+      "bytes": 156564
+    },
+    "LOD1": {
+      "triangles": 498,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_IncaAdobe",
+        "MAT-Arch_IncaAshlar",
+        "MAT-Arch_IncaJoint",
+        "MAT-Arch_IncaThatch"
+      ],
+      "bounds": {
+        "min": [
+          -4.95,
+          -3.2,
+          0.0
+        ],
+        "max": [
+          4.95,
+          3.2,
+          5.16
+        ],
+        "size": [
+          9.9,
+          6.4,
+          5.16
+        ]
+      },
+      "file": "cusco_wasi_lod1.glb",
+      "bytes": 45184
+    }
+  }
+}

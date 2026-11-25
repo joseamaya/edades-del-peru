@@ -36,7 +36,7 @@
 | Cifras del ejército inca | Aproximado | Las crónicas dan cifras exageradas; no se muestran como dato duro. |
 | Cahuide | Tradición | Procede sobre todo de Garcilaso y relatos tardíos; no se escenifica. |
 | «Aparición» de Santiago | Hagiografía | Se excluye de la misión. |
-| Sacsayhuamán y Cusco | Abstracción | El juego dibuja una plaza, un ushnu y un frente amurallado de Sacsayhuamán; no es una planta arqueológica exacta. |
+| Sacsayhuamán y Cusco | Abstracción | El juego dibuja la plaza con su ushnu, una kallanka y casas de piedra con vanos trapezoidales, muros de kancha, y las tres terrazas en zigzag de Sacsayhuamán con sus torres (kit de Blender, `cuscoCity.ts`); medidas y disposición son una composición representativa, no una planta arqueológica exacta. |
 | Corte de suministros | Documentado en lo general | El cerco y la presión sobre los abastos son parte de la rebelión; la ubicación exacta de los caminos es una abstracción de juego. |
 
 ## Fuentes
