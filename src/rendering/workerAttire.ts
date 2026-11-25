@@ -775,7 +775,6 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     const tunicTint = (tunic.material as THREE.MeshStandardMaterial).color.clone();
     const skirtTint = (lower.material as THREE.MeshStandardMaterial).color.clone();
     garmentTints = { tunic: tunicTint, skirt: skirtTint };
-    const cloth = (tint: THREE.Color): number => tintedCotton(tint);
     // The volume alone also catches a hand hanging inside the tunic's box (the arms are down in the bind
     // pose) and a calf inside the skirt's box, so the dominant bone gates each region. The skirt is the
     // outer layer at the waist and wins the overlap. Only the hero's uncu reaches below the wrap
@@ -794,7 +793,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     return paintBodyUnderGarments(
       body,
       `andean:${variant}`,
-      { tunic: cloth(tunicTint), skirt: cloth(skirtTint) },
+      { tunic: tintedCotton(tunicTint), skirt: tintedCotton(skirtTint) },
       regionOf,
     );
   };

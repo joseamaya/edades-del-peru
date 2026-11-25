@@ -121,7 +121,6 @@ export function paintBodyUnderGarments<R extends string>(
       // A vertex mostly on an uncovered bone (neck, hand, head) stays skin.
       if (!best || covered < 0.5) continue;
       const c = linear[best];
-      if (!c) continue;
       paint.set([c.r, c.g, c.b, 1], i * 4);
     }
     geometry = new THREE.BufferGeometry();

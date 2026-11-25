@@ -581,14 +581,16 @@ colour, so the patch matches the Inca gold, the Moche red or Caral's cream. The 
 own and is not merged by `consolidateRig`, so the paint is a vertex attribute plus a small shader mix; the
 cache is keyed by body, variant and colours.
 
-**Tests.** `tests/andean-tunic-paint.test.ts` loads `caral_worker.glb`, dresses the Inca, Moche, Caral and
-chasqui variants and checks the paint attribute: the torso and pelvis carry the garment colour while the
-hands, lower arms, feet and head stay at alpha 0; a `setClothColors` call repaints the body after a hero
-retint.
+**Tests.** `tests/andean-tunic-paint.test.ts` loads `caral_worker.glb` and `tambotoco_hero.glb`, dresses the
+Inca, Moche, Caral, chasqui, Chanca, Recuay, Wari and Chimú variants, both genders, and checks the paint
+attribute: the torso and pelvis carry the garment colour while the hands, lower arms, feet, knees and head stay
+at alpha 0. The hero's longer uncu paints the thigh, and a `setClothColors` call repaints the body with the
+palette tint × accent after the cloth is retinted.
 
-The paint adds no draw call: it is one `paint` vertex attribute on the body that was already drawn, and one
-painted geometry is cached per variant. `yarn verify:fast` (dist 27.66 / 40 MB), `yarn bench:characters`, the
-new test and the character/rig E2E specs are the gate.
+The paint adds no draw call: it is one `paint` vertex attribute on the body that was already drawn. One painted
+geometry is cached per variant and colour set (the hero retint adds one), and like the shared body buffers it
+is kept for the session. `yarn verify:fast` (dist 27.66 / 40 MB), `yarn bench:characters`, the new test and the
+character/rig E2E specs are the gate.
 
 **Still open.** The paint hides the skin, but the tunic geometry is still a tight shell; a pose that stretches
 it further can still read as a bulge. A wider offset or a longer sleeve is an asset change, not a dresser one.
