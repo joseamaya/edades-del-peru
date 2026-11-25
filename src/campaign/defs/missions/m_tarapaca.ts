@@ -1,14 +1,19 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import { TARAPACA_HEIGHTFIELD } from '../../../model/defs/tarapacaHeightmap';
+import {
+  TARAPACA_CITY_ANCHOR,
+  TARAPACA_HEIGHTS_ANCHOR,
+  TARAPACA_PACHICA_ANCHOR,
+} from '../../../model/defs/republicCity';
 import type { MissionDef } from '../../types';
 
 // Tarapacá: the village in the quebrada, the heights held by the Chilean columns and the Pachica road.
-const TARAPACA_VILLAGE = { x: 96, z: 168 } as const;
+const TARAPACA_VILLAGE = TARAPACA_CITY_ANCHOR;
 // The hold anchor is the village centre; the column marches to a walkable point inside the plaza so its
 // path (and the melee around it) is not pinned to the decorative house geometry.
-const TARAPACA_VILLAGE_EDGE = { x: 106, z: 168 } as const;
-const TARAPACA_HEIGHTS = { x: 160, z: 120 } as const;
-const TARAPACA_PACHICA = { x: 198, z: 150 } as const;
+const TARAPACA_VILLAGE_EDGE = { x: TARAPACA_VILLAGE.x + 10, z: TARAPACA_VILLAGE.z } as const;
+const TARAPACA_HEIGHTS = TARAPACA_HEIGHTS_ANCHOR;
+const TARAPACA_PACHICA = TARAPACA_PACHICA_ANCHOR;
 const TARAPACA_ARICA = { x: 150, z: 36 } as const;
 const TARAPACA_ENEMY = { x: 210, z: 64 } as const;
 // The three Chilean columns enter from different edges; none starts on the objective.

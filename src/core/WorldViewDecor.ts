@@ -496,12 +496,7 @@ export class WorldViewDecor {
       });
   }
 
-  /**
-   * Procedural landmark completions for an authored site: Cusco's plaza and Sacsayhuamán, the
-   * Real Felipe bastions, the Tarapacá village and the Vilcabamba refuge. They live in their own
-   * scene group so texture disposal never touches the shared generated PBR sets.
-   */
-  /** The landmarks' houses and halls block movement, headless too (they are drawn only with a renderer). */
+  /** The remaining mission-scoped landmark (Vilcabamba) blocks movement, headless too. */
   private addSiteLandmarkObstacles(baseY: number): void {
     const specs = this.game.missionLayout?.siteLandmarks;
     if (!specs?.length) return;

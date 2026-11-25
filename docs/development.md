@@ -152,8 +152,8 @@ Definition of Done and the building audit see
   village/heights/Pachica are the Republican kit (`src/model/defs/republicCity.ts`, which also owns their
   blockers). `SiteLandmarks` merges geometry per material and lives in its own scene group so disposing a
   match never touches the shared generated PBR textures. `MissionSite.hideModel` drops the bundled GLB per
-  mission (Cusco 1536) while `AuthoredSiteDef.hideModel` does it for a site used by one mission (Vilcabamba);
-  both are presentation-only. Guarded by `tests/site-landmarks.test.ts`.
+  mission (Cusco 1536) while `AuthoredSiteDef.hideModel` does it for a site (Arica, Real Felipe, Tarapacá,
+  Vilcabamba); both are presentation-only. Guarded by `tests/site-landmarks.test.ts`.
 - **Palettized ground**: the model-mission pattern wants painted ground at ~2 m per point, and a 128 x 128 RGBA
   grid is 64 KB, so per-mission grids store a 4-bit index per cell into a 16-entry palette
   (`src/model/defs/groundCodec.ts`) and decode to the RGBA weights `sampleAuthoredGround` expects. The palette

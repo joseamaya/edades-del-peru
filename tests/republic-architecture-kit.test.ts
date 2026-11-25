@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ARCH_SURFACES } from '../src/rendering/architectureKit';
+import { layoutBlockers } from '../src/model/defs/architectureKit';
 import {
   ARICA_CITY_LAYOUT,
   REAL_FELIPE_CITY_LAYOUT,
@@ -12,6 +13,9 @@ import {
   tarapacaCityBlockers,
 } from '../src/model/defs/republicCity';
 import { AUTHORED_SITES } from '../src/model/defs/sites';
+import { blockersCover } from './site-blockers';
+import { setAutoStart } from '../src/core/Game';
+import { headlessMission } from './headless';
 
 interface LodStats {
   triangles: number;
@@ -158,25 +162,38 @@ describe('republican layouts', () => {
   it('closes the Real Felipe curtains and keeps the sally gates open', () => {
     const blockers = realFelipeCityBlockers();
     const anchor = AUTHORED_SITES.real_felipe_site.anchor;
-    const covers = (x: number, z: number): boolean =>
-      blockers.some((blocker) => Math.abs(x - blocker.x) <= blocker.w / 2 && Math.abs(z - blocker.z) <= blocker.d / 2);
     expect(blockers).toHaveLength(14);
-    expect(covers(anchor.x, anchor.z - 12), 'north curtain').toBe(true);
-    expect(covers(anchor.x + 12, anchor.z), 'east curtain').toBe(true);
-    expect(covers(anchor.x, anchor.z + 12), 'south gate').toBe(false);
-    expect(covers(anchor.x - 12, anchor.z), 'west gate').toBe(false);
+    expect(blockersCover(blockers, anchor.x, anchor.z - 12), 'north curtain').toBe(true);
+    expect(blockersCover(blockers, anchor.x + 12, anchor.z), 'east curtain').toBe(true);
+    expect(blockersCover(blockers, anchor.x, anchor.z + 12), 'south gate').toBe(false);
+    expect(blockersCover(blockers, anchor.x - 12, anchor.z), 'west gate').toBe(false);
   });
 
   it('draws every Tarapacá cluster and blocks the houses, not the plaza', () => {
     const blockers = tarapacaCityBlockers();
-    const covers = (x: number, z: number): boolean =>
-      blockers.some((blocker) => Math.abs(x - blocker.x) <= blocker.w / 2 && Math.abs(z - blocker.z) <= blocker.d / 2);
-    expect(covers(96, 168), 'village plaza').toBe(false);
-    expect(covers(106, 168), 'east street').toBe(false);
-    expect(covers(96, 158), 'village house').toBe(true);
-    expect(covers(160, 123), 'crest parapet').toBe(true);
-    expect(covers(198, 158), 'Pachica corral').toBe(true);
+    expect(blockersCover(blockers, 96, 168), 'village plaza').toBe(false);
+    expect(blockersCover(blockers, 106, 168), 'east street').toBe(false);
+    expect(blockersCover(blockers, 98, 155), 'village house').toBe(true);
+    expect(blockersCover(blockers, 160, 123), 'crest parapet').toBe(true);
+    expect(blockersCover(blockers, 198, 158), 'Pachica corral').toBe(true);
     expect(TARAPACA_CITY_LAYOUT.filter((p) => p.asset === 'adobe_house')).toHaveLength(12);
+    // The houses and the chapel keep ≥2 m passages between them (AABBs, so the rotated houses are
+    // measured conservatively); no house overlaps another.
+    const village = layoutBlockers(
+      TARAPACA_CITY_LAYOUT.filter((p) => p.asset === 'adobe_house' || p.asset === 'chapel'),
+      REPUBLIC_KIT_FOOTPRINTS,
+    );
+    for (let i = 0; i < village.length; i++) {
+      for (let j = i + 1; j < village.length; j++) {
+        const a = village[i]!;
+        const b = village[j]!;
+        const dx = Math.abs(a.x - b.x) - (a.w + b.w) / 2;
+        const dz = Math.abs(a.z - b.z) - (a.d + b.d) / 2;
+        expect(dx < 0 && dz < 0, `houses ${i}/${j} overlap`).toBe(false);
+        if (dx >= 0 && dz < 0) expect(dx, `x passage ${i}/${j}`).toBeGreaterThanOrEqual(2);
+        if (dz >= 0 && dx < 0) expect(dz, `z passage ${i}/${j}`).toBeGreaterThanOrEqual(2);
+      }
+    }
   });
 
   it('is the collision each site uses', () => {
@@ -186,6 +203,26 @@ describe('republican layouts', () => {
     for (const id of ['arica_site', 'real_felipe_site', 'tarapaca_site'] as const) {
       expect(AUTHORED_SITES[id].simulationCollision, id).toBe(true);
       expect(AUTHORED_SITES[id].style, id).toBe('republic');
+    }
+  });
+
+  it('spawns the Real Felipe garrison clear of the kit pieces and keeps the gate wide', () => {
+    const game = headlessMission('m_real_felipe');
+    try {
+      const site = AUTHORED_SITES.real_felipe_site;
+      const garrison = [...game.buildings.values()].filter((building) => building.owner === 1 && !building.dead);
+      expect(garrison.length).toBeGreaterThan(0);
+      for (const building of garrison) {
+        expect(
+          blockersCover(site.blockers, building.pos.x, building.pos.z),
+          `${building.kind} at ${building.pos.x.toFixed(1)},${building.pos.z.toFixed(1)}`,
+        ).toBe(false);
+      }
+      // The 4 m sally gate loses one blockerPadding on each side to the navigation expansion.
+      expect(4 - 2 * site.blockerPadding).toBeGreaterThanOrEqual(2);
+    } finally {
+      game.destroy();
+      setAutoStart(true);
     }
   });
 });

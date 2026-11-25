@@ -16,7 +16,7 @@ It is a project-owned low-poly abstraction, **not** a survey and **not** a histo
 - Script: `scripts/blender/build_republic_architecture_kit.py`; kit scene
   `art-src/blender/scenes/republic_architecture_kit.blend` (Git LFS).
 - Game GLBs: `src/assets/architecture/republic/republic_<piece>_lod0.glb` and `_lod1.glb` (14 pieces,
-  28 files, ≈336 KB), meshopt-compressed with `yarn art:models --only=<basenames>`. Uncompressed exports
+  28 files, 278,320 B ≈ 272 KB), meshopt-compressed with `yarn art:models --only=<basenames>`. Uncompressed exports
   and per-piece manifests live in `art-src/blender/exports/republic/architecture/`.
 - Registration: `ArchitectureKitId` `republic` in `src/model/defs/architectureKit.ts`;
   `KIT_URLS.republic` (`import.meta.glob`) and `ARCH_SURFACES` in `src/rendering/architectureKit.ts`.
@@ -47,6 +47,20 @@ textures in the GLBs. At runtime the shared PBR detail sets are mapped by `ARCH_
 Maximum 4 materials per piece; LOD0 ≤ 5k and LOD1 ≤ 1.5k triangles, with the chapel and the bastion as
 monument pieces (≤ 8k / 2.4k). Every piece is terrain-conformed; floors and the pier have no footprint and
 stay walkable.
+
+## Terrain measurement
+
+Sampled from the authored heightfields before placing. `ArchitectureCity` seats each piece on the lowest
+ground under its footprint (floors use the highest and a `lift`); the heights below are the pads the kit
+was checked against:
+
+| Pad | Height |
+| --- | --- |
+| Arica port terrace | 4.0 m |
+| Callao fort pad (the mission overrides the site heightfield) | 3.535 m |
+| Tarapacá village | 6.942 m |
+| Tarapacá crest | 9.0–9.5 m |
+| Pachica | 6.94 m |
 
 ## Pieces
 
@@ -103,7 +117,12 @@ yarn shot republic-real-felipe --url="/?mission=m_real_felipe&seed=777&fog=0&int
   --click --site --height=56 --no-hud --no-labels --wait=7000
 yarn shot republic-tarapaca --url="/?mission=m_tarapaca&seed=777&fog=0&intro=0" \
   --click --site --height=48 --no-hud --no-labels --wait=7000
-# before row: the same commands from a worktree at the parent commit
+mkdir -p review/republic-after
+cp review/republic-arica_0.png review/republic-after/arica_0.png
+cp review/republic-real-felipe_0.png review/republic-after/real-felipe_0.png
+cp review/republic-tarapaca_0.png review/republic-after/tarapaca_0.png
+# before row: run the same three commands from a worktree at the parent commit, then
+# copy its review/republic-*_0.png into review/republic-before/{arica,real-felipe,tarapaca}_0.png
 node scripts/republic_sites_sheet.mjs --before=review/republic-before --after=review/republic-after \
   --out=docs/media/republic-sites-before-after.webp
 ```

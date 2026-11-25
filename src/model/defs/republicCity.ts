@@ -21,6 +21,9 @@ const at = (anchor: { x: number; z: number }, dx: number, dz: number) => ({ x: a
 /** The Arica site point on the 256 m map; Real Felipe reuses the coastal fort anchor. */
 export const ARICA_CITY_ANCHOR = aricaPoint({ x: 134.8, z: 73 });
 export const REAL_FELIPE_CITY_ANCHOR = ARICA_CITY_ANCHOR;
+/** The battery faces the Pacific from the seaward half of the terrace; the warehouse sits landward. */
+export const ARICA_BATTERY_ANCHOR = at(ARICA_CITY_ANCHOR, -7, 0);
+export const ARICA_WAREHOUSE_ANCHOR = at(ARICA_CITY_ANCHOR, 8, 7);
 export const TARAPACA_CITY_ANCHOR = { x: 96, z: 168 } as const;
 export const TARAPACA_HEIGHTS_ANCHOR = { x: 160, z: 120 } as const;
 export const TARAPACA_PACHICA_ANCHOR = { x: 198, z: 150 } as const;
@@ -50,8 +53,8 @@ export const REPUBLIC_KIT_FOOTPRINTS: Partial<Record<string, ArchFootprint>> = {
 export const ARICA_CITY_LAYOUT: readonly ArchPlacement[] = [
   { asset: 'apron', ...ARICA_CITY_ANCHOR, rotY: 0, scale: ONE, lift: 0.02 },
   // The battery's front (+Z) turns west, toward the Pacific.
-  { asset: 'battery', ...at(ARICA_CITY_ANCHOR, -7, 0), rotY: -Math.PI / 2, scale: ONE, lift: 0.12 },
-  { asset: 'warehouse', ...at(ARICA_CITY_ANCHOR, 8, 7), rotY: 0, scale: ONE },
+  { asset: 'battery', ...ARICA_BATTERY_ANCHOR, rotY: -Math.PI / 2, scale: ONE, lift: 0.12 },
+  { asset: 'warehouse', ...ARICA_WAREHOUSE_ANCHOR, rotY: 0, scale: ONE },
   // The pier runs west from the apron; it has no footprint and is a landing, not a building.
   { asset: 'pier', ...at(ARICA_CITY_ANCHOR, -16, -2), rotY: Math.PI / 2, scale: [0.78, 1, 0.78], lift: 0.1 },
 ];
@@ -93,30 +96,30 @@ export const REAL_FELIPE_CITY_LAYOUT: readonly ArchPlacement[] = (() => {
   ];
 })();
 
-/** The quebrada houses ring the plaza; the east street stays clear for the Chilean column. */
+/** The quebrada houses ring the plaza with ≥2 m gaps; the east street stays clear for the Chilean column. */
 const TARAPACA_HOUSES: ReadonlyArray<readonly [number, number, number, number, number]> = [
   // dx, dz, width, depth, yaw
-  [-8, -10, 8, 6, 0],
-  [0, -11, 7, 5, 0.08],
-  [10, -9, 9, 6, -0.05],
-  [-15, 7, 7, 5, 0.05],
-  [-4, 9, 8, 5, 0],
-  [10, 10, 9, 6, 0.1],
-  [19, -6, 6, 5, 1.5],
-  [-24, 2, 6, 4, 1.55],
+  [-8, -12, 8, 6, 0],
+  [2, -13, 7, 5, 0.08],
+  [14, -11, 9, 6, -0.05],
+  [-11, 10, 7, 5, 0.05],
+  [0, 10, 8, 5, 0],
+  [11, 11, 9, 6, 0.1],
+  [24, -8, 6, 5, 1.5],
+  [-27, 4, 6, 4, 1.55],
 ];
 
 const TARAPACA_PACHICA_HOUSES: ReadonlyArray<readonly [number, number, number, number, number]> = [
   [-6, -5, 5, 4, 0.05],
   [2, -6, 6, 4.5, -0.08],
-  [6, 4, 5, 4, 0.4],
+  [4, 2, 5, 4, 0.4],
   [-8, 7, 4.5, 3.5, -0.3],
 ];
 
 export const TARAPACA_CITY_LAYOUT: readonly ArchPlacement[] = [
   // The packed plaza and main street: walkable, with the chapel closing the west end.
   { asset: 'apron', ...TARAPACA_CITY_ANCHOR, rotY: 0, scale: [0.6, 1, 0.5], lift: 0.02 },
-  { asset: 'chapel', ...at(TARAPACA_CITY_ANCHOR, -17, -5), rotY: 0, scale: ONE },
+  { asset: 'chapel', ...at(TARAPACA_CITY_ANCHOR, -18, -5), rotY: 0, scale: ONE },
   ...TARAPACA_HOUSES.map(([dx, dz, w, d, rotY]): ArchPlacement => ({
     asset: 'adobe_house',
     ...at(TARAPACA_CITY_ANCHOR, dx, dz),
@@ -136,7 +139,7 @@ export const TARAPACA_CITY_LAYOUT: readonly ArchPlacement[] = [
     scale: [w / 8, 1, d / 6],
   })),
   { asset: 'corral_wall', ...at(TARAPACA_PACHICA_ANCHOR, 2, 8), rotY: 0, scale: ONE },
-  { asset: 'corral_wall', ...at(TARAPACA_PACHICA_ANCHOR, -5, 5), rotY: Math.PI / 2, scale: [0.6, 1, 1] },
+  { asset: 'corral_wall', ...at(TARAPACA_PACHICA_ANCHOR, -3.5, 5), rotY: Math.PI / 2, scale: [0.6, 1, 1] },
   { asset: 'corral_wall', ...at(TARAPACA_PACHICA_ANCHOR, 9, 5), rotY: Math.PI / 2, scale: [0.6, 1, 1] },
 ];
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { UnitKind } from '../src/core/types';
 import { mTarapaca } from '../src/campaign/defs/missions/m_tarapaca';
 import { getAuthoredSite } from '../src/model/defs/sites';
+import { blockersCover } from './site-blockers';
 
 const distance = (a: { dx: number; dz: number }, b: { dx: number; dz: number }): number =>
   Math.hypot(a.dx - b.dx, a.dz - b.dz);
@@ -78,14 +79,10 @@ describe('Tarapacá battle contract', () => {
     expect(site.terrain.palette).toBe('atacama');
     // The village is the battlefield: its plaza and the east approach stay walkable while the kit's
     // houses, crest parapet and Pachica corral block from the same layout.
-    const covers = (x: number, z: number): boolean =>
-      site.blockers.some(
-        (blocker) => Math.abs(x - blocker.x) <= blocker.w / 2 && Math.abs(z - blocker.z) <= blocker.d / 2,
-      );
-    expect(covers(96, 168), 'the village plaza must stay walkable').toBe(false);
-    expect(covers(106, 168), 'the east approach must stay walkable').toBe(false);
-    expect(covers(160, 123), 'the crest has its parapet').toBe(true);
-    expect(covers(198, 158), 'Pachica has its corral').toBe(true);
+    expect(blockersCover(site.blockers, 96, 168), 'the village plaza must stay walkable').toBe(false);
+    expect(blockersCover(site.blockers, 106, 168), 'the east approach must stay walkable').toBe(false);
+    expect(blockersCover(site.blockers, 160, 123), 'the crest has its parapet').toBe(true);
+    expect(blockersCover(site.blockers, 198, 158), 'Pachica has its corral').toBe(true);
     expect(mTarapaca.layout?.siteLandmarks).toBeUndefined();
     expect(mTarapaca.layout?.terrain?.flats?.map((f) => f.name)).not.toContain('Alturas');
     expect(mTarapaca.mapOverrides?.resources?.scatter).toBe(0);

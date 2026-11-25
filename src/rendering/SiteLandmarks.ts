@@ -6,31 +6,19 @@ import { applyGeneratedPbr } from './Biomes';
 import { scaleUv } from '../util/uv';
 
 /**
- * Procedural landmark compositions for the authored sites whose bundled GLB is a labelled
- * abstraction from another place. They are deliberately low-detail and honest: a plaza, a
- * zig-zag wall front, a bastioned trace, an adobe village and a cloud-forest platform, not a
- * surveyed reconstruction. The source notes live in `docs/plan/0.2.1-asset-corrections.md`.
+ * The remaining procedural landmark composition, for the one authored site whose bundled GLB is a
+ * labelled abstraction from another place and whose kit has not landed: the Vilcabamba refuge.
+ * Cusco and the Republican sites (Arica, Real Felipe, Tarapacá) draw from their architecture kits
+ * instead. The composition is deliberately low-detail and honest: a low platform, longhouses and a
+ * small plaza, not a surveyed reconstruction. The source notes live in
+ * `docs/plan/0.2.1-asset-corrections.md`.
  *
- * Geometry is merged per material, so one site costs a handful of draw calls. Textures come
+ * Geometry is merged per material, so the site costs a handful of draw calls. Textures come
  * from the shared generated PBR sets and are never disposed here (they are cached for the
  * session); the group only owns its geometries and material wrappers.
  */
 
-type MatKey =
-  | 'cutstone'
-  | 'fieldstone'
-  | 'megalith'
-  | 'adobe'
-  | 'brick'
-  | 'thatch'
-  | 'tile'
-  | 'flatstone'
-  | 'plaza'
-  | 'path'
-  | 'terrace'
-  | 'earthRoof'
-  | 'wood'
-  | 'ditch';
+type MatKey = 'fieldstone' | 'thatch' | 'flatstone' | 'plaza' | 'wood';
 
 interface MaterialSpec {
   slot: string;
@@ -42,20 +30,11 @@ interface MaterialSpec {
 }
 
 const MATERIALS: Record<MatKey, MaterialSpec> = {
-  cutstone: { slot: 'wall_cutstone', color: '#eadcc0', tile: 3.2, roughness: 0.9, lift: 1.7 },
   fieldstone: { slot: 'wall_fieldstone', color: '#f0e2c8', tile: 3.2, roughness: 0.95, lift: 1.8 },
-  megalith: { slot: 'wall_megalith', color: '#f2e4c8', tile: 4.2, roughness: 0.95, lift: 2.6 },
-  adobe: { slot: 'wall_adobe', color: '#f0d2a8', tile: 3, roughness: 0.98, lift: 1.25 },
-  brick: { slot: 'wall_brick', color: '#f0c8a8', tile: 2.6, roughness: 0.9, lift: 1.6 },
   thatch: { slot: 'roof_thatch', color: '#f0cf80', tile: 2.2, roughness: 1, lift: 1.35 },
-  tile: { slot: 'tile', color: '#e09070', tile: 2.4, roughness: 0.85, lift: 1.2 },
   flatstone: { slot: 'roof_flatstone', color: '#f0e4d0', tile: 3, roughness: 0.95, lift: 1.65 },
   plaza: { slot: 'ground_plaza', color: '#efe6d2', tile: 4.5, roughness: 0.95, lift: 1.5 },
-  path: { slot: 'ground_path', color: '#e0c8a0', tile: 4, roughness: 0.98, lift: 1.35 },
-  terrace: { slot: 'terrace_face', color: '#e8c8a8', tile: 3.2, roughness: 0.95, lift: 1.5 },
-  earthRoof: { slot: 'plaster_detail', color: '#c8a878', tile: 3, roughness: 0.95 },
   wood: { slot: 'wood', color: '#a87a50', tile: 2, roughness: 0.9, lift: 1.1 },
-  ditch: { slot: 'ground_path', color: '#6a5c48', tile: 3, roughness: 1 },
 };
 
 class LandmarkBuilder {
@@ -105,15 +84,6 @@ class LandmarkBuilder {
     return top;
   }
 
-  /** Lowest ground over a rectangle, used to sink the foundation of a building on a slope. */
-  minGround(x: number, z: number, rx: number, rz: number): number {
-    let low = Infinity;
-    for (const dx of [-rx, 0, rx]) {
-      for (const dz of [-rz, 0, rz]) low = Math.min(low, this.ground(x + dx, z + dz));
-    }
-    return low;
-  }
-
   private push(key: MatKey, geometry: THREE.BufferGeometry): void {
     const bucket = this.parts.get(key);
     if (bucket) bucket.push(geometry);
@@ -128,26 +98,6 @@ class LandmarkBuilder {
     if (rx) geometry.rotateX(rx);
     if (ry) geometry.rotateY(ry);
     if (rz) geometry.rotateZ(rz);
-    geometry.translate(x, y, z);
-    this.push(key, geometry);
-  }
-
-  addCylinder(
-    key: MatKey,
-    radiusTop: number,
-    radiusBottom: number,
-    height: number,
-    segments: number,
-    x: number,
-    y: number,
-    z: number,
-    ry = 0,
-  ): void {
-    if (this.footprintsOnly) return;
-    const geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, segments);
-    const tile = MATERIALS[key].tile;
-    scaleUv(geometry, (Math.PI * 2 * Math.max(radiusTop, radiusBottom)) / tile, height / tile);
-    if (ry) geometry.rotateY(ry);
     geometry.translate(x, y, z);
     this.push(key, geometry);
   }
@@ -178,7 +128,7 @@ class LandmarkBuilder {
     this.addBox(wall, w, h, d, x, y + h / 2, z, 0, yaw, 0);
     const [dx, dz] = this.offset(x, z, yaw, 0, d / 2 + 0.04);
     this.addBox('wood', w * 0.24, h * 0.55, 0.1, dx, y + h * 0.3, dz, 0, yaw, 0);
-    if (roof === 'flatstone' || roof === 'terrace' || roof === 'earthRoof') {
+    if (roof === 'flatstone') {
       this.addBox(roof, w * 1.08, 0.2, d * 1.08, x, y + h + 0.1, z, 0, yaw, 0);
       for (const side of [-1, 1]) {
         const [px, pz] = this.offset(x, z, yaw, 0, side * (d / 2 + 0.06));

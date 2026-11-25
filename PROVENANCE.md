@@ -982,7 +982,7 @@ slot is absent (offline / without assets).
   `art-src/blender/scenes/republic_architecture_kit.blend` (Git LFS). Uncompressed exports and per-piece
   manifests (triangles, materials, bounds, budget, `confidence`, sources, collision, review state) live in
   `art-src/blender/exports/republic/architecture/`; the game copies were meshopt-compressed with
-  `yarn art:models --only=<file>` (≈336 KB for the 28 game copies).
+  `yarn art:models --only=<file>` (278,320 B ≈ 272 KB for the 28 game copies).
 - **Content**: project-owned procedural geometry. Eight Principled materials (brick, stone, adobe, earth,
   wood, packed-earth paving, stone plaza paving and dark openings) with world-scale box-projected UVs and a
   per-vertex tint (wall-foot grime, roof and paving variation; the horizontal paving and plaza skip the

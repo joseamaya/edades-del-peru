@@ -85,7 +85,7 @@ import {
   ARICA_HEIGHTMAP_SIZE,
   ARICA_HEIGHTMAP_WORLD_SIZE,
 } from './aricaHeightmap';
-import { aricaLength, aricaPoint } from './aricaSite';
+import { aricaLength } from './aricaSite';
 import { cuscoIncaLength, cuscoIncaPoint } from './cuscoIncaSite';
 import { independenceLength, independencePoint } from './independenceSite';
 import {
@@ -109,7 +109,15 @@ import {
 import { TAMBOTOCO_CAVE, TAMBOTOCO_INTICANCHA_HUTS, TAMBOTOCO_SHRINE, TAMBOTOCO_VILLAGES } from './tambotocoLayout';
 import { CUSCO_COLONIAL, LIMA_COLONIAL } from './colonialLayout';
 import { colonialCityBlockers } from './colonialCity';
-import { aricaCityBlockers, realFelipeCityBlockers, tarapacaCityBlockers } from './republicCity';
+import {
+  aricaCityBlockers,
+  ARICA_BATTERY_ANCHOR,
+  ARICA_CITY_ANCHOR,
+  REAL_FELIPE_CITY_ANCHOR,
+  TARAPACA_CITY_ANCHOR,
+  realFelipeCityBlockers,
+  tarapacaCityBlockers,
+} from './republicCity';
 import {
   LIMA_GROUND,
   LIMA_GROUND_SIZE,
@@ -278,8 +286,8 @@ export interface AuthoredSiteDef {
   /** Phase from which the authored GLB stands; omitted means from the opening. */
   modelSince?: string;
   /**
-   * The authored GLB is a labelled abstraction that the mission replaces with procedural
-   * landmarks (Real Felipe, Tarapacá, Vilcabamba); do not load it.
+   * The authored GLB is a labelled abstraction that the mission replaces with a kit or a procedural
+   * landmark (Arica, Real Felipe, Tarapacá, Vilcabamba); do not load it.
    */
   hideModel?: boolean;
   /** Authored presentation family; the renderer picks the overlay from it. */
@@ -416,10 +424,12 @@ export function caralKeepout(r: SiteKeepoutRect): SiteKeepoutRect {
 }
 
 /** The battery point in the former 192 m frame, scaled into the 256 m map. */
-const ARICA_SITE_POINT = aricaPoint({ x: 134.8, z: 73 });
+const ARICA_SITE_POINT = ARICA_CITY_ANCHOR;
 
-// The Tarapacá village spans ~44 x 26 m around its own anchor (96, 168); keep construction off it.
-const TARAPACA_BUILD_KEEPOUT: readonly SiteKeepoutRect[] = [{ x: 96 / 256, z: 168 / 256, rx: 0.095, rz: 0.075 }];
+// The Tarapacá village spans ~44 x 26 m around its own anchor; keep construction off it.
+const TARAPACA_BUILD_KEEPOUT: readonly SiteKeepoutRect[] = [
+  { x: TARAPACA_CITY_ANCHOR.x / 256, z: TARAPACA_CITY_ANCHOR.z / 256, rx: 0.095, rz: 0.075 },
+];
 
 /** The Ayacucho chapel point in the former 192 m frame, scaled into the 256 m map. */
 const INDEPENDENCE_SITE_POINT = independencePoint({ x: 134.8, z: 71 });
@@ -858,11 +868,11 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     heritageProxies: [
       {
         id: 'arica_battery',
-        x: ARICA_SITE_POINT.x - 7,
-        z: ARICA_SITE_POINT.z,
-        w: aricaLength(9),
+        x: ARICA_BATTERY_ANCHOR.x,
+        z: ARICA_BATTERY_ANCHOR.z,
+        w: aricaLength(6),
         d: aricaLength(10),
-        h: aricaLength(3),
+        h: aricaLength(4.5),
       },
     ],
     blockers: aricaCityBlockers(),
@@ -889,8 +899,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     hideModel: true,
     style: 'republic',
     scale: aricaLength(0.8),
-    origin: ARICA_SITE_POINT,
-    anchor: ARICA_SITE_POINT,
+    origin: REAL_FELIPE_CITY_ANCHOR,
+    anchor: REAL_FELIPE_CITY_ANCHOR,
     cameraHeight: 64,
     framing: 'site-biased',
     heightField: {
@@ -925,8 +935,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     hideModel: true,
     style: 'republic',
     scale: aricaLength(0.8),
-    origin: { x: 96, z: 168 },
-    anchor: { x: 96, z: 168 },
+    origin: TARAPACA_CITY_ANCHOR,
+    anchor: TARAPACA_CITY_ANCHOR,
     cameraHeight: 56,
     framing: 'site-biased',
     heightField: {

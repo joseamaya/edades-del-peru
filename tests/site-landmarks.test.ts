@@ -4,6 +4,7 @@ import { MISSIONS } from '../src/campaign/defs/campaign';
 import { CivId, Era } from '../src/core/types';
 import { archProfileFor, isColonialAndeanProfile, usesAndeanArchitecture } from '../src/model/defs/architecture';
 import { getAuthoredSite } from '../src/model/defs/sites';
+import { blockersCover } from './site-blockers';
 import { SiteLandmarks } from '../src/rendering/SiteLandmarks';
 import type { SiteLandmarkKind } from '../src/model/defs/siteLandmarks';
 import { CUSCO_SITE_POINT, CUSCO_SITE_SACSAY } from '../src/campaign/defs/cuscoSite';
@@ -99,30 +100,24 @@ describe('mission site landmarks', () => {
       'a bastion',
     ).toBe(true);
     const anchor = site.anchor;
-    const covers = (x: number, z: number): boolean =>
-      blockers.some((blocker) => Math.abs(x - blocker.x) <= blocker.w / 2 && Math.abs(z - blocker.z) <= blocker.d / 2);
-    expect(covers(anchor.x, anchor.z - 12), 'north curtain').toBe(true);
-    expect(covers(anchor.x + 12, anchor.z), 'east curtain').toBe(true);
-    expect(covers(anchor.x - 12, anchor.z - 12), 'north-west bastion').toBe(true);
-    expect(covers(anchor.x, anchor.z + 12), 'south sally gate').toBe(false);
-    expect(covers(anchor.x - 12, anchor.z), 'west sally gate').toBe(false);
+    expect(blockersCover(blockers, anchor.x, anchor.z - 12), 'north curtain').toBe(true);
+    expect(blockersCover(blockers, anchor.x + 12, anchor.z), 'east curtain').toBe(true);
+    expect(blockersCover(blockers, anchor.x - 12, anchor.z - 12), 'north-west bastion').toBe(true);
+    expect(blockersCover(blockers, anchor.x, anchor.z + 12), 'south sally gate').toBe(false);
+    expect(blockersCover(blockers, anchor.x - 12, anchor.z), 'west sally gate').toBe(false);
     // The courtyard stays open for the sortie.
-    expect(covers(anchor.x, anchor.z), 'courtyard').toBe(false);
+    expect(blockersCover(blockers, anchor.x, anchor.z), 'courtyard').toBe(false);
   });
 
   it('keeps the Republican aprons and plaza floors walkable', () => {
     const arica = getAuthoredSite('arica_site')!;
     expect(arica.blockers).toHaveLength(2);
     const tarapaca = getAuthoredSite('tarapaca_site')!;
-    const covers = (site: typeof tarapaca, x: number, z: number): boolean =>
-      site.blockers.some(
-        (blocker) => Math.abs(x - blocker.x) <= blocker.w / 2 && Math.abs(z - blocker.z) <= blocker.d / 2,
-      );
-    expect(covers(tarapaca, 96, 168), 'the village plaza').toBe(false);
-    expect(covers(tarapaca, 106, 168), 'the east street').toBe(false);
-    expect(covers(tarapaca, 96, 158), 'a village house').toBe(true);
-    expect(covers(tarapaca, 160, 123), 'the crest parapet').toBe(true);
-    expect(covers(tarapaca, 198, 158), 'the Pachica corral').toBe(true);
+    expect(blockersCover(tarapaca.blockers, 96, 168), 'the village plaza').toBe(false);
+    expect(blockersCover(tarapaca.blockers, 106, 168), 'the east street').toBe(false);
+    expect(blockersCover(tarapaca.blockers, 98, 155), 'a village house').toBe(true);
+    expect(blockersCover(tarapaca.blockers, 160, 123), 'the crest parapet').toBe(true);
+    expect(blockersCover(tarapaca.blockers, 198, 158), 'the Pachica corral').toBe(true);
   });
 });
 
