@@ -1,4 +1,6 @@
-/** Shared data contract for the Blender architecture kits (Caral, Chavín, Cusco). */
+import type { SiteBlocker } from './sites';
+
+/** Shared data contract for the Blender architecture kits (Caral, Chavín, Cusco, colonial). */
 export type ArchitectureKitId = 'caral' | 'chavin' | 'cusco';
 export type ArchAssetId = string;
 
@@ -30,16 +32,15 @@ export interface ArchFootprint {
 
 /**
  * Navigation blockers for a kit layout, from the same placements the renderer bakes: every placed piece
- * with a footprint blocks the axis-aligned bounds of its scaled, turned footprint (plus `pad` on each
- * side). One source for what is drawn and what blocks, headless included. Pieces without a footprint (a
- * plaza floor) stay walkable.
+ * with a footprint blocks the axis-aligned bounds of its scaled, turned footprint. One source for what is
+ * drawn and what blocks, headless included. Pieces without a footprint (a plaza floor) stay walkable.
+ * `SiteBlocker` is reused so the layout cannot drift from the site's blocker contract.
  */
 export function layoutBlockers(
   layout: readonly ArchPlacement[],
   footprints: Partial<Record<ArchAssetId, ArchFootprint>>,
-  pad = 0,
-): { x: number; z: number; w: number; d: number; since?: string; until?: string }[] {
-  const out: { x: number; z: number; w: number; d: number; since?: string; until?: string }[] = [];
+): SiteBlocker[] {
+  const out: SiteBlocker[] = [];
   for (const p of layout) {
     const f = footprints[p.asset];
     if (!f) continue;
@@ -65,8 +66,8 @@ export function layoutBlockers(
     out.push({
       x: (minX + maxX) / 2,
       z: (minZ + maxZ) / 2,
-      w: maxX - minX + pad * 2,
-      d: maxZ - minZ + pad * 2,
+      w: maxX - minX,
+      d: maxZ - minZ,
       ...(p.since ? { since: p.since } : {}),
       ...(p.until ? { until: p.until } : {}),
     });

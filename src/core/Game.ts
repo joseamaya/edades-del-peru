@@ -461,6 +461,10 @@ export class Game {
       marketTrade: (resource, action, amount) => this.tradeMarket(0, resource, action, amount),
       replantFarm: (buildingId) => this.replantFarm(buildingId),
     });
+    if (this.headless && this.missionLayout?.site) {
+      // A layout-converted site blocks in the simulation too (sim, benches, probes).
+      this.world.applyHeadlessSiteCollision(this.missionLayout.site);
+    }
     if (!this.headless) {
       if (this.missionLayout?.site) {
         this.world.spawnAuthoredSite(this.missionLayout.site);

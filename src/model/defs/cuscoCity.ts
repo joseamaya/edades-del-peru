@@ -5,9 +5,11 @@ import type { SitePhasePlan } from './sitePhases';
 /** Cusco stands whole in both missions (1532, 1536): one phase. */
 export const CUSCO_PHASE_PLAN: SitePhasePlan = { phases: ['standing'], initial: 'standing' };
 
-/** The Haukaypata and Sacsayhuamán anchors, in the 256 m map (as `cuscoSite.ts`). */
-const PLAZA = cuscoIncaPoint({ x: 124.8, z: 130.6 });
-const SACSAY = cuscoIncaPoint({ x: 118.5, z: 105.75 });
+/** The Haukaypata and Sacsayhuamán anchors, in the 256 m map; `cuscoSite.ts` re-exports them. */
+export const CUSCO_CITY_PLAZA = cuscoIncaPoint({ x: 124.8, z: 130.6 });
+export const CUSCO_CITY_SACSAY = cuscoIncaPoint({ x: 118.5, z: 105.75 });
+const PLAZA = CUSCO_CITY_PLAZA;
+const SACSAY = CUSCO_CITY_SACSAY;
 
 const at = (anchor: { x: number; z: number }, dx: number, dz: number) => ({ x: anchor.x + dx, z: anchor.z + dz });
 const ONE: [number, number, number] = [1, 1, 1];

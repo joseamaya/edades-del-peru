@@ -14,6 +14,9 @@ const CUSCO_1536_ROAD_BEND = { x: 135, z: 150 } as const;
 // spawns over (40 m > 4√2 + 10, and 40 - 4√2 > 24), then marches on the closing ring.
 const CUSCO_1536_SORTIE = { dx: CUSCO_SITE_POINT.x + 40, dz: CUSCO_SITE_POINT.z } as const;
 
+/** Metres east of the plaza anchor where the 1536 royalist headquarters stands. */
+const ENEMY_BASE_OFFSET_X = 30;
+
 export const mCusco1536: MissionDef = {
   id: 'm_cusco_1536',
   commanders: ['manco_inca'],
@@ -47,7 +50,8 @@ export const mCusco1536: MissionDef = {
     opening: { x: 0.42, z: 0.42 },
     // The Spaniards hold the city: their headquarters stand on the open ground east of the plaza, outside the
     // kancha walls; on the plaza itself it would sink into the ushnu (cuscoCity.ts).
-    enemyBase: { x: (CUSCO_SITE_POINT.x + 30) / 256, z: CUSCO_SITE_POINT.z / 256 },
+    // East of the ushnu, clear of its footprint (the kit's blockers cover the plaza centre).
+    enemyBase: { x: (CUSCO_SITE_POINT.x + ENEMY_BASE_OFFSET_X) / 256, z: CUSCO_SITE_POINT.z / 256 },
     discoveries: [],
     terrain: {
       flats: [

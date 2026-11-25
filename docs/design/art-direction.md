@@ -129,8 +129,9 @@ tint, shared PBR detail sets at runtime); one layout file in `src/model/defs/` p
 yields the site's pathfinding blockers (`layoutBlockers` in `architectureKit.ts`), so what is drawn and what
 blocks cannot drift apart and no building can be walked through, headless included. Code-built geometry is
 kept only for continuous ground: terrain paint, paths, ground cover and scatter. Where the record is silent the
-kit takes a licence and its manifest says so (`confidence`, sources). Caral (m1), Chavín (m2) and Cusco
-(m_cusco_1536, m6b) follow it; the colonial cities, Arica/Real Felipe/Tarapacá, Independencia/Breña, the
+kit takes a licence and its manifest says so (`confidence`, sources). Cusco (m_cusco_1536, m6b) is the first
+site on the whole standard, blockers included; Caral (m1) and Chavín (m2) draw from a kit but keep hand-written
+blocker arrays, and the colonial cities, Arica/Real Felipe/Tarapacá, Independencia/Breña, the
 Moche/Wari/Chimú/Chanca sites, Vilcabamba and the rest of Tambotoco are to be moved to it in that order.
 
 The Tambotoco site uses a **domestic Killke/ayllu language**, not imperial Inca (see
@@ -148,7 +149,9 @@ The Tambotoco site uses a **domestic Killke/ayllu language**, not imperial Inca 
 - 3–5 readable masses per building. Detail lives in material and props, not in geometry noise.
 - Edges are slightly bevelled and irregular. No polished ashlar, niches, double-jamb doors or ushnu.
 - Maximum 4 materials per building; maximum 8 materials and 12 draw calls per kit.
-- LOD0 ≤ 5k triangles and LOD1 ≤ 1.5k per piece; the far LOD switches before the asset drops below ~40 px.
+- LOD0 ≤ 5k triangles and LOD1 ≤ 1.5k per piece; a monument piece (a whole terrace section with its
+  tower, a cathedral) may use the Caral Pyramid Mayor allowance, LOD0 ≤ 8k and LOD1 ≤ 2.4k. The far LOD
+  switches before the asset drops below ~40 px.
 - Every piece is terrain-conformed and samples the ground it spans. Nothing floats.
 
 **Procedural or Blender?** Use the cheapest tool that passes the quality gate:

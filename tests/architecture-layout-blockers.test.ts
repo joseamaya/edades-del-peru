@@ -36,7 +36,7 @@ describe('Cusco city', () => {
     expect(CUSCO_CITY_LAYOUT.find((p) => !CUSCO_KIT_FOOTPRINTS[p.asset])?.asset).toBe('plaza');
   });
 
-  it('is the site the simulation blocks, headless too', () => {
+  it('is the site the simulation blocks', () => {
     expect(AUTHORED_SITES.cusco_inca_site.blockers).toBe(CUSCO_CITY_BLOCKERS);
   });
 });

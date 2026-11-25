@@ -475,7 +475,7 @@ slot is absent (offline / without assets).
 - **Locations**: `docs/media/geographic-identity-closeout.webp` (2100x788 WebP q78, 102 KB) and
   `docs/media/geographic-identity-closeout-before-after.webp` (2100x788 WebP q78, 91 KB).
 - **Source**: `yarn shot blind-<id> --url="/?mission=<id>&seed=777&fog=0&intro=0" --click --site --height=78
---no-hud --no-labels --wait=6000` for `m_vilcabamba`, `m6b_guerra_civil`, `m_lima_1821`, `m_miraflores`,
+  --no-hud --no-labels --wait=6000` for `m_vilcabamba`, `m6b_guerra_civil`, `m_lima_1821`, `m_miraflores`,
   `m_tarapaca` and `m_real_felipe`; tiled 3x2 with Pillow at 700x394 per cell. The before row reuses the
   `audit-*` captures taken with the same camera before the slice (they still carry the in-world place names,
   because `--no-labels` did not exist yet).
@@ -1080,7 +1080,7 @@ slot is absent (offline / without assets).
 
 - **Location**: `docs/media/m6b-cusco-plaza-before-after.webp`, 1520x486 WebP q82.
 - **Source**: `node scripts/bench_scene.mjs --mission=m6b_guerra_civil --stage=late --gpu --frames
---viewport=1600x900 --shot=<file>` before (`review/b13-shots/m6b-after.png`) and after
+  --viewport=1600x900 --shot=<file>` before (`review/b13-shots/m6b-after.png`) and after
   (`review/m6b-plaza-late.png`).
 - **Content**: the Quipaipán late view. Left, the bundled grey ushnu GLB; right, the plaza, tiered ushnu and
   Sacsayhuamán wall front shared with `m_cusco_1536` (`src/campaign/defs/cuscoSite.ts`). Same mission, seed,
@@ -1121,7 +1121,7 @@ slot is absent (offline / without assets).
 
 - **Location**: `docs/media/late-view-before-after.webp`, 1520x944 WebP q82.
 - **Source**: `node scripts/bench_scene.mjs --mission=m6b_guerra_civil --stage=late --gpu --frames
---viewport=1600x900 --shot=review/b13-shots/m6b-after.png` (the same command for `m8_independencia`), and the
+  --viewport=1600x900 --shot=review/b13-shots/m6b-after.png` (the same command for `m8_independencia`), and the
   `before` row with the `src/` changes stashed. `--shot` writes a PNG of the exact framing the structural
   numbers come from.
 - **Content**: the two tightest late views at the bench framing. The change is a rendering cost, not a look:
@@ -1145,7 +1145,8 @@ slot is absent (offline / without assets).
 - **Location**: `docs/media/uniform-closure-before-after.webp`, 1200x1120 WebP q72.
 - **Source**: `node scripts/capture_uniform_lineup.mjs --gpu`, top half before the change (with
   `--out=review/uniforms-before`), bottom half after; same missions, seed, placement and camera.
-- **Content**: four units per side (Hueste 1536, rebeldes and realistas 1780, patriotas 1814, Perú and Chile 1879) at close range; `docs/art/character-visual-pilot.md` §14.
+- **Content**: four units per side (Hueste 1536, rebeldes and realistas 1780, patriotas 1814, Perú and Chile
+  1879) at close range; `docs/art/character-visual-pilot.md` §14.
 - **Review**: no new historical claim; colours stay within the abstractions of `docs/historia/atuendos.md` §3–4.
 
 ### Cavalry horse (in-engine evidence)

@@ -25,27 +25,27 @@
 
 ## Tabla de certeza
 
-| Elemento                               | Estado                    | Fuente / nota                                                                                                                                                                                                                                                                                               |
-| -------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rebelión de 1536                       | Documentado               | Titu Cusi Yupanqui 1570; Pedro Pizarro; Hemming.                                                                                                                                                                                                                                                            |
-| Cerco del Cusco y encierro en la plaza | Documentado               | Relación del sitio del Cuzco; bibliografía.                                                                                                                                                                                                                                                                 |
-| Incendio de los techos                 | Documentado               | Crónicas y bibliografía.                                                                                                                                                                                                                                                                                    |
-| Lucha por Sacsayhuamán                 | Documentado               | Bibliografía; la cronología exacta varía.                                                                                                                                                                                                                                                                   |
-| Muerte de Juan Pizarro                 | Documentado               | Crónicas; herido de muerte en el asalto, murió días después.                                                                                                                                                                                                                                                |
-| Manco no toma la ciudad                | Documentado               | La retirada a Ollantaytambo es parte del desenlace.                                                                                                                                                                                                                                                         |
-| Cifras del ejército inca               | Aproximado                | Las crónicas dan cifras exageradas; no se muestran como dato duro.                                                                                                                                                                                                                                          |
-| Cahuide                                | Tradición                 | Procede sobre todo de Garcilaso y relatos tardíos; no se escenifica.                                                                                                                                                                                                                                        |
-| «Aparición» de Santiago                | Hagiografía               | Se excluye de la misión.                                                                                                                                                                                                                                                                                    |
-| Sacsayhuamán y Cusco                   | Abstracción               | El juego dibuja la plaza con su ushnu, una kallanka, casas y muros de kancha de piedra con vanos trapezoidales, y las tres terrazas en zigzag de Sacsayhuamán con sus torres (kit de Blender, `cuscoCity.ts`); medidas y disposición son una composición representativa, no una planta arqueológica exacta. |
-| Corte de suministros                   | Documentado en lo general | El cerco y la presión sobre los abastos son parte de la rebelión; la ubicación exacta de los caminos es una abstracción de juego.                                                                                                                                                                           |
+| Elemento | Estado | Fuente / nota |
+| --- | --- | --- |
+| Rebelión de 1536 | Documentado | Titu Cusi Yupanqui 1570; Pedro Pizarro; Hemming. |
+| Cerco del Cusco y encierro en la plaza | Documentado | Relación del sitio del Cuzco; bibliografía. |
+| Incendio de los techos | Documentado | Crónicas y bibliografía. |
+| Lucha por Sacsayhuamán | Documentado | Bibliografía; la cronología exacta varía. |
+| Muerte de Juan Pizarro | Documentado | Crónicas; herido de muerte en el asalto, murió días después. |
+| Manco no toma la ciudad | Documentado | La retirada a Ollantaytambo es parte del desenlace. |
+| Cifras del ejército inca | Aproximado | Las crónicas dan cifras exageradas; no se muestran como dato duro. |
+| Cahuide | Tradición | Procede sobre todo de Garcilaso y relatos tardíos; no se escenifica. |
+| «Aparición» de Santiago | Hagiografía | Se excluye de la misión. |
+| Sacsayhuamán y Cusco | Abstracción | El juego dibuja la plaza con su ushnu, una kallanka y casas de piedra con vanos trapezoidales, muros de kancha, y las tres terrazas en zigzag de Sacsayhuamán con sus torres (kit de Blender, `cuscoCity.ts`); medidas y disposición son una composición representativa, no una planta arqueológica exacta. |
+| Corte de suministros | Documentado en lo general | El cerco y la presión sobre los abastos son parte de la rebelión; la ubicación exacta de los caminos es una abstracción de juego. |
 
 ## Fuentes
 
-- Titu Cusi Yupanqui, _Relación de la conquista del Perú_ (1570).
-- Pedro Pizarro, _Relación del descubrimiento y conquista de los reinos del Perú_.
-- _Relación del sitio del Cuzco_ (atribución debatida).
-- Hemming, J. _La conquista de los incas_.
-- MacQuarrie, K. _The Last Days of the Incas_.
+- Titu Cusi Yupanqui, *Relación de la conquista del Perú* (1570).
+- Pedro Pizarro, *Relación del descubrimiento y conquista de los reinos del Perú*.
+- *Relación del sitio del Cuzco* (atribución debatida).
+- Hemming, J. *La conquista de los incas*.
+- MacQuarrie, K. *The Last Days of the Incas*.
 - Wikipedia: [Batalla de Sacsayhuamán](https://es.wikipedia.org/wiki/Batalla_de_Sacsayhuam%C3%A1n) ·
   [Manco Inca](https://es.wikipedia.org/wiki/Manco_Inca).
 - Investigación previa: [`docs/historia/propuestas/virreinato.md`](../propuestas/virreinato.md).

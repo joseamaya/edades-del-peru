@@ -6,11 +6,13 @@
   "up": "Y",
   "front": "+Z",
   "pivot": "footprint centre at ground level",
+  "collision": "layoutBlockers(CUSCO_CITY_LAYOUT, CUSCO_KIT_FOOTPRINTS) in src/model/defs/cuscoCity.ts",
   "confidence": "documented",
   "sources": [
     "docs/historia/civilizaciones/inca.md",
     "docs/historia/campanas/cusco_1536.md"
   ],
+  "license": "project-owned procedural geometry (no third-party asset)",
   "budget": {
     "LOD0": 5000,
     "LOD1": 1500

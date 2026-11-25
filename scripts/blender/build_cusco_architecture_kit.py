@@ -651,8 +651,11 @@ def main():
         budgets = BUDGET.get(asset, (LOD0_BUDGET, LOD1_BUDGET))
         manifest = {'asset_id': f'cusco_{asset}', 'source_scene': 'scenes/cusco_architecture_kit.blend',
                     'script': 'scripts/blender/build_cusco_architecture_kit.py', 'scale': 1.0, 'up': 'Y',
-                    'front': '+Z', 'pivot': 'footprint centre at ground level', 'confidence': CONFIDENCE[asset],
+                    'front': '+Z', 'pivot': 'footprint centre at ground level',
+                    'collision': 'layoutBlockers(CUSCO_CITY_LAYOUT, CUSCO_KIT_FOOTPRINTS) in src/model/defs/cuscoCity.ts',
+                    'confidence': CONFIDENCE[asset],
                     'sources': ['docs/historia/civilizaciones/inca.md', 'docs/historia/campanas/cusco_1536.md'],
+                    'license': 'project-owned procedural geometry (no third-party asset)',
                     'budget': {'LOD0': budgets[0], 'LOD1': budgets[1]}, 'reviewed': False, 'lods': {}}
         for lod in (0, 1):
             obj = build_object(asset, lod, mats)

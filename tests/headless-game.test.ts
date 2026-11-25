@@ -3,6 +3,7 @@ import { Game, setAutoStart } from '../src/core/Game';
 import { DEFAULT_SETTINGS } from '../src/core/Config';
 import { BuildingKind } from '../src/core/types';
 import { bus } from '../src/core/EventBus';
+import { CUSCO_CITY_PLAZA } from '../src/model/defs/cuscoCity';
 
 describe('headless Game', () => {
   it('runs an AI-vs-AI match without DOM or renderer', () => {
@@ -200,6 +201,31 @@ describe('Supe fords', () => {
       route.some((point) => Math.abs(point.z - 64) <= 4.5),
       'it crosses on the ford',
     ).toBe(true);
+    game.destroy();
+    setAutoStart(true);
+  });
+});
+
+describe('headless authored-site collision', () => {
+  it('blocks Cusco’s ushnu without a renderer', () => {
+    setAutoStart(false);
+    const game = new Game(
+      {
+        ...DEFAULT_SETTINGS,
+        missionId: 'm_cusco_1536',
+        fogOfWar: false,
+        cinematic: false,
+        showHints: false,
+        soundEnabled: false,
+      },
+      null,
+      null,
+      false,
+      true,
+    );
+    // The ushnu is the layout's centred piece at the plaza anchor; the plaza floor around it stays open.
+    expect(game.pathfinder.isWalkable(CUSCO_CITY_PLAZA.x, CUSCO_CITY_PLAZA.z)).toBe(false);
+    expect(game.pathfinder.isWalkable(CUSCO_CITY_PLAZA.x + 25, CUSCO_CITY_PLAZA.z + 25)).toBe(true);
     game.destroy();
     setAutoStart(true);
   });

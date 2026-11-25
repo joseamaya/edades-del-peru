@@ -196,7 +196,10 @@ describe('authored campaign sites', () => {
     // Both missions on this site supply their own field: the site itself no longer carries one.
     expect(site.heightField).toBeUndefined();
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['cusco_ushnu']);
-    expect(site.heritageProxies[0]?.w).toBeCloseTo(17.333, 3);
+    // The pick volume matches the drawn 3/4 ushnu (15.2 x 11.4 m), not the old full-size footprint.
+    expect(site.heritageProxies[0]?.w).toBeCloseTo(15.2, 3);
+    expect(site.heritageProxies[0]?.d).toBeCloseTo(11.4, 3);
+    expect(site.heritageProxies[0]?.h).toBeCloseTo(5.2, 3);
     expect(site.walkableCorridor?.width).toBeCloseTo(10.667, 3);
 
     const quipaipan = MISSIONS.find((m) => m.id === 'm6b_guerra_civil')!;
