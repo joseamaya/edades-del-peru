@@ -4,6 +4,7 @@ import { DEFAULT_SETTINGS } from '../src/core/Config';
 import { BuildingKind } from '../src/core/types';
 import { bus } from '../src/core/EventBus';
 import { CUSCO_CITY_PLAZA } from '../src/model/defs/cuscoCity';
+import { headlessMission } from './headless';
 
 describe('headless Game', () => {
   it('runs an AI-vs-AI match without DOM or renderer', () => {
@@ -35,6 +36,21 @@ describe('headless Game', () => {
     bus.off('alert', onAlert);
     game.destroy();
     setAutoStart(true);
+  });
+});
+
+describe('authored-site construction', () => {
+  it('reserves the colonial kit footprints but opens Lima’s plaza apron', () => {
+    const game = headlessMission('m_lima');
+    try {
+      // The east apron is outside the plaza-core keepout and clear of the portal/casona blockers.
+      expect(game.canPlace(103, 150, 4)).toBe(true);
+      // Inside the east casona: the authored footprint must reject the building.
+      expect(game.canPlace(108, 160, 4)).toBe(false);
+    } finally {
+      game.destroy();
+      setAutoStart(true);
+    }
   });
 });
 

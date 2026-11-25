@@ -600,6 +600,11 @@ Definition of Done and the building audit see
   unit — before helping the nearest site or farming the field it just built. AI seats keep their own economy
   planning. This changed the simulation, so `REPLAY_VERSION` is 22 (issue 381); guarded by
   `tests/gather-retarget.test.ts` and `tests/e2e/campaign-playtest.spec.ts`.
+- **Authored-site construction** (2026-11-25): `InputController.siteBlocksConstruction` prefers the
+  mission's build keepout over the site default and rejects cells inside the site's authored blockers (with
+  the site's `blockerPadding`). Lima 1535's smaller keepout reopens the plaza apron for its cabildo while the
+  kit footprints stay reserved from the opening. This changes placement, so `REPLAY_VERSION` is 45; guarded by
+  `tests/headless-game.test.ts` and `tests/e2e/campaign-playtest.spec.ts`.
 - **Authored canal traces** (issue 384): `MissionCanal.path` (normalized) becomes `Game.canalPath` in world
   units; `canalIrrigationAt` measures the farm bonus by distance to the trace, `Game.canPlace` keeps buildings
   out of the channel, `Game.isReserved` keeps props out, and `spawnCanal` builds relief-following ribbons plus a

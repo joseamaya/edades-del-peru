@@ -163,6 +163,11 @@ export interface SiteBlocker {
   until?: string;
 }
 
+/** Whether (x, z) lies inside the blocker footprint expanded by `pad` on every side. */
+export function insideSiteBlocker(blocker: SiteBlocker, x: number, z: number, pad = 0): boolean {
+  return Math.abs(x - blocker.x) <= blocker.w / 2 + pad && Math.abs(z - blocker.z) <= blocker.d / 2 + pad;
+}
+
 export interface SiteKeepoutRect {
   /** Normalized centre. */
   x: number;

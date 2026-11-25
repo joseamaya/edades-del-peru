@@ -11,6 +11,7 @@ import { isConverter, unitDisplayDescription, unitDisplayIcon } from '../model/d
 import { getHeritageBuilding, type HeritageBuildingDef } from '../model/defs/heritage';
 import { buildModel, disposeModel, type BuildContext } from '../model/ProceduralModel';
 import { insideTerrainRect } from '../model/defs/terrainLayout';
+import { insideSiteBlocker } from '../model/defs/sites';
 import { isTypingTarget } from '../util/dom';
 
 import { keyFor, type HotkeyAction } from './hotkeys';
@@ -802,10 +803,11 @@ export class InputController {
       return true;
     }
     // The authored site's blockers are the kit's buildings and monuments. They stop construction even when
-    // a smaller keepout leaves the apron open; the plaza floor has no blocker and stays buildable.
-    return (this.game.siteDef?.blockers ?? []).some(
-      (blocker) => Math.abs(x - blocker.x) <= blocker.w / 2 + pad && Math.abs(z - blocker.z) <= blocker.d / 2 + pad,
-    );
+    // a smaller keepout leaves the apron open; the plaza floor has no blocker and stays buildable. The
+    // footprints are reserved from the opening even before their `since` phase, so the city can rise
+    // without a building inside it; only movement follows the phase.
+    const clearance = pad + (this.game.siteDef?.blockerPadding ?? 0);
+    return (this.game.siteDef?.blockers ?? []).some((blocker) => insideSiteBlocker(blocker, x, z, clearance));
   }
 
   commitPlacement(x: number, z: number): void {
