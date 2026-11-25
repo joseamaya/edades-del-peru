@@ -790,11 +790,21 @@ export class InputController {
 
   /** Whether a building footprint would overlap the authored archaeological site. */
   siteBlocksConstruction(x: number, z: number, pad: number): boolean {
-    const rects = this.game.siteDef?.buildKeepout ?? this.game.missionLayout?.site?.buildKeepout;
-    if (!rects) return false;
+    // The mission's own keepout is more specific than the site default: Lima 1535 goes down to the plaza
+    // core so its cabildo can rise on the apron, while 1821 keeps the whole composition clear.
+    const rects = this.game.missionLayout?.site?.buildKeepout ?? this.game.siteDef?.buildKeepout;
     const size = this.game.settings.mapSize;
-    return rects.some((rect: { x: number; z: number; rx: number; rz: number }) =>
-      insideTerrainRect({ x: rect.x * size, z: rect.z * size, rx: rect.rx * size, rz: rect.rz * size }, x, z, pad),
+    if (
+      rects?.some((rect: { x: number; z: number; rx: number; rz: number }) =>
+        insideTerrainRect({ x: rect.x * size, z: rect.z * size, rx: rect.rx * size, rz: rect.rz * size }, x, z, pad),
+      )
+    ) {
+      return true;
+    }
+    // The authored site's blockers are the kit's buildings and monuments. They stop construction even when
+    // a smaller keepout leaves the apron open; the plaza floor has no blocker and stays buildable.
+    return (this.game.siteDef?.blockers ?? []).some(
+      (blocker) => Math.abs(x - blocker.x) <= blocker.w / 2 + pad && Math.abs(z - blocker.z) <= blocker.d / 2 + pad,
     );
   }
 

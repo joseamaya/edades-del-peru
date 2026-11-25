@@ -1644,6 +1644,8 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
       [108, 160],
       [104, 158],
       [110, 150],
+      // The plaza's east apron: clear of the kit's portal/casona and outside the Lima plaza-core keepout.
+      [103, 150],
       [100, 168],
       [90, 176],
     ]) {

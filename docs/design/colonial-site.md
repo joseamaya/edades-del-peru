@@ -27,7 +27,8 @@ plaza and its buildings; the same Blender kit serves `m7_tupac_amaru`, `m_lima`,
   `limaHeightmap.ts`, `juntaHeightmap.ts`) and apply their blockers headless too
   (`simulationCollision`).
 - A 1 m pathfinding grid and a walkable corridor connect each base to its site. Construction is forbidden
-  over the plaza block.
+  inside the kit's blockers; Lima 1535 keeps only a plaza-core keepout so its cabildo (the mission's market)
+  can rise on the east apron, while the 1821 and Miraflores missions keep the whole composition clear.
 
 ## Attested elements and abstractions
 
