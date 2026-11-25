@@ -1,5 +1,5 @@
 import { layoutBlockers, type ArchFootprint, type ArchPlacement } from './architectureKit';
-import type { SitePhasePlan } from './sitePhases';
+import { SINGLE_PHASE, type SitePhasePlan } from './sitePhases';
 
 /**
  * The colonial city shared by Lima (1535, 1821), Cusco (1780, 1814) and Miraflores (1881): the Plaza
@@ -7,7 +7,10 @@ import type { SitePhasePlan } from './sitePhases';
  * architecture kit (`scripts/blender/build_colonial_architecture_kit.py`). One composition, placed at
  * each site's own anchor; the mission docs record what is documented and what is an abstraction.
  */
-export const COLONIAL_PHASE_PLAN: SitePhasePlan = { phases: ['standing'], initial: 'standing' };
+export const COLONIAL_PHASE_PLAN: SitePhasePlan = SINGLE_PHASE;
+
+/** The phase in which a colonial mission's city stands (the founding traza is `traza`). */
+export const COLONIAL_CITY_PHASE = 'ciudad';
 
 const ONE: [number, number, number] = [1, 1, 1];
 
@@ -18,7 +21,7 @@ const at = (anchor: { x: number; z: number }, dx: number, dz: number) => ({
 
 /**
  * Solid footprints of the kit pieces in model space (the Blender bounds, game +Z = Blender -Y): the walls,
- * not the roof overhangs or the balcony. The plaza floor and the fountain basin stay walkable.
+ * not the roof overhangs or the balcony. The plaza floor has none and stays walkable; the fountain does.
  */
 export const COLONIAL_KIT_FOOTPRINTS: Partial<Record<string, ArchFootprint>> = {
   catedral: { minX: -12.2, maxX: 12.2, minZ: -6.3, maxZ: 6.3 },
@@ -29,8 +32,7 @@ export const COLONIAL_KIT_FOOTPRINTS: Partial<Record<string, ArchFootprint>> = {
   patio_wall: { minX: -5.1, maxX: 5.1, minZ: -0.35, maxZ: 0.35 },
 };
 
-/** Metres: plaza half-axes and the ring of buildings around it (see the kit's manifest bounds). */
-const PLAZA_HALF_X = 17;
+/** Metres: the plaza's half-depth and the ring of buildings around it (see the kit's manifest bounds). */
 const PLAZA_HALF_Z = 13;
 const RING_X = 18.5;
 
@@ -42,7 +44,7 @@ export function colonialLayoutAt(anchor: { x: number; z: number }, since?: strin
   const building = (placement: ArchPlacement): ArchPlacement => (since ? { ...placement, since } : placement);
   return [
     // In a founding phase the plaza itself is still being laid out: the packed-earth traza and its cords
-    // are drawn by `ColonialLife`, so the paving and the fountain arrive with the city.
+    // are drawn by `ColonialLife`, so the paving and the fountain carry the city's `since` too.
     building({ asset: 'plaza', ...at(anchor, 0, 0), rotY: 0, scale: ONE, lift: 0.04 }),
     building({ asset: 'pileta', ...at(anchor, 0, 0), rotY: 0, scale: ONE, lift: 0.16 }),
     // The cathedral closes the north side, its front (game +Z) on the plaza.
@@ -52,12 +54,13 @@ export function colonialLayoutAt(anchor: { x: number; z: number }, since?: strin
     // Arcades on the east and west sides, houses between them.
     building({ asset: 'portal', ...at(anchor, -RING_X, 0), rotY: Math.PI / 2, scale: ONE }),
     building({ asset: 'portal', ...at(anchor, RING_X, 0), rotY: -Math.PI / 2, scale: ONE }),
-    ...[-10.5, 10.5].flatMap((dz) =>
+    ...[-14.5, 14.5].flatMap((dz) =>
       [-1, 1].map((sx) =>
         building({
           asset: 'casona',
           ...at(anchor, sx * RING_X, dz),
-          rotY: sx * (Math.PI / 2),
+          // Front (+Z) toward the plaza: west houses look east, east houses look west.
+          rotY: -sx * (Math.PI / 2),
           scale: ONE,
         }),
       ),
@@ -71,6 +74,3 @@ export function colonialLayoutAt(anchor: { x: number; z: number }, since?: strin
 export function colonialCityBlockers(anchor: { x: number; z: number }, since?: string) {
   return layoutBlockers(colonialLayoutAt(anchor, since), COLONIAL_KIT_FOOTPRINTS);
 }
-
-/** The open square itself, for the camera and the missions' plaza objectives. */
-export const COLONIAL_PLAZA = { halfX: PLAZA_HALF_X, halfZ: PLAZA_HALF_Z };

@@ -32,7 +32,7 @@ import {
 } from '../model/defs/caralCity';
 import { CHAVIN_CITY_LAYOUT, CHAVIN_PHASE_PLAN } from '../model/defs/chavinCity';
 import { CUSCO_CITY_LAYOUT, CUSCO_PHASE_PLAN } from '../model/defs/cuscoCity';
-import { COLONIAL_PHASE_PLAN, colonialLayoutAt } from '../model/defs/colonialCity';
+import { COLONIAL_CITY_PHASE, COLONIAL_PHASE_PLAN, colonialLayoutAt } from '../model/defs/colonialCity';
 import { standsIn, type SitePhasePlan } from '../model/defs/sitePhases';
 import { fishingApproach, type Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
@@ -323,7 +323,7 @@ export class WorldViewDecor {
     if (def.style === 'colonial') {
       // The kit draws the Plaza Mayor; the procedural life keeps the founding traza, the stalls and the
       // people, and no longer draws the houses the kit replaced.
-      const since = def.phases ? 'ciudad' : undefined;
+      const since = def.phases ? COLONIAL_CITY_PHASE : undefined;
       spawnKitCity(
         'colonial_city',
         'colonial',
@@ -342,7 +342,7 @@ export class WorldViewDecor {
           site.y ?? 0,
           layout,
           def.phases,
-          true,
+          false,
         );
         colonial.setPhase(this.game.sitePhase);
         applyFowToObject(colonial.group, this.game.fowUniforms);

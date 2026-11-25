@@ -6,7 +6,7 @@
   "up": "Y",
   "front": "+Z",
   "pivot": "footprint centre at ground level",
-  "collision": "layoutBlockers(COLONIAL_CITY_LAYOUT, COLONIAL_KIT_FOOTPRINTS) in src/model/defs/colonialCity.ts",
+  "collision": "colonialCityBlockers(anchor) in src/model/defs/colonialCity.ts",
   "confidence": "inferred",
   "sources": [
     "docs/historia/arquitectura.md",
@@ -50,7 +50,7 @@
         ]
       },
       "file": "colonial_catedral_lod0.glb",
-      "bytes": 56028
+      "bytes": 57292
     },
     "LOD1": {
       "triangles": 550,
@@ -79,7 +79,7 @@
         ]
       },
       "file": "colonial_catedral_lod1.glb",
-      "bytes": 48248
+      "bytes": 48716
     }
   }
 }

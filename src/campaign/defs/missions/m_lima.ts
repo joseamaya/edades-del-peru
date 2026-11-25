@@ -9,7 +9,8 @@ const LIMA_ENEMY = { x: 205, z: 70 } as const;
 const LIMA_CURACAS = { x: 55, z: 200 } as const;
 const LIMA_SEA = { x: 24, z: 150 } as const;
 // The hueste's camp on the llano south-west of the traza, and where the opening crew stands.
-const LIMA_BASE = { x: 70, z: 170 } as const;
+// Clear of the colonial kit's cabildo (x 81.9..98.1, z 163.3..173.7).
+const LIMA_BASE = { x: 64, z: 176 } as const;
 const LIMA_OPENING = { x: 96, z: 150 } as const;
 
 // The relief column musters outside its camp instead of inside it.
@@ -58,7 +59,7 @@ export const mLima: MissionDef = {
       id: 'lima_site',
       y: 5.6,
       focus: { x: LIMA_CITY.x / 256, z: LIMA_CITY.z / 256 },
-      keepout: [{ x: LIMA_CITY.x / 256, z: LIMA_CITY.z / 256, rx: 0.06, rz: 0.05 }],
+      keepout: [{ x: LIMA_CITY.x / 256, z: LIMA_CITY.z / 256, rx: 0.1, rz: 0.11 }],
       buildKeepout: [{ x: LIMA_CITY.x / 256, z: LIMA_CITY.z / 256, rx: 0.04, rz: 0.04 }],
     },
     roads: [

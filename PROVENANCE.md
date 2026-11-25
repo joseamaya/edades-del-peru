@@ -980,7 +980,7 @@ slot is absent (offline / without assets).
   `art-src/blender/scenes/colonial_architecture_kit.blend` (Git LFS). Uncompressed exports and per-piece
   manifests (triangles, materials, bounds, budget, `confidence`, sources, collision, review state) live in
   `art-src/blender/exports/colonial/architecture/`; the game copies were meshopt-compressed with
-  `yarn art:models --only=<file>` (~200 KB for the 14 files).
+  `yarn art:models --only=<file>` (~220 KB for the 14 files).
 - **Content**: project-owned procedural geometry. Six Principled materials (lime plaster, adobe, tile, wood,
   stone, dark openings) with world-scale box-projected UVs and a per-vertex tint (grime at the foot, a shade
   per tile); no textures in the GLBs. At runtime the game maps the shared `plaster_detail` grit onto plaster,

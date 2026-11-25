@@ -6,7 +6,7 @@
   "up": "Y",
   "front": "+Z",
   "pivot": "footprint centre at ground level",
-  "collision": "layoutBlockers(COLONIAL_CITY_LAYOUT, COLONIAL_KIT_FOOTPRINTS) in src/model/defs/colonialCity.ts",
+  "collision": "colonialCityBlockers(anchor) in src/model/defs/colonialCity.ts",
   "confidence": "inferred",
   "sources": [
     "docs/historia/arquitectura.md",
@@ -25,11 +25,10 @@
   "lods": {
     "LOD0": {
       "triangles": 674,
-      "draw_calls": 5,
+      "draw_calls": 4,
       "materials": [
         "MAT-Arch_ColonialDark",
         "MAT-Arch_ColonialPlaster",
-        "MAT-Arch_ColonialStone",
         "MAT-Arch_ColonialTile",
         "MAT-Arch_ColonialWood"
       ],
@@ -51,15 +50,14 @@
         ]
       },
       "file": "colonial_cabildo_lod0.glb",
-      "bytes": 57580
+      "bytes": 57736
     },
     "LOD1": {
       "triangles": 538,
-      "draw_calls": 5,
+      "draw_calls": 4,
       "materials": [
         "MAT-Arch_ColonialDark",
         "MAT-Arch_ColonialPlaster",
-        "MAT-Arch_ColonialStone",
         "MAT-Arch_ColonialTile",
         "MAT-Arch_ColonialWood"
       ],
@@ -81,7 +79,7 @@
         ]
       },
       "file": "colonial_cabildo_lod1.glb",
-      "bytes": 46356
+      "bytes": 45676
     }
   }
 }

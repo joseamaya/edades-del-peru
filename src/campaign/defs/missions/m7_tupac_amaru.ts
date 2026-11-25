@@ -67,7 +67,7 @@ export const m7TupacAmaru: MissionDef = {
     ],
     base: { x: TUPAC_CAMP_ANCHOR.x, z: TUPAC_CAMP_ANCHOR.z },
     departure: { x: 0.2, z: 0.78 },
-    enemyBase: { x: 0.772, z: 0.38 },
+    enemyBase: { x: 0.8, z: 0.38 },
     discoveries: [{ heritageId: 'colonial_church', initial: true }],
     // Sangarará's church is a typological landmark: the mission's authored site is the Cusco church.
     decor: {
@@ -95,7 +95,7 @@ export const m7TupacAmaru: MissionDef = {
       id: 'colonial_site',
       y: 5,
       focus: { x: 0.702, z: 0.38 },
-      keepout: [{ x: 0.702, z: 0.38, rx: 0.075, rz: 0.075 }],
+      keepout: [{ x: 0.702, z: 0.38, rx: 0.1, rz: 0.11 }],
       buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.065, rz: 0.065 }],
     },
   },

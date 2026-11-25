@@ -33,13 +33,13 @@ plaza and its buildings; the same Blender kit serves `m7_tupac_amaru`, `m_lima`,
 
 | Element | Source status | In game |
 | --- | --- | --- |
-| Cathedral | Documented urban typology | Nave, tiled gable roof, bell tower and cross; arched doorways as a legible abstraction. |
-| Cabildo | Documented (Lima; Cusco 1814) | Two storeys: five-arch arcade below, gallery and balcony above. |
-| Portales | Documented (Plaza Mayor) | Four-arch covered arcades on the east and west sides. |
-| Casonas | Documented (Lima's balconies) | Two-storey houses with the closed wooden balcony over the street. |
+| Cathedral | Documented typology; plan inferred | Nave, tiled gable roof, bell tower and cross; arched doorways as a legible abstraction. |
+| Cabildo | Documented (Lima; Cusco 1814); plan inferred | Two storeys: five-arch arcade below, gallery and balcony above. |
+| Portales | Documented (Plaza Mayor); plan inferred | Four-arch covered arcades on the east and west sides. |
+| Casonas | Documented (Lima's balconies); sizes inferred | Two-storey houses with the closed wooden balcony over the street. |
 | Plaza and fountain | Documented | Paved square with a kerb and the central stone fountain. |
-| Patio walls | Documented | Adobe walls with a stone coping. |
-| Exact plans and sizes | Not reproduced | A representative composition per site, not a survey. |
+| Patio walls | Documented | Adobe walls with a coping. |
+| Exact plans and sizes | Not reproduced | A representative composition per site, not a survey; the manifests say `inferred`. |
 
 ## Implementation
 
@@ -48,8 +48,9 @@ plaza and its buildings; the same Blender kit serves `m7_tupac_amaru`, `m_lima`,
   drawing: `ArchitectureCity` in `src/rendering/architectureKit.ts`.
 - Heightfield: `scripts/build_colonial_heightmap.py` → `src/model/defs/colonialHeightmap.ts`.
 - Heritage: `colonial_church` in `src/model/defs/heritage.ts`.
-- Tests: `tests/e2e/campaign.spec.ts`, `tests/authored-sites.test.ts`,
-  `tests/e2e/campaign-playtest.spec.ts`.
+- Tests: `tests/architecture-layout-blockers.test.ts` (layout → blockers, the four sites),
+  `tests/headless-game.test.ts` (headless collision), `tests/authored-sites.test.ts`,
+  `tests/e2e/campaign.spec.ts`, `tests/e2e/campaign-completable.spec.ts`.
 
 ## Mission acts
 

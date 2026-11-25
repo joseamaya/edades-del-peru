@@ -187,8 +187,8 @@ export class ColonialLife {
     baseY: number,
     layout: ColonialLayout,
     private readonly plan: SitePhasePlan,
-    /** The kit draws the houses: keep the stalls, people and the founding traza only. */
-    lifeOnly = false,
+    /** When the kit draws the houses, keep only the stalls, the people and the founding traza. */
+    drawHouses = true,
   ) {
     this.group.name = 'colonial_life';
     parent.add(this.group);
@@ -210,7 +210,7 @@ export class ColonialLife {
     }
 
     const ciudad: Parts = [];
-    if (!lifeOnly) {
+    if (drawHouses) {
       for (const h of layout.houses) {
         house(ciudad, h, ground(h.x, h.z));
         this.life.push({
@@ -226,7 +226,7 @@ export class ColonialLife {
       stall(ciudad, s.x, ground(s.x, s.z), s.z, s.ry);
       person(ciudad, s.x - 1.6, ground(s.x - 1.6, s.z), s.z + 0.6);
     }
-    if (!lifeOnly) well(ciudad, layout.well.x, ground(layout.well.x, layout.well.z), layout.well.z);
+    if (drawHouses) well(ciudad, layout.well.x, ground(layout.well.x, layout.well.z), layout.well.z);
     for (let i = 0; i < 4; i++) {
       person(ciudad, layout.center.x - 3 + i * 2, ground(layout.center.x, layout.center.z + 2), layout.center.z + 2);
     }

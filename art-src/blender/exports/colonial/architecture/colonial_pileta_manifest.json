@@ -6,7 +6,7 @@
   "up": "Y",
   "front": "+Z",
   "pivot": "footprint centre at ground level",
-  "collision": "layoutBlockers(COLONIAL_CITY_LAYOUT, COLONIAL_KIT_FOOTPRINTS) in src/model/defs/colonialCity.ts",
+  "collision": "colonialCityBlockers(anchor) in src/model/defs/colonialCity.ts",
   "confidence": "documented",
   "sources": [
     "docs/historia/arquitectura.md",

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { layoutBlockers } from '../src/model/defs/architectureKit';
 import { CUSCO_CITY_BLOCKERS, CUSCO_CITY_LAYOUT, CUSCO_KIT_FOOTPRINTS } from '../src/model/defs/cuscoCity';
 import { COLONIAL_KIT_FOOTPRINTS, colonialCityBlockers, colonialLayoutAt } from '../src/model/defs/colonialCity';
-import { AUTHORED_SITES } from '../src/model/defs/sites';
+import { AUTHORED_SITES, LIMA_SITE_ORIGIN } from '../src/model/defs/sites';
 
 describe('layoutBlockers', () => {
   it('turns and scales a footprint with its placement', () => {
@@ -43,7 +43,7 @@ describe('Cusco city', () => {
 });
 
 describe('colonial city', () => {
-  const anchor = { x: 90, z: 150 };
+  const anchor = LIMA_SITE_ORIGIN;
 
   it('blocks every building and leaves the plaza floor open', () => {
     const layout = colonialLayoutAt(anchor);
@@ -60,9 +60,10 @@ describe('colonial city', () => {
       colonialCityBlockers(AUTHORED_SITES.cusco_junta_site.anchor, 'ciudad'),
     );
     expect(AUTHORED_SITES.colonial_site.blockers).toEqual(colonialCityBlockers(AUTHORED_SITES.colonial_site.anchor));
-    // The cathedral closes the north side; the plaza centre is the fountain, not a building.
-    const cathedral = colonialCityBlockers(anchor).find((b) => b.z < anchor.z - 10)!;
-    expect(cathedral).toBeDefined();
-    expect(colonialCityBlockers(anchor).some((b) => b.x === anchor.x && b.z === anchor.z)).toBe(true);
+    // The cathedral closes the north side; the plaza centre holds the fountain, not a building.
+    const blockers = colonialCityBlockers(anchor);
+    expect(blockers.some((b) => b.z < anchor.z - 10)).toBe(true);
+    const fountain = blockers.find((b) => Math.abs(b.x - anchor.x) < 0.01 && Math.abs(b.z - anchor.z) < 0.01);
+    expect(fountain?.w).toBeCloseTo(3.6, 5);
   });
 });

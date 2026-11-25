@@ -1044,7 +1044,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     },
     pathCellSize: 1,
     heritageProxies: [
-      { id: 'colonial_church', x: CUSCO_COLONIAL.center.x, z: CUSCO_COLONIAL.center.z, w: 19, d: 10, h: 11 },
+      { id: 'colonial_church', x: CUSCO_COLONIAL.center.x, z: CUSCO_COLONIAL.center.z, w: 25, d: 13.5, h: 15 },
     ],
     phases: { phases: ['ciudad'], initial: 'ciudad' },
     blockers: colonialCityBlockers(CUSCO_COLONIAL.center, 'ciudad'),

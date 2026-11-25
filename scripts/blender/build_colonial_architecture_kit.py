@@ -167,147 +167,6 @@ class Kit:
             s.material_index = self.mat(key)
         return length
 
-    def stone(self, corners, normal, bulge, key):
-        """One cushioned stone: the rim inset from the joint, the face pushed out. `corners` are four points
-        on the wall plane (bottom-left, bottom-right, top-right, top-left seen from outside)."""
-        c = sum(corners, Vector()) / 4
-        inset = 0.035
-        rim = [p + (c - p).normalized() * inset + normal * 0.03 for p in corners]
-        if self.lod > 0:
-            f = self.bm.faces.new([self.bm.verts.new(p) for p in rim])
-            f.material_index = self.mat(key)
-            return
-        inner = [p + (c - p) * 0.28 + normal * bulge for p in rim]
-        rv = [self.bm.verts.new(p) for p in rim]
-        iv = [self.bm.verts.new(p) for p in inner]
-        for i in range(4):
-            j = (i + 1) % 4
-            f = self.bm.faces.new((rv[i], rv[j], iv[j], iv[i]))
-            f.material_index = self.mat(key)
-        f = self.bm.faces.new(iv)
-        f.material_index = self.mat(key)
-
-    def coursed_face(self, p0, p1, z0, z1, key, course=0.42, width=(0.6, 1.1), bulge=0.05, batter=0.0,
-                     gaps=(), skip_rows_above=None):
-        """Coursed Inca ashlar on the outer face of the wall p0 -> p1 (CCW building): regular courses getting
-        lower towards the top, stones of varied width, an inward batter. `gaps` are (u0(v), u1(v)) callables
-        for doorways."""
-        a = Vector((p0[0], p0[1], 0))
-        d = Vector((p1[0] - p0[0], p1[1] - p0[1], 0))
-        length = d.length
-        d.normalize()
-        out = Vector((d.y, -d.x, 0))
-        z = z0
-        row = 0
-        while z < z1 - 0.12:
-            h = min(course * max(0.7, 1.0 - 0.05 * row), z1 - z)
-            zt = z + h
-            vm = (z + zt) / 2 - z0
-            spans = [(0.0, length)]
-            for g0, g1 in gaps:
-                lo_, hi_ = g0(vm), g1(vm)
-                if lo_ >= hi_:
-                    continue
-                nxt = []
-                for s0, s1 in spans:
-                    if hi_ <= s0 or lo_ >= s1:
-                        nxt.append((s0, s1))
-                        continue
-                    if lo_ > s0:
-                        nxt.append((s0, lo_))
-                    if hi_ < s1:
-                        nxt.append((hi_, s1))
-                spans = nxt
-            for s0, s1 in spans:
-                u = s0
-                # Stagger the joints course by course.
-                first = self.rng.uniform(*width) * (0.5 if row % 2 else 1.0)
-                while u < s1 - 0.08:
-                    w = first if u == s0 else self.rng.uniform(*width)
-                    ue = min(s1, u + w)
-                    if s1 - ue < 0.25:
-                        ue = s1
-                    lean0 = out * (-batter * (z - z0))
-                    lean1 = out * (-batter * (zt - z0))
-                    corners = [a + d * u + Vector((0, 0, z)) + lean0, a + d * ue + Vector((0, 0, z)) + lean0,
-                               a + d * ue + Vector((0, 0, zt)) + lean1, a + d * u + Vector((0, 0, zt)) + lean1]
-                    self.stone(corners, out, bulge, key)
-                    u = ue
-            z = zt
-            row += 1
-
-    def polygonal_face(self, p0, p1, z0, z1, key, bulge=0.12):
-        """Sacsayhuamán's fitted polygonal megaliths on the outer face p0 -> p1: two or three rows whose
-        joints wander, the largest stones at the foot."""
-        a = Vector((p0[0], p0[1], 0))
-        d = Vector((p1[0] - p0[0], p1[1] - p0[1], 0))
-        length = d.length
-        d.normalize()
-        out = Vector((d.y, -d.x, 0))
-        height = z1 - z0
-        rows = [0.0, 0.58, 1.0] if height > 2.8 else [0.0, 1.0]
-        rng = self.rng
-
-        def bound(r, u):
-            # The bed joint between two rows is one straight, tilted line: the stones above and below meet it
-            # at different points, and only a straight joint gives them the same edge (a wavy one opens gaps).
-            if r in (0, len(rows) - 1):
-                return z0 + rows[r] * height
-            tilt = 0.5 if (r + int(length)) % 2 else -0.5
-            return z0 + rows[r] * height + tilt * (u / length - 0.5)
-
-        for r in range(len(rows) - 1):
-            # Joints of this row: positions along the wall and how far each one leans at the top. The first
-            # and last joints are the wall's ends and stand upright; every stone shares its joints with its
-            # neighbours, so no gap opens between them.
-            big = (1.8, 3.0) if r == 0 else (1.1, 2.0)
-            joints = [(0.0, 0.0)]
-            u = 0.0
-            while u < length - 0.1:
-                u = min(length, u + rng.uniform(*big))
-                if length - u < 0.7:
-                    u = length
-                joints.append((u, 0.0 if u >= length else rng.uniform(-0.25, 0.25)))
-            for (u0, s0), (u1, s1) in zip(joints, joints[1:]):
-                ut0, ut1 = max(0.0, u0 + s0), min(length, u1 + s1)
-                corners = [a + d * u0 + Vector((0, 0, bound(r, u0))), a + d * u1 + Vector((0, 0, bound(r, u1))),
-                           a + d * ut1 + Vector((0, 0, bound(r + 1, ut1))), a + d * ut0 + Vector((0, 0, bound(r + 1, ut0)))]
-                self.stone(corners, out, bulge, key)
-
-    def gable_roof(self, w, d, eave_z, rise, overhang=0.7, end_overhang=0.45, thick=0.32):
-        """A steep ichu thatch gable along X: two thick slopes with a ragged, drooping eave and a ridge roll.
-        Each slope is a closed slab, so Blender can orient it."""
-        segs = 10 if self.lod == 0 else 2
-        hx = w / 2 + end_overhang
-        hy = d / 2 + overhang
-        ridge_z = eave_z + rise
-        eave_drop = overhang * rise / (d / 2)
-
-        for side in (-1, 1):
-            def slope(side=side):
-                nrm = Vector((0, side * rise, d / 2)).normalized()
-                under = -nrm * thick
-                top = [Vector((-hx + 2 * hx * i / segs, 0.0, ridge_z)) for i in range(segs + 1)]
-                low = [Vector((-hx + 2 * hx * i / segs, side * hy,
-                               eave_z - eave_drop - (0.0 if self.lod else self.rng.uniform(-0.06, 0.08))))
-                       for i in range(segs + 1)]
-                tv = [self.bm.verts.new(p) for p in top]
-                lv = [self.bm.verts.new(p) for p in low]
-                tb = [self.bm.verts.new(p + under) for p in top]
-                lb = [self.bm.verts.new(p + under) for p in low]
-                for i in range(segs):
-                    for quad in ((tv[i], tv[i + 1], lv[i + 1], lv[i]), (tb[i], lb[i], lb[i + 1], tb[i + 1]),
-                                 (lv[i], lv[i + 1], lb[i + 1], lb[i]), (tv[i], tb[i], tb[i + 1], tv[i + 1])):
-                        f = self.bm.faces.new(quad)
-                        f.material_index = self.mat('thatch')
-                for end in (0, segs):
-                    f = self.bm.faces.new((tv[end], lv[end], lb[end], tb[end]))
-                    f.material_index = self.mat('thatch')
-            self.shell(slope)
-        # Ridge roll of bound grass.
-        self.prism([(-hx, -0.22), (hx, -0.22), (hx, 0.22), (-hx, 0.22)], ridge_z - 0.12, ridge_z + 0.16, 'thatch')
-
-
 
 # ---------------------------------------------------------------------------------------------- pieces
 
@@ -357,7 +216,7 @@ def window(kit, face, u, z, width, height, side, w, d):
     else:
         x, y, sx, sy = side * (w / 2 - 0.03), u, 0.08, width
     kit.box(x, y, z, sx, sy, height, 'dark')
-    kit.box(x, y, z - 0.08, sx + 0.16, sy + 0.08, 0.1, 'stone')
+    kit.box(x, y, z - 0.08, sx + 0.16, sy + 0.08, 0.1, 'plaster')
 
 
 def pyramid(kit, cx, cy, w, d, z, height, key):
@@ -454,7 +313,7 @@ def cabildo(mats, lod):
     wall(kit, w, d, height, thick, front=arches)
     for i in range(5):
         window(kit, 'front', w * (i + 0.5) / 5 - w / 2, 4.5, 1.1, 1.5, 1, w, d)
-    kit.box(0.0, 0.0, 3.6, w + 0.4, d + 0.4, 0.2, 'stone')
+    kit.box(0.0, 0.0, 3.6, w + 0.4, d + 0.4, 0.2, 'plaster')
     balcony(kit, 6.0, -d / 2 - 0.04, 3.8, depth=1.0)
     tile_roof(kit, w, d, height, 2.0, overhang=0.6)
     return kit
@@ -469,7 +328,7 @@ def casona(mats, lod):
         window(kit, 'front', u, 1.0, 1.0, 1.1, 1, w, d)
     for u in (-2.9, 2.9):
         window(kit, 'front', u, 4.5, 1.1, 1.4, 1, w, d)
-    kit.box(0.0, 0.0, storey, w + 0.3, d + 0.3, 0.16, 'stone')
+    kit.box(0.0, 0.0, storey, w + 0.3, d + 0.3, 0.16, 'plaster')
     balcony(kit, 6.0, -d / 2 - 0.04, storey + 0.16, depth=1.0)
     tile_roof(kit, w, d, storey * 2, 1.9, overhang=0.55)
     return kit
@@ -565,15 +424,15 @@ def assign_uvs(bm, materials):
 
 
 def tint(mesh):
-    """COLOR_0 over the material: grime at the foot of the walls, a per-stone shade so the cut blocks read
-    individually, and low-frequency weathering; joints and the undersides of the thatch stay dark."""
+    """COLOR_0 over the material: grime at the foot of the walls, a shade per roof tile and low-frequency
+    weathering; openings and the undersides of the roofs stay dark."""
     col = mesh.color_attributes.new('Col', 'BYTE_COLOR', 'CORNER')
     rng = random.Random(7)
     for poly in mesh.polygons:
         name = mesh.materials[poly.material_index].name
         shade = 1.0
-        if name in ('MAT-Arch_IncaAshlar', 'MAT-Arch_IncaMegalith'):
-            shade = rng.uniform(0.84, 1.08)
+        if name == 'MAT-Arch_ColonialTile':
+            shade = rng.uniform(0.86, 1.06)
         if name == 'MAT-Arch_ColonialTile' and poly.normal.z < -0.2:
             shade = 0.55
         if name in ('MAT-Arch_ColonialWood', 'MAT-Arch_ColonialDark'):
@@ -656,7 +515,7 @@ def main():
         manifest = {'asset_id': f'colonial_{asset}', 'source_scene': 'scenes/colonial_architecture_kit.blend',
                     'script': 'scripts/blender/build_colonial_architecture_kit.py', 'scale': 1.0, 'up': 'Y',
                     'front': '+Z', 'pivot': 'footprint centre at ground level',
-                    'collision': 'layoutBlockers(COLONIAL_CITY_LAYOUT, COLONIAL_KIT_FOOTPRINTS) in src/model/defs/colonialCity.ts',
+                    'collision': 'colonialCityBlockers(anchor) in src/model/defs/colonialCity.ts',
                     'confidence': CONFIDENCE[asset],
                     'sources': ['docs/historia/arquitectura.md', 'docs/design/colonial-site.md',
                                 'docs/historia/campanas/lima.md', 'docs/historia/campanas/lima_1821.md',

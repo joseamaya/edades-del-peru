@@ -1330,3 +1330,16 @@ The `Deploy GitHub Pages` workflow is the explicit release path. Pages is now
 enabled and the live site is <https://joseamaya.github.io/edades-del-peru/>. The
 artifact and live URL were smoke-tested on 2026-10-30; see
 [`docs/design/release-candidate.md`](./design/release-candidate.md).
+
+## Colonial site conversion (2026-11-25)
+
+The colonial sites (`colonial_site`, `lima_site`, `miraflores_site`, `cusco_junta_site`) now draw the
+colonial Blender kit and hide the old `colonial_church` GLB. Three traps:
+
+- **Phase.** `ArchitectureCity` keeps its own phase; `Game.setSitePhase` must forward it to every kit city,
+  or the city stays in its first phase (the traza) after the mission advances.
+- **Headless.** `spawnAuthoredSite` is renderer-only, so a site that opts into `simulationCollision` is also
+  blocked in headless matches through `applyHeadlessSiteCollision`; the other sites keep their
+  renderer-only blockers until they are converted.
+- **Life.** `ColonialLife` receives `drawHouses = false`; the kit owns the buildings, and the overlay keeps
+  the founding traza, the stalls and the people.
