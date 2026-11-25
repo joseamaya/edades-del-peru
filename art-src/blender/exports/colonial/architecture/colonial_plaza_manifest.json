@@ -25,8 +25,9 @@
   "lods": {
     "LOD0": {
       "triangles": 50,
-      "draw_calls": 1,
+      "draw_calls": 2,
       "materials": [
+        "MAT-Arch_ColonialPaving",
         "MAT-Arch_ColonialStone"
       ],
       "bounds": {
@@ -47,12 +48,13 @@
         ]
       },
       "file": "colonial_plaza_lod0.glb",
-      "bytes": 4540
+      "bytes": 5868
     },
     "LOD1": {
       "triangles": 50,
-      "draw_calls": 1,
+      "draw_calls": 2,
       "materials": [
+        "MAT-Arch_ColonialPaving",
         "MAT-Arch_ColonialStone"
       ],
       "bounds": {
@@ -73,7 +75,7 @@
         ]
       },
       "file": "colonial_plaza_lod1.glb",
-      "bytes": 4540
+      "bytes": 5868
     }
   }
 }
