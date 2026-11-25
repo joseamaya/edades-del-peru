@@ -232,6 +232,8 @@ export class Game {
   colonialCity: ArchitectureCity | null = null;
   /** The Republican kit composition (Arica, Real Felipe, Tarapacá), when the site uses it. */
   republicCity: ArchitectureCity | null = null;
+  /** The Independence kit composition (Ayacucho, Breña), when the site uses it. */
+  independenceCity: ArchitectureCity | null = null;
   /** The ayllu world of Tambotoco (cave, shrine, hamlets, planned Inticancha); null elsewhere. */
   aylluSite: AylluSite | null = null;
   /** The colonial life around Lima/Cusco (houses, market, people); null elsewhere. */
@@ -1549,6 +1551,7 @@ export class Game {
     this.aylluSite?.setPhase(phase);
     this.colonialCity?.setPhase(phase);
     this.republicCity?.setPhase(phase);
+    this.independenceCity?.setPhase(phase);
     this.colonialSite?.setPhase(phase);
     this.syncSiteModelVisibility();
     this.siteCrew?.setPhase(phase as CaralMayorPhase);
@@ -2340,6 +2343,7 @@ export class Game {
       this.cuscoCity = null;
       this.colonialCity = null;
       this.republicCity = null;
+      this.independenceCity = null;
     }
     this.sitePhase = this.siteDef?.phases?.initial ?? 'in_use';
     this.sitePhaseRestored = false;

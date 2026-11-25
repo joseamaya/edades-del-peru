@@ -43,9 +43,13 @@ Both are presentation trade-offs, not a survey.
 
 ## Site
 
-`independence_site` (scale `0.65 × 256/192`, anchor `(179.7, 94.7)`, camera height 72) reuses the Ayacucho
-chapel and patriot camp GLB, its heritage proxy, blocker and corridor, scaled with the terrace. The site has
-**no construction phases**: the chapel and camp are in use, not a monument the player builds; the exception is
+`independence_site` (anchor `(179.7, 94.7)`, camera height 72) draws the Ayacucho chapel and patriot camp
+from the Independence kit ([`independence-site.md`](./independence-site.md)): the 14 × 8 m chapel with its
+bell tower, the hacienda, four tents, the low boundary walls and the well around a packed parade ground. The
+**east–west lane stays open** because the Junín–Ayacucho march and the 10.7 m walkable corridor cross the
+site. The chapel, hacienda, tents, walls and well block from the same layout (`independenceCityBlockers`) and
+the headless match sees them; the chapel's heritage proxy matches the drawn piece. The site has **no
+construction phases**: the chapel and camp are in use, not a monument the player builds; the exception is
 recorded here and in the quality bar.
 
 ## Economy and units

@@ -615,6 +615,12 @@ Definition of Done and the building audit see
   parapets and outcrops; the mission-scoped procedural landmarks are retired. This changes pathing and
   placement, so `REPLAY_VERSION` is 46; guarded by `tests/republic-architecture-kit.test.ts`,
   `tests/tarapaca-battle.test.ts` and the three mission specs.
+- **Independence kit** (2026-11-25): the Ayacucho chapel/camp and Breña's sierra camp draw from
+  `independenceCity.ts` (8 pieces, 8 materials) and set `simulationCollision`; the borrowed
+  `independence_chapel` GLB is a fallback. The m8 camp **must keep its east-west lane open** because the
+  Junín–Ayacucho march and the 10.7 m walkable corridor cross the site; the blockers come from the layout,
+  not a hand-written fortress. This changes m8/Breña pathing, so `REPLAY_VERSION` is 47; guarded by
+  `tests/independence-architecture-kit.test.ts`, `tests/e2e/brena.spec.ts` and the m8 playtest.
 - **Authored canal traces** (issue 384): `MissionCanal.path` (normalized) becomes `Game.canalPath` in world
   units; `canalIrrigationAt` measures the farm bonus by distance to the trace, `Game.canPlace` keeps buildings
   out of the channel, `Game.isReserved` keeps props out, and `spawnCanal` builds relief-following ribbons plus a

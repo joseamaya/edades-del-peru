@@ -131,7 +131,12 @@ describe('authored campaign sites', () => {
     const ridge = sampleAuthoredGround(site.heightField!, 12, 20)!;
     expect(ridge[3], 'the Andean ridges are painted rock').toBeGreaterThan(0.35);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['independence_chapel']);
-    expect(site.heritageProxies[0]?.w).toBeCloseTo(12, 3);
+    expect(site.heritageProxies[0]?.w).toBeCloseTo(14, 3);
+    expect(site.heritageProxies[0]?.d).toBeCloseTo(8, 3);
+    expect(site.heritageProxies[0]?.h).toBeCloseTo(11.6, 3);
+    expect(site.heritageProxies[0]?.z).toBeCloseTo(site.anchor.z - 12.2, 3);
+    expect(site.style).toBe('independence');
+    expect(site.simulationCollision).toBe(true);
     expect(site.walkableCorridor?.width).toBeCloseTo(10.667, 3);
     const mission = MISSIONS.find((m) => m.id === 'm8_independencia')!;
     expect(mission.layout?.site?.id).toBe('independence_site');

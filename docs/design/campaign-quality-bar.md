@@ -73,7 +73,9 @@ them; no `Major` or `Blocker` was raised.
    [`../media/site-review-2026-11-23-new-missions.webp`](../media/site-review-2026-11-23-new-missions.webp):
    the procedural sites of `m_real_felipe`, `m_tarapaca` and `m_vilcabamba` are accepted as abstractions.
    The 2026-11-25 Republican kit later replaced the procedural Real Felipe and Tarapacá sites
-   ([`republic-sites.md`](./republic-sites.md)); Vilcabamba keeps its refuge until its own kit lands.
+   ([`republic-sites.md`](./republic-sites.md)); the Independence kit replaced the borrowed Ayacucho GLB
+   for m8 and Breña the same day ([`independence-site.md`](./independence-site.md)); Vilcabamba keeps its
+   refuge until its own kit lands.
 2. The full campaign — 18 in-engine RTS captures, one per mission at its final site phase, generated with
    `yarn capture:sites --only=all` — in
    [`../media/site-review-2026-11-23-all.webp`](../media/site-review-2026-11-23-all.webp). This closes the
@@ -367,15 +369,15 @@ Reviewed 2026-11-14 as a model mission; the art gate closed on 2026-11-23 (site 
 | History     | Met                  | `docs/historia/campanas/independencia.md` with its certainty table; no invented units, generals or feats.                                     |
 | Identity    | Met                  | Junín, the march and Ayacucho, with Sucre protected and the royalist surrender as the ending.                                                 |
 | Terrain     | Met                  | 256 m authored highland heightfield (`independenceHeightmap.ts`) with painted ground: pampas, terraces, quebrada and ridges.                  |
-| Site        | Met (exception)      | No construction phases: the Ayacucho chapel and camp are in use; recorded in `independencia-model-mission.md`.                                |
+| Site        | Met (exception)      | No construction phases: the Independence kit draws the Ayacucho chapel and camp in use; recorded in `independencia-model-mission.md`.       |
 | Play        | Met                  | `campaign-playtest.spec.ts` holds Junín, marches and holds Ayacucho with real orders and Sucre alive; completable and save paths are covered. |
 | Contract    | Met                  | Three acts (Junín, march, Ayacucho) with a hidden march/third hold revealed by triggers and chapter cards.                                    |
 | Onboarding  | Met                  | Non-blocking tutorial, briefing, Codex and minimap pips.                                                                                      |
 | Closure     | Met                  | Dusk epilogue capture narrates the royalist surrender and the end of Spanish power.                                                           |
 | UX          | Met                  | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                            |
-| Visuals     | Met locally          | Authored Ayacucho GLB, painted pampas and in-engine intro/epilogue captures in `public/media/independencia/`.                                 |
+| Visuals     | Met locally          | Independence kit (Ayacucho camp), painted pampas and in-engine intro/epilogue captures in `public/media/independencia/`.                    |
 | Persistence | Met                  | Junín, march and Ayacucho state use the shared save path; v11 m8 saves are rejected (`SAVE_VERSION` 12).                                      |
-| Tests       | Met                  | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                             |
+| Tests       | Met                  | Data, site/proxy collision, the Independence kit, tutorial, mission, HUD, real-command playtest and save/load coverage.                      |
 | Docs        | Met                  | This document, dossier, `independencia-model-mission.md`, experience table, site note, art docs and README aligned.                           |
 | Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                 |
 | Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_independencia_intro.mjs`; `MISSION_ART` uses the Lima capture.    |
@@ -428,14 +430,15 @@ The 2026-11-18 pass completed the 1879–1883 land arc:
 - **`m_miraflores`** adds `miraflores_site` (the Lima colonial kit at the `ciudad` phase). It builds three redoubts, holds the line with
   reservists and withdraws Cáceres to the sierra. Real-command test: `tests/e2e/miraflores.spec.ts`.
   Open: human no-cheat playtest and a performance row.
-- **`m_brena`** reuses the Ayacucho camp as a labelled sierra-central abstraction. It builds the community
-  network, ambushes a column and withdraws from Huamachuco with Cáceres alive. Real-command test:
-  `tests/e2e/brena.spec.ts`. Open: human no-cheat playtest and a performance row.
+- **`m_brena`** draws its own sierra-central camp from the Independence kit (community houses, hacienda,
+  tents, corral and earth bank) at the camp east of Huamachuco. It builds the community network, ambushes a
+  column and withdraws from Huamachuco with Cáceres alive. Real-command test: `tests/e2e/brena.spec.ts`.
+  Open: human no-cheat playtest and a performance row.
 
 All three have dossier, design document, tutorial, educational entry, own in-engine captures, epilogue and
 the generic completable path; they pass the scale and HUD layout guards. Human no-cheat playtests remain
-pending; Tarapacá's site is drawn by the Republican kit, while the reused Lima and Ayacucho kits of
-Miraflores and Breña were approved on 2026-11-23 like the rest of the campaign.
+pending; Tarapacá's site is drawn by the Republican kit, Breña's by the Independence kit, and the reused
+Lima colonial kit of Miraflores was approved on 2026-11-23 like the rest of the campaign.
 
 ## La Junta del Cusco playable status (m_junta_cusco)
 

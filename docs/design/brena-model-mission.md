@@ -1,7 +1,7 @@
 # La Breña 1882–1883 — model mission
 
 **Mission:** `m_brena` · **Campaign:** La República · **Period:** Republic (1882–1883) ·
-**Status:** implemented and art-accepted (site view approved 2026-11-23); pending the human playtest.
+**Status:** implemented and art-accepted (the Independence kit draws the site since 2026-11-25); pending the human playtest.
 
 ## Historical problem
 
@@ -27,8 +27,14 @@ The executions and violence of Concepción/Huamachuco are told in the epilogue a
 ## Map and site
 
 - 256 m andes transect, painted ground every 2 m, worker crossing ≈2:22.
-- `brena_site` reuses the Ayacucho chapel/camp composition and heightfield as a **labelled abstraction**
-  of the sierra-central camp; no surveyed Breña heightfield exists in the repo.
+- `brena_site` draws its own **sierra-central camp** from the Independence kit
+  ([`independence-site.md`](./independence-site.md)) on the Ayacucho heightfield: two community houses, the
+  hacienda/camp store, three tents, a stone corral, an earth bank and the well around the parade ground.
+  There is no chapel, so the camp reads as a guerrilla camp rather than a second Ayacucho. The site keeps
+  the camp anchor `(179.7, 94.7)` east of Huamachuco; the mission focus and hold stay on the town.
+- The houses, hacienda, tents, corral, earth bank and well block from the same layout
+  (`brenaCityBlockers`), and the site opts into `simulationCollision`; the central lane stays open for the
+  columns.
 - Player camp in the Mantaro, communities across the valley, enemy column from the north-east.
 - Own in-engine captures (`scripts/capture_republica_arc.mjs`), documented in `PROVENANCE.md`.
 
@@ -61,6 +67,7 @@ The executions and violence of Concepción/Huamachuco are told in the epilogue a
 
 - Data: `tests/campaign.test.ts`, `tests/campaigns.test.ts`, scale/layout/profile guards.
 - Completable: `tests/e2e/campaign-completable.spec.ts`.
+- Kit: `tests/independence-architecture-kit.test.ts` (budgets, materials, the camp blockers and lanes).
 - Real commands: `tests/e2e/brena.spec.ts` builds the three communities with ordinary place/build orders.
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts`.
 - Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in

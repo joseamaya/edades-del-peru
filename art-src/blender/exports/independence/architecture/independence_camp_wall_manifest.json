@@ -1,0 +1,79 @@
+{
+  "asset_id": "independence_camp_wall",
+  "source_scene": "scenes/independence_architecture_kit.blend",
+  "script": "scripts/blender/build_independence_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "independenceCityBlockers / brenaCityBlockers in src/model/defs/independenceCity.ts",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/independence-site.md",
+    "docs/design/independencia-model-mission.md",
+    "docs/design/brena-model-mission.md",
+    "docs/historia/campanas/independencia.md",
+    "docs/historia/campanas/brena.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 52,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Arch_IndependenceStone"
+      ],
+      "bounds": {
+        "min": [
+          -5.05,
+          -0.37,
+          0.0
+        ],
+        "max": [
+          5.05,
+          0.37,
+          1.54
+        ],
+        "size": [
+          10.1,
+          0.74,
+          1.54
+        ]
+      },
+      "file": "independence_camp_wall_lod0.glb",
+      "bytes": 5920
+    },
+    "LOD1": {
+      "triangles": 52,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Arch_IndependenceStone"
+      ],
+      "bounds": {
+        "min": [
+          -5.05,
+          -0.37,
+          0.0
+        ],
+        "max": [
+          5.05,
+          0.37,
+          1.54
+        ],
+        "size": [
+          10.1,
+          0.74,
+          1.54
+        ]
+      },
+      "file": "independence_camp_wall_lod1.glb",
+      "bytes": 5920
+    }
+  }
+}

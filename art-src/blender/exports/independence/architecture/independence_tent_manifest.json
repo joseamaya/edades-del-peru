@@ -1,0 +1,83 @@
+{
+  "asset_id": "independence_tent",
+  "source_scene": "scenes/independence_architecture_kit.blend",
+  "script": "scripts/blender/build_independence_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "independenceCityBlockers / brenaCityBlockers in src/model/defs/independenceCity.ts",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/independence-site.md",
+    "docs/design/independencia-model-mission.md",
+    "docs/design/brena-model-mission.md",
+    "docs/historia/campanas/independencia.md",
+    "docs/historia/campanas/brena.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 68,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_IndependenceCanvas",
+        "MAT-Arch_IndependenceDark",
+        "MAT-Arch_IndependenceWood"
+      ],
+      "bounds": {
+        "min": [
+          -1.6,
+          -1.2,
+          0.0
+        ],
+        "max": [
+          1.6,
+          1.2,
+          2.23
+        ],
+        "size": [
+          3.2,
+          2.4,
+          2.23
+        ]
+      },
+      "file": "independence_tent_lod0.glb",
+      "bytes": 9464
+    },
+    "LOD1": {
+      "triangles": 68,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_IndependenceCanvas",
+        "MAT-Arch_IndependenceDark",
+        "MAT-Arch_IndependenceWood"
+      ],
+      "bounds": {
+        "min": [
+          -1.6,
+          -1.2,
+          0.0
+        ],
+        "max": [
+          1.6,
+          1.2,
+          2.23
+        ],
+        "size": [
+          3.2,
+          2.4,
+          2.23
+        ]
+      },
+      "file": "independence_tent_lod1.glb",
+      "bytes": 9464
+    }
+  }
+}

@@ -135,7 +135,7 @@ document; a new mission is not complete without one. The quality bar is the live
 | La República | `m9_guerra_pacifico` | [`guerra_del_pacifico.md`](./historia/campanas/guerra_del_pacifico.md) | [`arica-model-mission.md`](./design/arica-model-mission.md) | [`arica-site.md`](./design/arica-site.md) · [`republic-sites.md`](./design/republic-sites.md) |
 | La República | `m_tarapaca` | [`tarapaca.md`](./historia/campanas/tarapaca.md) | [`tarapaca-model-mission.md`](./design/tarapaca-model-mission.md) | [`republic-sites.md`](./design/republic-sites.md) |
 | La República | `m_miraflores` | [`miraflores.md`](./historia/campanas/miraflores.md) | [`miraflores-model-mission.md`](./design/miraflores-model-mission.md) | — |
-| La República | `m_brena` | [`brena.md`](./historia/campanas/brena.md) | [`brena-model-mission.md`](./design/brena-model-mission.md) | — |
+| La República | `m_brena` | [`brena.md`](./historia/campanas/brena.md) | [`brena-model-mission.md`](./design/brena-model-mission.md) | [`independence-site.md`](./design/independence-site.md) |
 
 All twenty released missions have a model-mission document. For the live status of any mission, use
 [`campaign-quality-bar.md`](./design/campaign-quality-bar.md).

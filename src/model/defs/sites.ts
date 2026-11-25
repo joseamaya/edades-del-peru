@@ -87,7 +87,7 @@ import {
 } from './aricaHeightmap';
 import { aricaLength } from './aricaSite';
 import { cuscoIncaLength, cuscoIncaPoint } from './cuscoIncaSite';
-import { independenceLength, independencePoint } from './independenceSite';
+import { independenceLength } from './independenceSite';
 import {
   JUNTA_GROUND,
   JUNTA_GROUND_SIZE,
@@ -118,6 +118,13 @@ import {
   realFelipeCityBlockers,
   tarapacaCityBlockers,
 } from './republicCity';
+import {
+  BRENA_CITY_ANCHOR,
+  INDEPENDENCE_CHAPEL_ANCHOR,
+  INDEPENDENCE_CITY_ANCHOR,
+  brenaCityBlockers,
+  independenceCityBlockers,
+} from './independenceCity';
 import {
   LIMA_GROUND,
   LIMA_GROUND_SIZE,
@@ -287,11 +294,11 @@ export interface AuthoredSiteDef {
   modelSince?: string;
   /**
    * The authored GLB is a labelled abstraction that the mission replaces with a kit or a procedural
-   * landmark (Arica, Real Felipe, Tarapacá, Vilcabamba); do not load it.
+   * landmark (Arica, Real Felipe, Tarapacá, Independencia, Breña, Vilcabamba); do not load it.
    */
   hideModel?: boolean;
   /** Authored presentation family; the renderer picks the overlay from it. */
-  style?: 'ayllu' | 'colonial' | 'republic';
+  style?: 'ayllu' | 'colonial' | 'republic' | 'independence';
   /** Source meshes hidden because the game heightfield/scene owns that layer. */
   hideNodePatterns?: readonly RegExp[];
   /** Clears an approach strip from the player base to the site anchor. */
@@ -432,7 +439,7 @@ const TARAPACA_BUILD_KEEPOUT: readonly SiteKeepoutRect[] = [
 ];
 
 /** The Ayacucho chapel point in the former 192 m frame, scaled into the 256 m map. */
-const INDEPENDENCE_SITE_POINT = independencePoint({ x: 134.8, z: 71 });
+const INDEPENDENCE_SITE_POINT = INDEPENDENCE_CITY_ANCHOR;
 
 /** The Cusco plaza point in the former 192 m frame, scaled into the 256 m map. */
 const COLONIAL_SITE_POINT = colonialPoint({ x: 134.8, z: 73 });
@@ -809,8 +816,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'independence_site',
     label: 'Capilla y campamento patriota de Ayacucho',
     modelName: 'independence_site',
-    // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
-    // scale with it so the chapel still covers its terrace.
+    hideModel: true,
+    style: 'independence',
     scale: independenceLength(0.65),
     origin: INDEPENDENCE_SITE_POINT,
     anchor: INDEPENDENCE_SITE_POINT,
@@ -826,17 +833,19 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     heritageProxies: [
       {
         id: 'independence_chapel',
-        ...INDEPENDENCE_SITE_POINT,
-        w: independenceLength(9),
-        d: independenceLength(9),
-        h: independenceLength(6),
+        x: INDEPENDENCE_CHAPEL_ANCHOR.x,
+        z: INDEPENDENCE_CHAPEL_ANCHOR.z,
+        w: 14,
+        d: 8,
+        h: 11.6,
       },
     ],
-    blockers: [{ ...INDEPENDENCE_SITE_POINT, w: independenceLength(9), d: independenceLength(9) }],
+    blockers: independenceCityBlockers(),
+    simulationCollision: true,
     blockerPadding: independenceLength(0.5),
     buildKeepout: [{ x: 0.702, z: 0.37, rx: 0.065, rz: 0.065 }],
     wallCollision: {
-      meshPatterns: [/independence/i],
+      meshPatterns: [],
       maxStartYAboveBase: independenceLength(1.2),
     },
     walkableCorridor: { width: independenceLength(8) },
@@ -957,14 +966,16 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     walkableCorridor: { width: aricaLength(8) },
     terrain: { ...DEFAULT_SITE_TERRAIN, palette: 'atacama', flatNormals: true, suppressSnow: true },
   },
-  // La Breña (1882–1883) reuses the Ayacucho chapel/camp as a labelled sierra-central abstraction.
+  // La Breña (1882–1883) draws its sierra camp from the Independence kit on the same Ayacucho heightfield.
   brena_site: {
     id: 'brena_site',
     label: 'Sierra central y campamento de la Breña',
     modelName: 'independence_site',
+    hideModel: true,
+    style: 'independence',
     scale: independenceLength(0.65),
-    origin: INDEPENDENCE_SITE_POINT,
-    anchor: INDEPENDENCE_SITE_POINT,
+    origin: BRENA_CITY_ANCHOR,
+    anchor: BRENA_CITY_ANCHOR,
     cameraHeight: independenceLength(54),
     framing: 'site-biased',
     heightField: {
@@ -975,10 +986,11 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     },
     pathCellSize: 1,
     heritageProxies: [],
-    blockers: [{ ...INDEPENDENCE_SITE_POINT, w: independenceLength(9), d: independenceLength(9) }],
+    blockers: brenaCityBlockers(),
+    simulationCollision: true,
     blockerPadding: independenceLength(0.5),
     buildKeepout: [{ x: 0.702, z: 0.37, rx: 0.065, rz: 0.065 }],
-    wallCollision: { meshPatterns: [/independence/i], maxStartYAboveBase: independenceLength(1.2) },
+    wallCollision: { meshPatterns: [], maxStartYAboveBase: independenceLength(1.2) },
     walkableCorridor: { width: independenceLength(8) },
     terrain: { ...DEFAULT_SITE_TERRAIN, flatNormals: true, suppressSnow: true },
   },
