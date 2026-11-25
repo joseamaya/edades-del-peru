@@ -37,7 +37,7 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
 - `yarn art:blender` — ingest the in-repo Blender renders into WebP + manifest (`--dry-run`, `--only=…`, `--force`)
 - `yarn art:models` — meshopt-compress the committed GLBs in place (`--only=…`, `--dry-run`, `--force`)
 - `yarn art:textures` — re-encode material PBR WebPs (`--only=…`, `--dry-run`, `--force`); `--terrain` downloads/verifies the CC0 terrain sources and packs `_albedo`/`_surface` (`--only=…`, `--dry-run`, `--check`)
-- `yarn dist:check` — verify `dist/` (<28 MB) and the entry chunk (<600 KB gzip)
+- `yarn dist:check` — verify `dist/` (<40 MB, ADR 0009) and the entry chunk (<600 KB gzip)
 - `yarn art:validate` — validate the Blender render manifest/assets; `yarn art:review` — human review gate
 
 Everything runs through `package.json`; there is no `npm test`. The CI gate, in order, is

@@ -264,7 +264,7 @@ hasta `#landing`; el menú real, con `?menu=1`, hasta `.ed-menu-shell`. No susti
 - `src/main.ts` ya no importa `Game`: carga `src/boot.ts` en diferido y muestra un indicador mientras tanto.
   La entrada ya no descarga el juego: muestra una landing ligera y carga `boot`/`Game`/`HUD` solo al pulsar
   Entrar. El chunk de juego diferido sigue en ~838 KB gzip; `scripts/check-dist.mjs` vigila el total
-  (<28 MB desde el ADR 0008) y la entrada (<600 KB gzip).
+  (<40 MB desde el ADR 0009) y la entrada (<600 KB gzip).
 
 ---
 

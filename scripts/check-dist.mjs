@@ -4,8 +4,8 @@ import zlib from 'node:zlib';
 
 const ROOT = process.cwd();
 const DIST = path.join(ROOT, 'dist');
-// 28 MB since ADR 0008 (cinema-intro stills); 25 MB before.
-const TOTAL_LIMIT = 28 * 1024 * 1024;
+// 40 MB since ADR 0009 (site kits; 28 MB in ADR 0008, 25 MB before).
+const TOTAL_LIMIT = 40 * 1024 * 1024;
 const ENTRY_GZIP_LIMIT = 600 * 1024;
 const REQUIRED_ROOT_FILES = ['LICENSE', 'ATTRIBUTION.md'];
 

@@ -5,6 +5,7 @@ import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
 import {
   bodyOnlyShadows,
+  boneToRoot,
   createRigAttireTools,
   extrudedPlate,
   mergeColoredGeometry,
@@ -476,14 +477,7 @@ function firearmGrip(rig: RigInstance, weapon: THREE.Object3D, ranged: boolean):
   if (!hand || !forearm || weapon.parent !== hand) return null;
   // Everything is solved in the rig root's space (+Z forward, +Y up, as the attire was dressed), from the
   // bones' local transforms only: no world-matrix walk per unit per frame.
-  const toRoot = (bone: THREE.Object3D, out: THREE.Matrix4): THREE.Matrix4 => {
-    out.identity();
-    for (let q: THREE.Object3D | null = bone; q && q !== root; q = q.parent) {
-      q.updateMatrix();
-      out.premultiply(q.matrix);
-    }
-    return out;
-  };
+  const toRoot = (bone: THREE.Object3D, out: THREE.Matrix4): THREE.Matrix4 => boneToRoot(root, bone, out);
   const handM = new THREE.Matrix4();
   const forearmM = new THREE.Matrix4();
   const handQ = new THREE.Quaternion();

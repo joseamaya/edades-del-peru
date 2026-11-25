@@ -414,7 +414,7 @@ the performance caps are unchanged except for the justified `selva` pack.
   does not, reduce density or
   merge materials before adding a cap.
 - New site variants merge by material and reuse modules; a new city GLB is not acceptable.
-- PBR additions are capped at two sets; `dist:check` remains 28 MB (ADR 0008) / 600 KB gzip.
+- PBR additions are capped at two sets; `dist:check` remains 40 MB (ADR 0009) / 600 KB gzip.
 - The structural bench runs on SwiftShader; the real-GPU pass (`bench:site-views`) is the frame-time check.
   Do not present SwiftShader numbers as a GPU verdict.
 

@@ -18,6 +18,7 @@ import { unitTrainableInPeriod } from '../src/model/defs/units';
 import { MOUNTED_SPECS } from '../src/model/defs/mountedCharacters';
 import { MODERN_SPECS } from '../src/model/defs/modernCharacters';
 import { siegeSpecForVariant } from '../src/model/defs/siegeCharacters';
+import { HEAD_FIT } from '../src/rendering/workerAttire';
 import {
   acquireRig,
   clearModelAssets,
@@ -48,6 +49,12 @@ afterEach(() => {
 
 function load(): Promise<LoadedModelAsset> {
   return loadModelAssetFromData('ual_mannequin', glb);
+}
+
+/** Bounds of a dressed piece in its geometry space: the dress frame, relative to the bone it rides. */
+function localBox(mesh: THREE.Mesh): THREE.Box3 {
+  mesh.geometry.computeBoundingBox();
+  return mesh.geometry.boundingBox!.clone();
 }
 
 function firstMesh(root: THREE.Object3D): THREE.Mesh {
@@ -856,6 +863,90 @@ describe('rigged model assets', () => {
     expect(worker.root.getObjectByName('attire_andean_helmet')).toBeUndefined();
     expect(worker.root.getObjectByName('attire_andean_backflap')).toBeUndefined();
     worker.dispose();
+  });
+
+  it('fits the Inca cotton helmet to the measured skull instead of the bone', async () => {
+    await load();
+    for (const [variant, fit] of [
+      ['inca_soldier_m', HEAD_FIT.m],
+      ['inca_soldier_f', HEAD_FIT.f],
+    ] as const) {
+      const rig = acquireRig('ual_mannequin', variant)!;
+      const helmet = rig.root.getObjectByName('attire_andean_padded_helmet') as THREE.Mesh;
+      expect(helmet, variant).toBeDefined();
+      // The geometry is built in the dress frame, i.e. relative to the Head bone, so its bounds are the
+      // head-local numbers even while the idle clip turns the head.
+      const box = localBox(helmet);
+      // Rim at the brow; top at the crown the body was measured at (not a bowl above the ears).
+      expect(box.min.y, `${variant} rim`).toBeGreaterThan(fit.brow - 0.02);
+      expect(box.min.y, `${variant} rim`).toBeLessThan(fit.brow + 0.02);
+      expect(box.max.y, `${variant} crown`).toBeGreaterThan(fit.crown - 0.02);
+      expect(box.max.x - box.min.x, `${variant} width`).toBeLessThan(fit.radius * 2.4);
+      // The skull sits forward of the jaw bone; a cap centred on the bone tips backwards.
+      expect((box.min.z + box.max.z) / 2, `${variant} centre`).toBeGreaterThan(0.02);
+      rig.dispose();
+    }
+  });
+
+  it('fits the conical helmet, ear spools and headband to the head', async () => {
+    await load();
+    const rig = acquireRig('ual_mannequin', 'moche_soldier_m')!;
+    const box = localBox(rig.root.getObjectByName('attire_andean_helmet') as THREE.Mesh);
+    // A fitted cap that rises to a point above the crown, not a cone sunk into the skull.
+    expect(box.max.y).toBeGreaterThan(HEAD_FIT.m.crown + 0.05);
+    expect(box.min.y).toBeGreaterThan(0.06);
+    expect(box.min.y).toBeLessThan(0.15);
+    expect(box.max.x - box.min.x).toBeLessThan(0.3);
+    const ears = localBox(rig.root.getObjectByName('attire_andean_ear') as THREE.Mesh);
+    expect(Math.abs(ears.getCenter(new THREE.Vector3()).y - 0.115)).toBeLessThan(0.05);
+    expect(ears.max.x - ears.min.x).toBeGreaterThan(0.18);
+    // A helmet replaces the band: nothing may poke through the cap.
+    expect(rig.root.getObjectByName('attire_headband')).toBeUndefined();
+    rig.dispose();
+
+    // On a bare-headed warrior the band rides the hairline, above the brows it used to cover.
+    const bare = acquireRig('ual_mannequin', 'recuay_soldier_m')!;
+    const band = localBox(bare.root.getObjectByName('attire_headband') as THREE.Mesh);
+    expect(band.getCenter(new THREE.Vector3()).y).toBeGreaterThan(0.15);
+    bare.dispose();
+  });
+
+  it('holds the porra by its grip, head up at rest and on the march', async () => {
+    await load();
+    const rig = acquireRig('ual_mannequin', 'moche_soldier_m')!;
+    const grip = rig.root.getObjectByName('attire_andean_weapon');
+    const shaft = rig.root.getObjectByName('attire_andean_macana');
+    const head = rig.root.getObjectByName('attire_andean_macana_head');
+    expect(grip?.parent?.name).toBe('hand_r');
+    expect(shaft?.parent).toBe(grip);
+    expect(head?.parent).toBe(grip);
+    for (const [clip, at] of [
+      ['idle', 0.4],
+      ['run', 0.35],
+      ['run', 0.6],
+    ] as const) {
+      rig.play(clip, 0);
+      rig.update(at);
+      rig.root.updateMatrixWorld(true);
+      const hand = rig.root.getObjectByName('hand_r')!.getWorldPosition(new THREE.Vector3());
+      const club = head!.getWorldPosition(new THREE.Vector3());
+      // The star no longer drops to the ankle when the shared clip swings the arm.
+      expect(club.y - hand.y, `${clip} at ${at}`).toBeGreaterThan(0.35);
+    }
+    rig.dispose();
+  });
+
+  it('grips the rodela at the hand instead of hanging it at the thigh', async () => {
+    await load();
+    const rig = acquireRig('ual_mannequin', 'moche_soldier_m')!;
+    rig.play('idle', 0);
+    rig.update(0.4);
+    rig.root.updateMatrixWorld(true);
+    const hand = rig.root.getObjectByName('hand_l')!.getWorldPosition(new THREE.Vector3());
+    const shield = rig.root.getObjectByName('attire_andean_shield')!;
+    const centre = new THREE.Box3().setFromObject(shield).getCenter(new THREE.Vector3());
+    expect(centre.distanceTo(hand)).toBeLessThan(0.25);
+    rig.dispose();
   });
 
   it('ships a worker GLB with one skeleton, the worker clips and the cotton garment', () => {

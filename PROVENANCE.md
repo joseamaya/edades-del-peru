@@ -1165,6 +1165,20 @@ slot is absent (offline / without assets).
   default RTS zoom; `docs/art/character-visual-pilot.md` §16.
 - **Review**: no new historical claim; the rebel coat stays an undocumented earth-tone abstraction.
 
+### Character equipment fit (in-engine evidence)
+
+- **Location**: `docs/media/character-equipment-before-after.webp`, 1180x1162 WebP q74.
+- **Source**: captured with `node scripts/capture_character_pilot.mjs --out=review/pilot-after --only=inca,moche`;
+  the before row is the same harness and placement run on `origin/main` (`e4da9166`) in a scratch worktree. Both
+  rows were composed by `node scripts/character_pilot_sheet.mjs --before=<worktree>/review/pilot-before
+  --after=review/pilot-after --out=docs/media/character-equipment-before-after.webp`. No Blender or GIMP source:
+  the pieces are runtime geometry in `src/rendering/workerAttire.ts`.
+- **Content**: `docs/art/character-visual-pilot.md` §18. Top row the 0.145 m bowl helmet, the porra's star at the
+  ankle and the rodela hanging at the thigh; bottom row the cap measured on the head, the club upright in its grip
+  group and the shield at the hand.
+- **Review**: no new historical claim. The measured head, the grip and the shield's offset are presentation, and
+  the cotton cap's quilted rim stays the abstraction the dossier already documents.
+
 ### Horse legs (in-engine evidence)
 
 - **Location**: `docs/media/horse-legs-before-after.webp`, 1200x450 WebP q72.
