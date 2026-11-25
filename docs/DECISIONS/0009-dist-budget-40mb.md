@@ -1,9 +1,9 @@
 # 0009 · A 40 MB `dist/` budget for the site kits
 
-**Status:** Proposed · **Date:** 2026-11-24 · Amends [0008](./0008-dist-budget-28mb.md)
+**Status:** Accepted · **Date:** 2026-11-24 · Amends [0008](./0008-dist-budget-28mb.md)
 
 > Proposed on the project author's instruction (2026-11-24: raise the limit); the 40 MB figure is the agent's
-> proposal and the author accepts it in review, per [`README.md`](./README.md) rule 6.
+> proposal. Accepted by the project author on 2026-11-25 (PR #633), per [`README.md`](./README.md) rule 6.
 
 ## Context
 

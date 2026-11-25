@@ -18,7 +18,7 @@ and mark the old one `Superseded by NNNN`.
 | 0006 | [The model-mission standard](./0006-model-mission-standard.md) | Accepted |
 | 0007 | [Local authoring tools, not CI dependencies](./0007-local-authoring-tools.md) | Accepted |
 | 0008 | [A 28 MB `dist/` budget for the cinema intros](./0008-dist-budget-28mb.md) | Accepted |
-| 0009 | [A 40 MB `dist/` budget for the site kits](./0009-dist-budget-40mb.md) | Proposed |
+| 0009 | [A 40 MB `dist/` budget for the site kits](./0009-dist-budget-40mb.md) | Accepted |
 
 ## Writing a new record
 
