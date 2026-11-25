@@ -550,6 +550,55 @@ the skull narrows, which reads as padding, not a gap.
 
 ![Equipment before and after: the bowl helmet, the star at the ankle and the shield at the thigh, then the fitted cap, the club at the shoulder and the shield in the hand](../media/character-equipment-before-after.webp)
 
+## 19. Skin under the Andean tunic
+
+The close captures also showed the body through the Andean tunics: brown patches on the Inca warrior's chest,
+shoulder and belly, and on the Moche warrior's bust and shoulder. The tunic and the skirt/wrap are shells
+derived from the body in `scripts/build_caral_worker.mjs` (the same skin weights, offset 3–4 cm along the
+normals and clipped to the torso/sleeve and the hip tube), so wherever a pose bulges more than the offset the
+body shows through the cloth. The post-1532 uniforms already painted the body under the coat
+(`bodyPaint.ts`); the Andean dresser did not.
+
+What changed:
+
+| Piece | Before | After |
+| --- | --- | --- |
+| Inca warrior | skin patches at the chest, shoulder and belly | the tunic's gold over the covered torso |
+| Moche warrior | skin at the bust and shoulder | the tunic's red, the wrap's beige at the hip |
+| Bare arms and legs | skin | still skin: only the garment volumes are painted |
+| Hero (Ayar Manco) | the palette tint under the longer uncu | follows the accent after `dressHero` |
+
+The classifier cannot use bone names alone (the tunic is short-sleeved and the skirt stops at the hem), and a
+garment-wide box would paint the hands, which hang inside the tunic's box in the bind pose. `workerAttire.ts`
+therefore takes the **posed world boxes of the tunic and skirt meshes** and gates them by the body's dominant
+bone: `spine`/`clavicle`/`upperarm` for the tunic and `pelvis`/`thigh`/`spine_01` for the skirt. The skirt is
+the outer layer at the waist and wins the overlap; the hero's longer uncu is recognized by its tunic box
+reaching below the wrap, and `UnitView.dressHero` repaints the body with the commander accent after retinting
+the cloth.
+
+The colour is the garment's own: the mean of the cotton weave texture (`#c3b18b`) times the material's tinted
+colour, so the patch matches the Inca gold, the Moche red or Caral's cream. The body is a textured draw of its
+own and is not merged by `consolidateRig`, so the paint is a vertex attribute plus a small shader mix; the
+cache is keyed by body, variant and colours.
+
+**Tests.** `tests/andean-tunic-paint.test.ts` loads `caral_worker.glb` and `tambotoco_hero.glb`, dresses the
+Inca, Moche, Caral, chasqui, Chanca, Recuay, Wari and Chimú variants, both genders, and checks the paint
+attribute: the torso and pelvis carry the garment colour while the hands, lower arms, feet, knees and head stay
+at alpha 0. The hero's longer uncu paints the thigh, and a `setClothColors` call repaints the body with the
+palette tint × accent after the cloth is retinted.
+
+The paint adds no draw call: it is one `paint` vertex attribute on the body that was already drawn. One painted
+geometry is cached per variant and colour set (the hero retint adds one), and like the shared body buffers it
+is kept for the session. `yarn verify:fast` (dist 27.66 / 40 MB), `yarn bench:characters`, the new test and the
+character/rig E2E specs are the gate.
+
+**Still open.** The paint hides the skin, but the tunic geometry is still a tight shell; a pose that stretches
+it further can still read as a bulge. A wider offset or a longer sleeve is an asset change, not a dresser one.
+The hero's checked pattern map replaces the weave, so the body under it keeps the weave mean: a flat
+approximation for a patterned uncu.
+
+![Andean tunics before and after: skin patches through the Inca and Moche cloth, then the body painted in the garment's own colour](../media/character-tunic-before-after.webp)
+
 ## See also
 
 [`../design/art-direction.md`](../design/art-direction.md) §4.1 ·

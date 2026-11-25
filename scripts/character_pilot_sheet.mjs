@@ -11,12 +11,18 @@ import { cliArg } from './lib.mjs';
  *
  * Usage:
  *   node scripts/character_pilot_sheet.mjs --before=review/tmp/pilot --after=review/pilot-after \
- *     --out=docs/media/character-equipment-before-after.webp
+ *     --out=docs/media/character-equipment-before-after.webp [--footer="…"]
+ *
+ * The footer defaults to the equipment pass caption.
  */
 
 const before = path.resolve(cliArg('before', 'review/tmp/pilot'));
 const after = path.resolve(cliArg('after', 'review/pilot-after'));
 const out = path.resolve(cliArg('out', 'docs/media/character-equipment-before-after.webp'));
+const footer = cliArg(
+  'footer',
+  'Headpieces fitted to the measured head, the club held by its grip, the shield at the hand · docs/art/character-visual-pilot.md §18',
+);
 const CROP = { left: 455, top: 195, width: 340, height: 520 };
 const COLUMNS = [
   { file: 'inca-idle-front.png', caption: 'Inca · rest' },
@@ -52,7 +58,7 @@ const text = `
   ).join('')}
   <text class="row" x="${LABEL / 2}" y="${HEADER + PAD + CROP.height / 2}" text-anchor="middle">BEFORE</text>
   <text class="row" x="${LABEL / 2}" y="${HEADER + 2 * PAD + CROP.height + CROP.height / 2}" text-anchor="middle">AFTER</text>
-  <text class="foot" x="${LABEL + PAD}" y="${height - 10}">Headpieces fitted to the measured head, the club held by its grip, the shield at the hand · docs/art/character-visual-pilot.md §18</text>
+  <text class="foot" x="${LABEL + PAD}" y="${height - 10}">${footer}</text>
 </svg>`;
 
 const composites = [];

@@ -1,20 +1,40 @@
 import * as THREE from 'three';
 
 /**
- * Paint the shared body under rigid garments in the garment's colour.
+ * Paint the shared body under garments in the garment's colour.
  *
- * Sleeves, breeches and the coat yoke are rigid shells on the bones, while the skinned body under them bulges
- * as a limb bends (biceps, hips, shoulders). Where the body breaks through a shell it showed bare skin in
- * patches over the coat. With the covered region painted, whatever pokes through is the cloth's colour.
+ * Sleeves, breeches, coats, tunics and skirts are shells over the skinned body, while the body under them
+ * bulges as a limb bends. Where the body breaks through a shell it showed bare skin in patches over the
+ * cloth. With the covered region painted, whatever pokes through is the garment's colour.
  *
- * Each vertex takes the colour of the region its strongest covered bone belongs to (`regionOf`). The painted
- * geometry shares every attribute with the asset's body and adds one `paint` attribute; it is cached per body
- * and key for the session and never disposed, because disposing it would release the shared buffers.
+ * Each vertex takes the colour of the region its strongest covered bone belongs to. The caller classifies
+ * the vertex's posed, world-space position at dressing time (the bind pose for both the uniform and the
+ * Andean tunic).
+ *
+ * The painted geometry shares every attribute with the asset's body and adds one `paint` attribute; it is
+ * cached per body, key and colours for the session and never disposed, because disposing it would release
+ * the shared buffers.
  */
 export type PaintRegion = 'coat' | 'trousers' | 'boots' | null;
 
+export interface BodyPaintHandle<R extends string = string> {
+  /** Re-paint with new garment colours (a hero retint after the rig was dressed). */
+  setColors(colors: Record<R, number>): void;
+}
+
+export interface BodyPaintOptions {
+  /**
+   * Classify by the vertex's overall dominant bone instead of the strongest *covered* bone. The Andean
+   * shells use it: a hip vertex that the skirt does not cover must stay skin even when a spine weight would
+   * otherwise pull it into the tunic's box.
+   */
+  dominant?: boolean;
+}
+
 const geometryCache = new Map<string, THREE.BufferGeometry>();
 const materialCache = new WeakMap<THREE.Material, THREE.Material>();
+const sourceGeometries = new WeakMap<THREE.SkinnedMesh, THREE.BufferGeometry>();
+const sourceMaterials = new WeakMap<THREE.SkinnedMesh, THREE.Material | THREE.Material[]>();
 
 function paintedMaterial(source: THREE.Material): THREE.Material {
   const cached = materialCache.get(source);
@@ -37,18 +57,45 @@ function paintedMaterial(source: THREE.Material): THREE.Material {
   return material;
 }
 
+function originalGeometry(body: THREE.SkinnedMesh): THREE.BufferGeometry {
+  let geometry = sourceGeometries.get(body);
+  if (!geometry) {
+    geometry = body.geometry;
+    sourceGeometries.set(body, geometry);
+  }
+  return geometry;
+}
+
+function originalMaterial(body: THREE.SkinnedMesh): THREE.Material | THREE.Material[] {
+  let material = sourceMaterials.get(body);
+  if (!material) {
+    material = body.material;
+    sourceMaterials.set(body, material);
+  }
+  return material;
+}
+
+function colorKey(colors: Record<string, number>): string {
+  return Object.entries(colors)
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([region, value]) => `${region}:${value.toString(16)}`)
+    .join(',');
+}
+
 /**
- * Replace `body`'s geometry and material with the painted ones. `regionOf` gets the vertex's strongest covered
- * bone and its posed position (world space, at dressing time) and returns the region, or null for skin.
+ * Replace `body`'s geometry and material with the painted ones. `regionOf` gets the vertex's strongest
+ * covered bone and its posed, world-space position at dressing time, and returns the region key, or null
+ * for skin.
  */
-export function paintBodyUnderGarments(
+export function paintBodyUnderGarments<R extends string>(
   body: THREE.SkinnedMesh,
   key: string,
-  colors: Record<Exclude<PaintRegion, null>, number>,
-  regionOf: (bone: string, position: THREE.Vector3) => PaintRegion,
-): void {
-  const source = body.geometry;
-  const cacheKey = `${source.uuid}|${key}`;
+  colors: Record<R, number>,
+  regionOf: (bone: string, position: THREE.Vector3) => R | null,
+  options: BodyPaintOptions = {},
+): BodyPaintHandle<R> {
+  const source = originalGeometry(body);
+  const cacheKey = `${source.uuid}|${key}|${colorKey(colors)}`;
   let geometry = geometryCache.get(cacheKey);
   if (!geometry) {
     const skinIndex = source.getAttribute('skinIndex');
@@ -56,34 +103,47 @@ export function paintBodyUnderGarments(
     const count = source.getAttribute('position').count;
     const paint = new Float32Array(count * 4);
     const bones = body.skeleton.bones;
-    const linear = {
-      coat: new THREE.Color(colors.coat),
-      trousers: new THREE.Color(colors.trousers),
-      boots: new THREE.Color(colors.boots),
-    };
+    const linear: Record<string, THREE.Color> = {};
+    for (const [region, value] of Object.entries(colors) as [string, number][]) {
+      linear[region] = new THREE.Color(value);
+    }
     body.updateMatrixWorld(true);
     body.skeleton.update();
     const position = new THREE.Vector3();
     for (let i = 0; i < count; i++) {
-      // Strongest bone among those that carry a garment.
-      let best: PaintRegion = null;
-      let bestWeight = 0;
-      let covered = 0;
+      let best: R | null = null;
       body.getVertexPosition(i, position).applyMatrix4(body.matrixWorld);
-      for (let k = 0; k < 4; k++) {
-        const weight = skinWeight.getComponent(i, k);
-        if (weight <= 0) continue;
-        const bone = bones[skinIndex.getComponent(i, k)]?.name ?? '';
-        const region = regionOf(bone, position);
-        if (!region) continue;
-        covered += weight;
-        if (weight > bestWeight) {
-          bestWeight = weight;
-          best = region;
+      if (options.dominant) {
+        let strongest = -1;
+        let bestWeight = 0;
+        for (let k = 0; k < 4; k++) {
+          const weight = skinWeight.getComponent(i, k);
+          if (weight > bestWeight) {
+            bestWeight = weight;
+            strongest = skinIndex.getComponent(i, k);
+          }
         }
+        best = regionOf(bones[strongest]?.name ?? '', position);
+      } else {
+        // Strongest bone among those that carry a garment.
+        let bestWeight = 0;
+        let covered = 0;
+        for (let k = 0; k < 4; k++) {
+          const weight = skinWeight.getComponent(i, k);
+          if (weight <= 0) continue;
+          const bone = bones[skinIndex.getComponent(i, k)]?.name ?? '';
+          const region = regionOf(bone, position);
+          if (!region) continue;
+          covered += weight;
+          if (weight > bestWeight) {
+            bestWeight = weight;
+            best = region;
+          }
+        }
+        // A vertex mostly on an uncovered bone (neck, hand, head) stays skin.
+        if (!best || covered < 0.5) continue;
       }
-      // A vertex mostly on an uncovered bone (neck, hand, head) stays skin.
-      if (!best || covered < 0.5) continue;
+      if (!best) continue;
       const c = linear[best];
       paint.set([c.r, c.g, c.b, 1], i * 4);
     }
@@ -97,5 +157,11 @@ export function paintBodyUnderGarments(
     geometryCache.set(cacheKey, geometry);
   }
   body.geometry = geometry;
-  body.material = Array.isArray(body.material) ? body.material.map(paintedMaterial) : paintedMaterial(body.material);
+  const material = originalMaterial(body);
+  body.material = Array.isArray(material) ? material.map(paintedMaterial) : paintedMaterial(material);
+  return {
+    setColors(next: Record<R, number>): void {
+      paintBodyUnderGarments(body, key, next, regionOf, options);
+    },
+  };
 }

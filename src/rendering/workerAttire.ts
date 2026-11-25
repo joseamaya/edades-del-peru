@@ -17,6 +17,7 @@ import {
   mergePieces,
 } from './rigAttire';
 import { consolidateRig } from './modelConsolidation';
+import { paintBodyUnderGarments, type BodyPaintHandle } from './bodyPaint';
 import {
   ANDEAN_SPECS,
   andeanCultureForVariant,
@@ -97,6 +98,20 @@ export const HEAD_FIT: Record<'m' | 'f', HeadFit> = {
 
 /** Ear-spool base in head-local space: inside the skull at ear height, so only its flange reads. */
 const EAR_FIT = { x: 0.088, y: 0.115, z: 0.02 } as const;
+
+/**
+ * Mean of the cotton weave texture baked into `caral_worker.glb` (the `#cdbb95` ground with the `#8d7a58`
+ * threads at 16 %): the colour a garment material's tint is multiplied by. The body painted under a tunic
+ * uses the same product, so a bulge reads as the cloth, not as skin.
+ */
+export const COTTON_WEAVE = 0xc3b18b;
+
+type AndeanPaintRegion = 'tunic' | 'skirt';
+
+/** The colour a cotton garment renders at, for a material tint: the weave mean times the tint. */
+function tintedCotton(tint: THREE.Color): number {
+  return new THREE.Color(COTTON_WEAVE).multiply(tint).getHex();
+}
 
 function headFit(male: boolean): HeadFit {
   return HEAD_FIT[male ? 'm' : 'f'];
@@ -423,6 +438,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
 
   let tool: THREE.Group | null = null;
   let net: THREE.Group | null = null;
+  let garmentTints: { tunic: THREE.Color; skirt: THREE.Color } | null = null;
   let carrying = false;
   let task: RigClipState = 'idle';
   let weapon: AndeanWeaponGrip | null = null;
@@ -722,12 +738,75 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     }
   }
 
+  /**
+   * The tunic and the skirt/wrap are shells derived from the same body (`scripts/build_caral_worker.mjs`),
+   * offset 3–4 cm along the normals and clipped to their volumes. Where the body bulges through them it
+   * showed bare skin, so paint the covered vertices in the garment's own colour (weave × its tinted
+   * material). The boxes come from the posed garment vertices, so the classification also follows the
+   * hero's longer uncu and the chasqui skirt without a per-variant constant.
+   */
+  const paintAndeanGarments = (): BodyPaintHandle<AndeanPaintRegion> | null => {
+    root.updateMatrixWorld(true);
+    const body = root.getObjectByName(male ? 'Body_m' : 'Body_f') as THREE.SkinnedMesh | null;
+    const tunic = root.getObjectByName(male ? 'attire_tunic_m' : 'attire_tunic_f') as THREE.Mesh | null;
+    const lowerName = male ? 'attire_wrap_m' : chasqui ? 'attire_skirt_chasqui_f' : 'attire_skirt_f';
+    const lower = root.getObjectByName(lowerName) as THREE.Mesh | null;
+    if (!body?.isSkinnedMesh || !tunic?.isMesh || !lower?.isMesh) return null;
+    body.skeleton.update();
+    /**
+     * The garment's posed world box at dressing time. The tunic and skirt are skinned meshes in their own
+     * bind spaces (the exported tunic is not in the body's axis order), so a raw geometry box is wrong;
+     * asking the skeleton for the posed vertices puts them in the same space as the body's painted vertices.
+     */
+    const posedBox = (mesh: THREE.Mesh): THREE.Box3 => {
+      const box = new THREE.Box3();
+      const skinned = mesh as THREE.SkinnedMesh;
+      const position = mesh.geometry.getAttribute('position');
+      if (!skinned.isSkinnedMesh || !position) return box;
+      const point = new THREE.Vector3();
+      for (let i = 0; i < position.count; i++) {
+        skinned.getVertexPosition(i, point).applyMatrix4(skinned.matrixWorld);
+        box.expandByPoint(point);
+      }
+      return box.expandByScalar(0.01);
+    };
+    const tunicBox = posedBox(tunic);
+    const lowerBox = posedBox(lower);
+    const tunicTint = (tunic.material as THREE.MeshStandardMaterial).color.clone();
+    const skirtTint = (lower.material as THREE.MeshStandardMaterial).color.clone();
+    garmentTints = { tunic: tunicTint, skirt: skirtTint };
+    // The volume alone also catches a hand hanging inside the tunic's box (the arms are down in the bind
+    // pose) and a calf inside the skirt's box, so the dominant bone gates each region. The skirt is the
+    // outer layer at the waist and wins the overlap. Only the hero's uncu reaches below the wrap
+    // (`tunicBox.min.y`); its leg bones join the tunic region, while the worker's thigh stays outside it
+    // so a hip vertex inside the tunic box is not painted with the tunic colour over bare skin.
+    const skirtBones = /^(pelvis|thigh_[lr]|spine_01|spine_02)$/;
+    const longTunic = tunicBox.min.y < lowerBox.min.y - 0.02;
+    const tunicBones = longTunic
+      ? /^(spine_0[123]|clavicle_[lr]|upperarm_[lr]|pelvis|thigh_[lr])$/
+      : /^(spine_0[123]|clavicle_[lr]|upperarm_[lr])$/;
+    const regionOf = (bone: string, point: THREE.Vector3): AndeanPaintRegion | null => {
+      if (skirtBones.test(bone) && lowerBox.containsPoint(point)) return 'skirt';
+      if (tunicBones.test(bone) && tunicBox.containsPoint(point)) return 'tunic';
+      return null;
+    };
+    return paintBodyUnderGarments(
+      body,
+      `andean:${variant}`,
+      { tunic: tintedCotton(tunicTint), skirt: tintedCotton(skirtTint) },
+      regionOf,
+      { dominant: true },
+    );
+  };
+
   // The variant is final: merge the static body parts and the rigid gear into a few skinned draws.
   // Anything whose visibility changes at runtime (the tool, the net, the carry bundle and the pieces
   // the hero hides or re-shows) keeps its own draw.
   const consolidated = consolidateRig(root, { dynamic: WORKER_DYNAMIC_PARTS, cacheKey: variant });
   tools.ownedGeometries.push(...consolidated.geometries);
   tools.ownedMaterials.push(...consolidated.materials);
+  // The body stays its own textured draw, so painting it here does not feed the merged garment geometry.
+  const clothPaint = paintAndeanGarments();
   // Only the body is in the shadow pass: from the RTS camera the hair, garments and gear add nothing to its
   // shadow, and skinned meshes cannot be instanced, so each part was a shadow-pass draw per unit.
   bodyOnlyShadows(root);
@@ -752,6 +831,16 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       if (inHand === netInHand) return;
       netInHand = inHand;
       syncTool();
+    },
+    setClothColors(clothTint: number): void {
+      // The hero's consolidated cloth multiplies the palette tints already baked into its vertex colours,
+      // so the body under it needs weave × palette tint × the new cloth tint, not just the accent.
+      if (!clothPaint || !garmentTints) return;
+      const cloth = new THREE.Color(clothTint);
+      clothPaint.setColors({
+        tunic: tintedCotton(garmentTints.tunic.clone().multiply(cloth)),
+        skirt: tintedCotton(garmentTints.skirt.clone().multiply(cloth)),
+      });
     },
     update(): void {
       weapon?.update(task);

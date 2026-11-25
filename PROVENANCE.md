@@ -1211,6 +1211,24 @@ slot is absent (offline / without assets).
 - **Review**: no new historical claim. The measured head, the grip and the shield's offset are presentation, and
   the cotton cap's quilted rim stays the abstraction the dossier already documents.
 
+### Andean tunic body paint (in-engine evidence)
+
+- **Location**: `docs/media/character-tunic-before-after.webp`, 1180x1162 WebP q74.
+- **Source**: capture with `node scripts/capture_character_pilot.mjs --out=review/pilot-tunic-after
+  --only=inca,moche`; the before row is the same harness and placement run from a scratch worktree at
+  `b6b56812` with `--out=<worktree>/review/pilot-tunic-before`. Both rows were composed by
+  `node scripts/character_pilot_sheet.mjs --before=<worktree>/review/pilot-tunic-before
+  --after=review/pilot-tunic-after --out=docs/media/character-tunic-before-after.webp
+  --footer="The body under the Andean tunic and skirt painted in the garment's own colour ·
+  docs/art/character-visual-pilot.md §19"`. No Blender
+  or GIMP source: the paint is runtime geometry and a vertex attribute in `src/rendering/bodyPaint.ts` and
+  `src/rendering/workerAttire.ts`.
+- **Content**: `docs/art/character-visual-pilot.md` §19. Top row the skin showing through the Inca and Moche
+  tunics at the chest, shoulder and belly; bottom row the body painted under the garments in the weave ×
+  garment tint.
+- **Review**: no new historical claim and no new garment. The painted colour is the existing tunic/skirt
+  colour; only the body vertices under those shells change.
+
 ### Horse legs (in-engine evidence)
 
 - **Location**: `docs/media/horse-legs-before-after.webp`, 1200x450 WebP q72.
