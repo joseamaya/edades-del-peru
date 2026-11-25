@@ -795,6 +795,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       `andean:${variant}`,
       { tunic: tintedCotton(tunicTint), skirt: tintedCotton(skirtTint) },
       regionOf,
+      { dominant: true },
     );
   };
 

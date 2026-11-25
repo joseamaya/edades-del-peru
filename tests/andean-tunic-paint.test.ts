@@ -116,6 +116,12 @@ describe('Andean tunic body paint', () => {
           : min,
       );
       expect(paintAlpha(body, knee)).toBe(0);
+      // The #630 captures showed the shoulder: the clavicle/upper-arm vertices under the short sleeve are
+      // painted, not left as skin.
+      const shoulders = bones
+        .map((bone, index) => (/^(clavicle_[lr]|upperarm_[lr])$/.test(bone) ? index : -1))
+        .filter((index) => index >= 0);
+      expect(shoulders.some((index) => paintAlpha(body, index) === 1)).toBe(true);
       // The neck and the shoulder top sit at the tunic's clipped boundary; the covered torso must dominate.
       expect(torso).toBeGreaterThan(20);
       expect(painted).toBeGreaterThan(torso * 0.75);
@@ -172,6 +178,7 @@ describe('Andean tunic body paint', () => {
       'wari_soldier_m',
       'chimu_soldier_f',
       'inca_soldier_f',
+      'moche_soldier_f',
     ] as const) {
       const rig = acquireRig('caral_worker', variant)!;
       try {
@@ -191,21 +198,64 @@ describe('Andean tunic body paint', () => {
     try {
       const body = bodyOf(rig);
       const bones = dominantBones(body);
-      expect(bones.some((bone, index) => bone === 'thigh_l' && paintAlpha(body, index) === 1)).toBe(true);
-      const tunicTint = (rig.root.getObjectByName('attire_tunic_m') as THREE.Mesh)
-        .material as THREE.MeshStandardMaterial;
+      const wrap = rig.root.getObjectByName('attire_wrap_m') as THREE.SkinnedMesh;
+      const wrapBottom = posedMinY(wrap);
+      const point = new THREE.Vector3();
+      // The wrap covers the upper thigh; a painted tunic-coloured thigh vertex below it can only come from
+      // the hero's longer uncu (the `longTunic` branch).
+      const belowWrap = bones
+        .map((bone, index) => (bone === 'thigh_l' ? index : -1))
+        .filter((index) => index >= 0)
+        .find((index) => {
+          body.getVertexPosition(index, point).applyMatrix4(body.matrixWorld);
+          return point.y < wrapBottom + 0.01 && paintAlpha(body, index) === 1;
+        });
+      const tunic = (rig.root.getObjectByName('attire_tunic_m') as THREE.Mesh).material as THREE.MeshStandardMaterial;
+      expect(belowWrap).toBeDefined();
+      expectColor(paintColor(body, belowWrap!), new THREE.Color(COTTON_WEAVE).multiply(tunic.color));
       rig.setClothColors(0xd04020);
       const index = spineVertex(body);
       expect(paintAlpha(body, index)).toBe(1);
       expectColor(
         paintColor(body, index),
-        new THREE.Color(COTTON_WEAVE).multiply(tunicTint.color).multiply(new THREE.Color(0xd04020)),
+        new THREE.Color(COTTON_WEAVE).multiply(tunic.color).multiply(new THREE.Color(0xd04020)),
       );
     } finally {
       rig.dispose();
     }
   });
+
+  it('paints the normal skirt and wrap in their own colour', () => {
+    for (const [variant, male, garment] of [
+      ['inca_soldier_f', false, 'attire_skirt_f'],
+      ['moche_soldier_m', true, 'attire_wrap_m'],
+    ] as const) {
+      const rig = acquireRig('caral_worker', variant)!;
+      try {
+        const body = bodyOf(rig, male);
+        const pelvis = dominantBones(body)
+          .map((bone, index) => (bone === 'pelvis' ? index : -1))
+          .filter((index) => index >= 0);
+        const painted = pelvis.find((index) => paintAlpha(body, index) === 1);
+        expect(painted, variant).toBeDefined();
+        expectColor(paintColor(body, painted!), clothColor(rig, garment));
+      } finally {
+        rig.dispose();
+      }
+    }
+  });
 });
+
+function posedMinY(mesh: THREE.SkinnedMesh): number {
+  const point = new THREE.Vector3();
+  let min = Infinity;
+  const position = mesh.geometry.getAttribute('position');
+  for (let i = 0; i < position.count; i++) {
+    mesh.getVertexPosition(i, point).applyMatrix4(mesh.matrixWorld);
+    min = Math.min(min, point.y);
+  }
+  return min;
+}
 
 function spineVertex(body: THREE.SkinnedMesh): number {
   const index = dominantBones(body).findIndex((bone) => bone === 'spine_02' || bone === 'spine_01');

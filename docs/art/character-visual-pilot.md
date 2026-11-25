@@ -594,6 +594,8 @@ character/rig E2E specs are the gate.
 
 **Still open.** The paint hides the skin, but the tunic geometry is still a tight shell; a pose that stretches
 it further can still read as a bulge. A wider offset or a longer sleeve is an asset change, not a dresser one.
+The hero's checked pattern map replaces the weave, so the body under it keeps the weave mean: a flat
+approximation for a patterned uncu.
 
 ![Andean tunics before and after: skin patches through the Inca and Moche cloth, then the body painted in the garment's own colour](../media/character-tunic-before-after.webp)
 
