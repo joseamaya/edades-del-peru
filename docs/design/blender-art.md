@@ -143,7 +143,7 @@ builder is `scripts/blender/build_mission_decor.py`. Runtime GLBs are in
 | m6 Chimú–Inca    | `chimu_compound`      | Chimú adobe compound and audience     | authored site (heightfield + collision) |
 | m6b Guerra Civil | Cusco kit             | Inca ushnu, plaza and walled precinct | Blender kit; the bundled `cusco_inca` GLB stays hidden |
 | m7 Túpac Amaru   | Colonial kit          | colonial church and plaza             | Blender kit; the bundled `colonial_church` GLB stays hidden |
-| m8 Independencia | `independence_chapel` | campaign chapel and patriot camp      | authored site (heightfield + collision) |
+| m8 Independencia | `independence_chapel` | campaign chapel and patriot camp      | Independence kit (heightfield + collision) |
 | m9 Arica         | `arica_battery`       | port terrace, battery and warehouse   | authored site (heightfield + collision) |
 
 Each model has LOD0/LOD1 and is loaded through `src/rendering/decorModels.ts`; the procedural

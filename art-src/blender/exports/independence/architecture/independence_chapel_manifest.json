@@ -1,0 +1,85 @@
+{
+  "asset_id": "independence_chapel",
+  "source_scene": "scenes/independence_architecture_kit.blend",
+  "script": "scripts/blender/build_independence_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "independenceCityBlockers / brenaCityBlockers in src/model/defs/independenceCity.ts",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/independence-site.md",
+    "docs/design/independencia-model-mission.md",
+    "docs/design/brena-model-mission.md",
+    "docs/historia/campanas/independencia.md",
+    "docs/historia/campanas/brena.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 8000,
+    "LOD1": 2400
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 642,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_IndependenceDark",
+        "MAT-Arch_IndependencePlaster",
+        "MAT-Arch_IndependenceStone",
+        "MAT-Arch_IndependenceTile"
+      ],
+      "bounds": {
+        "min": [
+          -7.4,
+          -4.65,
+          0.0
+        ],
+        "max": [
+          7.4,
+          4.65,
+          11.6
+        ],
+        "size": [
+          14.8,
+          9.3,
+          11.6
+        ]
+      },
+      "file": "independence_chapel_lod0.glb",
+      "bytes": 55168
+    },
+    "LOD1": {
+      "triangles": 546,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_IndependenceDark",
+        "MAT-Arch_IndependencePlaster",
+        "MAT-Arch_IndependenceStone",
+        "MAT-Arch_IndependenceTile"
+      ],
+      "bounds": {
+        "min": [
+          -7.4,
+          -4.65,
+          0.0
+        ],
+        "max": [
+          7.4,
+          4.65,
+          11.6
+        ],
+        "size": [
+          14.8,
+          9.3,
+          11.6
+        ]
+      },
+      "file": "independence_chapel_lod1.glb",
+      "bytes": 46548
+    }
+  }
+}

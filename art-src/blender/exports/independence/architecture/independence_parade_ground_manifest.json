@@ -1,0 +1,81 @@
+{
+  "asset_id": "independence_parade_ground",
+  "source_scene": "scenes/independence_architecture_kit.blend",
+  "script": "scripts/blender/build_independence_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "independenceCityBlockers / brenaCityBlockers in src/model/defs/independenceCity.ts",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/independence-site.md",
+    "docs/design/independencia-model-mission.md",
+    "docs/design/brena-model-mission.md",
+    "docs/historia/campanas/independencia.md",
+    "docs/historia/campanas/brena.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 90,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_IndependenceEarth",
+        "MAT-Arch_IndependenceStone"
+      ],
+      "bounds": {
+        "min": [
+          -12.005,
+          -8.005,
+          0.0
+        ],
+        "max": [
+          12.005,
+          8.005,
+          0.62
+        ],
+        "size": [
+          24.01,
+          16.01,
+          0.62
+        ]
+      },
+      "file": "independence_parade_ground_lod0.glb",
+      "bytes": 10208
+    },
+    "LOD1": {
+      "triangles": 90,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_IndependenceEarth",
+        "MAT-Arch_IndependenceStone"
+      ],
+      "bounds": {
+        "min": [
+          -12.005,
+          -8.005,
+          0.0
+        ],
+        "max": [
+          12.005,
+          8.005,
+          0.62
+        ],
+        "size": [
+          24.01,
+          16.01,
+          0.62
+        ]
+      },
+      "file": "independence_parade_ground_lod1.glb",
+      "bytes": 10208
+    }
+  }
+}

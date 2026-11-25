@@ -54,6 +54,18 @@ describe('mission site landmarks', () => {
     expect(getAuthoredSite('vilcabamba_site')?.hideModel).toBe(true);
   });
 
+  it('draws the Independence sites from the kit and hides the borrowed GLB', () => {
+    for (const id of ['m8_independencia', 'm_brena']) {
+      expect(mission(id).layout?.siteLandmarks, id).toBeUndefined();
+    }
+    for (const siteId of ['independence_site', 'brena_site'] as const) {
+      const site = getAuthoredSite(siteId)!;
+      expect(site.hideModel, siteId).toBe(true);
+      expect(site.style, siteId).toBe('independence');
+      expect(site.simulationCollision, siteId).toBe(true);
+    }
+  });
+
   it('draws the colonial sites from the kit and hides the bundled GLB', () => {
     for (const id of ['lima_site', 'miraflores_site', 'cusco_junta_site', 'colonial_site'] as const) {
       const site = getAuthoredSite(id)!;

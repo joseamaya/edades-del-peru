@@ -34,6 +34,7 @@ import { CHAVIN_CITY_LAYOUT, CHAVIN_PHASE_PLAN } from '../model/defs/chavinCity'
 import { CUSCO_CITY_LAYOUT, CUSCO_PHASE_PLAN } from '../model/defs/cuscoCity';
 import { COLONIAL_CITY_PHASE, COLONIAL_PHASE_PLAN, colonialLayoutAt } from '../model/defs/colonialCity';
 import { REPUBLIC_LAYOUTS, REPUBLIC_PHASE_PLAN } from '../model/defs/republicCity';
+import { INDEPENDENCE_LAYOUTS, INDEPENDENCE_PHASE_PLAN } from '../model/defs/independenceCity';
 import { standsIn, type SitePhasePlan } from '../model/defs/sitePhases';
 import { fishingApproach, type Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
@@ -357,6 +358,16 @@ export class WorldViewDecor {
       if (layout) {
         spawnKitCity('republic_city', 'republic', layout, REPUBLIC_PHASE_PLAN, (city) => {
           this.game.republicCity = city;
+        });
+      }
+    }
+    if (def.style === 'independence') {
+      // Ayacucho's chapel/camp and Breña's sierra camp share the Independence kit; the composition is
+      // chosen by id, and the same layout owns its blockers.
+      const layout = INDEPENDENCE_LAYOUTS[def.id as keyof typeof INDEPENDENCE_LAYOUTS];
+      if (layout) {
+        spawnKitCity('independence_city', 'independence', layout, INDEPENDENCE_PHASE_PLAN, (city) => {
+          this.game.independenceCity = city;
         });
       }
     }

@@ -780,11 +780,11 @@ slot is absent (offline / without assets).
   `node scripts/capture_independencia_intro.mjs` (one with `--only=ID`) after art changes.
 - **Runtime**: the briefing and the "Tu senda" card use `intro-lima`; the three intro beats and the act
   cards use the Lima, Junín and Ayacucho captures; the victory epilogue uses `intro-epilogo`.
-- **Content**: project-owned game renders (authored Junín–Ayacucho heightfield, the reused
-  `independence_site` chapel and the procedural camps). Recreations of the game's own scenes: never
-  historical photographs, and not Blender renders (so not in `src/art/manifest.json`).
-- **Review**: no human art-review gate applies to in-engine captures; the reused chapel GLB keeps its own
-  review status in `src/art/manifest.json` (#343).
+- **Content**: project-owned game renders (authored Junín–Ayacucho heightfield, the Independence kit's
+  chapel and camp, and the procedural camps). Recreations of the game's own scenes: never historical
+  photographs, and not Blender renders (so not in `src/art/manifest.json`).
+- **Review**: no human art-review gate applies to in-engine captures; the kit manifests record the
+  documented/assumed split, and the captures are not presented as photographs.
 
 ### Tarapacá, Miraflores and La Breña intro/epilogue images (in-engine recreations)
 
@@ -969,6 +969,39 @@ slot is absent (offline / without assets).
   bundled `cusco_inca_site` GLB stays hidden.
 - **Evidence**: `docs/media/cusco-kit-before-after.webp` (1600x1000 WebP q72): top row the procedural boxes,
   bottom row the kit, same camera and light, from `m_cusco_1536`.
+
+### Independence architecture kit (m8_independencia, m_brena)
+
+- **Location**: `src/assets/architecture/independence/independence_<piece>_lod0.glb` and `_lod1.glb`:
+  `chapel` (14 x 8 m nave, three-arch front, bell tower and tile roof), `hacienda` (camp store with a
+  three-arch porch), `community_house` (flat-roofed adobe house), `tent` (canvas A-frame), `camp_wall`,
+  `parade_ground`, `well` and `earthwork`.
+- **Source**: generated in Blender 5.3 by `scripts/blender/build_independence_architecture_kit.py`; kit scene
+  `art-src/blender/scenes/independence_architecture_kit.blend` (Git LFS). Uncompressed exports and per-piece
+  manifests (triangles, materials, bounds, budget, `confidence`, sources, collision, review state) live in
+  `art-src/blender/exports/independence/architecture/`; the game copies were meshopt-compressed with
+  `yarn art:models --only=<file>` (176,056 B ≈ 172 KB for the 16 game copies).
+- **Content**: project-owned procedural geometry. Eight Principled materials (lime plaster, adobe, tile,
+  stone, wood, canvas, earth and dark openings) with world-scale box-projected UVs and a per-vertex tint
+  (wall-foot grime, roof and canvas variation; horizontal earth and stone up-faces skip the grime); no
+  textures in the GLBs. At runtime the game maps `plaster_detail` onto plaster, adobe, canvas, earth and
+  openings, the photographed `tile` set (pulled towards luma) onto the roofs, `wall_fieldstone` (lifted)
+  onto the stone and `wood` onto the timber. LOD0 ≤ 5000 / LOD1 ≤ 1500 triangles per piece; the chapel is
+  the monument piece (≤ 8000 / 2400).
+- **Historical basis**: documented: the rural Andean chapel with a nave, bell tower and tiled gable roof;
+  the campaign's adobe/plaster buildings; canvas tents; the low camp walls, packed ground and water. Assumed
+  (licences in the manifests): the 14 x 8 m nave, the 8.5 m tower, the house modules, the tent count and
+  the earth bank profile. Sources: `docs/historia/arquitectura.md`,
+  `docs/design/{independence-site,independencia-model-mission,brena-model-mission}.md`,
+  `docs/historia/campanas/{independencia,brena}.md`.
+- **Runtime**: `src/model/defs/independenceCity.ts` places the Ayacucho and Breña compositions and derives
+  each site's pathfinding blockers from the same placements (`layoutBlockers`); `WorldViewDecor` bakes them
+  with `ArchitectureCity`. Both site definitions set `hideModel` and `simulationCollision`, so the headless
+  match blocks the same pieces. The m8 camp keeps its east-west lane open for the Junín–Ayacucho march and
+  the 10.7 m walkable corridor.
+- **Evidence**: `docs/media/independence-kit-before-after.webp` (two rows, Ayacucho and Breña, before and
+  after the kit, same mission, seed, camera and light); produced with the `yarn shot` commands in
+  `docs/design/independence-site.md` and `scripts/independence_sites_sheet.mjs`.
 
 ### Republican architecture kit (m9_guerra_pacifico, m_real_felipe, m_tarapaca)
 

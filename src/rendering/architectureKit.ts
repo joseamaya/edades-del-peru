@@ -45,12 +45,19 @@ const republicUrls = import.meta.glob('../assets/architecture/republic/*.glb', {
   import: 'default',
 }) as Record<string, string>;
 
+const independenceUrls = import.meta.glob('../assets/architecture/independence/*.glb', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
+
 const KIT_URLS: Record<ArchitectureKitId, Record<string, string>> = {
   caral: caralUrls,
   chavin: chavinUrls,
   cusco: cuscoUrls,
   colonial: colonialUrls,
   republic: republicUrls,
+  independence: independenceUrls,
 };
 
 export function archKitUrl(kit: ArchitectureKitId, id: ArchAssetId, lod: 0 | 1): string | undefined {
@@ -184,6 +191,22 @@ export const ARCH_SURFACES: Record<
   'MAT-Arch_RepublicPaving': { set: 'plaster_detail', normal: 0.6, keepColor: true },
   'MAT-Arch_RepublicPlaza': { set: 'ground_plaza', tint: 0xe8dcc6, normal: 0.5, lift: 1.2 },
   'MAT-Arch_RepublicDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  // Independence: lime plaster, adobe, canvas and earth keep their paint under the plaster detail set, the
+  // tile is weathered like the colonial one, and the stone is lifted.
+  'MAT-Arch_IndependencePlaster': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  'MAT-Arch_IndependenceAdobe': { set: 'plaster_detail', normal: 0.9, keepColor: true },
+  'MAT-Arch_IndependenceTile': {
+    set: 'tile',
+    tint: 0xefd9bf,
+    normal: 0.7,
+    saturation: 0.42,
+    lift: 1.15,
+  },
+  'MAT-Arch_IndependenceStone': { set: 'wall_fieldstone', tint: 0xd8d2c2, normal: 0.8, lift: 1.4 },
+  'MAT-Arch_IndependenceWood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
+  'MAT-Arch_IndependenceCanvas': { set: 'plaster_detail', normal: 0.5, keepColor: true },
+  'MAT-Arch_IndependenceEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
+  'MAT-Arch_IndependenceDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
 };
 
 /** Mix a sampled diffuse colour towards its luma; `saturation` 1 keeps the map, 0 is grey. */
