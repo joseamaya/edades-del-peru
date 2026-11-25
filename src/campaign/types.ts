@@ -166,8 +166,8 @@ export interface MissionLayout {
   /** Authored site model; takes precedence over the modular setpiece. */
   site?: MissionSite;
   /**
-   * Mission-scoped procedural landmarks that complete or replace the authored site model (Cusco's
-   * plaza and Sacsayhuamán, the Real Felipe bastions, the Tarapacá village, the Vilcabamba refuge).
+   * Mission-scoped procedural landmarks that complete or replace the authored site model (the
+   * Vilcabamba refuge; Cusco and the Republican sites draw from their kits).
    */
   siteLandmarks?: readonly MissionSiteLandmark[];
   terrain?: TerrainLayout;

@@ -6,31 +6,19 @@ import { applyGeneratedPbr } from './Biomes';
 import { scaleUv } from '../util/uv';
 
 /**
- * Procedural landmark compositions for the authored sites whose bundled GLB is a labelled
- * abstraction from another place. They are deliberately low-detail and honest: a plaza, a
- * zig-zag wall front, a bastioned trace, an adobe village and a cloud-forest platform, not a
- * surveyed reconstruction. The source notes live in `docs/plan/0.2.1-asset-corrections.md`.
+ * The remaining procedural landmark composition, for the one authored site whose bundled GLB is a
+ * labelled abstraction from another place and whose kit has not landed: the Vilcabamba refuge.
+ * Cusco and the Republican sites (Arica, Real Felipe, Tarapacá) draw from their architecture kits
+ * instead. The composition is deliberately low-detail and honest: a low platform, longhouses and a
+ * small plaza, not a surveyed reconstruction. The source notes live in
+ * `docs/plan/0.2.1-asset-corrections.md`.
  *
- * Geometry is merged per material, so one site costs a handful of draw calls. Textures come
+ * Geometry is merged per material, so the site costs a handful of draw calls. Textures come
  * from the shared generated PBR sets and are never disposed here (they are cached for the
  * session); the group only owns its geometries and material wrappers.
  */
 
-type MatKey =
-  | 'cutstone'
-  | 'fieldstone'
-  | 'megalith'
-  | 'adobe'
-  | 'brick'
-  | 'thatch'
-  | 'tile'
-  | 'flatstone'
-  | 'plaza'
-  | 'path'
-  | 'terrace'
-  | 'earthRoof'
-  | 'wood'
-  | 'ditch';
+type MatKey = 'fieldstone' | 'thatch' | 'flatstone' | 'plaza' | 'wood';
 
 interface MaterialSpec {
   slot: string;
@@ -42,20 +30,11 @@ interface MaterialSpec {
 }
 
 const MATERIALS: Record<MatKey, MaterialSpec> = {
-  cutstone: { slot: 'wall_cutstone', color: '#eadcc0', tile: 3.2, roughness: 0.9, lift: 1.7 },
   fieldstone: { slot: 'wall_fieldstone', color: '#f0e2c8', tile: 3.2, roughness: 0.95, lift: 1.8 },
-  megalith: { slot: 'wall_megalith', color: '#f2e4c8', tile: 4.2, roughness: 0.95, lift: 2.6 },
-  adobe: { slot: 'wall_adobe', color: '#f0d2a8', tile: 3, roughness: 0.98, lift: 1.25 },
-  brick: { slot: 'wall_brick', color: '#f0c8a8', tile: 2.6, roughness: 0.9, lift: 1.6 },
   thatch: { slot: 'roof_thatch', color: '#f0cf80', tile: 2.2, roughness: 1, lift: 1.35 },
-  tile: { slot: 'tile', color: '#e09070', tile: 2.4, roughness: 0.85, lift: 1.2 },
   flatstone: { slot: 'roof_flatstone', color: '#f0e4d0', tile: 3, roughness: 0.95, lift: 1.65 },
   plaza: { slot: 'ground_plaza', color: '#efe6d2', tile: 4.5, roughness: 0.95, lift: 1.5 },
-  path: { slot: 'ground_path', color: '#e0c8a0', tile: 4, roughness: 0.98, lift: 1.35 },
-  terrace: { slot: 'terrace_face', color: '#e8c8a8', tile: 3.2, roughness: 0.95, lift: 1.5 },
-  earthRoof: { slot: 'plaster_detail', color: '#c8a878', tile: 3, roughness: 0.95 },
   wood: { slot: 'wood', color: '#a87a50', tile: 2, roughness: 0.9, lift: 1.1 },
-  ditch: { slot: 'ground_path', color: '#6a5c48', tile: 3, roughness: 1 },
 };
 
 class LandmarkBuilder {
@@ -105,15 +84,6 @@ class LandmarkBuilder {
     return top;
   }
 
-  /** Lowest ground over a rectangle, used to sink the foundation of a building on a slope. */
-  minGround(x: number, z: number, rx: number, rz: number): number {
-    let low = Infinity;
-    for (const dx of [-rx, 0, rx]) {
-      for (const dz of [-rz, 0, rz]) low = Math.min(low, this.ground(x + dx, z + dz));
-    }
-    return low;
-  }
-
   private push(key: MatKey, geometry: THREE.BufferGeometry): void {
     const bucket = this.parts.get(key);
     if (bucket) bucket.push(geometry);
@@ -128,26 +98,6 @@ class LandmarkBuilder {
     if (rx) geometry.rotateX(rx);
     if (ry) geometry.rotateY(ry);
     if (rz) geometry.rotateZ(rz);
-    geometry.translate(x, y, z);
-    this.push(key, geometry);
-  }
-
-  addCylinder(
-    key: MatKey,
-    radiusTop: number,
-    radiusBottom: number,
-    height: number,
-    segments: number,
-    x: number,
-    y: number,
-    z: number,
-    ry = 0,
-  ): void {
-    if (this.footprintsOnly) return;
-    const geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, segments);
-    const tile = MATERIALS[key].tile;
-    scaleUv(geometry, (Math.PI * 2 * Math.max(radiusTop, radiusBottom)) / tile, height / tile);
-    if (ry) geometry.rotateY(ry);
     geometry.translate(x, y, z);
     this.push(key, geometry);
   }
@@ -178,7 +128,7 @@ class LandmarkBuilder {
     this.addBox(wall, w, h, d, x, y + h / 2, z, 0, yaw, 0);
     const [dx, dz] = this.offset(x, z, yaw, 0, d / 2 + 0.04);
     this.addBox('wood', w * 0.24, h * 0.55, 0.1, dx, y + h * 0.3, dz, 0, yaw, 0);
-    if (roof === 'flatstone' || roof === 'terrace' || roof === 'earthRoof') {
+    if (roof === 'flatstone') {
       this.addBox(roof, w * 1.08, 0.2, d * 1.08, x, y + h + 0.1, z, 0, yaw, 0);
       for (const side of [-1, 1]) {
         const [px, pz] = this.offset(x, z, yaw, 0, side * (d / 2 + 0.06));
@@ -222,138 +172,6 @@ class LandmarkBuilder {
   }
 }
 
-function realFelipe(b: LandmarkBuilder, x: number, z: number, s: number, yaw: number): void {
-  const side = 24 * s;
-  const height = 3 * s;
-  const thickness = 1.4 * s;
-  const y = b.padHeight(x, z, side / 2 + 2 * s, side / 2 + 2 * s);
-  // Levelled esplanade and the dry ditch around the trace.
-  b.addBox('terrace', side + 9 * s, 0.55 * s, side + 9 * s, x, y - 0.24 * s, z, 0, yaw);
-  const ditchOffset = side / 2 + 2.6 * s;
-  for (const [dx, dz, w, d] of [
-    [0, -ditchOffset, side + 9 * s, 3.6 * s],
-    [0, ditchOffset, side + 9 * s, 3.6 * s],
-    [-ditchOffset, 0, 3.6 * s, side + 9 * s],
-    [ditchOffset, 0, 3.6 * s, side + 9 * s],
-  ] as const) {
-    const [px, pz] = b.offset(x, z, yaw, dx, dz);
-    b.addBox('ditch', w, 0.08 * s, d, px, y + 0.05 * s, pz, 0, yaw);
-  }
-  // Curtain walls. The south and west curtains are split to leave sally gates.
-  const wallY = y + height / 2;
-  const [nx, nz] = b.offset(x, z, yaw, 0, -side / 2);
-  b.addBox('brick', side, height, thickness, nx, wallY, nz, 0, yaw);
-  const [ex, ez] = b.offset(x, z, yaw, side / 2, 0);
-  b.addBox('brick', thickness, height, side, ex, wallY, ez, 0, yaw);
-  for (const sideSign of [-1, 1]) {
-    const [wx, wz] = b.offset(x, z, yaw, -side / 2, sideSign * side * 0.3);
-    b.addBox('brick', thickness, height, side * 0.36, wx, wallY, wz, 0, yaw);
-    const [sx, sz] = b.offset(x, z, yaw, sideSign * side * 0.3, side / 2);
-    b.addBox('brick', side * 0.36, height, thickness, sx, wallY, sz, 0, yaw);
-  }
-  // Four corner bastions (a pentagonal prism reads as a bastion at RTS scale).
-  for (const [sx, sz] of [
-    [-1, -1],
-    [1, -1],
-    [-1, 1],
-    [1, 1],
-  ] as const) {
-    const [bx, bz] = b.offset(x, z, yaw, (sx * side) / 2, (sz * side) / 2);
-    const point = yaw + Math.atan2(sz, sx) + Math.PI / 2;
-    b.addCylinder('brick', 4.6 * s, 4.8 * s, height + 1.2 * s, 5, bx, y + (height + 1.2 * s) / 2, bz, point);
-    b.addCylinder('terrace', 3.7 * s, 3.7 * s, 0.24 * s, 5, bx, y + height + 1.32 * s, bz, point);
-  }
-  // Courtyard, magazine and two flagpoles; the marked center building occupies the middle.
-  b.addBox('plaza', side * 0.58, 0.1 * s, side * 0.58, x, y + 0.12 * s, z, 0, yaw);
-  b.addHall(x - 7 * s, z + 7 * s, 8 * s, 5 * s, 2.8 * s, yaw, 'brick', 'tile', y + 0.18 * s);
-  for (const [dx, dz] of [
-    [6, 6],
-    [-6, -6],
-  ] as const) {
-    const [px, pz] = b.offset(x, z, yaw, dx * s, dz * s);
-    b.addCylinder('wood', 0.08 * s, 0.08 * s, 7 * s, 6, px, y + 3.5 * s, pz);
-    const [fx, fz] = b.offset(x, z, yaw, (dx + 1.1) * s, dz * s);
-    b.addBox('brick', 2.2 * s, 1.1 * s, 0.08 * s, fx, y + 6.5 * s, fz, 0, yaw);
-  }
-}
-
-function tarapacaVillage(b: LandmarkBuilder, x: number, z: number, s: number, yaw: number): void {
-  // The quebrada falls towards the north, so each house gets its own plinth down to the local ground.
-  const foundation = (cx: number, cz: number, w: number, d: number, base: number, rotation: number): void => {
-    const low = b.minGround(cx, cz, w / 2, d / 2);
-    const height = Math.max(0.25 * s, base - low + 0.25 * s);
-    b.addBox('terrace', w + 0.6 * s, height, d + 0.6 * s, cx, base - height / 2 + 0.05 * s, cz, 0, rotation);
-  };
-  // Main street on the flat central shelf, with the chapel closing the west end.
-  const streetY = b.padHeight(x, z, 14 * s, 2.5 * s);
-  b.addBox('path', 28 * s, 0.08 * s, 4.4 * s, x, streetY + 0.05 * s, z, 0, yaw);
-  const chapelX = x - 17 * s;
-  const chapelZ = z - 5 * s;
-  const chapelBase = b.padHeight(chapelX, chapelZ, 3.5 * s, 5 * s);
-  foundation(chapelX, chapelZ, 7 * s, 10 * s, chapelBase, yaw);
-  b.addHall(chapelX, chapelZ, 7 * s, 10 * s, 3.2 * s, yaw, 'adobe', 'earthRoof', chapelBase);
-  const houses = [
-    [-12, -9, 8, 6, 0],
-    [-2, -11, 7, 5, 0.08],
-    [9, -9, 9, 6, -0.05],
-    [-15, 7, 7, 5, 0.05],
-    [-4, 9, 8, 5, 0],
-    [8, 8, 9, 6, 0.1],
-    [19, -1, 6, 5, 1.5],
-    [-22, 0, 6, 4, 1.55],
-  ] as const;
-  for (const [dx, dz, w, d, rotation] of houses) {
-    const cx = x + dx * s;
-    const cz = z + dz * s;
-    const base = b.padHeight(cx, cz, (w * s) / 2, (d * s) / 2);
-    foundation(cx, cz, w * s, d * s, base, yaw + rotation);
-    b.addHall(cx, cz, w * s, d * s, 3 * s, yaw + rotation, 'adobe', 'earthRoof', base);
-  }
-}
-
-function tarapacaHeights(b: LandmarkBuilder, x: number, z: number, s: number, yaw: number): void {
-  // A dry trench line on the crest, with stone returns and taller outcrops so the objective reads as a
-  // defensible height rather than an empty pampa. The heightfield itself stays walkable.
-  const y = b.padHeight(x, z, 14 * s, 10 * s);
-  b.addBox('ditch', 24 * s, 0.22 * s, 1.4 * s, x, y + 0.11 * s, z + 5 * s, 0, yaw);
-  b.addBox('fieldstone', 20 * s, 1.3 * s, 0.9 * s, x - s, y + 0.65 * s, z + 5.6 * s, 0, yaw);
-  b.addBox('fieldstone', 0.9 * s, 1.1 * s, 8 * s, x - 11 * s, y + 0.55 * s, z + 1.5 * s, 0, yaw);
-  b.addBox('fieldstone', 0.9 * s, 1.1 * s, 6 * s, x + 11 * s, y + 0.55 * s, z + 2 * s, 0, yaw);
-  for (const [dx, dz, w, d, rot] of [
-    [4, -3, 3.4, 2.2, 0.4],
-    [-6, -5, 2.6, 1.8, -0.3],
-    [8, 1, 2.2, 1.6, 0.7],
-  ] as const) {
-    const cx = x + dx * s;
-    const cz = z + dz * s;
-    const base = b.padHeight(cx, cz, (w * s) / 2, (d * s) / 2);
-    b.addBox('fieldstone', w * s, 1.8 * s, d * s, cx, base + 0.9 * s, cz, 0, yaw + rot);
-  }
-}
-
-function tarapacaPachica(b: LandmarkBuilder, x: number, z: number, s: number, yaw: number): void {
-  // The hamlet the reinforcements marched from: a few adobe houses around a short street and a
-  // stone corral. It is a landmark, not a second town: no walls or towers; only its houses block movement.
-  const pad = b.padHeight(x, z, 10 * s, 8 * s);
-  b.addBox('path', 18 * s, 0.08 * s, 3 * s, x, pad + 0.05 * s, z, 0, yaw);
-  for (const [dx, dz, w, d, rot] of [
-    [-6, -5, 5, 4, 0.05],
-    [2, -6, 6, 4.5, -0.08],
-    [6, 4, 5, 4, 0.4],
-    [-5, 5, 4.5, 3.5, -0.3],
-  ] as const) {
-    const cx = x + dx * s;
-    const cz = z + dz * s;
-    const base = b.padHeight(cx, cz, (w * s) / 2, (d * s) / 2);
-    b.addHall(cx, cz, w * s, d * s, 2.6 * s, yaw + rot, 'adobe', 'earthRoof', base);
-  }
-  // Corral open to the street; low enough to read as an animal pen, not a fort.
-  const wallY = b.padHeight(x + 2 * s, z + 8 * s, 5 * s, 3 * s);
-  b.addBox('fieldstone', 10 * s, 0.9 * s, 0.6 * s, x + 2 * s, wallY + 0.45 * s, z + 8 * s, 0, yaw);
-  b.addBox('fieldstone', 0.6 * s, 0.9 * s, 6 * s, x - 3 * s, wallY + 0.45 * s, z + 7 * s, 0, yaw);
-  b.addBox('fieldstone', 0.6 * s, 0.9 * s, 6 * s, x + 7 * s, wallY + 0.45 * s, z + 7 * s, 0, yaw);
-}
-
 function vilcabambaRefuge(b: LandmarkBuilder, x: number, z: number, s: number, yaw: number): void {
   const y = b.padHeight(x, z, 13 * s, 9 * s);
   // A low levelled platform, retained on the downhill west edge, with a low perimeter wall.
@@ -381,18 +199,6 @@ function buildOne(b: LandmarkBuilder, spec: MissionSiteLandmark, mapSize: number
   const s = spec.scale ?? 1;
   const yaw = spec.yaw ?? 0;
   switch (spec.kind) {
-    case 'real-felipe':
-      realFelipe(b, x, z, s, yaw);
-      break;
-    case 'tarapaca-village':
-      tarapacaVillage(b, x, z, s, yaw);
-      break;
-    case 'tarapaca-heights':
-      tarapacaHeights(b, x, z, s, yaw);
-      break;
-    case 'tarapaca-pachica':
-      tarapacaPachica(b, x, z, s, yaw);
-      break;
     case 'vilcabamba-refuge':
       vilcabambaRefuge(b, x, z, s, yaw);
       break;

@@ -483,10 +483,10 @@ other. Each one had its own cause.
 - **Units through each other.** Every unit kept 1.4 m of personal space, so horses (2.4 m nose to tail) ran
   through one another. `unitSpacing` gives cavalry 2.4 m and guns 2 m, each pair keeps the larger, and a
   formation's slots are as wide as its bulkiest member.
-- **Units through houses.** The procedural landmarks (Cusco's halls, Tarapacá and Pachica, Vilcabamba,
-  the Real Felipe) were drawn only with a renderer and never reached the navigation grid. Their halls now
-  block movement in every mode (`siteLandmarkObstacles`); walls, terraces, trenches and corrals stay walkable,
-  as the missions' battlefields need.
+- **Units through houses.** Sites drawn only with a renderer did not reach the navigation grid. Cusco and the
+  Republican sites (Arica, Real Felipe, Tarapacá) now derive their blockers from the kit layout
+  (`layoutBlockers`); the remaining procedural landmark (Vilcabamba) still registers its halls through
+  `siteLandmarkObstacles`. Walls, terraces, trenches and corrals stay walkable where the battlefield needs it.
 
 `verify:fast`, `bench:check`, `bench:characters`, the rig, mission and movement E2E specs are the gate.
 

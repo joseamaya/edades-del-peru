@@ -1,7 +1,7 @@
 # Tarapacá 1879 — model mission
 
 **Mission:** `m_tarapaca` · **Campaign:** La República · **Period:** Republic (1879) ·
-**Status:** implemented, covered by real-order specs and art-accepted (procedural site signed 2026-11-23); pending a human no-cheat playtest.
+**Status:** implemented, covered by real-order specs and art-accepted (the Republican kit draws the site since 2026-11-25); pending a human no-cheat playtest.
 
 ## Historical problem
 
@@ -58,14 +58,17 @@ Arica. Sources and certainty: [`docs/historia/campanas/tarapaca.md`](../historia
 
 - 256 m coast transect, painted ground every 2 m, worker crossing ≈2:22. The battle opens in the village,
   not at a rear base.
-- `tarapaca_site` hides the Arica GLB and draws a procedural adobe village, a low trench/parapet on the
-  heights and the Pachica hamlet (`tarapaca-village`, `tarapaca-heights`, `tarapaca-pachica`); no borrowed
-  Arica building appears on the mesa and Pachica is no longer a label over empty ground.
-- The village is the opening frame; its plaza is walkable because the site has no navigation blocker (the
-  old 14 × 10 m footprint turned the village into an island the columns could not enter). The chapel uses an
-  earth roof, not an intense terracotta tile that broke the adobe palette. The old rear base at Pachica is
-  gone: Pachica is east along the quebrada (a real march, outside the 10 m link radius), and the Arica road
-  is north (`-z`).
+- `tarapaca_site` hides the Arica GLB and draws the **Republican kit** ([`republic-sites.md`](./republic-sites.md)):
+  the packed village plaza, the chapel with its espadaña, eight flat-roofed adobe houses, the crest parapet
+  and three outcrops, and the Pachica hamlet with four houses and a stone corral. The procedural
+  `tarapaca-village`, `tarapaca-heights` and `tarapaca-pachica` landmarks are retired.
+- The village is the opening frame; its plaza and east street stay walkable. The houses, chapel, corral,
+  parapet and outcrops block from the same layout (`tarapacaCityBlockers`), and the site opts into
+  `simulationCollision`, so the headless battle blocks the same houses. The old 14 × 10 m site blocker
+  turned the village into an island the columns could not enter; the kit keeps the east approach clear.
+  The chapel uses an earth roof, not an intense terracotta tile that broke the adobe palette. The old rear
+  base at Pachica is gone: Pachica is east along the quebrada (a real march, outside the 10 m link radius),
+  and the Arica road is north (`-z`).
 - `tarapaca_site` uses the mission-scoped `atacama` palette; the vegetation override removes the coastal
   broadleaf trees and keeps a trace of scrub/gravel, so the quebrada reads as desert rather than green
   coast. `resources.scatter: 0` stops the scatter pass, whose old `?? 'tree'` fallback planted ~65 lush
@@ -131,4 +134,6 @@ Arica. Sources and certainty: [`docs/historia/campanas/tarapaca.md`](../historia
   labels, per-map SVG ids).
 - Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in
   `yarn bench:check`.
+- Kit: `tests/republic-architecture-kit.test.ts` (budgets, materials, the village/crest/Pachica blockers)
+  and `docs/design/republic-sites.md`.
 - Open: human no-cheat playtest.
