@@ -25,7 +25,7 @@
 | Elemento | Estado | Fuente / nota |
 | --- | --- | --- |
 | Fundación de Lima (18 ene 1535) | Documentado | Actas y crónicas; Pizarro. |
-| Traza, plaza, cabildo e iglesia | Documentado en lo general | Fundación y cabildo; planta y edificios, abstracción. |
+| Traza, plaza, cabildo e iglesia | Documentado en lo general | Fundación y cabildo; la plaza, la catedral con su torre, el cabildo, los portales y las casonas con balcón son el kit colonial de Blender (`colonialCity.ts`); planta y medidas son una abstracción. |
 | Valle ya habitado (curacazgo de Lima) | Documentado | Fuentes locales y arqueología; la ciudad no se funda en un vacío. |
 | Cerco de Quizu (ago 1536) | Documentado | Pedro Pizarro, Zárate; Hemming. |
 | Artillería en el cerco (ago 1536) | Documentado | «Varias piezas de artillería» en la defensa; las piezas de la conquista eran ligeras (falconetes/versos). Sitio de Lima (Wikipedia); Pedro Pizarro, Zárate; Hemming. |

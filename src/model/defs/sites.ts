@@ -108,6 +108,7 @@ import {
 } from './tambotocoHeightmap';
 import { TAMBOTOCO_CAVE, TAMBOTOCO_INTICANCHA_HUTS, TAMBOTOCO_SHRINE, TAMBOTOCO_VILLAGES } from './tambotocoLayout';
 import { CUSCO_COLONIAL, LIMA_COLONIAL } from './colonialLayout';
+import { colonialCityBlockers } from './colonialCity';
 import {
   LIMA_GROUND,
   LIMA_GROUND_SIZE,
@@ -297,27 +298,6 @@ const DEFAULT_SITE_TERRAIN: SiteTerrainStyle = {
 
 /** Uniform source-to-game scale for the Ciudades Sagradas Caral remaster. */
 const CARAL_SITE_SCALE = 0.25;
-
-/** Houses and stalls of the colonial overlay block from their phase; the plaza itself stays open. */
-function colonialBlockers(layout: typeof LIMA_COLONIAL, phases: boolean): SiteBlocker[] {
-  return [
-    ...layout.traza.map((h) => ({
-      x: h.x,
-      z: h.z,
-      w: h.w + 0.6,
-      d: h.d + 0.6,
-      ...(phases ? { since: 'traza', until: 'ciudad' } : {}),
-    })),
-    ...layout.houses.map((h) => ({
-      x: h.x,
-      z: h.z,
-      w: h.w + 0.6,
-      d: h.d + 0.6,
-      ...(phases ? { since: 'ciudad' } : {}),
-    })),
-    { x: layout.well.x, z: layout.well.z, w: 2.4, d: 2.4, ...(phases ? { since: 'ciudad' } : {}) },
-  ];
-}
 
 /** Lima's plaza and cabildo: shared by the mission layout and the authored site. */
 export const LIMA_SITE_ORIGIN = LIMA_COLONIAL.center;
@@ -787,6 +767,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'colonial_site',
     label: 'Plaza y templo colonial del Cusco',
     modelName: 'colonial_site',
+    hideModel: true,
+    style: 'colonial',
     // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
     // scale with it so the church still covers its plaza.
     scale: colonialLength(0.65),
@@ -805,14 +787,17 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       {
         id: 'colonial_church',
         ...COLONIAL_SITE_POINT,
-        w: colonialLength(9),
-        d: colonialLength(9),
-        h: colonialLength(6),
+        // The drawn cathedral (nave 24.9 x 13.4 m and its tower) sets the pick volume.
+        w: 25,
+        d: 13.5,
+        h: 15,
       },
     ],
-    blockers: [{ ...COLONIAL_SITE_POINT, w: colonialLength(9), d: colonialLength(9) }],
+    // The kit composition around this anchor; the plaza stays open.
+    blockers: colonialCityBlockers(COLONIAL_SITE_POINT),
+    simulationCollision: true,
     blockerPadding: colonialLength(0.5),
-    buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.065, rz: 0.065 }],
+    buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.1, rz: 0.11 }],
     wallCollision: {
       meshPatterns: [/colonial/i],
       maxStartYAboveBase: 1.2,
@@ -1041,6 +1026,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'cusco_junta_site',
     label: 'Cusco y el camino de Umachiri',
     modelName: 'colonial_site',
+    hideModel: true,
     style: 'colonial',
     scale: 0.65,
     origin: { ...CUSCO_COLONIAL.center },
@@ -1058,15 +1044,13 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     },
     pathCellSize: 1,
     heritageProxies: [
-      { id: 'colonial_church', x: CUSCO_COLONIAL.center.x, z: CUSCO_COLONIAL.center.z, w: 9, d: 9, h: 6 },
+      { id: 'colonial_church', x: CUSCO_COLONIAL.center.x, z: CUSCO_COLONIAL.center.z, w: 19, d: 10, h: 11 },
     ],
     phases: { phases: ['ciudad'], initial: 'ciudad' },
-    blockers: [
-      { x: CUSCO_COLONIAL.center.x, z: CUSCO_COLONIAL.center.z, w: 9, d: 9 },
-      ...colonialBlockers(CUSCO_COLONIAL, false),
-    ],
+    blockers: colonialCityBlockers(CUSCO_COLONIAL.center, 'ciudad'),
+    simulationCollision: true,
     blockerPadding: 0.5,
-    buildKeepout: [{ x: 72 / 256, z: 58 / 256, rx: 0.065, rz: 0.065 }],
+    buildKeepout: [{ x: 72 / 256, z: 58 / 256, rx: 0.1, rz: 0.11 }],
     wallCollision: {
       meshPatterns: [/colonial/i],
       maxStartYAboveBase: 1.2,
@@ -1086,6 +1070,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'lima_site',
     label: 'La Ciudad de los Reyes y el Rímac',
     modelName: 'colonial_site',
+    hideModel: true,
     style: 'colonial',
     modelSince: 'ciudad',
     scale: 0.65,
@@ -1103,12 +1088,10 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     pathCellSize: 1,
     phases: { phases: ['traza', 'ciudad'], initial: 'traza' },
     heritageProxies: [{ id: 'lima_plaza', x: LIMA_SITE_ORIGIN.x, z: LIMA_SITE_ORIGIN.z, w: 12, d: 10, h: 6 }],
-    blockers: [
-      { x: LIMA_SITE_ORIGIN.x, z: LIMA_SITE_ORIGIN.z, w: 12, d: 10 },
-      ...colonialBlockers(LIMA_COLONIAL, true),
-    ],
+    blockers: colonialCityBlockers(LIMA_SITE_ORIGIN, 'ciudad'),
+    simulationCollision: true,
     blockerPadding: 0.5,
-    buildKeepout: [{ x: LIMA_SITE_ORIGIN.x / 256, z: LIMA_SITE_ORIGIN.z / 256, rx: 0.07, rz: 0.065 }],
+    buildKeepout: [{ x: LIMA_SITE_ORIGIN.x / 256, z: LIMA_SITE_ORIGIN.z / 256, rx: 0.1, rz: 0.11 }],
     wallCollision: {
       meshPatterns: [/colonial/i],
       maxStartYAboveBase: 1.2,
@@ -1128,6 +1111,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'miraflores_site',
     label: 'Lima y la línea de Miraflores',
     modelName: 'colonial_site',
+    hideModel: true,
     style: 'colonial',
     modelSince: 'ciudad',
     scale: 0.65,
@@ -1145,12 +1129,10 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     pathCellSize: 1,
     phases: { phases: ['ciudad'], initial: 'ciudad' },
     heritageProxies: [],
-    blockers: [
-      { x: LIMA_SITE_ORIGIN.x, z: LIMA_SITE_ORIGIN.z, w: 12, d: 10 },
-      ...colonialBlockers(LIMA_COLONIAL, true),
-    ],
+    blockers: colonialCityBlockers(LIMA_SITE_ORIGIN, 'ciudad'),
+    simulationCollision: true,
     blockerPadding: 0.5,
-    buildKeepout: [{ x: LIMA_SITE_ORIGIN.x / 256, z: LIMA_SITE_ORIGIN.z / 256, rx: 0.07, rz: 0.065 }],
+    buildKeepout: [{ x: LIMA_SITE_ORIGIN.x / 256, z: LIMA_SITE_ORIGIN.z / 256, rx: 0.1, rz: 0.11 }],
     wallCollision: { meshPatterns: [/colonial/i], maxStartYAboveBase: 1.2 },
     walkableCorridor: { width: 8 },
     terrain: {

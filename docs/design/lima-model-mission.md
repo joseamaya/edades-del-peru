@@ -38,9 +38,11 @@ The heightfield is 129² over 256 m (2 m per sample), the painted ground 128². 
 ## Site and factions
 
 `lima_site` starts as a **traced plaza** (packed earth, cord lines, stakes and provisional shelters) and
-switches to the colonial church plus a procedural street overlay (ten adobe houses, market stalls, a well
-and people) when the cabildo is completed. The plaza card (`lima_plaza`) represents the traza, cabildo and
-first church; the church GLB is hidden until the `ciudad` phase.
+switches to the colonial architecture kit (cathedral with its tower, cabildo, portales, balconied houses and
+the plaza fountain, `src/model/defs/colonialCity.ts`) when the cabildo is completed. The kit draws only the
+plaza floor and the fountain in the `traza` phase; the `ColonialLife` overlay keeps the founding shelters,
+the market stalls and the people. The plaza card (`lima_plaza`) represents the traza, cabildo and first
+church.
 
 - **Hueste indiana**: a new VICEROYALTY civilization (pizarristas and allies), with rodeleros, arcabuces
   escasos, jinetes and Andean allied warriors. It shares the realista outfit kit. The light artillery

@@ -1,0 +1,85 @@
+{
+  "asset_id": "colonial_catedral",
+  "source_scene": "scenes/colonial_architecture_kit.blend",
+  "script": "scripts/blender/build_colonial_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "layoutBlockers(COLONIAL_CITY_LAYOUT, COLONIAL_KIT_FOOTPRINTS) in src/model/defs/colonialCity.ts",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/colonial-site.md",
+    "docs/historia/campanas/lima.md",
+    "docs/historia/campanas/lima_1821.md",
+    "docs/historia/campanas/junta_cusco.md",
+    "docs/historia/campanas/miraflores.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 8000,
+    "LOD1": 2400
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 646,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_ColonialDark",
+        "MAT-Arch_ColonialPlaster",
+        "MAT-Arch_ColonialStone",
+        "MAT-Arch_ColonialTile"
+      ],
+      "bounds": {
+        "min": [
+          -12.45,
+          -6.7,
+          0.0
+        ],
+        "max": [
+          12.45,
+          6.7,
+          22.65
+        ],
+        "size": [
+          24.9,
+          13.4,
+          22.65
+        ]
+      },
+      "file": "colonial_catedral_lod0.glb",
+      "bytes": 56028
+    },
+    "LOD1": {
+      "triangles": 550,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_ColonialDark",
+        "MAT-Arch_ColonialPlaster",
+        "MAT-Arch_ColonialStone",
+        "MAT-Arch_ColonialTile"
+      ],
+      "bounds": {
+        "min": [
+          -12.45,
+          -6.7,
+          0.0
+        ],
+        "max": [
+          12.45,
+          6.7,
+          22.65
+        ],
+        "size": [
+          24.9,
+          13.4,
+          22.65
+        ]
+      },
+      "file": "colonial_catedral_lod1.glb",
+      "bytes": 48248
+    }
+  }
+}

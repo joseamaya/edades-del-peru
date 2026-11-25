@@ -34,7 +34,7 @@
 | Cifras de tropas | Aproximado | Las fuentes varían entre 12 000 y 36 000 rebeldes; no se muestran como dato duro. |
 | Ejecuciones de los líderes | Documentado | Pumacahua en Sicuani; Angulo y Béjar en el Cusco; Melgar fusilado. |
 | Carácter separatista o autonomista | Debatido | La historiografía no coincide; el juego no lo resuelve. |
-| Traza urbana y edificios del Cusco de 1814 | Inferido | La plaza y el templo colonial son una abstracción tipológica, no una planta específica. |
+| Traza urbana y edificios del Cusco de 1814 | Inferido | La plaza y el templo colonial son una abstracción tipológica (kit colonial de Blender, `colonialCity.ts`), no una planta específica. |
 | Presencia de montoneras y milicias | Documentado en lo general | Composición y armamento exactos, reconstruidos de forma plausible. |
 
 ## Fuentes

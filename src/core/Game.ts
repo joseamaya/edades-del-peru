@@ -228,6 +228,8 @@ export class Game {
   chavinCity: ArchitectureCity | null = null;
   /** The Inca capital and Sacsayhuamán from the Cusco architecture kit (m_cusco_1536, m6b). */
   cuscoCity: ArchitectureCity | null = null;
+  /** The colonial Plaza Mayor from the colonial kit (Lima 1535/1821, Cusco 1780/1814, Miraflores). */
+  colonialCity: ArchitectureCity | null = null;
   /** The ayllu world of Tambotoco (cave, shrine, hamlets, planned Inticancha); null elsewhere. */
   aylluSite: AylluSite | null = null;
   /** The colonial life around Lima/Cusco (houses, market, people); null elsewhere. */
@@ -1541,7 +1543,9 @@ export class Game {
     this.sitePhase = phase;
     this.caralCity?.setPhase(phase);
     this.chavinCity?.setPhase(phase);
+    this.cuscoCity?.setPhase(phase);
     this.aylluSite?.setPhase(phase);
+    this.colonialCity?.setPhase(phase);
     this.colonialSite?.setPhase(phase);
     this.syncSiteModelVisibility();
     this.siteCrew?.setPhase(phase as CaralMayorPhase);
@@ -2331,6 +2335,7 @@ export class Game {
       this.caralCity = null;
       this.chavinCity = null;
       this.cuscoCity = null;
+      this.colonialCity = null;
     }
     this.sitePhase = this.siteDef?.phases?.initial ?? 'in_use';
     this.sitePhaseRestored = false;

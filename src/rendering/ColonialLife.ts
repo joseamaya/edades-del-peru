@@ -187,6 +187,8 @@ export class ColonialLife {
     baseY: number,
     layout: ColonialLayout,
     private readonly plan: SitePhasePlan,
+    /** The kit draws the houses: keep the stalls, people and the founding traza only. */
+    lifeOnly = false,
   ) {
     this.group.name = 'colonial_life';
     parent.add(this.group);
@@ -208,21 +210,23 @@ export class ColonialLife {
     }
 
     const ciudad: Parts = [];
-    for (const h of layout.houses) {
-      house(ciudad, h, ground(h.x, h.z));
-      this.life.push({
-        x: h.x,
-        z: h.z,
-        y: worldY(h.x, h.z) + h.h + h.h * 0.55 + 0.3,
-        phase: PHASE_CIUDAD,
-        kind: 'smoke',
-      });
+    if (!lifeOnly) {
+      for (const h of layout.houses) {
+        house(ciudad, h, ground(h.x, h.z));
+        this.life.push({
+          x: h.x,
+          z: h.z,
+          y: worldY(h.x, h.z) + h.h + h.h * 0.55 + 0.3,
+          phase: PHASE_CIUDAD,
+          kind: 'smoke',
+        });
+      }
     }
     for (const s of layout.stalls) {
       stall(ciudad, s.x, ground(s.x, s.z), s.z, s.ry);
       person(ciudad, s.x - 1.6, ground(s.x - 1.6, s.z), s.z + 0.6);
     }
-    well(ciudad, layout.well.x, ground(layout.well.x, layout.well.z), layout.well.z);
+    if (!lifeOnly) well(ciudad, layout.well.x, ground(layout.well.x, layout.well.z), layout.well.z);
     for (let i = 0; i < 4; i++) {
       person(ciudad, layout.center.x - 3 + i * 2, ground(layout.center.x, layout.center.z + 2), layout.center.z + 2);
     }

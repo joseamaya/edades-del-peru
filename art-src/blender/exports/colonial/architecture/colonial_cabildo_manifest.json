@@ -1,0 +1,87 @@
+{
+  "asset_id": "colonial_cabildo",
+  "source_scene": "scenes/colonial_architecture_kit.blend",
+  "script": "scripts/blender/build_colonial_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "layoutBlockers(COLONIAL_CITY_LAYOUT, COLONIAL_KIT_FOOTPRINTS) in src/model/defs/colonialCity.ts",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/colonial-site.md",
+    "docs/historia/campanas/lima.md",
+    "docs/historia/campanas/lima_1821.md",
+    "docs/historia/campanas/junta_cusco.md",
+    "docs/historia/campanas/miraflores.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 674,
+      "draw_calls": 5,
+      "materials": [
+        "MAT-Arch_ColonialDark",
+        "MAT-Arch_ColonialPlaster",
+        "MAT-Arch_ColonialStone",
+        "MAT-Arch_ColonialTile",
+        "MAT-Arch_ColonialWood"
+      ],
+      "bounds": {
+        "min": [
+          -8.35,
+          -5.54,
+          0.0
+        ],
+        "max": [
+          8.35,
+          5.1,
+          9.34
+        ],
+        "size": [
+          16.7,
+          10.64,
+          9.34
+        ]
+      },
+      "file": "colonial_cabildo_lod0.glb",
+      "bytes": 57580
+    },
+    "LOD1": {
+      "triangles": 538,
+      "draw_calls": 5,
+      "materials": [
+        "MAT-Arch_ColonialDark",
+        "MAT-Arch_ColonialPlaster",
+        "MAT-Arch_ColonialStone",
+        "MAT-Arch_ColonialTile",
+        "MAT-Arch_ColonialWood"
+      ],
+      "bounds": {
+        "min": [
+          -8.35,
+          -5.54,
+          0.0
+        ],
+        "max": [
+          8.35,
+          5.1,
+          9.34
+        ],
+        "size": [
+          16.7,
+          10.64,
+          9.34
+        ]
+      },
+      "file": "colonial_cabildo_lod1.glb",
+      "bytes": 46356
+    }
+  }
+}

@@ -229,4 +229,28 @@ describe('headless authored-site collision', () => {
     game.destroy();
     setAutoStart(true);
   });
+
+  it('blocks Lima’s cathedral without a renderer and keeps the plaza walkable', () => {
+    setAutoStart(false);
+    const game = new Game(
+      {
+        ...DEFAULT_SETTINGS,
+        missionId: 'm_lima_1821',
+        fogOfWar: false,
+        cinematic: false,
+        showHints: false,
+        soundEnabled: false,
+      },
+      null,
+      null,
+      false,
+      true,
+    );
+    const site = game.siteDef!;
+    // The cathedral sits 19.5 m north of the plaza anchor; the plaza itself stays open around the fountain.
+    expect(game.pathfinder.isWalkable(site.anchor.x, site.anchor.z - 19.5)).toBe(false);
+    expect(game.pathfinder.isWalkable(site.anchor.x + 4, site.anchor.z + 4)).toBe(true);
+    game.destroy();
+    setAutoStart(true);
+  });
 });

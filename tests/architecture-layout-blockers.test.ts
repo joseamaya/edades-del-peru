@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { layoutBlockers } from '../src/model/defs/architectureKit';
 import { CUSCO_CITY_BLOCKERS, CUSCO_CITY_LAYOUT, CUSCO_KIT_FOOTPRINTS } from '../src/model/defs/cuscoCity';
+import { COLONIAL_KIT_FOOTPRINTS, colonialCityBlockers, colonialLayoutAt } from '../src/model/defs/colonialCity';
 import { AUTHORED_SITES } from '../src/model/defs/sites';
 
 describe('layoutBlockers', () => {
@@ -38,5 +39,30 @@ describe('Cusco city', () => {
 
   it('is the site the simulation blocks', () => {
     expect(AUTHORED_SITES.cusco_inca_site.blockers).toBe(CUSCO_CITY_BLOCKERS);
+  });
+});
+
+describe('colonial city', () => {
+  const anchor = { x: 90, z: 150 };
+
+  it('blocks every building and leaves the plaza floor open', () => {
+    const layout = colonialLayoutAt(anchor);
+    const solid = layout.filter((p) => COLONIAL_KIT_FOOTPRINTS[p.asset]);
+    const blockers = colonialCityBlockers(anchor);
+    expect(blockers).toHaveLength(solid.length);
+    expect(layout.filter((p) => !COLONIAL_KIT_FOOTPRINTS[p.asset]).map((p) => p.asset)).toEqual(['plaza']);
+  });
+
+  it('is the collision the four colonial sites use, from their own layout', () => {
+    expect(AUTHORED_SITES.lima_site.blockers).toEqual(colonialCityBlockers(anchor, 'ciudad'));
+    expect(AUTHORED_SITES.miraflores_site.blockers).toEqual(colonialCityBlockers(anchor, 'ciudad'));
+    expect(AUTHORED_SITES.cusco_junta_site.blockers).toEqual(
+      colonialCityBlockers(AUTHORED_SITES.cusco_junta_site.anchor, 'ciudad'),
+    );
+    expect(AUTHORED_SITES.colonial_site.blockers).toEqual(colonialCityBlockers(AUTHORED_SITES.colonial_site.anchor));
+    // The cathedral closes the north side; the plaza centre is the fountain, not a building.
+    const cathedral = colonialCityBlockers(anchor).find((b) => b.z < anchor.z - 10)!;
+    expect(cathedral).toBeDefined();
+    expect(colonialCityBlockers(anchor).some((b) => b.x === anchor.x && b.z === anchor.z)).toBe(true);
   });
 });
