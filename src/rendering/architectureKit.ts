@@ -191,8 +191,8 @@ export const ARCH_SURFACES: Record<
   'MAT-Arch_RepublicPaving': { set: 'plaster_detail', normal: 0.6, keepColor: true },
   'MAT-Arch_RepublicPlaza': { set: 'ground_plaza', tint: 0xe8dcc6, normal: 0.5, lift: 1.2 },
   'MAT-Arch_RepublicDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
-  // Independence: lime plaster and adobe keep their paint, the tile is weathered like the colonial one, the
-  // stone is lifted, and the tents use the woven textile set as campaign canvas.
+  // Independence: lime plaster, adobe, canvas and earth keep their paint under the plaster detail set, the
+  // tile is weathered like the colonial one, and the stone is lifted.
   'MAT-Arch_IndependencePlaster': { set: 'plaster_detail', normal: 0.6, keepColor: true },
   'MAT-Arch_IndependenceAdobe': { set: 'plaster_detail', normal: 0.9, keepColor: true },
   'MAT-Arch_IndependenceTile': {

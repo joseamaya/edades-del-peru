@@ -28,7 +28,7 @@ The executions and violence of Concepción/Huamachuco are told in the epilogue a
 
 - 256 m andes transect, painted ground every 2 m, worker crossing ≈2:22.
 - `brena_site` draws its own **sierra-central camp** from the Independence kit
-  ([`independence-site.md`](./independence-site.md)) on the Ayacucho heightfield: two community houses, the
+  ([`independence-site.md`](./independence-site.md)) on the Mantaro heightfield (`MANTARO_HEIGHTFIELD`, the mission's override): two community houses, the
   hacienda/camp store, three tents, a stone corral, an earth bank and the well around the parade ground.
   There is no chapel, so the camp reads as a guerrilla camp rather than a second Ayacucho. The site keeps
   the camp anchor `(179.7, 94.7)` east of Huamachuco; the mission focus and hold stay on the town.

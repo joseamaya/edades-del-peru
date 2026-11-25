@@ -438,9 +438,6 @@ const TARAPACA_BUILD_KEEPOUT: readonly SiteKeepoutRect[] = [
   { x: TARAPACA_CITY_ANCHOR.x / 256, z: TARAPACA_CITY_ANCHOR.z / 256, rx: 0.095, rz: 0.075 },
 ];
 
-/** The Ayacucho chapel point in the former 192 m frame, scaled into the 256 m map. */
-const INDEPENDENCE_SITE_POINT = INDEPENDENCE_CITY_ANCHOR;
-
 /** The Cusco plaza point in the former 192 m frame, scaled into the 256 m map. */
 const COLONIAL_SITE_POINT = colonialPoint({ x: 134.8, z: 73 });
 
@@ -819,8 +816,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     hideModel: true,
     style: 'independence',
     scale: independenceLength(0.65),
-    origin: INDEPENDENCE_SITE_POINT,
-    anchor: INDEPENDENCE_SITE_POINT,
+    origin: INDEPENDENCE_CITY_ANCHOR,
+    anchor: INDEPENDENCE_CITY_ANCHOR,
     cameraHeight: independenceLength(54),
     framing: 'site-biased',
     heightField: {
@@ -835,8 +832,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
         id: 'independence_chapel',
         x: INDEPENDENCE_CHAPEL_ANCHOR.x,
         z: INDEPENDENCE_CHAPEL_ANCHOR.z,
-        w: 14,
-        d: 8,
+        w: 14.8,
+        d: 9.3,
         h: 11.6,
       },
     ],
@@ -989,6 +986,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     blockers: brenaCityBlockers(),
     simulationCollision: true,
     blockerPadding: independenceLength(0.5),
+    // The mission overrides this with its Huamachuco keepout (0.6); this default covers the camp.
     buildKeepout: [{ x: 0.702, z: 0.37, rx: 0.065, rz: 0.065 }],
     wallCollision: { meshPatterns: [], maxStartYAboveBase: independenceLength(1.2) },
     walkableCorridor: { width: independenceLength(8) },

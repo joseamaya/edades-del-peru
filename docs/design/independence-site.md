@@ -70,9 +70,9 @@ Maximum 4 materials per piece; LOD0 ≤ 5k and LOD1 ≤ 1.5k triangles, with the
 
 - **Ayacucho (`m8_independencia`).** The parade ground at the site, the chapel closing the north side,
   the hacienda closing the south, four tents on the flanks, low boundary walls behind both buildings and
-  the well. The **east–west lane (z −5.2…+5.2) is free**: the Junín–Ayacucho march and the 10.7 m
-  walkable corridor cross the site, so the camp cannot enclose it. The chapel, hacienda, tents, walls and
-  well block; the parade ground stays walkable.
+  the well. The **east–west lane stays open (about 8.5 m clear between the padded tent blockers)**: the
+  Junín–Ayacucho march and the walkable corridor cross the site, so the camp cannot enclose it. The
+  chapel, hacienda, tents, walls and well block; the parade ground stays walkable.
 - **Breña (`m_brena`).** A tighter sierra camp without the chapel: two community houses north, the
   hacienda/camp store south, three tents, a stone corral in the south-west, the earth bank on the north
   edge and the well. The central lane stays open for the mission's columns. The site keeps the camp anchor

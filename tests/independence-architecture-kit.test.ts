@@ -205,6 +205,6 @@ describe('independence layouts', () => {
     expect(proxy.id).toBe('independence_chapel');
     expect(proxy.x).toBeCloseTo(INDEPENDENCE_CHAPEL_ANCHOR.x, 6);
     expect(proxy.z).toBeCloseTo(INDEPENDENCE_CHAPEL_ANCHOR.z, 6);
-    expect([proxy.w, proxy.d, proxy.h]).toEqual([14, 8, 11.6]);
+    expect([proxy.w, proxy.d, proxy.h]).toEqual([14.8, 9.3, 11.6]);
   });
 });

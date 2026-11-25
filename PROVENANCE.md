@@ -780,11 +780,11 @@ slot is absent (offline / without assets).
   `node scripts/capture_independencia_intro.mjs` (one with `--only=ID`) after art changes.
 - **Runtime**: the briefing and the "Tu senda" card use `intro-lima`; the three intro beats and the act
   cards use the Lima, Junín and Ayacucho captures; the victory epilogue uses `intro-epilogo`.
-- **Content**: project-owned game renders (authored Junín–Ayacucho heightfield, the reused
-  `independence_site` chapel and the procedural camps). Recreations of the game's own scenes: never
-  historical photographs, and not Blender renders (so not in `src/art/manifest.json`).
-- **Review**: no human art-review gate applies to in-engine captures; the reused chapel GLB keeps its own
-  review status in `src/art/manifest.json` (#343).
+- **Content**: project-owned game renders (authored Junín–Ayacucho heightfield, the Independence kit's
+  chapel and camp, and the procedural camps). Recreations of the game's own scenes: never historical
+  photographs, and not Blender renders (so not in `src/art/manifest.json`).
+- **Review**: no human art-review gate applies to in-engine captures; the kit manifests record the
+  documented/assumed split, and the captures are not presented as photographs.
 
 ### Tarapacá, Miraflores and La Breña intro/epilogue images (in-engine recreations)
 

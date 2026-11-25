@@ -18,6 +18,7 @@ const at = (anchor: { x: number; z: number }, dx: number, dz: number) => ({ x: a
 
 /** The Ayacucho chapel/camp point on the 256 m map; Breña keeps the same camp anchor. */
 export const INDEPENDENCE_CITY_ANCHOR = independencePoint({ x: 134.8, z: 71 });
+/** Breña's camp shares the authored Ayacucho point; the mission focus and hold are Huamachuco. */
 export const BRENA_CITY_ANCHOR = INDEPENDENCE_CITY_ANCHOR;
 
 /** The Ayacucho chapel sits north of the parade ground, its door facing the open lane. */
@@ -40,7 +41,8 @@ export const INDEPENDENCE_KIT_FOOTPRINTS: Partial<Record<string, ArchFootprint>>
 /**
  * Ayacucho: the 24 x 16 m parade ground, the chapel closing the north side, the hacienda closing the
  * south, four tents on the flanks, low north/south walls behind the buildings and the well.
- * The east-west lane (z -5.2..+5.2) is free: the Junín-Ayacucho march and the walkable corridor cross it.
+ * The east-west lane is free (about 8.5 m clear between the padded tent blockers): the Junín-Ayacucho
+ * march and the walkable corridor cross it.
  */
 export const INDEPENDENCE_CITY_LAYOUT: readonly ArchPlacement[] = [
   { asset: 'parade_ground', ...INDEPENDENCE_CITY_ANCHOR, rotY: 0, scale: ONE, lift: 0.02 },
@@ -68,14 +70,14 @@ export const INDEPENDENCE_CITY_LAYOUT: readonly ArchPlacement[] = [
 export const BRENA_CITY_LAYOUT: readonly ArchPlacement[] = [
   { asset: 'parade_ground', ...BRENA_CITY_ANCHOR, rotY: 0, scale: ONE, lift: 0.02 },
   { asset: 'community_house', ...at(BRENA_CITY_ANCHOR, -8, -8), rotY: 0, scale: [1.1, 1, 1.1] },
-  { asset: 'community_house', ...at(BRENA_CITY_ANCHOR, 8, -8), rotY: 0, scale: [1, 1, 1] },
+  { asset: 'community_house', ...at(BRENA_CITY_ANCHOR, 8, -8), rotY: 0, scale: ONE },
   { asset: 'hacienda', ...at(BRENA_CITY_ANCHOR, 0, 10), rotY: Math.PI, scale: [0.9, 1, 0.9] },
   { asset: 'tent', ...at(BRENA_CITY_ANCHOR, -9, 4), rotY: -Math.PI / 2, scale: ONE },
   { asset: 'tent', ...at(BRENA_CITY_ANCHOR, 9, 4), rotY: Math.PI / 2, scale: ONE },
   { asset: 'tent', ...at(BRENA_CITY_ANCHOR, 0, -5), rotY: -Math.PI / 2, scale: ONE },
   { asset: 'camp_wall', ...at(BRENA_CITY_ANCHOR, -10, 13), rotY: Math.PI / 2, scale: ONE },
   { asset: 'camp_wall', ...at(BRENA_CITY_ANCHOR, -6.5, 16.5), rotY: 0, scale: ONE },
-  { asset: 'earthwork', ...at(BRENA_CITY_ANCHOR, 0, -13), rotY: 0, scale: ONE },
+  { asset: 'earthwork', ...at(BRENA_CITY_ANCHOR, 0, -13), rotY: Math.PI, scale: ONE },
   { asset: 'well', ...at(BRENA_CITY_ANCHOR, 10, 10), rotY: 0, scale: ONE },
 ];
 
