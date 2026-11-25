@@ -11,6 +11,7 @@ import { isConverter, unitDisplayDescription, unitDisplayIcon } from '../model/d
 import { getHeritageBuilding, type HeritageBuildingDef } from '../model/defs/heritage';
 import { buildModel, disposeModel, type BuildContext } from '../model/ProceduralModel';
 import { insideTerrainRect } from '../model/defs/terrainLayout';
+import { insideSiteBlocker } from '../model/defs/sites';
 import { isTypingTarget } from '../util/dom';
 
 import { keyFor, type HotkeyAction } from './hotkeys';
@@ -790,12 +791,23 @@ export class InputController {
 
   /** Whether a building footprint would overlap the authored archaeological site. */
   siteBlocksConstruction(x: number, z: number, pad: number): boolean {
-    const rects = this.game.siteDef?.buildKeepout ?? this.game.missionLayout?.site?.buildKeepout;
-    if (!rects) return false;
+    // The mission's own keepout is more specific than the site default: Lima 1535 goes down to the plaza
+    // core so its cabildo can rise on the apron, while 1821 keeps the whole composition clear.
+    const rects = this.game.missionLayout?.site?.buildKeepout ?? this.game.siteDef?.buildKeepout;
     const size = this.game.settings.mapSize;
-    return rects.some((rect: { x: number; z: number; rx: number; rz: number }) =>
-      insideTerrainRect({ x: rect.x * size, z: rect.z * size, rx: rect.rx * size, rz: rect.rz * size }, x, z, pad),
-    );
+    if (
+      rects?.some((rect: { x: number; z: number; rx: number; rz: number }) =>
+        insideTerrainRect({ x: rect.x * size, z: rect.z * size, rx: rect.rx * size, rz: rect.rz * size }, x, z, pad),
+      )
+    ) {
+      return true;
+    }
+    // The authored site's blockers are the kit's buildings and monuments. They stop construction even when
+    // a smaller keepout leaves the apron open; the plaza floor has no blocker and stays buildable. The
+    // footprints are reserved from the opening even before their `since` phase, so the city can rise
+    // without a building inside it; only movement follows the phase.
+    const clearance = pad + (this.game.siteDef?.blockerPadding ?? 0);
+    return (this.game.siteDef?.blockers ?? []).some((blocker) => insideSiteBlocker(blocker, x, z, clearance));
   }
 
   commitPlacement(x: number, z: number): void {
