@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import * as THREE from 'three';
+import { ARCH_SURFACES } from '../src/rendering/architectureKit';
 import { applyFow, createFowUniforms } from '../src/rendering/FowMaterial';
 
 interface LodStats {
@@ -34,6 +35,26 @@ const manifests = new Map<string, Manifest>(
     JSON.parse(fs.readFileSync(path.join(ROOT, `colonial_${name}_manifest.json`), 'utf8')) as Manifest,
   ]),
 );
+
+function glbJson(file: string): Record<string, any> {
+  const data = fs.readFileSync(file);
+  let offset = 12;
+  while (offset < data.length) {
+    const length = data.readUInt32LE(offset);
+    const type = data.readUInt32LE(offset + 4);
+    offset += 8;
+    if (type === 0x4e4f534a) {
+      return JSON.parse(
+        data
+          .subarray(offset, offset + length)
+          .toString('utf8')
+          .trim(),
+      ) as Record<string, any>;
+    }
+    offset += length;
+  }
+  throw new Error(`no JSON chunk in ${file}`);
+}
 
 describe('colonial architecture kit', () => {
   it('ships every piece within the §4.2 triangle and material budgets', () => {
@@ -69,6 +90,18 @@ describe('colonial architecture kit', () => {
     for (const name of ['catedral', 'cabildo', 'casona', 'portal', 'pileta', 'patio_wall']) {
       expect(manifests.get(name)!.lods.LOD0.materials, name).not.toContain('MAT-Arch_ColonialPaving');
     }
+  });
+});
+
+describe('runtime surfaces', () => {
+  it('ships the paving in the game GLB and keeps the tile desaturated', () => {
+    expect(ARCH_SURFACES['MAT-Arch_ColonialPaving'].set).toBe('ground_plaza');
+    expect(ARCH_SURFACES['MAT-Arch_ColonialStone'].lift).toBeGreaterThan(1);
+    expect(ARCH_SURFACES['MAT-Arch_ColonialTile'].saturation).toBeLessThanOrEqual(0.5);
+    const json = glbJson(path.resolve('src/assets/architecture/colonial/colonial_plaza_lod0.glb'));
+    expect((json.materials ?? []).map((material: { name?: string }) => material.name)).toContain(
+      'MAT-Arch_ColonialPaving',
+    );
   });
 });
 

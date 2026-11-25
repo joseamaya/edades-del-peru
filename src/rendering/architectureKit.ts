@@ -120,7 +120,7 @@ function footprint(model: ArchModel): THREE.Box3 {
  * are box-projected at world scale (TILE in the Blender script). `keepColor` keeps the material's
  * documented paint colour under a near-white detail map; otherwise `tint` (times `lift`) colours the set.
  */
-const ARCH_SURFACES: Record<
+export const ARCH_SURFACES: Record<
   string,
   { set: string; tint?: number; normal: number; keepColor?: boolean; lift?: number; saturation?: number }
 > = {
@@ -155,7 +155,13 @@ const ARCH_SURFACES: Record<
   // paving set; the stone is lifted so the kerb and the fountain do not read black.
   'MAT-Arch_ColonialPlaster': { set: 'plaster_detail', normal: 0.6, keepColor: true },
   'MAT-Arch_ColonialAdobe': { set: 'plaster_detail', normal: 0.9, keepColor: true },
-  'MAT-Arch_ColonialTile': { set: 'tile', tint: 0xead8c9, normal: 0.7, saturation: 0.55 },
+  'MAT-Arch_ColonialTile': {
+    set: 'tile',
+    tint: 0xefd9bf,
+    normal: 0.7,
+    saturation: 0.42,
+    lift: 1.15,
+  },
   'MAT-Arch_ColonialWood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
   'MAT-Arch_ColonialStone': { set: 'wall_cutstone', tint: 0xd8d2c2, normal: 0.8, lift: 1.25 },
   'MAT-Arch_ColonialPaving': { set: 'ground_plaza', tint: 0xf0e6d6, normal: 0.5, lift: 1.25 },
