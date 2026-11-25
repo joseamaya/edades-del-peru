@@ -999,9 +999,13 @@ used because the worker is pre-metal; the attack uses the worker's own digging s
 per-instance accessories (headband, carry bundle, digging stick) are the deliberate exception to the shared-cache rule: they
 carry the variant's tint and bone attachments and are disposed with the rig. The digging stick hides while
 carrying and during build work, so it never crosses the body or a placed load. The body, face, hair, tunic, skirt
-and sash are shared GLB geometry/materials. Campaign heroes are the deliberate exception: `UnitView` clones the
-visible tunic and the macana material to tint them with the commander accent, and disposes those clones with the
-view; the shared rig geometry is untouched. The order-driven poses are captured by
+and sash are shared GLB geometry/materials. The tunic and skirt are shells derived from the body with a 3–4 cm
+normal offset, so `workerAttire.ts` paints the body under their posed boxes in the garment's colour
+(`bodyPaint.ts`); the body is a textured draw of its own, which is why the paint survives `consolidateRig`.
+Campaign heroes are the deliberate exception: `UnitView` clones the visible tunic and the macana material to tint
+them with the commander accent, and disposes those clones with the view; the shared rig geometry is untouched.
+The body paint follows the accent through `setClothColors`, since it was applied before `dressHero` retinted the
+consolidated cloth. The order-driven poses are captured by
 `node scripts/shots_evidence.mjs --scene=caral-worker-tasks --out=review/evidence/caral-worker-tasks`.
 
 The mounted rig (asset id `mounted_rig`) is Quaternius' CC0 horse (`quaternius_horse.glb`, built by

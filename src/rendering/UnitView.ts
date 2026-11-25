@@ -138,6 +138,10 @@ export class UnitView {
         material.needsUpdate = true;
       }
     });
+    // The body under the tunic was painted with the palette tint when the rig was dressed; follow the hero
+    // accent so a bulge through the longer uncu still reads as cloth, not as the soldier's tunic.
+    const clothHex = cloth.getHex();
+    this.rig?.setClothColors(clothHex, clothHex);
     if (commander.weapon === 'macana') {
       for (const name of ['attire_andean_macana', 'attire_andean_macana_head']) {
         const mesh = root.getObjectByName(name) as THREE.Mesh | null;

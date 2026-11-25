@@ -23,6 +23,8 @@ export interface RigVariantHandle {
   setGatherKind?(kind: string | null): void;
   /** Whether a fisher's net is back in the hand (it is hidden while cast; see FishingNetFx). */
   setNetInHand?(inHand: boolean): void;
+  /** Re-tint the body painted under the Andean tunic/skirt after a hero accent changes the cloth. */
+  setClothColors?(tunic: number, skirt: number): void;
   /** Per-frame presentation after the rig's own mixer (a rider seated on a mount). */
   update?(dt: number): void;
   /** The rig started its death clip. */

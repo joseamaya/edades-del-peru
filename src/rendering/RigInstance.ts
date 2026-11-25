@@ -223,6 +223,11 @@ export class RigInstance {
     this.variant?.setNetInHand?.(inHand);
   }
 
+  /** Follow a hero accent on the body painted under the Andean tunic and skirt. */
+  setClothColors(tunic: number, skirt: number): void {
+    this.variant?.setClothColors?.(tunic, skirt);
+  }
+
   /**
    * Re-map one gameplay state to another clip for this instance. The Ayar use it to give a slinger a
    * throw and a digging-stick bearer a tool swing without forking the shared rig or its variant table.
