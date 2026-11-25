@@ -438,6 +438,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
 
   let tool: THREE.Group | null = null;
   let net: THREE.Group | null = null;
+  let garmentTints: { tunic: THREE.Color; skirt: THREE.Color } | null = null;
   let carrying = false;
   let task: RigClipState = 'idle';
   let weapon: AndeanWeaponGrip | null = null;
@@ -771,7 +772,10 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     };
     const tunicBox = posedBox(tunic);
     const lowerBox = posedBox(lower);
-    const cloth = (mesh: THREE.Mesh): number => tintedCotton((mesh.material as THREE.MeshStandardMaterial).color);
+    const tunicTint = (tunic.material as THREE.MeshStandardMaterial).color.clone();
+    const skirtTint = (lower.material as THREE.MeshStandardMaterial).color.clone();
+    garmentTints = { tunic: tunicTint, skirt: skirtTint };
+    const cloth = (tint: THREE.Color): number => tintedCotton(tint);
     // The volume alone also catches a hand hanging inside the tunic's box (the arms are down in the bind
     // pose) and a calf inside the skirt's box, so the dominant bone gates each region. The skirt is the
     // outer layer at the waist and wins the overlap. Only the hero's uncu reaches below the wrap
@@ -787,7 +791,12 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       if (tunicBones.test(bone) && tunicBox.containsPoint(point)) return 'tunic';
       return null;
     };
-    return paintBodyUnderGarments(body, `andean:${variant}`, { tunic: cloth(tunic), skirt: cloth(lower) }, regionOf);
+    return paintBodyUnderGarments(
+      body,
+      `andean:${variant}`,
+      { tunic: cloth(tunicTint), skirt: cloth(skirtTint) },
+      regionOf,
+    );
   };
 
   // The variant is final: merge the static body parts and the rigid gear into a few skinned draws.
@@ -823,10 +832,14 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       netInHand = inHand;
       syncTool();
     },
-    setClothColors(tunicTint: number, skirtTint: number): void {
-      clothPaint?.setColors({
-        tunic: tintedCotton(new THREE.Color(tunicTint)),
-        skirt: tintedCotton(new THREE.Color(skirtTint)),
+    setClothColors(clothTint: number): void {
+      // The hero's consolidated cloth multiplies the palette tints already baked into its vertex colours,
+      // so the body under it needs weave × palette tint × the new cloth tint, not just the accent.
+      if (!clothPaint || !garmentTints) return;
+      const cloth = new THREE.Color(clothTint);
+      clothPaint.setColors({
+        tunic: tintedCotton(garmentTints.tunic.clone().multiply(cloth)),
+        skirt: tintedCotton(garmentTints.skirt.clone().multiply(cloth)),
       });
     },
     update(): void {

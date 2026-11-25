@@ -7,6 +7,7 @@ import type { RigInstance } from '../src/rendering/RigInstance';
 import { COTTON_WEAVE } from '../src/rendering/workerAttire';
 
 const WORKER_URL = new URL('../src/assets/models/caral_worker.glb', import.meta.url);
+const HERO_URL = new URL('../src/assets/models/tambotoco_hero.glb', import.meta.url);
 const textureLoad = THREE.TextureLoader.prototype.load;
 const previousSelf = (globalThis as { self?: unknown }).self;
 
@@ -19,9 +20,14 @@ beforeAll(async () => {
     onLoad?.(texture);
     return texture;
   };
-  const file = fs.readFileSync(fileURLToPath(WORKER_URL));
-  const buffer = file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength) as ArrayBuffer;
-  await loadModelAssetFromData('caral_worker', buffer);
+  for (const [id, url] of [
+    ['caral_worker', WORKER_URL],
+    ['tambotoco_hero', HERO_URL],
+  ] as const) {
+    const file = fs.readFileSync(fileURLToPath(url));
+    const buffer = file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength) as ArrayBuffer;
+    await loadModelAssetFromData(id, buffer);
+  }
 });
 
 afterAll(() => {
@@ -101,6 +107,15 @@ describe('Andean tunic body paint', () => {
           expect(paintAlpha(body, i), boneLabel(bones[i], i)).toBe(0);
         }
       }
+      // The lowest thigh vertex (the knee) is well below the skirt: the bare leg stays skin.
+      const thigh = bones.map((bone, index) => (bone === 'thigh_l' ? index : -1)).filter((index) => index >= 0);
+      expect(thigh.length).toBeGreaterThan(0);
+      const knee = thigh.reduce((min, index) =>
+        body.geometry.getAttribute('position').getY(index) < body.geometry.getAttribute('position').getY(min)
+          ? index
+          : min,
+      );
+      expect(paintAlpha(body, knee)).toBe(0);
       // The neck and the shoulder top sit at the tunic's clipped boundary; the covered torso must dominate.
       expect(torso).toBeGreaterThan(20);
       expect(painted).toBeGreaterThan(torso * 0.75);
@@ -150,14 +165,42 @@ describe('Andean tunic body paint', () => {
     }
   });
 
-  it('follows a hero accent when the cloth is retinted after dressing', () => {
-    const rig = acquireRig('caral_worker', 'inca_killke_soldier_m')!;
+  it('covers the other Andean cultures and both genders', () => {
+    for (const variant of [
+      'chanca_soldier_m',
+      'recuay_soldier_f',
+      'wari_soldier_m',
+      'chimu_soldier_f',
+      'inca_soldier_f',
+    ] as const) {
+      const rig = acquireRig('caral_worker', variant)!;
+      try {
+        const male = variant.endsWith('_m');
+        const body = bodyOf(rig, male);
+        const index = spineVertex(body);
+        expect(paintAlpha(body, index), variant).toBe(1);
+        expectColor(paintColor(body, index), clothColor(rig, male ? 'attire_tunic_m' : 'attire_tunic_f'));
+      } finally {
+        rig.dispose();
+      }
+    }
+  });
+
+  it('paints the longer uncu of the hero and follows its accent', () => {
+    const rig = acquireRig('tambotoco_hero', 'inca_killke_soldier_m')!;
     try {
-      rig.setClothColors(0xd04020, 0xd04020);
       const body = bodyOf(rig);
+      const bones = dominantBones(body);
+      expect(bones.some((bone, index) => bone === 'thigh_l' && paintAlpha(body, index) === 1)).toBe(true);
+      const tunicTint = (rig.root.getObjectByName('attire_tunic_m') as THREE.Mesh)
+        .material as THREE.MeshStandardMaterial;
+      rig.setClothColors(0xd04020);
       const index = spineVertex(body);
       expect(paintAlpha(body, index)).toBe(1);
-      expectColor(paintColor(body, index), new THREE.Color(COTTON_WEAVE).multiply(new THREE.Color(0xd04020)));
+      expectColor(
+        paintColor(body, index),
+        new THREE.Color(COTTON_WEAVE).multiply(tunicTint.color).multiply(new THREE.Color(0xd04020)),
+      );
     } finally {
       rig.dispose();
     }
