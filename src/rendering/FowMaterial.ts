@@ -61,7 +61,10 @@ export function applyFow(material: THREE.Material, u: FowUniforms): void {
         }`,
       );
   };
-  material.customProgramCacheKey = () => 'fow-v2';
+  // A material may bring its own program variant (the colonial tile desaturation); keep it in the key so
+  // two fow materials with different shader hooks do not share a compiled program.
+  const previousKey = material.customProgramCacheKey.bind(material);
+  material.customProgramCacheKey = () => `${previousKey()}|fow-v2`;
   material.userData.fow = u;
   material.needsUpdate = true;
 }

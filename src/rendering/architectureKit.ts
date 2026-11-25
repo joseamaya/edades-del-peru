@@ -120,9 +120,9 @@ function footprint(model: ArchModel): THREE.Box3 {
  * are box-projected at world scale (TILE in the Blender script). `keepColor` keeps the material's
  * documented paint colour under a near-white detail map; otherwise `tint` (times `lift`) colours the set.
  */
-const ARCH_SURFACES: Record<
+export const ARCH_SURFACES: Record<
   string,
-  { set: string; tint?: number; normal: number; keepColor?: boolean; lift?: number }
+  { set: string; tint?: number; normal: number; keepColor?: boolean; lift?: number; saturation?: number }
 > = {
   // Set stone: the light, coursed dry-stone tile, warmed towards the local granodiorite.
   'MAT-Arch_Stone': { set: 'wall_drystone', tint: 0xf2e4cf, normal: 0.8, lift: 1.5 },
@@ -149,15 +149,41 @@ const ARCH_SURFACES: Record<
   'MAT-Arch_IncaThatch': { set: 'roof_thatch', tint: 0xd9bf86, normal: 0.9 },
   'MAT-Arch_IncaEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
   'MAT-Arch_IncaSand': { set: 'plaster_detail', normal: 0.4, keepColor: true },
-  // Colonial: lime plaster and adobe keep their documented paint; the photographed tile and wood sets are
-  // brightened to the kit's base colours instead of being multiplied by them.
+  // Colonial: lime plaster and adobe keep their documented paint. The photographed tile is a saturated
+  // red (#b24541); a warm multiply alone raises its saturation in linear space, so the shader pulls it
+  // towards luma and a near-neutral tint leaves a weathered terracotta. The plaza floor has its own light
+  // paving set; the stone is lifted so the kerb and the fountain do not read black.
   'MAT-Arch_ColonialPlaster': { set: 'plaster_detail', normal: 0.6, keepColor: true },
   'MAT-Arch_ColonialAdobe': { set: 'plaster_detail', normal: 0.9, keepColor: true },
-  'MAT-Arch_ColonialTile': { set: 'tile', tint: 0xe0b09a, normal: 0.7 },
+  'MAT-Arch_ColonialTile': {
+    set: 'tile',
+    tint: 0xefd9bf,
+    normal: 0.7,
+    saturation: 0.42,
+    lift: 1.15,
+  },
   'MAT-Arch_ColonialWood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
-  'MAT-Arch_ColonialStone': { set: 'wall_cutstone', tint: 0xd8d2c2, normal: 0.8 },
+  'MAT-Arch_ColonialStone': { set: 'wall_cutstone', tint: 0xd8d2c2, normal: 0.8, lift: 1.25 },
+  'MAT-Arch_ColonialPaving': { set: 'ground_plaza', tint: 0xf0e6d6, normal: 0.5, lift: 1.25 },
   'MAT-Arch_ColonialDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
 };
+
+/** Mix a sampled diffuse colour towards its luma; `saturation` 1 keeps the map, 0 is grey. */
+function applySaturation(material: THREE.MeshStandardMaterial, saturation: number): void {
+  const value = saturation.toFixed(2);
+  const previousHook = material.onBeforeCompile;
+  material.onBeforeCompile = (shader, renderer) => {
+    previousHook.call(material, shader, renderer);
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <map_fragment>',
+      `#include <map_fragment>
+  float archLuma = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+  diffuseColor.rgb = mix(vec3(archLuma), diffuseColor.rgb, ${value});`,
+    );
+  };
+  const previousKey = material.customProgramCacheKey.bind(material);
+  material.customProgramCacheKey = () => `${previousKey()}|arch-saturation-${value}`;
+}
 
 export function applyArchSurface(material: THREE.MeshStandardMaterial, name: string): void {
   const surface = ARCH_SURFACES[name];
@@ -175,6 +201,7 @@ export function applyArchSurface(material: THREE.MeshStandardMaterial, name: str
     material.roughnessMap = set.roughness;
     material.roughness = 1;
   }
+  if (surface.saturation !== undefined) applySaturation(material, surface.saturation);
   material.needsUpdate = true;
 }
 

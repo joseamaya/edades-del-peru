@@ -60,6 +60,9 @@ MATERIALS = {
     'tile': ('MAT-Arch_ColonialTile', hex_rgb('#a5523a'), 0.9),
     'wood': ('MAT-Arch_ColonialWood', hex_rgb('#5a3b28'), 0.9),
     'stone': ('MAT-Arch_ColonialStone', hex_rgb('#9a958a'), 0.92),
+    # The plaza floor has its own light paving set at runtime, so the kerb, fountain and bands keep the
+    # wall stone and the floor does not inherit its dark mortar.
+    'paving': ('MAT-Arch_ColonialPaving', hex_rgb('#b8a98f'), 0.95),
     'dark': ('MAT-Arch_ColonialDark', hex_rgb('#241b15'), 1.0),
 }
 
@@ -69,6 +72,7 @@ TILE = {
     'MAT-Arch_ColonialTile': 1.4,
     'MAT-Arch_ColonialWood': 1.2,
     'MAT-Arch_ColonialStone': 2.2,
+    'MAT-Arch_ColonialPaving': 4.0,
     'MAT-Arch_ColonialDark': 1.5,
 }
 
@@ -345,10 +349,10 @@ def portal(mats, lod):
 
 
 def plaza(mats, lod):
-    """The Plaza Mayor floor: stone paving inside a kerb of set stones."""
+    """The Plaza Mayor floor: light paving inside a kerb of set stones."""
     kit = Kit(mats, lod, 141)
     w, d = 34.0, 26.0
-    kit.box(0.0, 0.0, 0.0, w, d, 0.12, 'stone')
+    kit.box(0.0, 0.0, 0.0, w, d, 0.12, 'paving')
     for sx, sy, lx, ly in ((0, -1, w, 0.5), (0, 1, w, 0.5), (-1, 0, 0.5, d), (1, 0, 0.5, d)):
         kit.box(sx * (w / 2 - 0.25), sy * (d / 2 - 0.25), 0.0, lx, ly, 0.22, 'stone')
     return kit
@@ -425,7 +429,8 @@ def assign_uvs(bm, materials):
 
 def tint(mesh):
     """COLOR_0 over the material: grime at the foot of the walls, a shade per roof tile and low-frequency
-    weathering; openings and the undersides of the roofs stay dark."""
+    weathering; openings and the undersides of the roofs stay dark. Horizontal paving and stone up-faces
+    skip the wall-foot grime, which would make the plaza at z 0 read nearly black."""
     col = mesh.color_attributes.new('Col', 'BYTE_COLOR', 'CORNER')
     rng = random.Random(7)
     for poly in mesh.polygons:
@@ -435,12 +440,20 @@ def tint(mesh):
             shade = rng.uniform(0.86, 1.06)
         if name == 'MAT-Arch_ColonialTile' and poly.normal.z < -0.2:
             shade = 0.55
+        if name == 'MAT-Arch_ColonialPaving':
+            shade = rng.uniform(0.94, 1.04)
         if name in ('MAT-Arch_ColonialWood', 'MAT-Arch_ColonialDark'):
             shade = 0.92
+        # The paving is horizontal ground at z 0; the wall-foot grime would make the whole plaza nearly
+        # black. Stone up-faces (kerb, bowls, copings) get the same reprieve, the verticals keep the dirt.
+        horizontal = name == 'MAT-Arch_ColonialPaving' or (
+            name == 'MAT-Arch_ColonialStone' and poly.normal.z > 0.7
+        )
+        base, amp, noise_amp = (0.92, 0.08, 0.05) if horizontal else (0.74, 0.26, 0.10)
         for li in poly.loop_indices:
             co = mesh.vertices[mesh.loops[li].vertex_index].co
-            grime = 0.74 + 0.26 * max(0.0, min(1.0, co.z / 1.4))
-            mottle = 0.9 + 0.1 * (noise.noise(co * 0.35) * 0.5 + 0.5)
+            grime = base + amp * max(0.0, min(1.0, co.z / 1.4))
+            mottle = (1.0 - noise_amp) + noise_amp * (noise.noise(co * 0.35) * 0.5 + 0.5)
             c = grime * mottle * shade
             col.data[li].color = (c, c, c, 1.0)
     mesh.color_attributes.active_color = col
