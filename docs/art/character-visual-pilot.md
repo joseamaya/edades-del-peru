@@ -639,6 +639,40 @@ What changed:
 cotton net and the gourd floats. The axe, the hammerstone and the digging stick are plausible Late Archaic
 stone and wood tools; no specific Caral exemplar is reproduced. No metal is used.
 
+## 21. Caral worker clothing
+
+The 2026-11-26 close capture of idle and walking Caral workers, front, side and back, showed three problems:
+
+- **The tunic read as a bodysuit.** It is the body surface clipped and pushed 3 cm out along the normals, so
+  it followed every hollow: the chest, the under-bust, the waist and the buttocks showed through.
+- **Torn male wrap.** The male wrap was a narrow tube, and the forward thigh cut through it on every stride.
+- **One white crowd.** Every worker wore the same white.
+
+What changed:
+
+- **Drape** (`drapeShell` in `scripts/build_caral_worker.mjs`, rebuilt with `yarn models:build`).
+  - Around the torso axis, each front and back vertex of the tunic is pushed out to the widest point of the
+    shell up to 0.3 m above it, and across ±3 angular bins. The cloth now falls from the chest and the
+    shoulder blades and bridges the cleavage and the cleft instead of dipping into them.
+  - The field is blurred and sampled bilinearly, because the raw bins showed as terraces in the shading.
+  - Only the torso core moves, fading out toward the sleeves, so the arms do not cut through a widened side.
+  - Vertices only move outward, so the body cannot poke through.
+  - Normals are rebuilt smooth across the duplicated clip vertices.
+- **Male wrap.** The hem flares to 0.31 × 0.27 m (it was 0.29 × 0.22) and drops 2 cm.
+- **Natural cotton shades.**
+  - Native Peruvian cotton grows white, cream, fawn and light brown, and Caral's cotton was used undyed. Each
+    Caral worker's tunic and lower garment take one of four shades (`CARAL_COTTON_SHADES`), cycling through
+    the 16 pairs.
+  - The shade is part of the consolidation cache key, because it is baked into the merged garment colours.
+  - The shades are a plausible abstraction: no Caral garment colour is documented.
+
+The pipeline was checked first: rebuilding the old script reproduced the committed GLB byte for byte. The
+GLB stays at 2.57 MB and the garment triangle counts are unchanged. The hero GLB (`tambotoco_hero.glb`) was
+not rebuilt; it picks up the drape the next time `yarn models:hero` runs.
+
+**Still open.** The sleeve edges are cut by vertical planes through the arm and read as jagged up close. The
+dark slit at the back of the female skirt is the sash's hanging end, not a hole.
+
 ## See also
 
 [`../design/art-direction.md`](../design/art-direction.md) §4.1 ·
