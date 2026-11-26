@@ -116,8 +116,8 @@ describe('Andean tunic body paint', () => {
           : min,
       );
       expect(paintAlpha(body, knee)).toBe(0);
-      // The #630 captures showed the shoulder: the clavicle/upper-arm vertices under the short sleeve are
-      // painted, not left as skin.
+      // The #630 captures showed the shoulder: the clavicle and the cap of the upper arm are painted, not
+      // left as skin. The rest of the upper arm is bare (the uncu is sleeveless).
       const shoulders = bones
         .map((bone, index) => (/^(clavicle_[lr]|upperarm_[lr])$/.test(bone) ? index : -1))
         .filter((index) => index >= 0);
@@ -222,6 +222,48 @@ describe('Andean tunic body paint', () => {
       );
     } finally {
       rig.dispose();
+    }
+  });
+
+  it('leaves the upper arm bare below the shoulder cap and stops the thigh paint at the skirt hem', () => {
+    for (const [variant, male, lowerName] of [
+      ['inca_soldier_m', true, 'attire_wrap_m'],
+      ['moche_soldier_m', true, 'attire_wrap_m'],
+      ['inca_soldier_f', false, 'attire_skirt_f'],
+    ] as const) {
+      const rig = acquireRig('caral_worker', variant)!;
+      try {
+        const body = bodyOf(rig, male);
+        const bones = dominantBones(body);
+        const point = new THREE.Vector3();
+        for (const side of ['l', 'r'] as const) {
+          const shoulderBone = rig.root.getObjectByName(`upperarm_${side}`);
+          expect(shoulderBone, `${variant} upperarm_${side}`).toBeDefined();
+          const shoulderY = shoulderBone!.getWorldPosition(new THREE.Vector3()).y;
+          let cap = 0;
+          for (let i = 0; i < bones.length; i++) {
+            if (bones[i] !== `upperarm_${side}`) continue;
+            body.getVertexPosition(i, point).applyMatrix4(body.matrixWorld);
+            if (point.y < shoulderY - 0.06) {
+              expect(paintAlpha(body, i), `${variant} bare ${side} arm vertex ${i}`).toBe(0);
+            }
+            if (point.y >= shoulderY - 0.02 && paintAlpha(body, i) === 1) cap++;
+          }
+          expect(cap, `${variant} shoulder cap ${side}`).toBeGreaterThan(0);
+        }
+
+        const lower = rig.root.getObjectByName(lowerName) as THREE.SkinnedMesh;
+        const hem = posedMinY(lower);
+        let lowestPainted = Infinity;
+        for (let i = 0; i < bones.length; i++) {
+          if (!/^thigh_[lr]$/.test(bones[i]) || paintAlpha(body, i) !== 1) continue;
+          body.getVertexPosition(i, point).applyMatrix4(body.matrixWorld);
+          lowestPainted = Math.min(lowestPainted, point.y);
+        }
+        expect(lowestPainted, `${variant} painted thigh`).toBeGreaterThanOrEqual(hem + 0.015);
+      } finally {
+        rig.dispose();
+      }
     }
   });
 

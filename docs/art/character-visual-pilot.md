@@ -113,6 +113,8 @@ copied. No external asset was downloaded or added.
   applied it to every Andean soldier).
 - Usuta sandals (sole plus strap) per foot.
 - The shared uncu/skirt/wrap keep their existing skinning and are tinted from the civilization palette.
+- The uncu is sleeveless: the body paint covers only the shoulder cap, and the skirt paint stops above the
+  local hem, so no cloth band runs down the bare thigh.
 
 ### Spanish and Republican (`src/rendering/uniformAttire.ts`)
 

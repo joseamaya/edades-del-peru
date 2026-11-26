@@ -775,6 +775,43 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     const tunicTint = (tunic.material as THREE.MeshStandardMaterial).color.clone();
     const skirtTint = (lower.material as THREE.MeshStandardMaterial).color.clone();
     garmentTints = { tunic: tunicTint, skirt: skirtTint };
+    /**
+     * The skirt's lowest vertex is not a flat hem: it dips at the sides and rises at the front. Sampling it
+     * per angular bin around the pelvis lets the thigh paint stop above the local hem instead of above the
+     * global lowest point, which left a cloth-coloured band on the bare thigh.
+     */
+    const HEM_BINS = 24;
+    const pelvis = root.getObjectByName('pelvis');
+    const hip = pelvis
+      ? pelvis.getWorldPosition(new THREE.Vector3())
+      : new THREE.Vector3().addVectors(lowerBox.min, lowerBox.max).multiplyScalar(0.5);
+    const hem = new Array<number>(HEM_BINS).fill(Infinity);
+    const skirt = lower as THREE.SkinnedMesh;
+    const skirtPosition = lower.geometry.getAttribute('position');
+    if (skirt.isSkinnedMesh && skirtPosition) {
+      const point = new THREE.Vector3();
+      for (let i = 0; i < skirtPosition.count; i++) {
+        skirt.getVertexPosition(i, point).applyMatrix4(lower.matrixWorld);
+        const angle = Math.atan2(point.z - hip.z, point.x - hip.x);
+        const bin = Math.floor(((angle + Math.PI) / (Math.PI * 2)) * HEM_BINS) % HEM_BINS;
+        hem[bin] = Math.min(hem[bin], point.y);
+      }
+    }
+    const hemAt = (point: THREE.Vector3): number => {
+      const angle = Math.atan2(point.z - hip.z, point.x - hip.x);
+      const bin = Math.floor(((angle + Math.PI) / (Math.PI * 2)) * HEM_BINS) % HEM_BINS;
+      return Number.isFinite(hem[bin]) ? hem[bin] : lowerBox.min.y;
+    };
+    /**
+     * The uncu is sleeveless: only the cap of the upper arm at the shoulder joint belongs to the tunic.
+     * The rest of the upper arm stays skin, so the paint no longer draws a short sleeve.
+     */
+    const SHOULDER_PAINT = 0.04;
+    const shoulder = { l: -Infinity, r: -Infinity };
+    for (const side of ['l', 'r'] as const) {
+      const bone = root.getObjectByName(`upperarm_${side}`);
+      if (bone) shoulder[side] = bone.getWorldPosition(new THREE.Vector3()).y;
+    }
     // The volume alone also catches a hand hanging inside the tunic's box (the arms are down in the bind
     // pose) and a calf inside the skirt's box, so the dominant bone gates each region. The skirt is the
     // outer layer at the waist and wins the overlap. Only the hero's uncu reaches below the wrap
@@ -786,7 +823,13 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       ? /^(spine_0[123]|clavicle_[lr]|upperarm_[lr]|pelvis|thigh_[lr])$/
       : /^(spine_0[123]|clavicle_[lr]|upperarm_[lr])$/;
     const regionOf = (bone: string, point: THREE.Vector3): AndeanPaintRegion | null => {
-      if (skirtBones.test(bone) && lowerBox.containsPoint(point)) return 'skirt';
+      const arm = /^upperarm_([lr])$/.exec(bone);
+      if (arm && point.y < shoulder[arm[1] as 'l' | 'r'] - SHOULDER_PAINT) return null;
+      if (skirtBones.test(bone) && lowerBox.containsPoint(point)) {
+        const thigh = /^thigh_([lr])$/.exec(bone);
+        // Stay skin below the local hem; a long uncu falls through to the tunic region below.
+        if (!thigh || point.y >= hemAt(point) + 0.02) return 'skirt';
+      }
       if (tunicBones.test(bone) && tunicBox.containsPoint(point)) return 'tunic';
       return null;
     };
