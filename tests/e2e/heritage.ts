@@ -23,10 +23,19 @@ export async function installHeritageClick(page: Page): Promise<void> {
       const g = (window as unknown as { game: any }).game;
       const THREE = (window as unknown as { THREE: any }).THREE;
       const canvas = document.querySelector('#render-canvas') as HTMLCanvasElement;
+      // `InputController.UNIT_PICK_PX`; page code cannot import it.
+      const UNIT_PICK_PX = 30;
+      // A little over the tolerance, so `pickAt` cannot prefer a unit over the monument.
+      const CLEARANCE_PX = UNIT_PICK_PX + 4;
+      const GRID = 11;
+      // Camera offsets by monument radius, from close to wide, and four quadrants around it. A closer
+      // camera spreads the monument more pixels from the units standing at its base.
+      const FRAMINGS = [1.8, 2.6, 3.6];
+      const QUADRANTS = [Math.PI / 4, (3 * Math.PI) / 4, (5 * Math.PI) / 4, (7 * Math.PI) / 4];
+
       // `?noloop=1` means no frame rendered, so world matrices (and therefore picking) are stale.
       g.scene.updateMatrixWorld(true);
       if (!g.heritageStanding(id)) throw new Error(`heritage ${id} is not standing yet`);
-
       // The same roots `pickHeritage` raycasts against.
       const roots: any[] = [g.landmark, g.canalGroup].filter(Boolean);
       let owner: any = null;
@@ -35,23 +44,17 @@ export async function installHeritageClick(page: Page): Promise<void> {
           if (!owner && o.userData?.heritageId === id) owner = o;
         });
       }
-      if (roots.length === 0 || (!owner && !g.siteDef?.heritageProxies?.some((p: any) => p.id === id))) {
-        throw new Error(`no geometry for heritage ${id}`);
-      }
-      const proxy = (g.siteDef?.heritageProxies ?? []).find((p: { id: string }) => p.id === id);
+      if (!owner) throw new Error(`no pickable geometry for heritage ${id}`);
       // The acequia's id sits on the whole canal group; aim at its gate, not the group bounds.
-      const aim = owner?.getObjectByName?.('canal_gate') ?? owner;
-      let box = aim ? new THREE.Box3().setFromObject(aim) : null;
-      if (!box || box.isEmpty()) {
-        const y = g.terrain.getHeight(proxy.x, proxy.z);
-        box = new THREE.Box3(
-          new THREE.Vector3(proxy.x - proxy.w / 2, y, proxy.z - proxy.d / 2),
-          new THREE.Vector3(proxy.x + proxy.w / 2, y + (proxy.h ?? 4), proxy.z + proxy.d / 2),
-        );
-      }
+      const aim = owner.getObjectByName?.('canal_gate') ?? owner;
+      const box = new THREE.Box3().setFromObject(aim);
       const center = box.getCenter(new THREE.Vector3());
       const radius = Math.max(2, box.getSize(new THREE.Vector3()).length() / 2);
 
+      const toScreen = (v: any): { x: number; y: number } => ({
+        x: (v.x * 0.5 + 0.5) * window.innerWidth,
+        y: (-v.y * 0.5 + 0.5) * window.innerHeight,
+      });
       const label = new RegExp(labelSource);
       const commands = (): string[] =>
         [...document.querySelectorAll<HTMLButtonElement>('.ed-command')].map((b) => b.textContent ?? '');
@@ -62,9 +65,11 @@ export async function installHeritageClick(page: Page): Promise<void> {
         g.hud.bottomKey = '';
         g.hud.renderBottomIfChanged();
       };
+      // Only press the command when the click selected this monument: every heritage panel shows «Visitar».
       const press = (): boolean => {
-        const button = [...document.querySelectorAll<HTMLButtonElement>('.ed-command')].find((b) =>
-          label.test(b.textContent ?? ''),
+        if (g.getSelectedHeritage()?.id !== id) return false;
+        const button = [...document.querySelectorAll<HTMLButtonElement>('.ed-command')].find(
+          (b) => !b.disabled && label.test(b.textContent ?? ''),
         );
         button?.dispatchEvent(new PointerEvent('pointerdown', { button: 0, bubbles: true }));
         return !!button;
@@ -73,61 +78,68 @@ export async function installHeritageClick(page: Page): Promise<void> {
       const raycaster = new THREE.Raycaster();
       const ndc = new THREE.Vector2();
       const cam = g.camera.camera;
-      for (const distance of [radius * 2.4, radius * 3.6, radius * 5.4]) {
-        const d = Math.max(14, distance);
-        for (const angle of [Math.PI / 4, (3 * Math.PI) / 4, (5 * Math.PI) / 4, (7 * Math.PI) / 4]) {
-          cam.position.set(center.x + Math.sin(angle) * d, center.y + d * 0.85, center.z + Math.cos(angle) * d);
+      let sampled = 0;
+      let clicks = 0;
+      for (const factor of FRAMINGS) {
+        const offset = Math.max(12, radius * factor);
+        for (const angle of QUADRANTS) {
+          cam.position.set(
+            center.x + Math.sin(angle) * offset,
+            center.y + offset * 0.85,
+            center.z + Math.cos(angle) * offset,
+          );
           cam.lookAt(center);
           cam.updateMatrixWorld();
           const units = [...g.units.values()]
             .filter((u: any) => !u.dead && u.pos)
-            .map((u: any) => {
-              const s = new THREE.Vector3(u.pos.x, u.pos.y + 0.5, u.pos.z).project(cam);
-              return { x: (s.x * 0.5 + 0.5) * window.innerWidth, y: (-s.y * 0.5 + 0.5) * window.innerHeight };
-            });
+            .map((u: any) => toScreen(new THREE.Vector3(u.pos.x, u.pos.y + 0.5, u.pos.z).project(cam)));
           const corners = Array.from({ length: 8 }, (_, i) =>
-            new THREE.Vector3(
-              i & 1 ? box.max.x : box.min.x,
-              i & 2 ? box.max.y : box.min.y,
-              i & 4 ? box.max.z : box.min.z,
-            ).project(cam),
+            toScreen(
+              new THREE.Vector3(
+                i & 1 ? box.max.x : box.min.x,
+                i & 2 ? box.max.y : box.min.y,
+                i & 4 ? box.max.z : box.min.z,
+              ).project(cam),
+            ),
           );
-          const xs = corners.map((p: any) => (p.x * 0.5 + 0.5) * window.innerWidth);
-          const ys = corners.map((p: any) => (-p.y * 0.5 + 0.5) * window.innerHeight);
-          const minX = Math.max(2, Math.min(...xs));
-          const maxX = Math.min(window.innerWidth - 2, Math.max(...xs));
-          const minY = Math.max(2, Math.min(...ys));
-          const maxY = Math.min(window.innerHeight - 2, Math.max(...ys));
+          const minX = Math.max(2, Math.min(...corners.map((p) => p.x)));
+          const maxX = Math.min(window.innerWidth - 2, Math.max(...corners.map((p) => p.x)));
+          const minY = Math.max(2, Math.min(...corners.map((p) => p.y)));
+          const maxY = Math.min(window.innerHeight - 2, Math.max(...corners.map((p) => p.y)));
           if (minX >= maxX || minY >= maxY) continue;
           const candidates: { x: number; y: number; clearance: number }[] = [];
-          const STEPS = 11;
-          for (let ix = 0; ix < STEPS; ix++) {
-            for (let iy = 0; iy < STEPS; iy++) {
-              const sx = minX + ((ix + 0.5) / STEPS) * (maxX - minX);
-              const sy = minY + ((iy + 0.5) / STEPS) * (maxY - minY);
+          for (let ix = 0; ix < GRID; ix++) {
+            for (let iy = 0; iy < GRID; iy++) {
+              const sx = minX + ((ix + 0.5) / GRID) * (maxX - minX);
+              const sy = minY + ((iy + 0.5) / GRID) * (maxY - minY);
               ndc.set((sx / window.innerWidth) * 2 - 1, -(sy / window.innerHeight) * 2 + 1);
               raycaster.setFromCamera(ndc, cam);
-              const hit = raycaster.intersectObjects(roots, true).some((h: any) => {
+              const hitsOwn = raycaster.intersectObjects(roots, true).some((h: any) => {
                 let o: any = h.object;
                 while (o && o.userData?.heritageId !== id) o = o.parent;
                 return !!o;
               });
-              if (!hit) continue;
+              if (!hitsOwn) continue;
+              sampled++;
               let clearance = Infinity;
               for (const u of units) clearance = Math.min(clearance, Math.hypot(u.x - sx, u.y - sy));
               candidates.push({ x: sx, y: sy, clearance });
             }
           }
-          // `pickAt` steals any point within 30 px of a unit, so only aim where no unit is that close.
           candidates.sort((a, b) => b.clearance - a.clearance);
-          for (const c of candidates.slice(0, 3)) {
-            if (c.clearance < 34) break;
+          for (const c of candidates.slice(0, 2)) {
+            if (c.clearance < CLEARANCE_PX) break;
+            clicks++;
             clickAt(c.x, c.y);
             if (press()) return;
           }
         }
       }
-      throw new Error(`no «/${labelSource}/» command for ${id}; got: ${commands().join(' | ')}`);
+      if (sampled === 0) throw new Error(`no visible point of heritage ${id}; is it hidden or unloaded?`);
+      throw new Error(
+        `no «/${labelSource}/» command for ${id} after ${clicks} click(s); selected ` +
+          `${g.getSelectedHeritage()?.id ?? 'nothing'}; got: ${commands().join(' | ')}`,
+      );
     };
   });
 }
