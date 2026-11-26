@@ -645,7 +645,8 @@ Definition of Done and the building audit see
 - **Headless site collision** (2026-11-26): Caral and Chavín were the last authored sites whose walls
   the headless match did not see (`simulationCollision` was off). Chavín's three temple masses now opt in
   through `def.blockers`; Caral's heritage list is joined by the kit city, the camp, Áspero and the Supe
-  hamlets through one `addCaralSiteBlockers` helper shared by the renderer and `applyHeadlessSiteCollision`.
+  hamlets through one `CARAL_KIT_BLOCKERS` list applied by `addSiteObstacles` in both the renderer and
+  `applyHeadlessSiteCollision`.
   With the Áspero houses finally blocking the headless coast, `retargetNearbyGather` now skips a depleted
   fishing bank whose shore is unreachable (it used to walk at the wall and abandon the order), so
   `REPLAY_VERSION` is 54. Guarded by `tests/headless-game.test.ts` (Caral's kit house and Chavín's temple are
