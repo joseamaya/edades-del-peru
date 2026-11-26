@@ -151,7 +151,7 @@ historical claim.
 
 The courtyard still received only the blue hemisphere light: at `timeOfDay: 'dusk'` (`t = 0.28`, a sun
 about 11° above the horizon) the walls shadowed almost all of it, so even the warmed slab read navy. The
-mission now sets `timeOfDayValue: 0.33` (a sun about 27°), the light its `cine-bastion` still already uses
+mission now sets `timeOfDayValue: 0.33` (a sun about 28°), the light its `cine-bastion` still already uses
 (`time: 0.33` in `scripts/cinema-shots/independencia.mjs`), so the patio reads warm without changing the
 dusk label or the intro. The still is unchanged and now matches the live mission. Evidence:
 `docs/media/republic-fort-courtyard-light-before-after.webp`.

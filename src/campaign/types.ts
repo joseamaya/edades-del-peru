@@ -499,8 +499,9 @@ export interface MissionDef {
   commanders?: PortraitId[];
   timeOfDay: 'morning' | 'noon' | 'dusk' | 'night';
   /**
-   * Optional explicit sun time (0 night .. 1 day) when the named preset is not low enough for the
-   * scene, e.g. the long-shadow morning of the Tambotoco pilot.
+   * Optional explicit sun time (0 night .. 1 day) when the named preset does not fit the scene, e.g. the
+   * long-shadow morning of the Tambotoco pilot or the higher dusk sun that keeps the Real Felipe courtyard
+   * out of the walls' shadow.
    */
   timeOfDayValue?: number;
   startingEra: Era;

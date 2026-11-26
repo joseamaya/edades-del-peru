@@ -81,7 +81,7 @@ export const mRealFelipe: MissionDef = {
   },
   atmosphere: { fogDensity: 0.0018, sunWarmth: 0.92, skyTint: '#d2d4ce' },
   // The dusk palette stays, but 0.28 puts the sun at ~11° and the walls shadow the whole courtyard;
-  // 0.33 lifts it to ~27° so the paved patio reads warm instead of navy.
+  // 0.33 lifts it to ~28° so the paved patio reads warm instead of navy.
   timeOfDay: 'dusk',
   timeOfDayValue: 0.33,
   startingEra: Era.REPUBLIC,
