@@ -36,6 +36,7 @@ import { COLONIAL_CITY_PHASE, COLONIAL_PHASE_PLAN, colonialLayoutAt } from '../m
 import { REPUBLIC_LAYOUTS, REPUBLIC_PHASE_PLAN } from '../model/defs/republicCity';
 import { INDEPENDENCE_LAYOUTS, INDEPENDENCE_PHASE_PLAN } from '../model/defs/independenceCity';
 import { MOCHE_LAYOUTS, MOCHE_PHASE_PLAN } from '../model/defs/mocheChimuCity';
+import { WARI_LAYOUTS, WARI_PHASE_PLAN } from '../model/defs/wariChancaCity';
 import { standsIn, type SitePhasePlan } from '../model/defs/sitePhases';
 import { fishingApproach, type Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
@@ -379,6 +380,16 @@ export class WorldViewDecor {
       if (layout) {
         spawnKitCity('moche_city', 'moche', layout, MOCHE_PHASE_PLAN, (city) => {
           this.game.mocheCity = city;
+        });
+      }
+    }
+    if (def.style === 'wari') {
+      // The Wari complex and the Chanca pucará share the highland kit; the composition is chosen by id,
+      // and the same layout owns its blockers.
+      const layout = WARI_LAYOUTS[def.id as keyof typeof WARI_LAYOUTS];
+      if (layout) {
+        spawnKitCity('wari_city', 'wari', layout, WARI_PHASE_PLAN, (city) => {
+          this.game.wariCity = city;
         });
       }
     }

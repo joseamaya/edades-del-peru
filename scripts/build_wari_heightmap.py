@@ -55,8 +55,15 @@ def height(x: float, z: float) -> float:
     west = smoothstep(22.0, 6.0, x) * (5.0 + 1.6 * math.sin(z * 0.12 + 0.6))
     h += north + east + south + west
 
-    # Shallow dry quebradas between the core and the provincial nodes.
-    h -= 1.0 * math.exp(-((z - 103.0) / 3.0) ** 2) * smoothstep(70.0, 92.0, x) * (1.0 - smoothstep(142.0, 160.0, x))
+    # Shallow dry quebradas between the core and the provincial nodes; they stop at the site edge so the
+    # ceremonial complex keeps one flat pad (a quebrada used to cut 0.9 m out of its southern half).
+    h -= (
+        1.0
+        * math.exp(-((z - 103.0) / 3.0) ** 2)
+        * smoothstep(70.0, 92.0, x)
+        * (1.0 - smoothstep(142.0, 160.0, x))
+        * (1.0 - site)
+    )
     h -= 0.8 * math.exp(-((x - 142.0) / 4.0) ** 2) * smoothstep(70.0, 88.0, z) * (1.0 - smoothstep(125.0, 145.0, z))
     return max(0.9, h)
 

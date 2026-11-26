@@ -57,6 +57,12 @@ const mocheUrls = import.meta.glob('../assets/architecture/moche/*.glb', {
   import: 'default',
 }) as Record<string, string>;
 
+const wariUrls = import.meta.glob('../assets/architecture/wari/*.glb', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
+
 const KIT_URLS: Record<ArchitectureKitId, Record<string, string>> = {
   caral: caralUrls,
   chavin: chavinUrls,
@@ -65,6 +71,7 @@ const KIT_URLS: Record<ArchitectureKitId, Record<string, string>> = {
   republic: republicUrls,
   independence: independenceUrls,
   moche: mocheUrls,
+  wari: wariUrls,
 };
 
 export function archKitUrl(kit: ArchitectureKitId, id: ArchAssetId, lod: 0 | 1): string | undefined {
@@ -227,6 +234,16 @@ export const ARCH_SURFACES: Record<
   'MAT-Arch_MocheEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
   'MAT-Arch_MocheWood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
   'MAT-Arch_MocheDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  // Highlands (Wari and the Chanca pucará): the field and cut stone are lifted out of the dark photographed
+  // dry-stone tile; the plaster, earth, thatch and openings keep their paint under the detail sets.
+  'MAT-Arch_WariStone': { set: 'wall_fieldstone', tint: 0xd9c9ae, normal: 0.85, lift: 1.5 },
+  'MAT-Arch_WariCutstone': { set: 'wall_cutstone', tint: 0xe8dbca, normal: 0.75, lift: 1.15 },
+  'MAT-Arch_WariPlasterWhite': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  'MAT-Arch_WariPlasterRed': { set: 'plaster_detail', normal: 0.5, keepColor: true },
+  'MAT-Arch_WariEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
+  'MAT-Arch_WariThatch': { set: 'roof_thatch', tint: 0xd9bf86, normal: 0.9 },
+  'MAT-Arch_WariWood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
+  'MAT-Arch_WariDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
 };
 
 /** Mix a sampled diffuse colour towards its luma; `saturation` 1 keeps the map, 0 is grey. */

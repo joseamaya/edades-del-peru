@@ -37,13 +37,14 @@ sampling the former 192 m composition 4/3 larger:
 Painted ground uses `WARI_GROUND` (basin grass, terrace dirt, quebrada sand, ridge rock) sampled at 128 × 128
 over 256 m. The worker crosses in ≈2:22 (`unitSpeedScale: 0.75`), inside the model-mission band. The
 horizontal composition scales 4/3 (node offsets, radii, roads and their widths included). The heightfield
-keeps the 192 m vertical amplitude, so slopes read gentler; the site GLB scales uniformly with the terrace.
-Both are presentation trade-offs, not a survey.
+keeps the 192 m vertical amplitude, so slopes read gentler. The kit pieces are placed in world metres on the
+flat site pad. Both are presentation trade-offs, not a survey.
 
 ## Site
 
-`wari_site` (scale `0.25 × 256/192`, anchor `(143.3, 136)`, camera height 93.3) reuses the Wari complex GLB,
-its heritage proxies, blockers, corridor and construction keepout, scaled with the terrace. The site has
+`wari_site` (anchor `(143.3, 136)`, camera height 93.3) draws the complex from the shared Wari kit
+([`wari-chanca-sites.md`](./wari-chanca-sites.md)); its heritage proxies, blockers, corridor and construction
+keepout follow the same layout. The site has
 **no construction phases**: it is the operating capital, not a monument the player builds; the exception is
 recorded here and in the quality bar.
 

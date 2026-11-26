@@ -69,8 +69,8 @@ try {
         g.applyQualityPreset('high');
         const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
         const base = g.playerCenter(0);
-        const pursuitDef = g.mission.def.objectives.find((o) => o.id === 'bonus_persecucion');
-        const pursuit = g.resolveMissionPoint(pursuitDef.pos);
+        const pursuitDef = g.mission.def.objectives.find((o) => o.id === 'obj_persecucion');
+        const pursuit = pursuitDef ? g.resolveMissionPoint(pursuitDef.pos) : { x: base.x, z: base.z };
         const centre = shot.anchor === 'site' ? site : shot.centre === 'pursuit' ? pursuit : { x: base.x, z: base.z };
         g.sky.setTimeOfDay(shot.time ?? 0.5);
         let t = 1;

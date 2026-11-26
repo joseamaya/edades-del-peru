@@ -134,6 +134,7 @@ import {
   chimuCityBlockers,
   mocheCityBlockers,
 } from './mocheChimuCity';
+import { CHANCA_CITY_ANCHOR, chancaCityBlockers, wariCityBlockers } from './wariChancaCity';
 
 import {
   LIMA_GROUND,
@@ -308,7 +309,7 @@ export interface AuthoredSiteDef {
    */
   hideModel?: boolean;
   /** Authored presentation family; the renderer picks the overlay from it. */
-  style?: 'ayllu' | 'colonial' | 'republic' | 'independence' | 'moche';
+  style?: 'ayllu' | 'colonial' | 'republic' | 'independence' | 'moche' | 'wari';
   /** Source meshes hidden because the game heightfield/scene owns that layer. */
   hideNodePatterns?: readonly RegExp[];
   /** Clears an approach strip from the player base to the site anchor. */
@@ -636,6 +637,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'wari_site',
     label: 'Complejo Arqueológico Wari',
     modelName: 'wari_site',
+    hideModel: true,
+    style: 'wari',
     // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
     // scale with it so the complex still covers its terrace.
     scale: wariLength(0.25),
@@ -653,35 +656,23 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     heritageProxies: [
       {
         id: 'wari_templo_d',
-        ...wariPoint({ x: 107.5, z: 83.9 }),
-        w: wariLength(15),
-        d: wariLength(7.5),
-        h: wariLength(3.5),
+        ...wariPoint({ x: 107.5, z: 88.4 }),
+        w: 18,
+        d: 18.4,
+        h: 6.7,
       },
-      { id: 'wari_plaza', ...wariPoint({ x: 107.5, z: 96.4 }), w: wariLength(23), d: wariLength(13), h: wariLength(2) },
-      {
-        id: 'wari_galeria',
-        ...wariPoint({ x: 107.5, z: 74.4 }),
-        w: wariLength(15),
-        d: wariLength(3),
-        h: wariLength(1.5),
-      },
-      {
-        id: 'wari_mural',
-        ...wariPoint({ x: 107.5, z: 89.7 }),
-        w: wariLength(15),
-        d: wariLength(1),
-        h: wariLength(1.2),
-      },
+      { id: 'wari_plaza', ...wariPoint({ x: 107.5, z: 98.3 }), w: 26, d: 18, h: 0.4 },
+      { id: 'wari_galeria', ...wariPoint({ x: 86.4, z: 97.5 }), w: 14.3, d: 5.3, h: 3.75 },
+      { id: 'wari_mural', ...wariPoint({ x: 101.5, z: 107 }), w: 10.2, d: 0.7, h: 2.6 },
     ],
-    blockers: [
-      { ...wariPoint({ x: 107.5, z: 83.9 }), w: wariLength(15), d: wariLength(7.5) },
-      { ...wariPoint({ x: 107.5, z: 74.4 }), w: wariLength(15), d: wariLength(3) },
-    ],
+    // The kit composition around the ceremonial plaza; the same layout derives the blockers.
+    blockers: wariCityBlockers(),
+    simulationCollision: true,
     blockerPadding: wariLength(0.5),
     buildKeepout: [{ x: 0.56, z: 0.45, rx: 0.18, rz: 0.15 }],
     wallCollision: {
-      meshPatterns: [/Wari_(Plaza|Perimeter|Gallery|D_Facade)/, /^Cube/],
+      // The Wari kit owns its own merged geometry and blockers; the hidden GLB is no longer loaded.
+      meshPatterns: [],
       maxStartYAboveBase: wariLength(1.2),
     },
     walkableCorridor: { width: wariLength(8) },
@@ -696,6 +687,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'chanca_site',
     label: 'Pucará chanca de Yahuar Pampa',
     modelName: 'chanca_site',
+    hideModel: true,
+    style: 'wari',
     // The 160 m composition is scaled by 1.6 into the 256 m transect; the model, proxies and blockers
     // scale with it so the pucará still covers its terrace.
     scale: chancaLength(0.7),
@@ -713,17 +706,19 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     heritageProxies: [
       {
         id: 'chanca_pucara',
-        ...chancaPoint({ x: 112.4, z: 60.8 }),
-        w: chancaLength(11),
-        d: chancaLength(9),
-        h: chancaLength(5),
+        ...CHANCA_CITY_ANCHOR,
+        w: 22,
+        d: 24,
+        h: 8,
       },
     ],
-    blockers: [{ ...chancaPoint({ x: 112.4, z: 60.8 }), w: chancaLength(11), d: chancaLength(9) }],
+    // The kit composition around the pucará terrace; the same layout derives the blockers.
+    blockers: chancaCityBlockers(),
+    simulationCollision: true,
     blockerPadding: chancaLength(0.5),
     buildKeepout: [{ x: 0.7025, z: 0.38, rx: 0.085, rz: 0.075 }],
     wallCollision: {
-      // The ayllu kit owns its own merged geometry and blockers; the hidden GLB is no longer loaded.
+      // The Wari kit owns its own merged geometry and blockers; the hidden GLB is no longer loaded.
       meshPatterns: [],
       maxStartYAboveBase: chancaLength(1.2),
     },

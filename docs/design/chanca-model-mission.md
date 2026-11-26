@@ -38,13 +38,14 @@ sampling the former **160 m** composition 1.6× larger:
 Painted ground uses `CHANCA_GROUND` (pampa grass, terrace dirt, quebrada sand, ridge rock) sampled at
 128 × 128 over 256 m. The worker crosses in ≈2:22 (`unitSpeedScale: 0.75`), inside the model-mission band.
 The horizontal composition scales 1.6 (start offsets, wave centres and radii, pucará proxies and corridor
-included). The heightfield keeps the 160 m vertical amplitude, so slopes read gentler; the site GLB scales
-uniformly with the terrace. Both are presentation trade-offs, not a survey.
+included). The heightfield keeps the 160 m vertical amplitude, so slopes read gentler. The kit pieces are
+placed in world metres on the flat pucará terrace. Both are presentation trade-offs, not a survey.
 
 ## Site
 
-`chanca_site` (scale `0.7 × 256/160`, anchor `(179.8, 97.3)`, camera height 76.8) reuses the Chanca pucará
-GLB, its heritage proxy, blocker and corridor, scaled with the terrace. The site has **no construction
+`chanca_site` (anchor `(179.8, 97.3)`, camera height 76.8) draws the pucará from the shared Wari kit
+([`wari-chanca-sites.md`](./wari-chanca-sites.md)); its heritage proxy, blockers and gate follow the same
+layout. The site has **no construction
 phases**: it is the Chanca camp in use, not a monument the player builds; the exception is recorded here and
 in the quality bar.
 

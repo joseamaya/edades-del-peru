@@ -1003,6 +1003,39 @@ slot is absent (offline / without assets).
   after the kit, same mission, seed, camera and light); produced with the `yarn shot` commands in
   `docs/design/independence-site.md` and `scripts/independence_sites_sheet.mjs`.
 
+### Wari architecture kit (m4_wari, m5_yahuar_pampa)
+
+- **Location**: `src/assets/architecture/wari/wari_<piece>_lod0.glb` and `_lod1.glb`: `d_temple` (D-shaped
+  plastered platform with the red band, stone facade and summit altar), `plaza`, `gallery`, `room`,
+  `pukara_wall`, `tower`, `mural`, `terrace` (andén) and `altar`.
+- **Source**: generated in Blender 5.3 by `scripts/blender/build_wari_architecture_kit.py` on the shared
+  `scripts/blender/arch_kit.py`; kit scene `art-src/blender/scenes/wari_architecture_kit.blend` (Git LFS).
+  Uncompressed exports and per-piece manifests in `art-src/blender/exports/wari/architecture/`; the game
+  copies were meshopt-compressed with `yarn art:models --only=<file>` (156,028 B for the 18 copies).
+- **Content**: project-owned procedural geometry. Eight Principled materials (field stone, cut stone, lime
+  plaster white and red, packed earth, thatch, timber and dark openings) with world-scale box-projected UVs
+  and a per-vertex tint; no textures in the GLBs. At runtime the game maps `wall_fieldstone` and
+  `wall_cutstone` (warmed and lifted) onto the stone, `plaster_detail` (kept colour) onto plaster, earth and
+  openings, `roof_thatch` onto thatch and `wood` onto the timber. LOD0 ≤ 5000 / LOD1 ≤ 1500 triangles per
+  piece; the D-shaped temple is the monument piece (≤ 8000 / 2400).
+- **Historical basis**: documented: the Wari D-shaped temple plan, the walled plaza, the long galleries and
+  the andenes; the red and cream facade painting; the Chanca pucará's thick walls, round towers and single
+  gate. Assumed (licences in the manifests): the tier, gallery and tower counts, the temple dimensions, the
+  gate width and the wall profiles. Sources: `docs/historia/arquitectura.md`,
+  `docs/historia/civilizaciones/wari.md`, `docs/historia/campanas/{wari_tiahuanaco,yahuar_pampa}.md`,
+  `docs/design/{wari-chanca-sites,wari-sacred-site,chanca-site}.md`.
+- **Runtime**: `src/model/defs/wariChancaCity.ts` places the Wari complex and the Chanca pucará and derives
+  each site's pathfinding blockers from the same placements (`layoutBlockers`); `WorldViewDecor` bakes them
+  with `ArchitectureCity`. Both sites set `hideModel` and `simulationCollision`, so the headless match blocks
+  the same pieces; the Wari south road and the pucará gate stay open. This retires the `wari_site` and
+  `chanca_fortress` GLBs as drawn sites (they stay in the registry).
+- **Terrain**: `scripts/build_wari_heightmap.py` now stops the dry quebrada at the site edge, so the temple
+  and the plaza share one flat bench (`wariHeightmap.ts` regenerated; identity hash updated).
+- **Evidence**: `docs/media/wari-kit-before-after.webp` (1772x978 WebP q74): two rows, the Wari complex and
+  the Chanca pucará, before and after the kit, same mission, seed, camera and light; produced with the
+  `yarn shot` commands in `docs/design/wari-chanca-sites.md` and `scripts/sites_sheet.mjs`. The
+  `cine-complejo` still and the Wari/Chanca intro sets were regenerated with the kit.
+
 ### Moche architecture kit (m3_moche_recuay, m6_chimu_inca)
 
 - **Location**: `src/assets/architecture/moche/moche_<piece>_lod0.glb` and `_lod1.glb`: `huaca` (five
