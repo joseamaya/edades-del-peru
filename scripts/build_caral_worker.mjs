@@ -450,9 +450,146 @@ try {
         bakeProportions(proportionMeshes);
       }
 
+      /**
+       * Let a body-offset shell hang like cloth. Around the torso axis, every vertex of the front and back
+       * is pushed out to the widest point of the shell within `HANG` metres above it (and one angular bin
+       * either side), so the cloth falls from the chest over the under-bust, the cleavage and the waist,
+       * and from the shoulder blades over the small of the back. Only the torso core (|x| < `CORE`) is
+       * moved and sampled: the sleeves and the sides stay where they were, so the arms do not cut through
+       * a widened side. Positions only ever move outward, so the body cannot poke through. Normals are
+       * rebuilt smooth across the duplicated clip vertices.
+       */
+      const drapeShell = (p, n, indices, { bottomY, topY }) => {
+        const CORE = 0.16;
+        const HANG = 0.3;
+        const BINS = 48;
+        const STEP = 0.02;
+        const count = p.length / 3;
+        let zMin = Infinity;
+        let zMax = -Infinity;
+        for (let i = 0; i < count; i++) {
+          zMin = Math.min(zMin, p[i * 3 + 2]);
+          zMax = Math.max(zMax, p[i * 3 + 2]);
+        }
+        const zc = (zMin + zMax) / 2;
+        const rows = Math.ceil((topY - bottomY) / STEP) + 2;
+        const grid = new Float32Array(BINS * rows);
+        const cell = (i) => {
+          const x = p[i * 3];
+          const y = p[i * 3 + 1];
+          const z = p[i * 3 + 2] - zc;
+          const theta = Math.atan2(z, x);
+          const bin = Math.floor(((theta + Math.PI) / (Math.PI * 2)) * BINS) % BINS;
+          const row = Math.max(0, Math.min(rows - 1, Math.floor((y - bottomY) / STEP)));
+          return { x, z, bin, row, r: Math.hypot(x, z) };
+        };
+        for (let i = 0; i < count; i++) {
+          const c = cell(i);
+          if (Math.abs(c.x) >= CORE) continue;
+          grid[c.row * BINS + c.bin] = Math.max(grid[c.row * BINS + c.bin], c.r);
+        }
+        // The hang field per cell: the widest core point up to HANG above, and across three bins (22°)
+        // either side, so the cloth bridges a cleft instead of dipping into it: the cleavage in front and,
+        // at the back, the hem that dipped between the buttocks into a dark notch.
+        const hangRows = Math.round(HANG / STEP);
+        const span = 3;
+        let field = new Float32Array(BINS * rows);
+        for (let row = 0; row < rows; row++) {
+          for (let bin = 0; bin < BINS; bin++) {
+            let m = 0;
+            for (let r2 = row; r2 <= Math.min(rows - 1, row + hangRows); r2++) {
+              for (let d = -span; d <= span; d++) m = Math.max(m, grid[r2 * BINS + ((bin + d + BINS) % BINS)]);
+            }
+            field[row * BINS + bin] = m;
+          }
+        }
+        // Blur it, or the 2 cm rows and the angular bins show as terraces in the shading.
+        for (let pass = 0; pass < 3; pass++) {
+          const next = new Float32Array(field.length);
+          for (let row = 0; row < rows; row++) {
+            for (let bin = 0; bin < BINS; bin++) {
+              let sum = 0;
+              let weight = 0;
+              for (let dr = -1; dr <= 1; dr++) {
+                const r2 = row + dr;
+                if (r2 < 0 || r2 >= rows) continue;
+                for (let d = -1; d <= 1; d++) {
+                  const v = field[r2 * BINS + ((bin + d + BINS) % BINS)];
+                  if (v <= 0) continue;
+                  const w = (dr === 0 ? 2 : 1) * (d === 0 ? 2 : 1);
+                  sum += v * w;
+                  weight += w;
+                }
+              }
+              next[row * BINS + bin] = weight ? sum / weight : 0;
+            }
+          }
+          field = next;
+        }
+        // Bilinear sample of the field at a continuous angle and height.
+        const sample = (theta, y) => {
+          const fb = ((theta + Math.PI) / (Math.PI * 2)) * BINS - 0.5;
+          const fr = Math.max(0, Math.min(rows - 1.001, (y - bottomY) / STEP - 0.5));
+          const b0 = Math.floor(fb);
+          const r0 = Math.floor(fr);
+          const tb = fb - b0;
+          const tr = fr - r0;
+          const at = (row, bin) => field[row * BINS + ((bin + BINS) % BINS)];
+          const top = at(r0, b0) * (1 - tb) + at(r0, b0 + 1) * tb;
+          const bottom = at(r0 + 1, b0) * (1 - tb) + at(r0 + 1, b0 + 1) * tb;
+          return top * (1 - tr) + bottom * tr;
+        };
+        for (let i = 0; i < count; i++) {
+          const c = cell(i);
+          if (c.r < 1e-4) continue;
+          // Full hang inside the core, fading out to the sleeves; eased in across the sides too, so the
+          // side seam keeps the body's line.
+          const core = Math.max(0, Math.min(1, (CORE + 0.04 - Math.abs(c.x)) / 0.08));
+          const front = Math.min(1, Math.abs(c.z) / c.r / 0.6);
+          const target = Math.max(c.r, sample(Math.atan2(c.z, c.x), p[i * 3 + 1]));
+          const r = c.r + (target - c.r) * core * front;
+          p[i * 3] = (c.x / c.r) * r;
+          p[i * 3 + 2] = zc + (c.z / c.r) * r;
+        }
+        // Smooth normals: the clip duplicates vertices per triangle, so accumulate by position.
+        const key = (i) => `${p[i * 3].toFixed(4)},${p[i * 3 + 1].toFixed(4)},${p[i * 3 + 2].toFixed(4)}`;
+        const sums = new Map();
+        const a = new THREE.Vector3();
+        const b = new THREE.Vector3();
+        const c = new THREE.Vector3();
+        for (let t = 0; t < indices.length; t += 3) {
+          const [ia, ib, ic] = [indices[t], indices[t + 1], indices[t + 2]];
+          a.fromArray(p, ia * 3);
+          b.fromArray(p, ib * 3);
+          c.fromArray(p, ic * 3);
+          const face = new THREE.Vector3().subVectors(c, b).cross(new THREE.Vector3().subVectors(a, b));
+          for (const i of [ia, ib, ic]) {
+            const k = key(i);
+            const sum = sums.get(k) ?? new THREE.Vector3();
+            sums.set(k, sum.add(face));
+          }
+        }
+        for (let i = 0; i < count; i++) {
+          const sum = sums.get(key(i));
+          if (!sum || sum.lengthSq() < 1e-12) continue;
+          const normal = sum.clone().normalize();
+          // Keep the source winding: flip if the rebuilt normal disagrees with the body's.
+          const dot = normal.x * n[i * 3] + normal.y * n[i * 3 + 1] + normal.z * n[i * 3 + 2];
+          if (dot < 0) normal.negate();
+          n[i * 3] = normal.x;
+          n[i * 3 + 1] = normal.y;
+          n[i * 3 + 2] = normal.z;
+        }
+      };
+
       // A short-sleeved cotton tunic derived from the body surface: same skin weights,
-      // slightly offset along the normals, with the arms and neck excluded.
-      const makeTunic = (sourceBody, { topY = 1.48, bottomY = 0.88, sideX = 0.22, offset = 0.03 } = {}) => {
+      // slightly offset along the normals, with the arms and neck excluded. `drape` lets the front and back
+      // fall straight from the chest and the shoulder blades, as woven cotton does, instead of following
+      // every hollow of the body: the plain offset shell read as a painted bodysuit.
+      const makeTunic = (
+        sourceBody,
+        { topY = 1.48, bottomY = 0.88, sideX = 0.22, offset = 0.03, drape = true } = {},
+      ) => {
         const geometry = sourceBody.geometry;
         const positions = geometry.getAttribute('position');
         const normals = geometry.getAttribute('normal');
@@ -535,6 +672,7 @@ try {
           }
           for (let i = 1; i < poly.length - 1; i++) indices.push(base, base + i, base + i + 1);
         }
+        if (drape) drapeShell(p, n, indices, { bottomY, topY });
         const out = new THREE.BufferGeometry();
         out.setAttribute('position', new THREE.Float32BufferAttribute(p, 3));
         out.setAttribute('normal', new THREE.Float32BufferAttribute(n, 3));
@@ -687,11 +825,12 @@ try {
       const wrapM = addSkinned(
         makeTube({
           topY: 0.97,
-          bottomY: 0.8,
+          bottomY: 0.78,
           topRx: 0.25,
-          topRz: 0.19,
-          bottomRx: 0.29,
-          bottomRz: 0.22,
+          topRz: 0.2,
+          // The hem flares: at 0.29 x 0.22 the forward thigh cut through the wrap on every stride.
+          bottomRx: 0.31,
+          bottomRz: 0.27,
           segments: 28,
           rings: 4,
         }),

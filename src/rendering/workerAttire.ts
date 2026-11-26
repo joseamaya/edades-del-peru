@@ -30,6 +30,15 @@ export interface CaralWorkerHandle extends RigVariantHandle {
   setCarrying(carrying: boolean, color?: number, resource?: string): void;
 }
 
+/**
+ * Native Peruvian cotton grows in its own colours, from white through cream and fawn to light brown, and
+ * Caral's cotton was used undyed (`docs/historia/civilizaciones/caral.md`). Each Caral worker's tunic and
+ * skirt/wrap take one of these shades over the weave, so a crowd is not one uniform white. The shades are a
+ * plausible abstraction; no Caral garment colour is documented.
+ */
+export const CARAL_COTTON_SHADES = [0xffffff, 0xf2e4c6, 0xdcc49c, 0xc4a585] as const;
+let caralShadeCounter = 0;
+
 /** Hand tool by the kind of node being worked. Presentation only. */
 export type WorkerToolKind = 'stick' | 'axe' | 'maul';
 
@@ -347,6 +356,17 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   if (palette) {
     tintGarment(male ? 'attire_tunic_m' : 'attire_tunic_f', palette.primary);
     tintGarment(male ? 'attire_wrap_m' : 'attire_skirt_f', palette.secondary);
+  }
+  // Undyed native cotton in its natural shades: the tunic and the lower garment are picked independently,
+  // cycling through the 16 pairs as workers are dressed (presentation only; no simulation input).
+  let shadeKey = '';
+  if (finishedCaralLook) {
+    const n = caralShadeCounter++;
+    const tunicShade = n % CARAL_COTTON_SHADES.length;
+    const lowerShade = Math.floor(n / CARAL_COTTON_SHADES.length) % CARAL_COTTON_SHADES.length;
+    tintGarment(male ? 'attire_tunic_m' : 'attire_tunic_f', CARAL_COTTON_SHADES[tunicShade]);
+    tintGarment(male ? 'attire_wrap_m' : 'attire_skirt_f', CARAL_COTTON_SHADES[lowerShade]);
+    shadeKey = `|cotton${tunicShade}${lowerShade}`;
   }
 
   const bandColor = new THREE.Color(palette ? palette.accent : chasqui ? 0xc8a040 : scout ? 0x9a5a3a : 0x8a3b2a);
@@ -936,7 +956,8 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   // The variant is final: merge the static body parts and the rigid gear into a few skinned draws.
   // Anything whose visibility changes at runtime (the tool, the net, the carry bundle and the pieces
   // the hero hides or re-shows) keeps its own draw.
-  const consolidated = consolidateRig(root, { dynamic: WORKER_DYNAMIC_PARTS, cacheKey: variant });
+  // The cotton shade is baked into the merged garment colours, so it is part of the shared-geometry key.
+  const consolidated = consolidateRig(root, { dynamic: WORKER_DYNAMIC_PARTS, cacheKey: `${variant}${shadeKey}` });
   tools.ownedGeometries.push(...consolidated.geometries);
   tools.ownedMaterials.push(...consolidated.materials);
   // The body stays its own textured draw, so painting it here does not feed the merged garment geometry.

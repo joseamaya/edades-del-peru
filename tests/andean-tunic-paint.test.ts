@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import * as THREE from 'three';
 import { acquireRig, clearModelAssets, loadModelAssetFromData } from '../src/rendering/ModelAssets';
 import type { RigInstance } from '../src/rendering/RigInstance';
-import { COTTON_WEAVE } from '../src/rendering/workerAttire';
+import { CARAL_COTTON_SHADES, COTTON_WEAVE } from '../src/rendering/workerAttire';
 
 const WORKER_URL = new URL('../src/assets/models/caral_worker.glb', import.meta.url);
 const HERO_URL = new URL('../src/assets/models/tambotoco_hero.glb', import.meta.url);
@@ -85,6 +85,19 @@ function expectColor(actual: THREE.Color, expected: THREE.Color): void {
   expect(actual.g).toBeCloseTo(expected.g, 2);
   expect(actual.b).toBeCloseTo(expected.b, 2);
 }
+
+describe('Caral cotton shades', () => {
+  it('dresses consecutive Caral workers in different natural cotton shades', () => {
+    const rigs = Array.from({ length: 4 }, () => acquireRig('caral_worker', 'caral_worker_f')!);
+    const shades = rigs.map((rig) => {
+      const tunic = rig.root.getObjectByName('attire_tunic_f') as THREE.Mesh;
+      return (tunic.material as THREE.MeshStandardMaterial).color.getHex();
+    });
+    expect(new Set(shades).size).toBe(4);
+    for (const shade of shades) expect(CARAL_COTTON_SHADES).toContain(shade);
+    rigs.forEach((rig) => rig.dispose());
+  });
+});
 
 describe('Andean tunic body paint', () => {
   it('paints the torso under the Inca tunic but not the bare lower arms, hands or feet', () => {
