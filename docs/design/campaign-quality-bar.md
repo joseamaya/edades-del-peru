@@ -436,11 +436,14 @@ The 2026-11-18 pass completed the 1879–1883 land arc:
   and is drawn by the kit since 2026-11-25; open: human no-cheat playtest.
 - **`m_miraflores`** adds `miraflores_site` (the Lima colonial kit at the `ciudad` phase). It builds three redoubts, holds the line with
   reservists and withdraws Cáceres to the sierra. Real-command test: `tests/e2e/miraflores.spec.ts`.
-  Open: human no-cheat playtest and a performance row.
+  Performance: `bench_scene.mjs` opening **669,278 tris / 365 calls** (software, 2026-11-26), under the
+  890k/610 first-pass cap but over art-direction §11's 600k/200 target, as Lima and the Junta. Open: human
+  no-cheat playtest.
 - **`m_brena`** draws its own sierra-central camp from the Independence kit (community houses, hacienda,
   tents, corral and earth bank) at the camp east of Huamachuco. It builds the community network, ambushes a
   column and withdraws from Huamachuco with Cáceres alive. Real-command test: `tests/e2e/brena.spec.ts`.
-  Open: human no-cheat playtest and a performance row.
+  Performance: `bench_scene.mjs` opening **638,225 tris / 433 calls** (software, 2026-11-26), under the
+  740k/900 first-pass cap but over §11's 600k/200 target. Open: human no-cheat playtest.
 
 All three have dossier, design document, tutorial, educational entry, own in-engine captures, epilogue and
 the generic completable path; they pass the scale and HUD layout guards. Human no-cheat playtests remain
