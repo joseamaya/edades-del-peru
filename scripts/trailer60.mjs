@@ -623,13 +623,29 @@ async function prepare(page, shot) {
         const b = [...g.buildings.values()].find((x) => !before.has(x.id));
         if (!b) throw new Error(`could not place ${spec.kind} at ${spec.at}`);
         sites.push({ b, spec });
-        if (selected.length) {
-          const half = selected.slice(sites.length === 1 ? 0 : selected.length / 2);
+      }
+      // Each site gets its share of the workers, already standing around it: walking there in one file
+      // stacked them, and a builder is not idle, so the game's idle spacing does not open them.
+      if (selected.length && sites.length) {
+        const per = Math.ceil(selected.length / sites.length);
+        sites.forEach(({ b }, si) => {
+          const crew = selected.slice(si * per, (si + 1) * per);
+          crew.forEach((id, i) => {
+            const u = g.units.get(id);
+            if (!u) return;
+            // The near half of the footprint, toward the camera (south), so the crew is not hidden.
+            const a = Math.PI * (0.15 + (0.7 * i) / Math.max(1, crew.length - 1));
+            const r = (b.radius ?? 2.5) + 0.9;
+            u.pos.x = b.pos.x + Math.cos(a) * r;
+            u.pos.z = b.pos.z + Math.sin(a) * r;
+            u.pos.y = g.terrain.getHeight(u.pos.x, u.pos.z);
+            u.view?.setRotationY?.(Math.atan2(b.pos.x - u.pos.x, b.pos.z - u.pos.z));
+          });
           g.executeCommand(
-            { kind: 'order', unitIds: half, order: { kind: 'build', entityId: b.id }, clear: true },
+            { kind: 'order', unitIds: crew, order: { kind: 'build', entityId: b.id }, clear: true },
             false,
           );
-        }
+        });
       }
       window.__build = (k) => {
         for (const { b, spec } of sites) {
