@@ -132,13 +132,46 @@ describe('stop-and-fight separation', () => {
 
   it('leaves the foot line packed: infantry keeps the m6b hold stance', () => {
     const game = harness();
-    const a = game.spawn(UnitKind.SOLDIER, 1, 100, 100);
-    const b = game.spawn(UnitKind.SOLDIER, 1, 100.3, 100);
+    // Shoulder to shoulder, just under the 1.4 m marching spacing: the idle pass must not open the line.
+    const line = [0, 1, 2, 3].map((i) => game.spawn(UnitKind.SOLDIER, 1, 100 + i * 1.0, 100));
 
     game.run(3);
 
-    // Only mounted bodies take the positional pass; two idle soldiers stay where they were put.
-    expect(Math.hypot(a.pos.x - b.pos.x, a.pos.z - b.pos.z)).toBeLessThan(1.0);
+    line.forEach((u, i) => expect(Math.hypot(u.pos.x - (100 + i * 1.0), u.pos.z - 100)).toBeLessThan(0.05));
+  });
+
+  it('opens idle infantry that ended a move on the same point', () => {
+    const game = harness();
+    const soldiers = Array.from({ length: 11 }, (_, i) => game.spawn(UnitKind.SOLDIER, 0, 100 + i * 0.6, 90));
+    for (const s of soldiers) s.issueOrder({ kind: OrderKind.MOVE, target: { x: 110, z: 110 } });
+
+    game.run(14);
+
+    expect(soldiers.every((s) => !s.isBusy())).toBe(true);
+    expect(closestPair(soldiers)).toBeGreaterThanOrEqual(0.8);
+  });
+
+  it('keeps charging riders of both sides from running through each other', () => {
+    const game = harness();
+    // Two ranks a side, the files offset by a metre so the horses meet head to shoulder (Junín).
+    const rider = (kind: UnitKind, owner: number, i: number, x0: number, z0: number, dz: number) =>
+      game.spawn(kind, owner, x0 + (i % 4) * 2.6, z0 + Math.floor(i / 4) * dz);
+    const hussars = Array.from({ length: 8 }, (_, i) => rider(UnitKind.HUSSAR, 0, i, 100, 90, -3));
+    const dragons = Array.from({ length: 8 }, (_, i) => rider(UnitKind.REALISTA_DRAGON, 1, i, 101, 106, 3));
+    for (const h of hussars) h.issueOrder({ kind: OrderKind.ATTACK_MOVE, target: { x: h.pos.x, z: 130 } });
+    for (const d of dragons) d.issueOrder({ kind: OrderKind.ATTACK_MOVE, target: { x: d.pos.x, z: 60 } });
+
+    let closest = Infinity;
+    game.run(2);
+    for (let s = 0; s < 4; s++) {
+      game.run(1);
+      for (const h of hussars)
+        for (const d of dragons) closest = Math.min(closest, Math.hypot(h.pos.x - d.pos.x, h.pos.z - d.pos.z));
+    }
+
+    expect(game.damageEvents).toBeGreaterThan(0);
+    // Half the 2.4 m horse spacing, with slack for the per-tick push cap (it was 0.3 m before).
+    expect(closest).toBeGreaterThanOrEqual(1.08);
   });
 
   it('separates two idle cavalry that start inside each other', () => {
