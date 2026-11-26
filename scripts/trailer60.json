@@ -34,8 +34,8 @@
     {
       "title": "LA REPÚBLICA",
       "shots": [
-        { "name": "arica", "seconds": 5, "hero": "Francisco Bolognesi", "place": "Arica · 1880" },
-        { "name": "brena", "seconds": 4, "hero": "Andrés A. Cáceres", "place": "La Breña · 1882" }
+        { "name": "arica", "seconds": 5.5, "hero": "Francisco Bolognesi", "place": "Arica · 1880" },
+        { "name": "brena", "seconds": 3.5, "hero": "Andrés A. Cáceres", "place": "La Breña · 1882" }
       ]
     }
   ],
