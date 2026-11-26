@@ -25,7 +25,7 @@
   "reviewed": false,
   "lods": {
     "LOD0": {
-      "triangles": 130,
+      "triangles": 100,
       "draw_calls": 3,
       "materials": [
         "MAT-Arch_MocheAdobe",
@@ -41,19 +41,19 @@
         "max": [
           7.0,
           5.0,
-          6.5
+          4.4
         ],
         "size": [
           14.0,
           14.4,
-          6.5
+          4.4
         ]
       },
       "file": "moche_platform_lod0.glb",
-      "bytes": 14460
+      "bytes": 11664
     },
     "LOD1": {
-      "triangles": 90,
+      "triangles": 60,
       "draw_calls": 3,
       "materials": [
         "MAT-Arch_MocheAdobe",
@@ -69,16 +69,16 @@
         "max": [
           7.0,
           5.0,
-          6.5
+          4.4
         ],
         "size": [
           14.0,
           14.4,
-          6.5
+          4.4
         ]
       },
       "file": "moche_platform_lod1.glb",
-      "bytes": 11244
+      "bytes": 8668
     }
   }
 }

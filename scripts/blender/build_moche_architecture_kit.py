@@ -84,7 +84,7 @@ def huaca(mats, lod):
     kit.box(0.0, 0.0, top, 8.0, 5.0, 2.4, 'adobe')
     kit.box(0.0, 0.0, top, 2.2, 0.16, 1.7, 'dark')
     kit.box(0.0, 0.0, top + 2.4, 8.3, 5.3, 0.22, 'adobe')
-    ramp(kit, -6.6, -13.0, -8.0, 4.4, top * 0.58, 'adobe')
+    ramp(kit, -6.6, -13.0, -8.0, 4.4, top * 0.4, 'adobe')
     return kit
 
 
@@ -92,10 +92,7 @@ def platform(mats, lod):
     """Huaca de la Luna and the Chimú terraces: two battered tiers, a summit room and a short ramp."""
     kit = ak.Kit(mats, MATERIALS, lod, 111)
     kit.frustum(0.0, 0.0, 14.0, 10.0, 0.0, 2.3, 0.26, 'adobe')
-    kit.frustum(0.0, 0.0, 10.4, 6.9, 2.3, 2.1, 0.22, 'adobe')
-    kit.box(0.0, -0.8, 4.4, 5.6, 3.0, 1.9, 'plaster')
-    kit.box(0.0, -0.8, 6.3, 5.9, 3.3, 0.2, 'adobe')
-    kit.box(0.0, -0.8, 4.4, 1.6, 0.14, 1.3, 'adobe')
+    kit.frustum(0.0, 0.0, 10.4, 6.9, 2.3, 2.1, 0.22, 'plaster')
     if lod == 0:
         kit.box(0.0, -3.55, 2.4, 6.0, 0.12, 0.5, 'plaster')
     ramp(kit, 0.0, -9.4, -4.6, 3.4, 2.4, 'earth')

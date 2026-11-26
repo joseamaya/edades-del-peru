@@ -76,8 +76,9 @@ describe('authored campaign sites', () => {
   it('keeps the Chimú mission on its authored site and heightfield', () => {
     const site = getAuthoredSite('chimu_site')!;
     expect(site.scale).toBeCloseTo(0.7 * CHIMU_COMPOSITION_SCALE, 3);
+    // The anchor is the walkable plaza point south of the platform, not the platform centre.
     expect(site.anchor.x).toBeCloseTo(142.8 * CHIMU_COMPOSITION_SCALE, 3);
-    expect(site.anchor.z).toBeCloseTo(65 * CHIMU_COMPOSITION_SCALE, 3);
+    expect(site.anchor.z).toBeCloseTo(86.667 + 4.5, 3);
     expect(site.heightField?.worldSize).toBe(256);
     expect(site.heightField?.ground?.size).toBe(128);
     expect(site.heightField?.ground?.weights.length).toBe(128 * 128 * 4);

@@ -24,6 +24,8 @@ export const MOCHE_HUACA_SOL_ANCHOR = at(MOCHE_CITY_ANCHOR, -15.3, -4);
 export const MOCHE_HUACA_LUNA_ANCHOR = at(MOCHE_CITY_ANCHOR, 15.3, -6.6);
 /** The Chimú compound centre, on the 256 m transect. */
 export const CHIMU_CITY_ANCHOR = chimuPoint({ x: 142.8, z: 65 });
+/** The walkable plaza point south of the platform; the site anchor and camera frame read from it. */
+export const CHIMU_SITE_ANCHOR = at(CHIMU_CITY_ANCHOR, 0, 4.5);
 
 /**
  * Solid footprints in model space (Blender bounds, game +Z = Blender -Y), including the access ramps: a
@@ -50,7 +52,7 @@ export const MOCHE_CITY_LAYOUT: readonly ArchPlacement[] = [
   { asset: 'plaza', ...MOCHE_CITY_ANCHOR, rotY: 0, scale: ONE, lift: 0.02 },
   { asset: 'huaca', ...MOCHE_HUACA_SOL_ANCHOR, rotY: 0, scale: ONE },
   { asset: 'platform', ...MOCHE_HUACA_LUNA_ANCHOR, rotY: 0, scale: ONE },
-  { asset: 'altar', ...MOCHE_HUACA_LUNA_ANCHOR, rotY: 0, scale: ONE, lift: 4.4 },
+  { asset: 'altar', ...MOCHE_HUACA_LUNA_ANCHOR, rotY: 0, scale: ONE, lift: 4.32 },
   { asset: 'hall', ...at(MOCHE_CITY_ANCHOR, -6, -20.8), rotY: 0, scale: ONE },
   { asset: 'hall', ...at(MOCHE_CITY_ANCHOR, 14, -20.8), rotY: 0, scale: ONE },
   { asset: 'wall', ...at(MOCHE_CITY_ANCHOR, -20, -24.5), rotY: 0, scale: ONE },
@@ -68,7 +70,7 @@ export const MOCHE_CITY_LAYOUT: readonly ArchPlacement[] = [
 export const CHIMU_CITY_LAYOUT: readonly ArchPlacement[] = [
   { asset: 'plaza', ...CHIMU_CITY_ANCHOR, rotY: 0, scale: [0.8, 1, 0.85], lift: 0.02 },
   { asset: 'platform', ...at(CHIMU_CITY_ANCHOR, 0, -1), rotY: 0, scale: ONE },
-  { asset: 'audiencia', ...at(CHIMU_CITY_ANCHOR, 0, -1), rotY: 0, scale: ONE, lift: 4.4 },
+  { asset: 'audiencia', ...at(CHIMU_CITY_ANCHOR, 0, -1), rotY: 0, scale: ONE, lift: 4.32 },
   { asset: 'niche_wall', ...at(CHIMU_CITY_ANCHOR, -10.5, 0), rotY: Math.PI / 2, scale: ONE },
   { asset: 'niche_wall', ...at(CHIMU_CITY_ANCHOR, 10.5, 0), rotY: -Math.PI / 2, scale: ONE },
   { asset: 'niche_wall', ...at(CHIMU_CITY_ANCHOR, -7, -10.2), rotY: 0, scale: ONE },

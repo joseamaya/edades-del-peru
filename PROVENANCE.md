@@ -1031,12 +1031,13 @@ slot is absent (offline / without assets).
   bakes them with `ArchitectureCity`. Both sites set `hideModel` and `simulationCollision`, so the headless
   match blocks the same pieces. The Moche site keeps its south-west approach and the Chimú compound its
   south gate open; the access ramps are part of the footprints. This retires the `moche_site` and
-  `chimu_compound` GLBs as drawn sites (they remain registry fallbacks).
+  `chimu_compound` GLBs as drawn sites (they stay in the registry, no longer drawn).
 - **Evidence**: `docs/media/moche-kit-before-after.webp` (1772x978 WebP q74): two rows, the Huacas de Moche
   and Chan Chan, before and after the kit, same mission, seed, camera and light; produced with the
   `yarn shot` commands in `docs/design/moche-chimu-sites.md` and `scripts/sites_sheet.mjs`. The
   `cine-huacas`, `cine-plaza` and `cine-costa` stills were regenerated with
-  `node scripts/capture_cinema.mjs --mission=<id> --only=<shot>`; they still showed the retired GLBs.
+  `node scripts/capture_cinema.mjs --mission=<id> --only=<shot>`, and the briefing/epilogue stills with
+  `node scripts/capture_{moche,chimu}_intro.mjs`, because they still showed the retired GLBs.
 
 ### Republican architecture kit (m9_guerra_pacifico, m_real_felipe, m_tarapaca)
 

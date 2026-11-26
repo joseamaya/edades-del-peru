@@ -127,6 +127,7 @@ import {
 } from './independenceCity';
 import {
   CHIMU_CITY_ANCHOR,
+  CHIMU_SITE_ANCHOR,
   MOCHE_CITY_ANCHOR,
   MOCHE_HUACA_LUNA_ANCHOR,
   MOCHE_HUACA_SOL_ANCHOR,
@@ -743,7 +744,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     // scale with it so Chan Chan still covers its terrace.
     scale: chimuLength(0.7),
     origin: chimuPoint({ x: 142.8, z: 65 }),
-    anchor: chimuPoint({ x: 142.8, z: 65 }),
+    anchor: CHIMU_SITE_ANCHOR,
     cameraHeight: chimuLength(55),
     framing: 'site-biased',
     heightField: {

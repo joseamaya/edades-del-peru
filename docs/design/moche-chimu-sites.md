@@ -24,7 +24,7 @@ representative massings, **not surveys and not historical photographs**.
   compositions and derives each site's blockers from the same placements (`layoutBlockers`).
   `WorldViewDecor` bakes them with `ArchitectureCity`; the sites set `hideModel` and `simulationCollision`,
   so the headless match blocks the same buildings. The old `moche_site` and `chimu_compound` GLBs stay in
-  the registry as fallbacks and are no longer drawn.
+  the registry and are no longer drawn.
 - `?lod=0` previews LOD0.
 
 ## Terrain measurement
@@ -37,8 +37,9 @@ ground under its footprint and sinks it 0.08 m; the pads below are what the layo
 | Huacas de Moche (the flat huacas terrace, `mocheHeightmap.ts`) | 6.0 m |
 | Chan Chan (the Chimú terrace, `chimuHeightmap.ts`) | 5.0 m |
 
-Every placement sits on its pad within 0.03 m; the Chimú compound stays inside the flat core so no piece
-seats on the surrounding ramp.
+Every placement seats within 0.1 m of its pad (a piece whose footprint reaches the pad edge sits on the
+lowest ground under it). The lifted altar and audiencia use `lift 4.32` so they land flush on the 4.4 m
+terrace instead of floating on the 0.08 m sink.
 
 ## Materials
 
@@ -113,7 +114,7 @@ cp review/chimu_0.png review/moche-after/chimu_0.png
 # before row: run the same two commands from a worktree at the parent commit, then copy its
 # review/moche_0.png and review/chimu_0.png into review/moche-before/
 node scripts/sites_sheet.mjs --before=review/moche-before --after=review/moche-after \
-  --rows=moche,chimu --captions="Moche · ~500 d. C.,Chan Chan · ~1450" \
+  --rows=moche,chimu --captions="Moche · ~500 d. C.,Chan Chan · c. 1470" \
   --out=docs/media/moche-kit-before-after.webp \
   --footer="Moche kit · Huacas de Moche and Chan Chan · scripts/blender/build_moche_architecture_kit.py"
 ```
