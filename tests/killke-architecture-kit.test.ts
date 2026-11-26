@@ -8,6 +8,7 @@ import {
   KILLKE_SHRINE_TOP,
   TAMBOTOCO_KIT_LAYOUT,
   hutApex,
+  hutPieceId,
   hutPlacement,
   tambotocoBlockers,
 } from '../src/model/defs/tambotocoCity';
@@ -131,15 +132,7 @@ describe('killke architecture kit', () => {
     expect(TAMBOTOCO_KIT_LAYOUT).toHaveLength(HUTS.length + 1);
     for (const hut of HUTS) {
       const placement = hutPlacement(hut);
-      expect(placement.asset, `${hut.x},${hut.z}`).toBe(
-        hut.kind === 'storehouse'
-          ? 'qollqa'
-          : hut.kind === 'shed'
-            ? 'ramada'
-            : hut.wallColor === 'earth'
-              ? 'house_earth'
-              : 'house',
-      );
+      expect(placement.asset, `${hut.x},${hut.z}`).toBe(hutPieceId(hut));
       expect(placement.seat).toBe('centre');
       // The piece is scaled to the authored dimensions, so the silhouette and the blocker agree.
       const blocker = layoutBlockers([placement], KILLKE_KIT_FOOTPRINTS)[0]!;

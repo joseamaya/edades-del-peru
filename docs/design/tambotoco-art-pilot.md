@@ -2,7 +2,7 @@
 
 **Status:** Living · **Mission:** `m_tambotoco` (Los hijos de Tambotoco) · **Started:** 2026-11-16
 
-**Progress:** E0 (docs and baseline), E1 (terrain shadows, palette and plaza), E2a (procedural architecture
+**Progress:** E0 (docs and baseline), E1 (terrain shadows, palette and plaza), E2a (architecture
 finish), E2b (cave and huaca GLBs), E3a (highland vegetation), E3b (soft banks, ford and paths), E4 (Killke/
 ayllu variants and the male-only hero GLB), E5 (hero/detail/wide beats and the foundation reward) and E6
 (the 3 × 3 validation set) are implemented, and E7 (production pass: baked hero proportions, scoped terrain macro and Inticancha/shrine
@@ -190,7 +190,8 @@ The pilot is approved only when all of these are true:
 
 | Asset | Authoring | Status | Budget | Action |
 | --- | --- | --- | --- | --- |
-| Huts, qollqas, canchas, terraces, fields, plaza | Procedural `aylluKit` | Implemented | Existing scene caps | Material/geometry pass; keep the procedural fallback |
+| Huts, qollqas, ramadas, shrine platform | Blender Killke kit (`build_killke_architecture_kit.py`, 2026-11-26) | Implemented | LOD0 ≤ 430 / LOD1 ≤ 204; 7 materials | Placed from `tambotocoCity.ts`; same layout yields the blockers |
+| Canchas, terraces, fields, plaza | Procedural `aylluKit` | Implemented | Existing scene caps | Continuous ground the player builds and walks on; follows the relief vertex by vertex |
 | Cave mouth and rock ring | Blender GLB (E2b) | Implemented, procedural fallback | LOD0 1,802 / LOD1 342 | `tambotocoHeroKit` + `AylluSite`; source in `art-src` |
 | Huanacaure monolith | Blender GLB (E2b) | Implemented, procedural fallback | LOD0 288 / LOD1 104 | Tapered huaca with a carved niche; fallback kept |
 | Highland trees and shrubs | Blender vegetation kit | **Implemented (E3a)** | Molle 1.5k/400, pacay 1.1k/320, ichu 220/60 | Molle/pacay/sauce trees; ichu GLB built and budgeted but not attached; reeds shared |

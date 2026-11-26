@@ -647,10 +647,11 @@ Definition of Done and the building audit see
   in `tambotocoLayout.ts` maps to a piece and the same layout yields the blockers, so the site sets
   `simulationCollision`. A hillside piece seats at the ground under its centre (`seat: 'centre'`) instead of
   the lowest corner: the modelled footing reaches 4.2 m down, so the uphill wall cuts into the slope and the
-  downhill face shows the foundation, exactly the stance the procedural kit took. The cave and huaca GLBs,
+  downhill face shows the foundation (the procedural kit cut its plinth into the slope too, with a shallower
+  1.2 m burial, and floated on the steepest huts). The cave and huaca GLBs,
   the plaza and cancha paving, the terraces, the fields, the paths and the people stay in `AylluSite`
   (continuous ground, art-direction §4.2). This changes the blockers and the headless pathing, so
-  `REPLAY_VERSION` is 52; guarded by `tests/killke-architecture-kit.test.ts`,
+  `REPLAY_VERSION` is 53; guarded by `tests/killke-architecture-kit.test.ts`,
   `tests/tambotoco-layout.test.ts` and `tests/e2e/fow-zones.spec.ts`.
 - **Wari/Chanca kit** (2026-11-25): the Wari complex and the Chanca pucará draw from `wariChancaCity.ts`
   (9 pieces, 8 materials) built by `build_wari_architecture_kit.py` on `scripts/blender/arch_kit.py`; both

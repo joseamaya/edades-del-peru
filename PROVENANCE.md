@@ -1422,22 +1422,45 @@ slot is absent (offline / without assets).
   before row shows the horses inside each other; the after row shows the same-side bodies separated.
 - **Review**: no art or historical claim; a simulation-behaviour capture of a seeded skirmish.
 
-### Tambotoco Killke kit (in-engine evidence)
+### Killke/ayllu architecture kit (Tambotoco)
 
-- **Location**: `docs/media/tambotoco-killke-before-after.webp`, 1772x1862 WebP q74.
-- **Source**: `node scripts/capture_ayllu_kit.mjs --tag=killke-after`; the before row runs the same script
-  from a worktree at `main` (`47d4b1ef`) with tag `before-kit`, same seed, sun, camera and `fundada` phase.
-  The sheet is composed with `node scripts/sites_sheet.mjs --before=review/killke-before
-  --after=review/killke-after --rows=hualla,inticancha,shrine,valley --captions="Hualla,Inticancha
-  fundada,Huanacaure,Valle del Cusco" --footer="Tambotoco · same seed, camera, sun and fundada phase · hut,
-  qollqa, ramada and shrine platform now Killke kit pieces · src/model/defs/tambotocoCity.ts"
-  --out=docs/media/tambotoco-killke-before-after.webp`.
-- **Content**: the hualla hamlet, the founded Inticancha ring, the Huanacaure platform and a wide valley
-  view. The before row draws the huts, qollqas, ramadas and platform procedurally; the after row draws them
-  from `build_killke_architecture_kit.py` and keeps the paving, fields, paths, cave and huaca procedural.
-- **Review**: the kit is project-owned procedural geometry (no third-party asset); each piece manifest
-  records `confidence` and sources, and the kit stays `reviewed: false` like every architecture kit. The
-  forms follow the domestic Killke language in `docs/historia/arquitectura.md` §1.
+- **Location**: `src/assets/architecture/killke/killke_<piece>_lod0.glb` and `_lod1.glb`: `house` (plastered
+  dwelling), `house_earth` (packed-earth variant), `qollqa` (round storehouse with corbel ring and raised
+  threshold), `ramada` (open brush-roof shed) and `shrine` (Huanacaure's three tiers with its south stair).
+- **Source**: generated in Blender 5.3 by `scripts/blender/build_killke_architecture_kit.py` on the shared
+  `scripts/blender/arch_kit.py`; kit scene `art-src/blender/scenes/killke_architecture_kit.blend` (Git LFS).
+  Uncompressed exports and per-piece manifests in `art-src/blender/exports/killke/architecture/`; the ten
+  game copies were meshopt-compressed with `yarn art:models --only=killke_<piece>_lod<0|1>` (130,688 B total;
+  the uncompressed exports are 224,972 B).
+- **Content**: project-owned procedural geometry (no third-party asset). Seven Principled materials —
+  fieldstone (`MAT-Arch_KillkeStone`), dressed fieldstone caps/thresholds (`MAT-Arch_KillkeCutstone`), earth
+  or plaster walls, packed earth, thatch, timber and dark openings — with world-scale box-projected UVs and a
+  per-vertex tint; no textures in the GLBs. At runtime the game maps `wall_fieldstone` / `wall_cutstone`
+  (lifted), `plaster_detail` (kept colour), `roof_thatch` and `wood` onto them. LOD0 ≤ 430 / LOD1 ≤ 204
+  triangles per piece, ≤ 4 materials per piece and 7 across the kit (art-direction §4.2).
+- **Historical basis**: documented: fieldstone footings with mud mortar, earth/plaster walls, thatch roofs,
+  round qollqas, packed-earth canchas and the Inticancha tradition (`docs/historia/arquitectura.md` §1,
+  Bauer & Covey 2002, Covey 2006). Plausible/inferred: the exact hut proportions and irregular plans; the
+  shrine is **stylized** because the myth has no date or documented form. No imperial cut-stone, niches or
+  ashlar: the shrine's capstones are dressed fieldstone, not Inca masonry. Per-piece `confidence` and sources
+  are in the manifests.
+- **Runtime**: `src/model/defs/tambotocoCity.ts` maps every authored hut in `tambotocoLayout.ts` to a piece
+  (scaled to its dimensions, round qollqas keep one ground scale) and the shrine at the anchor; the same
+  layout yields the site blockers (`layoutBlockers`), and `tambotoco_site` sets `simulationCollision` so the
+  headless match blocks the same houses. Pieces seat at the ground under their centre (`seat: 'centre'`) with
+  a 4.2 m modelled footing. The cave and huaca hero GLBs, the paving/canchas/terraces/fields/paths and the
+  people stay in `AylluSite` (continuous ground, art-direction §4.2). This retired the procedural
+  `aylluHut`/`shrinePlatform` builders.
+- **Evidence**: `docs/media/tambotoco-killke-before-after.webp` (1772x1862 WebP q74). Command:
+  `node scripts/capture_ayllu_kit.mjs --tag=killke-after` (writes `review/ayllu-killke-after-<view>.png`); the
+  before row is the same script in a worktree at `main` (`47d4b1ef`) with `--tag=before-kit`. The sheet tool
+  wants `<row>_0.png`, so the captures are copied to `review/killke-after/<row>_0.png` (and `-before`), then
+  `node scripts/sites_sheet.mjs --before=review/killke-before --after=review/killke-after
+  --rows=hualla,inticancha,shrine,valley --captions="Hualla,Inticancha fundada,Huanacaure,Valle del Cusco"
+  --footer="Tambotoco · same seed, camera, sun and fundada phase · hut, qollqa, ramada and shrine platform now
+  Killke kit pieces · src/model/defs/tambotocoCity.ts"
+  --out=docs/media/tambotoco-killke-before-after.webp`. Four rows: the hualla hamlet, the founded Inticancha
+  ring, the Huanacaure platform and a wide valley view; the before rows draw the buildings procedurally.
 
 ### Character legibility (in-engine evidence)
 

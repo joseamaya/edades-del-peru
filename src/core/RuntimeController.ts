@@ -929,6 +929,7 @@ export class RuntimeController {
     this.game.independenceCity?.update(this.game.camera.camera.position);
     this.game.mocheCity?.update(this.game.camera.camera.position);
     this.game.wariCity?.update(this.game.camera.camera.position);
+    this.game.tambotocoCity?.update(this.game.camera.camera.position);
     this.rebuildSpatial();
 
     this.game.updateEnvironment(d);

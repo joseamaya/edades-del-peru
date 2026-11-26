@@ -23,8 +23,8 @@ export interface ArchPlacement {
   phaseAssets?: Partial<Record<string, ArchAssetId>>;
   /**
    * Seat the piece at the ground under its centre instead of the lowest point of its footprint, for a
-   * hillside building whose modelled footing reaches down. The doorway stays at grade and the uphill
-   * wall cuts into the slope.
+   * hillside building whose modelled footing reaches down: the uphill wall cuts into the slope and the
+   * downhill face shows the foundation. Ignored when `lift` is set (a lifted floor uses the highest ground).
    */
   seat?: 'centre';
 }

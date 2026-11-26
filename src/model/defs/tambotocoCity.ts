@@ -34,37 +34,64 @@ const QOLLQA_WALL = 2.35;
 const RAMADA_POST = 2.45;
 
 interface Piece {
-  /** Model footprint in metres, matching the GLB bounds of the LOD0 piece. */
+  /** Model wall dimensions used to scale the piece to an authored hut. */
   readonly width: number;
   readonly depth: number;
   readonly wall: number;
   /** Roof apex above the model datum. */
   readonly apex: number;
+  /** Solid footprint in model space (game +Z = Blender -Y), eaves included. */
+  readonly footprint: ArchFootprint;
 }
 
 /** Model dimensions of each kit piece (see the manifests in `art-src/blender/exports/killke`). */
 const PIECES = {
-  house: { width: 6.4, depth: 4.4, wall: HOUSE_WALL, apex: 4.4 },
-  house_earth: { width: 6.4, depth: 4.4, wall: HOUSE_WALL, apex: 4.35 },
-  qollqa: { width: 3.2, depth: 3.2, wall: QOLLQA_WALL, apex: 4.21 },
-  ramada: { width: 3.6, depth: 2.8, wall: RAMADA_POST, apex: 3.78 },
+  house: {
+    width: 6.4,
+    depth: 4.4,
+    wall: HOUSE_WALL,
+    apex: 4.4,
+    footprint: { minX: -3.65, maxX: 3.65, minZ: -2.8, maxZ: 2.8 },
+  },
+  house_earth: {
+    width: 6.4,
+    depth: 4.4,
+    wall: HOUSE_WALL,
+    apex: 4.35,
+    footprint: { minX: -3.6, maxX: 3.6, minZ: -2.75, maxZ: 2.75 },
+  },
+  qollqa: {
+    width: 3.2,
+    depth: 3.2,
+    wall: QOLLQA_WALL,
+    apex: 4.21,
+    footprint: { minX: -2.12, maxX: 2.12, minZ: -2.12, maxZ: 2.12 },
+  },
+  ramada: {
+    width: 3.6,
+    depth: 2.8,
+    wall: RAMADA_POST,
+    apex: 3.78,
+    footprint: { minX: -2.0, maxX: 2.0, minZ: -1.74, maxZ: 1.74 },
+  },
 } as const satisfies Record<string, Piece>;
 
 type HutPieceId = keyof typeof PIECES;
 
 /**
- * Solid footprints in model space (game +Z = Blender -Y). They include the eaves, so no unit stands
- * under a roof and clips the wall; the buried plinth is inside them.
+ * Solid footprints in model space, one table with the model dimensions above. They include the eaves,
+ * so no unit stands under a roof and clips the wall; the buried plinth is inside them.
  */
 export const KILLKE_KIT_FOOTPRINTS: Partial<Record<string, ArchFootprint>> = {
-  house: { minX: -3.65, maxX: 3.65, minZ: -2.8, maxZ: 2.8 },
-  house_earth: { minX: -3.6, maxX: 3.6, minZ: -2.75, maxZ: 2.75 },
-  qollqa: { minX: -2.12, maxX: 2.12, minZ: -2.12, maxZ: 2.12 },
-  ramada: { minX: -2.0, maxX: 2.0, minZ: -1.74, maxZ: 1.74 },
+  ...(Object.fromEntries(Object.entries(PIECES).map(([id, piece]) => [id, piece.footprint])) as Record<
+    HutPieceId,
+    ArchFootprint
+  >),
   shrine: { minX: -4.7, maxX: 4.7, minZ: -5.45, maxZ: 4.0 },
 };
 
-function pieceFor(hut: AylluHut): HutPieceId {
+/** The kit piece an authored hut draws. */
+export function hutPieceId(hut: AylluHut): HutPieceId {
   if (hut.kind === 'storehouse') return 'qollqa';
   if (hut.kind === 'shed') return 'ramada';
   return hut.wallColor === 'earth' ? 'house_earth' : 'house';
@@ -72,18 +99,21 @@ function pieceFor(hut: AylluHut): HutPieceId {
 
 /**
  * The authored hut scaled to its dimensions. Each piece is seated at the ground under its centre: a
- * hillside hut cuts into the slope and the buried footing shows as a coursed foundation downhill, the
- * same stance the procedural kit took.
+ * hillside hut cuts into the slope and the buried footing shows as a coursed foundation downhill — the
+ * procedural kit's stance, with a deeper modelled footing so nothing floats. The round qollqa keeps one
+ * scale on both ground axes.
  */
 export function hutPlacement(hut: AylluHut, since?: string): ArchPlacement {
-  const piece = pieceFor(hut);
+  const piece = hutPieceId(hut);
   const model = PIECES[piece];
+  const round = piece === 'qollqa';
+  const roundScale = (hut.w + hut.d) / 2 / model.width;
   return {
     asset: piece,
     x: hut.x,
     z: hut.z,
     rotY: hut.ry ?? 0,
-    scale: [hut.w / model.width, hut.wall / model.wall, hut.d / model.depth],
+    scale: [round ? roundScale : hut.w / model.width, hut.wall / model.wall, round ? roundScale : hut.d / model.depth],
     seat: 'centre',
     ...(since ? { since } : {}),
   };
@@ -91,7 +121,7 @@ export function hutPlacement(hut: AylluHut, since?: string): ArchPlacement {
 
 /** Roof apex above the hut's ground, used to start its smoke at the ridge instead of mid-air. */
 export function hutApex(hut: AylluHut): number {
-  const model = PIECES[pieceFor(hut)];
+  const model = PIECES[hutPieceId(hut)];
   return model.apex * (hut.wall / model.wall);
 }
 

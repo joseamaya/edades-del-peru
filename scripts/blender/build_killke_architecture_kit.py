@@ -97,56 +97,66 @@ def cone(kit, cx, cy, z, radius, height, key, sides=10, top=0.12):
     kit.shell(build)
 
 
-def house(mats, lod):
-    """A Killke dwelling: fieldstone footing, a battered plaster wall, a deep-eave thatch roof with
-    exposed ridge poles, a lintelled door and a vent. 6.4 x 4.4 m, front -Y."""
-    kit = ak.Kit(mats, MATERIALS, lod, 301)
-    w, d, height, thick = 6.4, 4.4, 2.55, 0.45
+def dwelling(
+    mats,
+    lod,
+    *,
+    seed,
+    wall_key,
+    thick,
+    door_width,
+    door_height,
+    corner,
+    lintel_width,
+    base_height,
+    rise,
+    overhang,
+    end_overhang,
+    roof_thick,
+    vent=False,
+    ridge_poles=False,
+):
+    """A Killke dwelling: fieldstone footing, a battered wall, a deep-eave thatch roof, a lintelled door and
+    (optionally) a vent. 6.4 x 4.4 m, front -Y; the two wall finishes share every mass."""
+    kit = ak.Kit(mats, MATERIALS, lod, seed)
+    w, d, height = 6.4, 4.4, 2.55
     # Buried footing: wider at the bottom, so the downhill face reads as coursed stonework.
     kit.frustum(0.0, 0.0, w + 0.4, d + 0.4, PLINTH, 4.65, 0.12, 'stone')
     kit.box(0.0, 0.0, 0.45, w + 0.16, d + 0.16, 0.22, 'stone')
-    ak.wall(kit, w, d, height, thick, front=[(w / 2, 1.05, 1.95, 0.0)], wall_key='plaster', hole_key='dark')
-    # The exposed foot of the wall: a dark course and four corner stones.
-    kit.box(0.0, 0.0, 0.62, w + 0.06, d + 0.06, 0.28, 'dark')
+    ak.wall(kit, w, d, height, thick, front=[(w / 2, door_width, door_height, 0.0)], wall_key=wall_key,
+            hole_key='dark')
+    kit.box(0.0, 0.0, 0.62, w + 0.06, d + 0.06, base_height, 'dark')
     if lod == 0:
         for sx, sz in ((-1, -1), (1, -1), (-1, 1), (1, 1)):
-            kit.box(sx * w / 2, sz * d / 2, 0.45, 0.42, 0.6, 0.42, 'stone')
-        kit.box(0.0, -d / 2 - 0.02, 1.98, 1.5, 0.14, 0.18, 'dark')
-        # Threshold stone in front of the door and a vent on the eastern wall.
-        kit.box(0.0, -d / 2 - 0.16, 0.45, 1.5, 0.55, 0.16, 'stone')
-        kit.box(w / 2 + 0.02, 0.6, 1.72, 0.12, 0.3, 0.3, 'dark')
-        kit.box(w / 2 + 0.03, 0.6, 1.68, 0.1, 0.42, 0.1, 'stone')
-    # The eave band, then the roof.
+            kit.box(sx * w / 2, sz * d / 2, 0.45, 0.42, corner, 0.42, 'stone')
+        kit.box(0.0, -d / 2 - 0.02, door_height + 0.03, lintel_width, 0.14, 0.18, 'dark')
+        kit.box(0.0, -d / 2 - 0.16, 0.45, lintel_width, 0.5, 0.16, 'stone')
+        if vent:
+            kit.box(w / 2 + 0.02, 0.6, 1.72, 0.12, 0.3, 0.3, 'dark')
+            kit.box(w / 2 + 0.03, 0.6, 1.68, 0.1, 0.42, 0.1, 'stone')
     kit.box(0.0, 0.0, height - 0.06, w + 0.18, d + 0.18, 0.14, 'stone')
-    ak.gable_roof(kit, w, d, height + 0.06, 1.65, 'thatch', overhang=0.55, end_overhang=0.4,
-                  thick=0.32, ridge_key='dark')
-    gable_ends(kit, w, d, height + 0.06, 1.65, 'thatch')
-    if lod == 0:
-        # Two poles running from the ridge to the eave: the exposed roof structure.
+    ak.gable_roof(kit, w, d, height + 0.06, rise, 'thatch', overhang=overhang, end_overhang=end_overhang,
+                  thick=roof_thick, ridge_key='dark')
+    gable_ends(kit, w, d, height + 0.06, rise, 'thatch')
+    if lod == 0 and ridge_poles:
         for sx in (-2.1, 2.1):
             kit.box(sx, 0.0, height + 0.04, 0.12, d + 1.2, 0.12, 'dark')
         kit.box(0.0, 0.0, height + 1.55, w + 0.9, 0.16, 0.14, 'dark')
     return kit
 
 
+def house(mats, lod):
+    """The plastered dwelling."""
+    return dwelling(mats, lod, seed=301, wall_key='plaster', thick=0.45, door_width=1.05, door_height=1.95,
+                    corner=0.6, lintel_width=1.5, base_height=0.28, rise=1.65, overhang=0.55,
+                    end_overhang=0.4, roof_thick=0.32, vent=True, ridge_poles=True)
+
+
 def house_earth(mats, lod):
-    """The same dwelling with packed-earth walls, so the hamlets do not read as one repeated model."""
-    kit = ak.Kit(mats, MATERIALS, lod, 311)
-    w, d, height, thick = 6.4, 4.4, 2.55, 0.5
-    kit.frustum(0.0, 0.0, w + 0.4, d + 0.4, PLINTH, 4.65, 0.12, 'stone')
-    kit.box(0.0, 0.0, 0.45, w + 0.16, d + 0.16, 0.22, 'stone')
-    ak.wall(kit, w, d, height, thick, front=[(w / 2, 1.0, 1.9, 0.0)], wall_key='earth', hole_key='dark')
-    kit.box(0.0, 0.0, 0.6, w + 0.06, d + 0.06, 0.26, 'dark')
-    if lod == 0:
-        for sx, sz in ((-1, -1), (1, -1), (-1, 1), (1, 1)):
-            kit.box(sx * w / 2, sz * d / 2, 0.45, 0.4, 0.56, 0.4, 'stone')
-        kit.box(0.0, -d / 2 - 0.02, 1.93, 1.4, 0.14, 0.18, 'dark')
-        kit.box(0.0, -d / 2 - 0.16, 0.45, 1.4, 0.5, 0.16, 'stone')
-    kit.box(0.0, 0.0, height - 0.06, w + 0.18, d + 0.18, 0.14, 'stone')
-    ak.gable_roof(kit, w, d, height + 0.06, 1.6, 'thatch', overhang=0.52, end_overhang=0.38,
-                  thick=0.3, ridge_key='dark')
-    gable_ends(kit, w, d, height + 0.06, 1.6, 'thatch')
-    return kit
+    """The packed-earth variant, so the hamlets do not read as one repeated model."""
+    return dwelling(mats, lod, seed=311, wall_key='earth', thick=0.5, door_width=1.0, door_height=1.9,
+                    corner=0.56, lintel_width=1.4, base_height=0.26, rise=1.6, overhang=0.52,
+                    end_overhang=0.38, roof_thick=0.3)
 
 
 def qollqa(mats, lod):

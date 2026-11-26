@@ -78,9 +78,11 @@ bridges and the static villagers, merged per surface family and phase. The 2026-
 and shrine in code too; the 2026-11-26 kit pass replaced those volumes and kept every ground surface, which
 must follow the relief vertex by vertex because the player builds and walks on it.
 
-Every piece samples the ground it spans, so huts, canchas, terraces and fields sit on the Pacaritambo slope
-instead of floating; the fields and terraces also live on dry, gently sloping ground
-(`tests/tambotoco-layout.test.ts`). Inticancha grows in two phases: `inticancha` (Act IV) only traces the
+The ground surfaces follow the relief vertex by vertex; the kit buildings seat at the ground under their
+centre and each carries a 4.2 m footing, so a hillside hut cuts into the slope and its downhill face shows a
+coursed foundation instead of floating (the layout test pins the footing against the lowest ground). The fields
+and terraces also live on dry, gently sloping ground (`tests/tambotoco-layout.test.ts`). Inticancha grows in two
+phases: `inticancha` (Act IV) only traces the
 plaza, its ring and the four cancha plots for the player's store and houses; `fundada` (the four canchas
 built) adds the houses, terraces, fields, people and fire, so the settlement never stands before the ayllus
 build it. The plaza and the plots stay walkable and buildable; the ring houses block from the `fundada`
