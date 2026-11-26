@@ -256,7 +256,8 @@ def master(x):
     fade = int(0.25 * SR)
     x[:fade] *= np.linspace(0, 1, fade)[:, None]
     x[-int(0.6 * SR) :] *= np.linspace(1, 0, int(0.6 * SR))[:, None]
-    x *= 0.89 / (np.abs(x).max() + 1e-9)
+    # 0.79 peak (about -2 dBFS) leaves room for the AAC encoder, which overshot 0.89 to 0 dBFS.
+    x *= 0.79 / (np.abs(x).max() + 1e-9)
     return x
 
 

@@ -35,7 +35,7 @@ const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
 const GRADES = {
   // Day for night: darker and cooler mids and shadows; highlights (the fire) keep their colour.
   night:
-    'eq=brightness=-0.03:contrast=1.06:saturation=0.85:gamma=0.9,colorbalance=rs=-0.07:gs=-0.02:bs=0.09:rm=-0.04:gm=-0.01:bm=0.06',
+    'eq=brightness=-0.04:contrast=1.08:saturation=0.8:gamma=0.88,colorbalance=rs=-0.07:gs=-0.02:bs=0.09:rm=-0.04:gm=-0.01:bm=0.06',
 };
 
 const folderOf = (name) => (name.startsWith('epic:') ? path.join(epic, name.slice(5)) : path.join(dir, name));
@@ -73,12 +73,16 @@ function encodeSegments() {
     if (!fs.existsSync(seg.folder)) throw new Error(`missing shot ${seg.folder}`);
     const frames = Math.round(seg.seconds * FPS);
     const available = fs.readdirSync(seg.folder).filter((f) => f.endsWith('.jpg')).length;
-    const start = Math.max(0, Math.min(seg.start, available - frames));
+    // The closing drone is shorter than its slot: play it slower rather than freeze its last frame.
+    const slow = seg.kind === 'end' && available - seg.start < frames ? Math.min(1.6, frames / available) : 1;
+    const needed = Math.ceil(frames / slow);
+    const start = Math.max(0, Math.min(seg.start, available - needed));
     const file = path.join(tmp, `${String(i).padStart(2, '0')}.mp4`);
     // A shot a little short of its slot holds its last frame.
-    const pad = Math.max(0, frames - (available - start));
+    const pad = Math.max(0, needed - (available - start));
     const filters = [
       `scale=${vertical ? '1080:1920' : '1920:1080'}`,
+      ...(slow > 1 ? [`setpts=${slow.toFixed(3)}*PTS`, `fps=${FPS}`] : []),
       ...(seg.grade ? [GRADES[seg.grade]] : []),
       ...(pad ? [`tpad=stop_mode=clone:stop=${pad}`] : []),
     ];
@@ -148,7 +152,8 @@ function gradeAndTitles(list) {
         }),
         text('5.000 AÑOS DE HISTORIA', {
           font: DISPLAY,
-          size: Math.round((vertical ? 92 : 112) * 1),
+          // 92 px ran past both edges of the 1080 px frame.
+          size: vertical ? 64 : 112,
           y: vertical ? 'h*0.44' : 'h*0.48',
           from: 0.5,
           to: s1 - 0.1,
@@ -189,33 +194,34 @@ function gradeAndTitles(list) {
       const from = s0 + 0.35;
       const to = s1 - 0.15;
       const y = vertical ? 0.8 : 0.83;
+      // A band behind the lower third: the small gold line alone was lost over bright ground.
       if (seg.hero) {
         titles.push(
-          text(seg.hero.toUpperCase(), { font: DISPLAY, size: Math.round(40 * k), y: `h*${y}`, from, to, border: 2 }),
+          text(seg.hero.toUpperCase(), { font: DISPLAY, size: vertical ? 56 : 52, y: `h*${y}`, from, to, border: 2 }),
           text(seg.place.toUpperCase(), {
             font: SANS,
-            size: Math.round(22 * k),
+            size: vertical ? 30 : 28,
             color: GOLD,
-            y: `h*${y + (vertical ? 0.025 : 0.045)}`,
+            y: `h*${y + (vertical ? 0.034 : 0.055)}`,
             from: from + 0.1,
             to,
-            spacing: 1,
             border: 2,
           }),
         );
+        bands.push([from, to, y - 0.012, vertical ? 0.072 : 0.115]);
       } else {
         titles.push(
           text(seg.place.toUpperCase(), {
             font: SANS,
-            size: Math.round(24 * k),
+            size: 32,
             color: GOLD,
             y: `h*${y + (vertical ? 0.012 : 0.02)}`,
             from,
             to,
-            spacing: 1,
             border: 2,
           }),
         );
+        bands.push([from, to, y + (vertical ? 0.002 : 0.006), vertical ? 0.035 : 0.06]);
       }
       if (seg.name.startsWith('caral')) hud.push([s0, s1]);
     }
@@ -238,7 +244,7 @@ function gradeAndTitles(list) {
       titles.push(
         text('EDADES DEL PERÚ', {
           font: GEORGIA,
-          size: vertical ? 96 : 124,
+          size: vertical ? 84 : 124,
           y: vertical ? 'h*0.36' : 'h*0.34',
           from: s0 + 0.1,
           to: TOTAL,

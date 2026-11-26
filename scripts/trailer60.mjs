@@ -52,9 +52,10 @@ const SHOTS = {
     time: 0.5,
     warmup: 1.0,
     rows: [{ kind: 'worker', owner: 0, count: 18, at: [150, 148], to: [133, 135], order: 'move' }],
+    // A still lens: a camera that keeps pace with the procession hides its walk.
     eye: [
       [161, 3, 159],
-      [158, 2.8, 156],
+      [161, 3, 159],
     ],
     look: [
       [128, 6, 126],
@@ -90,9 +91,10 @@ const SHOTS = {
       { kind: 'inca_warrior', owner: 0, count: 16, at: [146, 100], to: [166, 98], order: 'attack_move' },
       { kind: 'chanca_warrior', owner: 1, count: 16, at: [166, 97], to: [146, 100], order: 'attack_move' },
     ],
+    clearLens: true,
     eye: [
-      [138, 2.6, 106],
-      [144, 2.3, 104],
+      [138, 3.5, 101],
+      [144, 3.2, 100],
     ],
     look: [
       [162, 2, 98],
@@ -103,45 +105,71 @@ const SHOTS = {
   chanchan: {
     mission: 'm6_chimu_inca',
     time: 0.36,
-    warmup: 0.8,
-    hero: { tag: 'tupac_yupanqui', at: [164, 90], to: [176, 89], order: 'move' },
+    warmup: 0.4,
+    hero: { tag: 'tupac_yupanqui', at: [154, 90], to: [178, 89], order: 'move' },
     rows: [
-      { kind: 'inca_warrior', owner: 0, count: 20, at: [160, 90], to: [172, 89], order: 'move' },
-      { kind: 'inca_slinger', owner: 0, count: 8, at: [154, 91], to: [166, 90], order: 'move' },
+      { kind: 'inca_warrior', owner: 0, count: 20, at: [150, 90], to: [176, 89], order: 'move' },
+      { kind: 'inca_slinger', owner: 0, count: 8, at: [144, 91], to: [170, 90], order: 'move' },
       { kind: 'chimu_fixi', owner: 1, count: 8, at: [190, 87], to: [190, 87], order: 'hold' },
     ],
+    // Behind the army, looking east at the citadel (the site sits at 190, 87): the walls rise ahead of it.
+    clearLens: true,
     eye: [
-      [196, 18, 90],
-      [190, 20, 101],
+      [140, 4, 98],
+      [145, 7, 99],
     ],
     look: [
-      [164, 1, 90],
-      [167, 1, 89],
+      [168, 1, 90],
+      [184, 1, 88],
     ],
     fov: 44,
   },
   cusco_llamas: {
     mission: 'm_cusco_1536',
-    time: 0.08,
+    // Afternoon light under the night grade: at 0.08 the plaza floor went black, and at 0.22 the street
+    // fell into the roofs' shadow.
+    time: 0.34,
     warmup: 0.8,
-    hero: { tag: 'manco_inca', at: [152, 181], to: [178, 181], order: 'move' },
-    rows: [{ kind: 'inca_warrior', owner: 0, count: 16, at: [146, 181], to: [174, 181], order: 'move' }],
+    hero: { tag: 'manco_inca', at: [158, 182], to: [180, 182], order: 'move' },
+    rows: [{ kind: 'inca_warrior', owner: 0, count: 16, at: [154, 182], to: [176, 182], order: 'move' }],
+    // Three flames along each ridge: one point per roof read as a campfire.
     fires: [
+      [151, 168, 4.2],
       [151, 170, 4.2],
+      [151, 172, 4.2],
+      // This roof's ridge runs east-west.
+      [179, 171, 4.2],
       [181, 171, 4.2],
+      [183, 171, 4.2],
+      [154, 186, 4.2],
       [156, 186, 4.2],
+      [158, 186, 4.2],
+      [172, 186, 4.2],
+      [174, 186, 4.2],
       [176, 186, 4.2],
-      [166, 162, 5.4],
+      [178, 186, 4.2],
+      [180, 186, 4.2],
+      [182, 186, 4.2],
+      [184, 186, 4.2],
+      // The near roof on the right of the street.
+      [178, 175, 4.2],
+      [180, 175, 4.2],
+      [182, 175, 4.2],
+      [184, 175, 4.2],
       [160, 162, 5.4],
+      [163, 162, 5.4],
+      [166, 162, 5.4],
+      [169, 162, 5.4],
       [172, 162, 5.4],
     ],
+    // Down the burning street: the warriors march toward the lens between the roofs.
     eye: [
-      [166, 10, 197],
-      [166, 12, 193],
+      [192, 4, 180],
+      [189, 4.5, 180],
     ],
     look: [
-      [166, 3, 168],
-      [166, 5, 160],
+      [160, 2, 181],
+      [162, 3, 180],
     ],
     fov: 46,
   },
@@ -187,10 +215,11 @@ const SHOTS = {
     mission: 'm_real_felipe',
     time: 0.3,
     warmup: 3.5,
+    muzzle: true,
     rows: [
       { kind: 'artillery', owner: 1, count: 3, at: [176, 101], to: [150, 100], order: 'hold' },
       { kind: 'mortar', owner: 1, count: 2, at: [183, 92], to: [150, 100], order: 'hold' },
-      { kind: 'soldier', owner: 0, count: 14, at: [155, 100], to: [165, 99], order: 'attack_move' },
+      { kind: 'soldier', owner: 0, count: 14, at: [155, 100], to: [165, 99], order: 'attack_move', immortal: true },
     ],
     eye: [
       [178, 6, 103],
@@ -207,9 +236,10 @@ const SHOTS = {
     time: 0.3,
     warmup: 0.4,
     hero: { tag: 'bolognesi', at: [173, 88], to: [173, 88], order: 'hold', face: [160, 92] },
-    rows: [{ kind: 'republica_defensor', owner: 0, count: 8, at: [170, 85], to: [160, 86], order: 'hold' }],
+    // The defenders stand behind him, so the hero is the only figure in the foreground.
+    rows: [{ kind: 'republica_defensor', owner: 0, count: 8, at: [178, 91], to: [178, 91], order: 'hold' }],
     eye: [
-      [180, 2, 84],
+      [176, 1.9, 85],
       [187, 7, 80],
     ],
     look: [
@@ -229,8 +259,14 @@ const SHOTS = {
     time: 0.6,
     hud: true,
     warmup: 0.4,
-    rows: [{ kind: 'worker', owner: 0, count: 8, at: [84, 162], to: [84, 162], order: 'hold', select: true }],
-    rts: { at: [86, 160], to: [88, 154], height: [40, 36] },
+    phases: [[0, 'ciudad']],
+    rows: [{ kind: 'worker', owner: 0, count: 8, at: [86, 190], to: [86, 190], order: 'hold', select: true }],
+    // Placed through the game's own command and raised by the selected workers during the shot.
+    build: [
+      { kind: 'barracks', at: [80, 182], from: 0.15, to: 1 },
+      { kind: 'house', at: [92, 182], from: 0.3, to: 1 },
+    ],
+    rts: { at: [86, 182], to: [87, 178], height: [40, 36] },
   },
   g_conquista: {
     mission: 'm8_independencia',
@@ -251,7 +287,7 @@ const SHOTS = {
     rows: [
       { kind: 'artillery', owner: 0, count: 3, at: [176, 101], to: [150, 100], order: 'hold', select: true },
       { kind: 'rifleman', owner: 0, count: 8, at: [182, 94], to: [182, 94], order: 'hold', select: true },
-      { kind: 'soldier', owner: 1, count: 14, at: [146, 100], to: [164, 98], order: 'attack_move' },
+      { kind: 'soldier', owner: 1, count: 14, at: [146, 100], to: [164, 98], order: 'attack_move', immortal: true },
     ],
     rts: { at: [168, 100], to: [166, 100], height: [44, 40] },
   },
@@ -308,35 +344,11 @@ async function prepare(page, shot) {
       g.hud.showDialogue = () => {};
       g.hud.isMissionCardOpen = () => false;
       if (shot.hud) {
+        // Narration, objectives and tutorial cards cover the play in a gameplay shot; hide them by id, not
+        // by size (the 9:16 layout moved them past every size rule).
         const style = document.createElement('style');
-        style.textContent = '.obj-list{display:none!important}';
-        // The tutorial card under the objectives (top right).
-        for (const el of document.querySelectorAll('#ui-root *')) {
-          const r = el.getBoundingClientRect();
-          if (
-            r.x > window.innerWidth * 0.7 &&
-            r.y > 60 &&
-            r.y < window.innerHeight * 0.45 &&
-            r.width > 200 &&
-            r.width < 420 &&
-            r.height > 50
-          )
-            el.style.display = 'none';
-        }
+        style.textContent = '#ed-dialogue,#ed-objectives,#ed-tutorial,.obj-list{display:none!important}';
         document.head.appendChild(style);
-        for (const el of document.querySelectorAll('#ui-root *')) {
-          const r = el.getBoundingClientRect();
-          // The narration box sits over the left of the screen, above the minimap.
-          if (
-            r.width > 400 &&
-            r.height > 80 &&
-            r.height < 220 &&
-            r.x < window.innerWidth * 0.35 &&
-            r.y > window.innerHeight * 0.5 &&
-            r.y < window.innerHeight * 0.8
-          )
-            el.style.display = 'none';
-        }
       }
       if (!shot.hud) {
         g.hud.root.style.display = 'none';
@@ -367,21 +379,75 @@ async function prepare(page, shot) {
           window.__t += 1 / 60;
           g.update(1 / 60, window.__t);
           window.__hp?.();
+          for (const id of immortal) {
+            const u = g.units.get(id);
+            if (u && !u.dead) u.hp = u.maxHp;
+          }
+          // Guns fire with a flash the game draws too faintly to read on video. A shot resets the cooldown
+          // upward: that is the frame the gun fires.
+          if (shot.muzzle) {
+            for (const u of g.units.values()) {
+              if (u.dead || (u.kind !== 'artillery' && u.kind !== 'mortar')) continue;
+              const cd = u.attackCooldown ?? 0;
+              if (cd > (u.__cd ?? 0) + 0.05) {
+                const y = g.terrain.getHeight(u.pos.x, u.pos.z) + 1.3;
+                g.particles.emit({
+                  x: u.pos.x,
+                  y,
+                  z: u.pos.z,
+                  count: 14,
+                  color: 0xffc060,
+                  kind: 'explosion',
+                  speed: 4,
+                  life: 0.4,
+                  size: 2.2,
+                  spread: 1,
+                  emissive: true,
+                });
+                g.particles.emit({
+                  x: u.pos.x,
+                  y: y + 0.3,
+                  z: u.pos.z,
+                  count: 10,
+                  color: 0xffe0a0,
+                  kind: 'spark',
+                  speed: 6,
+                  life: 0.5,
+                  size: 0.5,
+                  spread: 1.5,
+                  emissive: true,
+                });
+                g.particles.emit({
+                  x: u.pos.x,
+                  y: y + 0.4,
+                  z: u.pos.z,
+                  count: 6,
+                  color: 0xcfc8bc,
+                  kind: 'dust',
+                  speed: 1.4,
+                  life: 1.8,
+                  size: 1.6,
+                  spread: 1.4,
+                });
+              }
+              u.__cd = cd;
+            }
+          }
           // Burning roofs: fire at the ridge, smoke rising from it.
           if (fires.length && ++emit % 3 === 0) {
             for (const [x, z, h] of fires) {
-              const y = g.terrain.getHeight(x, z) + h;
+              const y = g.terrain.getHeight(x, z) + h + 0.6;
               // Many small tongues read as flames; a few big particles read as glowing balls.
               g.particles.emit({
                 x,
                 y,
                 z,
-                count: 12,
+                count: 24,
                 color: 0xff7a1c,
                 kind: 'fire',
                 speed: 2.6,
                 life: 0.9,
-                size: 1.8,
+                size: 1.4,
                 spread: 3,
                 emissive: true,
               });
@@ -429,6 +495,7 @@ async function prepare(page, shot) {
 
       // Unit blocks: the bulkiest member sets the pitch, and every member heads for its own slot.
       const selected = [];
+      const immortal = [];
       const issue = (ids, order, at, to) => {
         for (const id of ids) {
           const u = g.units.get(id);
@@ -465,6 +532,8 @@ async function prepare(page, shot) {
         }
         issue(ids, row.order, row.at, row.to);
         if (row.select) selected.push(...ids);
+        // Targets that must outlive the warm-up: one volley killed the whole block before the camera rolled.
+        if (row.immortal) immortal.push(...ids);
       }
       if (shot.hero) {
         const spec = shot.hero;
@@ -541,6 +610,35 @@ async function prepare(page, shot) {
             h.issueOrder({ kind: 'move', target: goal }, true);
         };
       }
+      // Construction sites: placed with the game's own command, built by the selected workers, raised by hand
+      // on the shot's clock so the walls rise within 1.5 s.
+      const sites = [];
+      for (const spec of shot.build ?? []) {
+        const before = new Set(g.buildings.keys());
+        // The hint spot first, then the nearest free one (the plaza blocks part of the field).
+        if (!g.executeCommand({ kind: 'place', building: spec.kind, x: spec.at[0], z: spec.at[1] }, false)) {
+          const spot = g.findFreeSpot(spec.at[0], spec.at[1], 7);
+          if (spot) g.executeCommand({ kind: 'place', building: spec.kind, x: spot.x, z: spot.z }, false);
+        }
+        const b = [...g.buildings.values()].find((x) => !before.has(x.id));
+        if (!b) throw new Error(`could not place ${spec.kind} at ${spec.at}`);
+        sites.push({ b, spec });
+        if (selected.length) {
+          const half = selected.slice(sites.length === 1 ? 0 : selected.length / 2);
+          g.executeCommand(
+            { kind: 'order', unitIds: half, order: { kind: 'build', entityId: b.id }, clear: true },
+            false,
+          );
+        }
+      }
+      window.__build = (k) => {
+        for (const { b, spec } of sites) {
+          const ratio = spec.from + (spec.to - spec.from) * Math.min(1, k / 0.85);
+          const want = ratio * b.stats.buildTime;
+          if (want > b.constructionProgress) b.addBuildProgress(want - b.constructionProgress);
+        }
+      };
+      window.__build(0);
       if (selected.length) g.selectUnits(selected);
       g.sky.setTimeOfDay(shot.time);
       window.__step(Math.round((shot.warmup ?? 0.6) * 60));
@@ -600,8 +698,30 @@ async function prepare(page, shot) {
         }
         c.updateProjectionMatrix();
         c.updateMatrixWorld();
+        // Trees between the lens and the action: a trunk across the frame hid the clash.
+        if (shot.clearLens && !window.__lensCleared) {
+          window.__lensCleared = true;
+          const eye = vertical && shot.v?.eye ? shot.v.eye : shot.eye;
+          const look = vertical && shot.v?.look ? shot.v.look : shot.look;
+          const [a, b] = [eye[0], look[0]];
+          const [a2, b2] = [eye[1], look[1]];
+          const near = (sx, sz, p, q) => {
+            const dx = q[0] - p[0];
+            const dz = q[2] - p[2];
+            const t = Math.max(0, Math.min(0.75, ((sx - p[0]) * dx + (sz - p[2]) * dz) / (dx * dx + dz * dz)));
+            return Math.hypot(sx - p[0] - dx * t, sz - p[2] - dz * t) < 6;
+          };
+          window.__lensTrees = [];
+          g.trees.slots.forEach((t, i) => {
+            if (!t.used || !(near(t.x, t.z, a, b) || near(t.x, t.z, a2, b2))) return;
+            window.__lensTrees.push(i);
+          });
+        }
         g.terrain.updateLod(c.position, true);
         g.trees.update(0, { x: c.position.x, z: c.position.z });
+        // The resource nodes re-show their trees on every simulation step: hide them again before each render.
+        for (const i of window.__lensTrees ?? []) g.trees.setVisible(i, false);
+        if (window.__lensTrees?.length) g.trees.update(0, { x: c.position.x, z: c.position.z });
       };
     },
     { shot, vertical },
@@ -619,6 +739,7 @@ async function film(page, shot) {
       ({ k, hud }) => {
         const g = window.game;
         window.__phase(k);
+        window.__build(k);
         window.__step(2);
         window.__hide();
         window.__cam(k);
