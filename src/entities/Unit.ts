@@ -1181,20 +1181,20 @@ export class Unit {
     // A stopped or attacking unit damps its velocity and walk cycle every tick, so the walking force
     // cannot keep it apart; the position correction runs either way. Only a stopped unit also has its
     // closing velocity cancelled: doing that while it walks to a slot or a waypoint can pin it in place.
-    this.relaxSeparation(nearby, !walking);
+    this.relaxSeparation(nearby, !walking || this.targetEntityId !== null);
   }
 
   /**
    * Keep stop-and-fight groups from collapsing into the same point. A walking unit's velocity force is
    * not enough here: an attack damps `vel` and the walk cycle every tick, so jockeys ordered onto the same
-   * target used to end up inside each other. This pushes the position itself, but only against units of the
-   * same owner — a melee attacker must stay in contact with its enemy target.
+   * target used to end up inside each other. This pushes the position itself, but only against units on the
+   * same side — a melee attacker must stay in contact with its enemy target.
    */
   private relaxSeparation(nearby: Unit[], cancelClosing: boolean): void {
     let px = 0;
     let pz = 0;
     for (const u of nearby) {
-      if (u.id === this.id || u.garrisonedIn !== null || u.owner !== this.owner) continue;
+      if (u.id === this.id || u.garrisonedIn !== null || !this.sameSide(u)) continue;
       const dx = this.pos.x - u.pos.x;
       const dz = this.pos.z - u.pos.z;
       const d = Math.sqrt(dx * dx + dz * dz);
@@ -1225,6 +1225,14 @@ export class Unit {
     if (length < 1e-4) return;
     const scale = Math.min(1, SEPARATION_PUSH / length);
     this.pushOut(px * scale, pz * scale);
+  }
+
+  /** The same player or an ally on the same team: bodies on one side of a battle keep their spacing. */
+  private sameSide(other: Unit): boolean {
+    if (other.owner === this.owner) return true;
+    const mine = this.ctx.getPlayer(this.owner);
+    const theirs = this.ctx.getPlayer(other.owner);
+    return mine !== undefined && theirs !== undefined && mine.team === theirs.team;
   }
 
   /** Move positionally, never into blocked terrain (the same contract as `integrateSafely`). */

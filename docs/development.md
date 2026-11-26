@@ -628,11 +628,12 @@ Definition of Done and the building audit see
   are removed. This changes the refuge's pathing, so `REPLAY_VERSION` is 50; guarded by
   `tests/site-landmarks.test.ts` and `tests/e2e/vilcabamba.spec.ts`.
 - **Stop-and-fight separation** (2026-11-25): `Unit.applySeparation` keeps its walking velocity force and
-  adds `relaxSeparation`, a positional correction for same-owner bodies within 80 % of the pair's spacing.
+  adds `relaxSeparation`, a positional correction for same-side bodies within 80 % of the pair's spacing.
   While a unit is stopped it also cancels the closing velocity, so cavalry ordered onto the same target no
-  longer stop inside each other; the correction checks `stepAllowed`, so it cannot push a unit into a
-  building or the water. Enemy targets are exempt (melee must keep contact). This changes the simulation,
-  so `REPLAY_VERSION` is 51;
+  longer stop inside each other. The correction goes through `stepAllowed`, the same walkable-cell and
+  segment contract movement uses, so a unit's centre never ends in a blocked cell (the 2 m pathfinding grid
+  is centre-based). Enemy targets are exempt (melee must keep contact). This changes the simulation, so
+  `REPLAY_VERSION` is 51;
   guarded by `tests/unit-separation.test.ts`; evidence `docs/media/cavalry-melee-before-after.webp`
   (`node scripts/capture_cavalry_melee.mjs --out=review/cavalry-after`).
 - **Wari/Chanca kit** (2026-11-25): the Wari complex and the Chanca pucará draw from `wariChancaCity.ts`

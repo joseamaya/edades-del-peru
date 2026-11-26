@@ -21,7 +21,9 @@ interface Harness {
  * A flat, walkable board with two owners. The context mirrors the pieces of `Game` the movement and
  * combat loops read; `blocked` makes a circular footprint unwalkable for the push-out test.
  */
-function harness(blocked?: Blocked): Harness {
+function harness(options: { blocked?: Blocked; team?: (owner: number) => number } = {}): Harness {
+  const blocked = options.blocked;
+  const teamOf = (owner: number): number => options.team?.(owner) ?? owner;
   const units: Unit[] = [];
   const entitiesById = new Map<number, Unit>();
   let damageEvents = 0;
@@ -39,7 +41,7 @@ function harness(blocked?: Blocked): Harness {
     nearestWalkable: () => null,
     unitsNear: near,
     enemiesNear: (x: number, z: number, radius: number, owner: number) =>
-      near(x, z, radius).filter((u) => u.owner !== owner),
+      near(x, z, radius).filter((u) => teamOf(u.owner) !== teamOf(owner)),
     entitiesById,
     resourceNodes: new Map(),
     buildings: new Map(),
@@ -49,11 +51,8 @@ function harness(blocked?: Blocked): Harness {
     },
     spawnProjectile: () => {},
     particles: null,
-    players: [
-      { id: 0, team: 0 },
-      { id: 1, team: 1 },
-    ],
-    getPlayer: (id: number) => ({ id, team: id }),
+    players: [0, 1].map((id) => ({ id, team: teamOf(id) })),
+    getPlayer: (id: number) => ({ id, team: teamOf(id) }),
     event: () => {},
     gather: () => {},
     recordHarvest: () => {},
@@ -114,7 +113,7 @@ describe('stop-and-fight separation', () => {
     game.run(8);
 
     expect(game.damageEvents).toBeGreaterThan(0);
-    expect(closestPair(dragons)).toBeGreaterThanOrEqual(1.75);
+    expect(closestPair(dragons)).toBeGreaterThanOrEqual(1.88);
   });
 
   it('keeps ten cavalry and fourteen soldiers from stacking while they fight', () => {
@@ -127,12 +126,32 @@ describe('stop-and-fight separation', () => {
     game.run(8);
 
     expect(game.damageEvents).toBeGreaterThan(0);
-    expect(closestPair(dragons)).toBeGreaterThanOrEqual(1.75);
-    expect(closestPair(soldiers)).toBeGreaterThanOrEqual(1.0);
+    expect(closestPair(dragons)).toBeGreaterThanOrEqual(1.88);
+    expect(closestPair(soldiers)).toBeGreaterThanOrEqual(1.1);
+  });
+
+  it('separates two idle cavalry that start inside each other', () => {
+    const game = harness();
+    const a = game.spawn(UnitKind.REALISTA_DRAGON, 1, 100, 100);
+    const b = game.spawn(UnitKind.REALISTA_DRAGON, 1, 100.2, 100);
+
+    game.run(3);
+
+    expect(Math.hypot(a.pos.x - b.pos.x, a.pos.z - b.pos.z)).toBeGreaterThanOrEqual(1.88);
+  });
+
+  it('separates allied owners on the same team', () => {
+    const game = harness({ team: () => 0 });
+    const a = game.spawn(UnitKind.REALISTA_DRAGON, 0, 100, 100);
+    const b = game.spawn(UnitKind.REALISTA_DRAGON, 1, 100.2, 100);
+
+    game.run(3);
+
+    expect(Math.hypot(a.pos.x - b.pos.x, a.pos.z - b.pos.z)).toBeGreaterThanOrEqual(1.88);
   });
 
   it('does not push a unit into a blocked footprint', () => {
-    const game = harness({ x: 102.5, z: 100, radius: 1.2 });
+    const game = harness({ blocked: { x: 102.5, z: 100, radius: 1.2 } });
     const a = game.spawn(UnitKind.REALISTA_DRAGON, 1, 100.1, 100);
     const b = game.spawn(UnitKind.REALISTA_DRAGON, 1, 100.7, 100);
 
