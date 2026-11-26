@@ -1021,7 +1021,9 @@ slot is absent (offline / without assets).
   per-vertex tint (wall-foot grime, roof and paving variation; the horizontal paving and plaza skip the
   grime); no textures in the GLBs. At runtime the game maps `wall_brick` (warm, lifted) onto the fort,
   `wall_fieldstone` (lifted) onto the stone, `plaster_detail` onto adobe and earth, `wood` onto the timber,
-  `ground_plaza` onto the fort courtyard and `plaster_detail` (kept colour) onto the packed aprons. LOD0
+  `ground_plaza` onto the fort courtyard (warmed to `tint 0xf2e2c4` and lifted 1.7, with flatter joints at
+  `normal 0.35`, because the grey set read navy under the mission's cool dusk light) and `plaster_detail`
+  (kept colour) onto the packed aprons. LOD0
   ≤ 5000 / LOD1 ≤ 1500 triangles per piece; the chapel and the bastion are monument pieces (≤ 8000 / 2400).
 - **Historical basis**: documented: the port terrace, battery, warehouse and pier; the Real Felipe's
   bastioned brick/stone trace with four corner bastions and sally gates; the Tarapacá quebrada village with
@@ -1038,7 +1040,13 @@ slot is absent (offline / without assets).
   and `tarapaca-pachica` procedural landmarks.
 - **Evidence**: `docs/media/republic-sites-before-after.webp` (1652x1351 WebP q74): three rows, Arica, Real
   Felipe and Tarapacá, before and after the kit, same mission, seed, camera and light; produced with the
-  `yarn shot` commands in `docs/design/republic-sites.md` and `scripts/republic_sites_sheet.mjs`.
+  `yarn shot` commands in `docs/design/republic-sites.md` and `scripts/republic_sites_sheet.mjs`. The
+  courtyard colour pass has its own sheet, `docs/media/republic-fort-courtyard-before-after.webp`
+  (1652x513 WebP q74), same mission and light, before and after the `MAT-Arch_RepublicPlaza` values in
+  `src/rendering/architectureKit.ts`; the recipe is in the same doc. The `cine-bastion` still
+  (`public/media/real-felipe/cine-bastion.webp`), which looks into the courtyard, was regenerated with
+  `node scripts/capture_cinema.mjs --mission=m_real_felipe --only=cine-bastion`; it still showed the
+  pre-kit fort, so this also brings it in line with the Republican kit.
 
 ### Colonial architecture kit (m_lima, m_lima_1821, m_miraflores, m_junta_cusco, m7_tupac_amaru)
 

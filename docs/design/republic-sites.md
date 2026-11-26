@@ -41,7 +41,7 @@ textures in the GLBs. At runtime the shared PBR detail sets are mapped by `ARCH_
 | `MAT-Arch_RepublicEarth` | `plaster_detail`, kept colour | Earth gable roofs and flat parapet roofs |
 | `MAT-Arch_RepublicWood` | `wood` | Pier, doors, lintels, gun carriages, flagpole |
 | `MAT-Arch_RepublicPaving` | `plaster_detail`, kept colour | Packed-earth terrace, village plaza |
-| `MAT-Arch_RepublicPlaza` | `ground_plaza` | Real Felipe courtyard paving |
+| `MAT-Arch_RepublicPlaza` | `ground_plaza`, warmed and lifted | Real Felipe courtyard paving, the one Republican floor seen at dusk |
 | `MAT-Arch_RepublicDark` | `plaster_detail`, kept colour | Openings, embrasures, gun muzzles |
 
 Maximum 4 materials per piece; LOD0 ≤ 5k and LOD1 ≤ 1.5k triangles, with the chapel and the bastion as
@@ -126,6 +126,29 @@ cp review/republic-tarapaca_0.png review/republic-after/tarapaca_0.png
 node scripts/republic_sites_sheet.mjs --before=review/republic-before --after=review/republic-after \
   --out=docs/media/republic-sites-before-after.webp
 ```
+
+The courtyard has its own before/after, `docs/media/republic-fort-courtyard-before-after.webp`, because
+`MAT-Arch_RepublicPlaza` is the only material used by a single piece (`fort_plaza`). Run the Real Felipe
+command above **without** the change in `src/rendering/architectureKit.ts`
+(`git diff -- src/rendering/architectureKit.ts > /tmp/fort.patch && git checkout -- src/rendering/architectureKit.ts`)
+and copy `review/republic-real-felipe_0.png` to `review/fort-before/real-felipe_0.png`; reapply the patch
+(`git apply /tmp/fort.patch`), capture again and copy to `review/fort-after/real-felipe_0.png`. Then:
+
+```
+node scripts/republic_sites_sheet.mjs --before=review/fort-before --after=review/fort-after \
+  --rows=real-felipe --out=docs/media/republic-fort-courtyard-before-after.webp \
+  --footer="Real Felipe courtyard · MAT-Arch_RepublicPlaza · scripts/blender/build_republic_architecture_kit.py"
+```
+
+The frames come from two live runs, so the sea, the trees and the units move between them; the fort,
+camera and light are the same, and the courtyard is the only intentional difference.
+
+The grey `ground_plaza` set read cold grey and near-black in the courtyard shadow under the cool dusk light
+of `m_real_felipe`, so the mapping is warmed and lifted (`tint 0xf2e2c4`, `lift 1.7`) with flatter joints
+(`normal 0.35`), in the direction of the colonial paving but stronger and flatter than it. The texture set
+and the geometry are untouched: it is a runtime mapping change in `ARCH_SURFACES`, not a new render or a
+historical claim. The cinematic still `public/media/real-felipe/cine-bastion.webp`, which looks into the
+courtyard, is regenerated with `node scripts/capture_cinema.mjs --mission=m_real_felipe --only=cine-bastion`.
 
 ## Tests
 

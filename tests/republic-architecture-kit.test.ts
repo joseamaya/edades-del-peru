@@ -138,6 +138,10 @@ describe('runtime surfaces', () => {
   it('ships the paved apron in the game GLB and textures the kit sets', () => {
     expect(ARCH_SURFACES['MAT-Arch_RepublicPaving'].set).toBe('plaster_detail');
     expect(ARCH_SURFACES['MAT-Arch_RepublicPlaza'].set).toBe('ground_plaza');
+    // The courtyard is the one Republican floor seen at dusk: warmed and lifted, with flatter joints.
+    expect(ARCH_SURFACES['MAT-Arch_RepublicPlaza'].tint).toBe(0xf2e2c4);
+    expect(ARCH_SURFACES['MAT-Arch_RepublicPlaza'].normal).toBeLessThan(0.5);
+    expect(ARCH_SURFACES['MAT-Arch_RepublicPlaza'].lift).toBeGreaterThan(1.5);
     expect(ARCH_SURFACES['MAT-Arch_RepublicBrick'].set).toBe('wall_brick');
     expect(ARCH_SURFACES['MAT-Arch_RepublicStone'].lift).toBeGreaterThan(1);
     expect(ARCH_SURFACES['MAT-Arch_RepublicAdobe'].keepColor).toBe(true);
