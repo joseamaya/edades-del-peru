@@ -94,7 +94,7 @@ describe('colonial architecture kit', () => {
 });
 
 describe('runtime surfaces', () => {
-  it('ships the paving in the game GLB and keeps the tile desaturated', () => {
+  it('ships the paving in the game GLB and keeps the tile below the desaturation ceiling', () => {
     expect(ARCH_SURFACES['MAT-Arch_ColonialPaving'].set).toBe('ground_plaza');
     expect(ARCH_SURFACES['MAT-Arch_ColonialStone'].lift).toBeGreaterThan(1);
     expect(ARCH_SURFACES['MAT-Arch_ColonialTile'].saturation).toBeLessThanOrEqual(0.5);
@@ -105,7 +105,12 @@ describe('runtime surfaces', () => {
   });
 
   it('uses the same fired-clay mapping as the independence kit', () => {
-    expect(ARCH_SURFACES['MAT-Arch_ColonialTile']).toEqual(ARCH_SURFACES['MAT-Arch_IndependenceTile']);
+    for (const tile of [ARCH_SURFACES['MAT-Arch_ColonialTile'], ARCH_SURFACES['MAT-Arch_IndependenceTile']]) {
+      expect(tile.set).toBe('tile');
+      expect(tile.tint).toBe(0xf2d3a6);
+      expect(tile.saturation).toBe(0.5);
+      expect(tile.hue).toBe(12);
+    }
   });
 });
 

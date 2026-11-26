@@ -40,7 +40,7 @@ shared PBR sets onto them (`ARCH_SURFACES` in `src/rendering/architectureKit.ts`
 | Material | Runtime surface | Why |
 | --- | --- | --- |
 | Lime plaster, adobe, dark openings | `plaster_detail`, keeping the painted colour | trowel swirls and grit without changing the documented paint. |
-| Tile roofs | photographed `tile`, keeping 50 % of its colour (50 % towards luma) + a warm sand tint (`0xf2d3a6`) | the source texture is a saturated red; the near-neutral tint read pink under the cool sky, so the tint is warmer and keeps a little more of the map's chroma. |
+| Tile roofs | photographed `tile`, keeping 50 % of its colour (50 % towards luma), a warm sand tint (`0xf2d3a6`) and a 12° hue rotation towards orange | the source texture is a saturated red; a warm multiply alone cannot lift its green, so the hue shift is what turns the near-neutral tint's pink into fired terracotta. |
 | Paving | `ground_plaza`, warmed and lifted | the floor has its own light set; the kerb and fountain keep the wall stone. |
 | Stone (kerb, fountain, bands) | `wall_cutstone`, lifted 1.25 | the cut-stone mortar read black at the RTS zoom. |
 | Wood | `wood` | balconies and doors. |

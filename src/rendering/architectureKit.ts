@@ -142,18 +142,28 @@ function footprint(model: ArchModel): THREE.Box3 {
   return box;
 }
 
+/** Fired-clay roofs shared by the colonial and independence kits: the same photographed tile map. */
+const TILE_SURFACE = { set: 'tile', tint: 0xf2d3a6, normal: 0.7, saturation: 0.5, hue: 12, lift: 1.15 };
+
 /**
  * Surface detail per kit material from shared, tileable PBR sets in src/assets/textures/materials (the
  * GLBs carry no textures; the only set added for the kit is the 9 KB `plaster_detail`). The kit's UVs
  * are box-projected at world scale (TILE in the Blender script). `keepColor` keeps the material's
  * documented paint colour under a near-white detail map; otherwise `tint` (times `lift`) colours the set.
  */
-/** Fired-clay roofs shared by the colonial and independence kits: the same photographed tile map. */
-const TILE_SURFACE = { set: 'tile', tint: 0xf2d3a6, normal: 0.7, saturation: 0.5, lift: 1.15 };
 
 export const ARCH_SURFACES: Record<
   string,
-  { set: string; tint?: number; normal: number; keepColor?: boolean; lift?: number; saturation?: number }
+  {
+    set: string;
+    tint?: number;
+    normal: number;
+    keepColor?: boolean;
+    lift?: number;
+    saturation?: number;
+    /** Hue rotation in degrees around the grey axis, before the saturation mix. */
+    hue?: number;
+  }
 > = {
   // Set stone: the light, coursed dry-stone tile, warmed towards the local granodiorite.
   'MAT-Arch_Stone': { set: 'wall_drystone', tint: 0xf2e4cf, normal: 0.8, lift: 1.5 },
@@ -181,9 +191,10 @@ export const ARCH_SURFACES: Record<
   'MAT-Arch_IncaEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
   'MAT-Arch_IncaSand': { set: 'plaster_detail', normal: 0.4, keepColor: true },
   // Colonial: lime plaster and adobe keep their documented paint. The photographed tile is a saturated
-  // red (#b24541); pulled halfway to luma and multiplied by a warm sand tint it reads as fired terracotta
-  // instead of the pink it took with the near-neutral tint under the cool sky. The plaza floor has its own
-  // light paving set; the stone is lifted so the kerb and the fountain do not read black.
+  // red (#b24541); a warm multiply cannot raise its green enough, so the runtime also rotates the hue 12°
+  // towards orange, then pulls it halfway to luma. The roofs read as fired terracotta instead of pink
+  // under the cool sky. The plaza floor has its own light paving set; the stone is lifted so the kerb and
+  // the fountain do not read black.
   'MAT-Arch_ColonialPlaster': { set: 'plaster_detail', normal: 0.6, keepColor: true },
   'MAT-Arch_ColonialAdobe': { set: 'plaster_detail', normal: 0.9, keepColor: true },
   'MAT-Arch_ColonialTile': TILE_SURFACE,
@@ -237,21 +248,33 @@ export const ARCH_SURFACES: Record<
   'MAT-Arch_WariDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
 };
 
-/** Mix a sampled diffuse colour towards its luma; `saturation` 1 keeps the map, 0 is grey. */
-function applySaturation(material: THREE.MeshStandardMaterial, saturation: number): void {
+/**
+ * Shift a sampled diffuse colour towards orange, then mix it towards its luma: `hue` degrees around the
+ * grey axis (a warm tint cannot raise the green of a red map), `saturation` 1 keeps the map, 0 is grey.
+ */
+function applyArchTone(material: THREE.MeshStandardMaterial, saturation: number, hue: number): void {
   const value = saturation.toFixed(2);
+  const hueValue = hue.toFixed(3);
   const previousHook = material.onBeforeCompile;
   material.onBeforeCompile = (shader, renderer) => {
     previousHook.call(material, shader, renderer);
     shader.fragmentShader = shader.fragmentShader.replace(
       '#include <map_fragment>',
       `#include <map_fragment>
+  float archAngle = ${hueValue} * 0.01745329252;
+  float archCos = cos(archAngle);
+  float archSin = sin(archAngle);
+  vec3 archAxis = vec3(0.577350269);
+  diffuseColor.rgb =
+    diffuseColor.rgb * archCos +
+    cross(archAxis, diffuseColor.rgb) * archSin +
+    archAxis * dot(archAxis, diffuseColor.rgb) * (1.0 - archCos);
   float archLuma = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
   diffuseColor.rgb = mix(vec3(archLuma), diffuseColor.rgb, ${value});`,
     );
   };
   const previousKey = material.customProgramCacheKey.bind(material);
-  material.customProgramCacheKey = () => `${previousKey()}|arch-saturation-${value}`;
+  material.customProgramCacheKey = () => `${previousKey()}|arch-tone-${value}-${hueValue}`;
 }
 
 export function applyArchSurface(material: THREE.MeshStandardMaterial, name: string): void {
@@ -270,7 +293,9 @@ export function applyArchSurface(material: THREE.MeshStandardMaterial, name: str
     material.roughnessMap = set.roughness;
     material.roughness = 1;
   }
-  if (surface.saturation !== undefined) applySaturation(material, surface.saturation);
+  if (surface.saturation !== undefined || surface.hue !== undefined) {
+    applyArchTone(material, surface.saturation ?? 1, surface.hue ?? 0);
+  }
   material.needsUpdate = true;
 }
 
