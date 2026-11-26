@@ -479,8 +479,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     phases: CARAL_PHASE_PLAN,
     heritageSince: CARAL_HERITAGE_SINCE,
     blockers: CARAL_SITE_BLOCKERS,
-    // The heritage volumes opt in here; WorldViewDecor.addCaralSiteBlockers adds the kit city's houses,
-    // the camp, Áspero and the Supe hamlets to both the renderer and the headless match.
+    // The heritage volumes opt in here; WorldViewDecor adds CARAL_KIT_BLOCKERS (the kit city's houses, plaza
+    // basins and fair tents, the camp, Áspero and the Supe hamlets) to both the renderer and the headless match.
     simulationCollision: true,
     blockerPadding: CARAL_SITE_BLOCKER_PADDING,
     buildKeepout: CARAL_SITE_BUILD_KEEPOUT,

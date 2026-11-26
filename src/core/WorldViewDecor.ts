@@ -98,7 +98,7 @@ const FAUNA_TREE_CLEARANCE = 7;
 // How close the army has to be to an authored opening point for that point to frame the settled camera.
 const OPENING_HOLD_RADIUS = 20;
 
-/** Caral's phased kit blockers: the city houses, the camp, Áspero and the Supe hamlets. */
+/** Caral's phased kit blockers: the kit city (houses, plaza basins, fair tents), the camp, Áspero and the Supe hamlets. */
 const CARAL_KIT_BLOCKERS: readonly SiteBlocker[] = [
   ...CARAL_CITY_BLOCKERS,
   ...CARAL_CAMP_BLOCKERS,
