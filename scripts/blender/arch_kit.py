@@ -5,7 +5,7 @@ game assets and writes a per-piece manifest. This module owns the parts every ki
 builder, the wall/roof primitives, world-scale box UVs, the vertex tint, the GLB export and the manifest.
 
 The five procedural kits that landed before this module (Caral, Cusco, colonial, Republican, Independence)
-import the plumbing from here: `parse_args`, the GLB export and `stats`, which were byte-identical copies.
+import the plumbing from here: `parse_args`, the GLB export and `stats`, which were copies of the same code (Caral's had one stray space).
 Their piece builders stay local on purpose: each kit uses its own bmesh primitives, material order and tint
 ledges, so rewriting them on `Kit` would change geometry and needs captures, not a mechanical pass. Chavín
 is not a procedural kit (it extracts groups from a source `.blend` and writes one manifest per LOD), so it

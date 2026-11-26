@@ -853,6 +853,26 @@ export_glb = ak.export_glb  # shared helper
 stats = ak.stats  # shared helper
 
 
+CONFIDENCE = {
+    'pyramid_mayor': 'inferred',
+    'pyramid_mayor_phase1': 'inferred',
+    'pyramid_mayor_phase2': 'inferred',
+    'pyramid_mayor_phase3': 'inferred',
+    'pyramid_small': 'inferred',
+    'circular_plaza': 'documented',
+    'house_common': 'inferred',
+    'house_elite': 'inferred',
+    'house_aspero': 'assumed',
+    'fair_tent': 'assumed',
+    'huaca_idolos': 'inferred',
+    'camp_shelter': 'assumed',
+    'shicra_stack': 'inferred',
+    'stone_yard': 'inferred',
+    'pyramid_small_phase1': 'inferred',
+    'survey_stake': 'inferred',
+}
+
+
 def main():
     args = parse_args()
     only = [a for a in args.only.split(',') if a] or list(ASSETS)
