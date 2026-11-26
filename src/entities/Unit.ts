@@ -1178,10 +1178,12 @@ export class Unit {
       this.vel.x += fx * 4.5 * dt;
       this.vel.z += fz * 4.5 * dt;
     }
-    // A stopped or attacking unit damps its velocity and walk cycle every tick, so the walking force
-    // cannot keep it apart; the position correction runs either way. Only a stopped unit also has its
-    // closing velocity cancelled: doing that while it walks to a slot or a waypoint can pin it in place.
-    this.relaxSeparation(nearby, !walking || this.targetEntityId !== null);
+    // A stopped unit damps its velocity and walk cycle every tick, so the walking force cannot keep it
+    // apart. A unit chasing an attack target needs the same correction mid-stride; a plain move, gather
+    // or build keeps only the velocity force, or the crowd at a shared destination is pushed off its
+    // path (the navigation smoke test caught 37/40 arrivals).
+    const chasing = this.targetEntityId !== null;
+    if (!walking || chasing) this.relaxSeparation(nearby, !walking || chasing);
   }
 
   /**

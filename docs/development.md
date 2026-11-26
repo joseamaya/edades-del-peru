@@ -632,8 +632,9 @@ Definition of Done and the building audit see
   While a unit is stopped it also cancels the closing velocity, so cavalry ordered onto the same target no
   longer stop inside each other. The correction goes through `stepAllowed`, the same walkable-cell and
   segment contract movement uses, so a unit's centre never ends in a blocked cell (the 2 m pathfinding grid
-  is centre-based). Enemy targets are exempt (melee must keep contact). This changes the simulation, so
-  `REPLAY_VERSION` is 51;
+  is centre-based). A plain move/gather/build keeps only the velocity force, so a 40-unit group still
+  reaches a shared destination; the positional pass runs when the unit stops or chases an attack target.
+  Enemy targets are exempt (melee must keep contact). This changes the simulation, so `REPLAY_VERSION` is 51;
   guarded by `tests/unit-separation.test.ts`; evidence `docs/media/cavalry-melee-before-after.webp`
   (`node scripts/capture_cavalry_melee.mjs --out=review/cavalry-after`).
 - **Wari/Chanca kit** (2026-11-25): the Wari complex and the Chanca pucará draw from `wariChancaCity.ts`
