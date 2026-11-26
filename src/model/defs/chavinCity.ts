@@ -1,4 +1,4 @@
-import type { ArchPlacement } from './architectureKit';
+import { layoutBlockers, type ArchPlacement } from './architectureKit';
 import type { SiteBlocker, SiteKeepoutRect } from './sites';
 import type { SitePhasePlan } from './sitePhases';
 import type { HeritageBuildingId } from './heritage';
@@ -49,10 +49,18 @@ export const CHAVIN_CITY_LAYOUT: readonly ArchPlacement[] = [
   { asset: 'pilgrims', ...chavinPoint({ x: 100, z: 98 }), rotY: 0, scale: [1, 1, 1], since: 'apogee' },
 ];
 
+/** The fair tents use the Caral game-unit tent geometry; their frame and cover block like Caral's. */
+const TENT_FOOTPRINT = { minX: -2.1, maxX: 2.1, minZ: -1.85, maxZ: 1.85 };
+
 export const CHAVIN_CITY_BLOCKERS: readonly SiteBlocker[] = [
   { ...chavinPoint({ x: 90, z: 91 }), w: 20, d: 19, since: 'old_temple_foundation' },
   { ...chavinPoint({ x: 107, z: 80 }), w: 25, d: 22, since: 'new_temple_foundation' },
   { ...chavinPoint({ x: 110, z: 85 }), w: 9, d: 7, since: 'new_temple' },
+  // The three apogee tents stand on the open ground; the plaza floor and the pilgrims stay walkable.
+  ...layoutBlockers(
+    CHAVIN_CITY_LAYOUT.filter((p) => p.asset === 'fair_tent'),
+    { fair_tent: TENT_FOOTPRINT },
+  ),
 ];
 
 /** Phase from which each heritage card stands; omitted cards stand from the opening. */

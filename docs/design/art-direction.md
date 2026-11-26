@@ -135,7 +135,8 @@ colonial cities (Lima 1535/1821, Cusco 1780/1814, Miraflores: `colonialCity.ts`)
 north-coast sites (Huacas de Moche and Chan Chan: `mocheChimuCity.ts`) and the highland sites (Wari and the
 Chanca pucará: `wariChancaCity.ts`) and Tambotoco (the Killke/ayllu hamlets, qollqas, ramadas and shrine
 platform: `tambotocoCity.ts`) are on the whole standard, blockers included. Caral (m1) and Chavín (m2) draw
-from a kit but keep hand-written blocker arrays. Tambotoco keeps its cave and huaca hero GLBs and builds the
+from a kit but keep hand-written blocker arrays (both now apply them in the headless match too). Tambotoco
+keeps its cave and huaca hero GLBs and builds the
 continuous ground — paving, canchas, terraces, fields, paths — in code, because the player builds on it and
 it must follow the relief vertex by vertex.
 

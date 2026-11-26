@@ -29,6 +29,15 @@ describe('layoutBlockers', () => {
   });
 });
 
+describe('authored-site collision', () => {
+  it('opts every authored site with blockers into headless collision', () => {
+    for (const [id, site] of Object.entries(AUTHORED_SITES)) {
+      if (site.blockers.length === 0) continue;
+      expect(site.simulationCollision, id).toBe(true);
+    }
+  });
+});
+
 describe('Cusco city', () => {
   it('blocks every building of the composition and nothing else', () => {
     const solid = CUSCO_CITY_LAYOUT.filter((p) => CUSCO_KIT_FOOTPRINTS[p.asset]);

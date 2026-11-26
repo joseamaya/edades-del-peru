@@ -306,8 +306,11 @@ function rotatedBlocker(
   since?: string,
   until?: string,
 ): SiteBlocker {
-  const quarter = Math.abs(Math.sin(rotY)) > 0.5;
-  return { x, z, w: quarter ? d : w, d: quarter ? w : d, since, until };
+  // Exact axis-aligned bounds of the turned footprint: a 30-80° house keeps corners walkable with the
+  // old quarter-turn swap.
+  const cos = Math.abs(Math.cos(rotY));
+  const sin = Math.abs(Math.sin(rotY));
+  return { x, z, w: w * cos + d * sin, d: w * sin + d * cos, since, until };
 }
 
 export const CARAL_CITY_HOUSE_BLOCKERS: readonly SiteBlocker[] = CARAL_CITY_LAYOUT.flatMap((p) => {
@@ -411,9 +414,6 @@ export const SUPE_HAMLETS: readonly CaralArchPlacement[] = (
 ).map(([x, z, rotY]) => ({ asset: 'house_common', x, z, rotY, scale: [1, 1, 1] }));
 
 /** Footprints of the hamlet houses (same as the city's common houses). */
-export const SUPE_HAMLET_BLOCKERS: readonly SiteBlocker[] = SUPE_HAMLETS.map((p) => ({
-  x: p.x,
-  z: p.z,
-  w: 5.4,
-  d: 4.4,
-}));
+export const SUPE_HAMLET_BLOCKERS: readonly SiteBlocker[] = SUPE_HAMLETS.map((p) =>
+  rotatedBlocker(p.x, p.z, 5.4, 4.4, p.rotY),
+);

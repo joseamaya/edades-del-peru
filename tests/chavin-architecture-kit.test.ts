@@ -66,12 +66,15 @@ describe('Chavín architecture kit', () => {
       expect(Math.abs(proxy.x - origin.x), `${proxy.id} x offset`).toBeLessThan(16);
       expect(Math.abs(proxy.z - origin.z), `${proxy.id} z offset`).toBeLessThan(18);
     }
-    for (const blocker of CHAVIN_CITY_BLOCKERS) {
+    for (const blocker of CHAVIN_CITY_BLOCKERS.filter((b) => b.since !== 'apogee')) {
       const matchesProxy = site.heritageProxies.some(
         (p) => Math.abs(p.x - blocker.x) < 2 && Math.abs(p.z - blocker.z) < 2,
       );
       expect(matchesProxy, `blocker ${blocker.x},${blocker.z} has no heritage proxy`).toBe(true);
     }
+    // The apogee tents are solid in both paths (the plaza floor and the pilgrims stay open).
+    const tents = CHAVIN_CITY_BLOCKERS.filter((b) => b.since === 'apogee');
+    expect(tents).toHaveLength(3);
   });
 
   it('paints the valley ground and reserves the highland flora', () => {

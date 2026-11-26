@@ -106,8 +106,10 @@ describe('Caral fishing grounds', () => {
         game.spawnScriptedUnit(UnitKind.WORKER, 0, base.x + (i % 3) * 1.5 - 1.5, base.z + Math.floor(i / 3) * 1.5),
       );
     }
+    // A bank north of the Áspero houses: the hamlet's walls now block the headless match too, so the
+    // stress group uses a bank whose neighbouring banks stay reachable after the clicked one depletes.
     const sea = [...game.resourceNodes.values()].find(
-      (node) => node.kind === 'fishing' && !node.dead && node.pos.x < 30 && node.pos.z < 170,
+      (node) => node.kind === 'fishing' && !node.dead && node.pos.x < 30 && node.pos.z < 140,
     )!;
     game.executeCommand(
       {
