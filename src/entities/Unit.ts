@@ -791,11 +791,13 @@ export class Unit {
     return distance <= Math.min(reach, this.attackEnvelope() + RETALIATION_RADIUS);
   }
 
-  /** Living enemy that damaged this unit recently; cleared once it dies or the memory lapses. */
+  /** Living enemy that damaged this unit recently; cleared once it dies, changes sides or the memory lapses. */
   private retaliationTarget(): Unit | null {
     if (this.retaliationTimer <= 0 || this.retaliationId === null) return null;
     const target = this.ctx?.entitiesById?.get(this.retaliationId) as Unit | undefined;
-    if (!target || target.dead) {
+    // A converted shooter is an ally now: the remembered attacker must still be on the other side, or the
+    // unit would answer a Misionero by attacking the soldier it just converted.
+    if (!target || target.dead || this.sameSide(target)) {
       this.clearRetaliation();
       return null;
     }
@@ -1234,7 +1236,7 @@ export class Unit {
   }
 
   /** The same player or an ally on the same team: bodies on one side of a battle keep their spacing. */
-  private sameSide(other: Unit): boolean {
+  private sameSide(other: { owner: number }): boolean {
     if (other.owner === this.owner) return true;
     const mine = this.ctx.getPlayer(this.owner);
     const theirs = this.ctx.getPlayer(other.owner);
@@ -1331,8 +1333,15 @@ export class Unit {
       this.targetEntityId = best.id;
       this.attackingTarget = true;
       this.updateAttack({ kind: OrderKind.ATTACK, entityId: best.id }, dt, time);
-    } else if (this.isPathDone()) {
+      return;
+    }
+    if (this.attackingTarget) {
+      // The engagement ended mid-march (the enemy died, left the envelope or changed sides): drop the id,
+      // or the mounted separation would keep reading the unit as chasing for the rest of the advance.
       this.attackingTarget = false;
+      this.targetEntityId = null;
+    }
+    if (this.isPathDone()) {
       // The advance has arrived: from here the unit holds this ground as its defensive post.
       if (this.combatStance === 'defensivo' && !this.leashOrigin) {
         this.leashOrigin = { x: this.pos.x, z: this.pos.z };
@@ -1347,7 +1356,7 @@ export class Unit {
       this.targetEntityId !== null
         ? (this.ctx.entitiesById.get(this.targetEntityId) ?? this.ctx.buildings.get(this.targetEntityId))
         : null;
-    if (!target || target.dead || (target.hp !== undefined && target.hp <= 0)) {
+    if (!target || target.dead || (target.hp !== undefined && target.hp <= 0) || this.sameSide(target)) {
       this.targetEntityId = null;
       if (this.attackingTarget) {
         // resume the attack-move march toward its original destination
@@ -2134,6 +2143,7 @@ export class Unit {
   private updateConvert(_order: Order, dt: number, time: number): void {
     const target = this.targetEntityId !== null ? this.ctx.entitiesById.get(this.targetEntityId) : null;
     if (!target || target.dead) {
+      this.targetEntityId = null;
       this.finishOrder();
       return;
     }
@@ -2165,6 +2175,7 @@ export class Unit {
       const from = target.owner;
       target.owner = this.owner;
       target.clearOrders?.();
+      this.targetEntityId = null;
       this.ctx.event('unit:converted', { id: target.id, from, to: this.owner });
       this.finishOrder();
     }

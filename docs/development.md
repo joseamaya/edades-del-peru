@@ -652,6 +652,14 @@ Definition of Done and the building audit see
   `REPLAY_VERSION` is 54. Guarded by `tests/headless-game.test.ts` (Caral's kit house and Chavín's temple are
   not walkable without a renderer), the all-sites check in `tests/architecture-layout-blockers.test.ts` and
   `tests/fishing-grounds.test.ts` (the stress group uses a bank whose neighbours stay reachable).
+- **Stale engagement targets** (2026-11-26): an attack-move cleared `attackingTarget` when an enemy left its
+  envelope but kept `targetEntityId`, so the mounted separation read the unit as chasing for the rest of the
+  advance (and the save snapshot stored the id); `updateConvert` never cleared it either, and a converted
+  shooter stayed in `retaliationId`, so a Misionero answered the conversion by attacking the soldier it had
+  just won. The id is now dropped as soon as the attack-move stops engaging and when either order finishes;
+  `updateAttack` cancels an attack whose target is on the same side now, and `retaliationTarget` ignores a
+  remembered attacker that changed sides. This changes the simulation, so `REPLAY_VERSION` is 55; guarded by
+  `tests/unit-separation.test.ts`.
 - **Killke/ayllu kit** (2026-11-26): Tambotoco's shrine platform, houses, qollqas and ramadas draw from
   `tambotocoCity.ts` (5 pieces, 7 materials) built by `build_killke_architecture_kit.py`; every authored hut
   in `tambotocoLayout.ts` maps to a piece and the same layout yields the blockers, so the site sets
