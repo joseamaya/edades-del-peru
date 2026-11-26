@@ -1360,6 +1360,17 @@ slot is absent (offline / without assets).
   seated shared-body rider, right column the Quaternius horse.
 - **Content**: `docs/art/character-visual-pilot.md` §15. **Review**: no new historical claim.
 
+### Real Felipe courtyard light (in-engine evidence)
+
+- **Location**: `docs/media/republic-fort-courtyard-light-before-after.webp`, 1772x536 WebP q74.
+- **Source**: `yarn shot real-felipe-courtyard --url="/?mission=m_real_felipe&seed=777&fog=0&intro=0"
+  --click --site --height=48 --no-hud --no-labels --wait=9000`; the before row runs the same command from
+  a worktree at `main` (0.28), the after row on this change (0.33), then `scripts/sites_sheet.mjs`.
+- **Content**: the same fort, camera, seed and warmed `MAT-Arch_RepublicPlaza`; the only intentional
+  difference is the mission's sun elevation. The before courtyard is in the walls' shadow and reads navy;
+  the after one is sunlit and reads warm stone.
+- **Review**: no historical or material change; a lighting capture of an existing site.
+
 ### Character legibility (in-engine evidence)
 
 - **Location**: `docs/media/character-legibility-before-after.webp`, 1520x856 WebP q72.
