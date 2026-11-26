@@ -631,6 +631,15 @@ describe('rigged model assets', () => {
     };
     expect(coatOf(rig.root)).toBe(MOUNTED_SPECS.mounted_realistas.horseCoat);
     expect(rig.root.getObjectByName('attire_mounted_saddle')).toBeDefined();
+    // The mount loads as one mesh per material; `dressMounted` merges them (and the saddle) into one
+    // vertex-coloured draw. Sources stay in the tree on layer 31 and must not be counted.
+    const drawn: THREE.Mesh[] = [];
+    rig.root.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (mesh.isMesh && mesh.visible && mesh.layers.mask === 1) drawn.push(mesh);
+    });
+    expect(drawn).toHaveLength(1);
+    expect((drawn[0].material as THREE.MeshStandardMaterial).vertexColors).toBe(true);
     // The shared worker is not cached in this test: the horse goes riderless instead of a placeholder.
     let rider = false;
     rig.root.traverse((o) => {
