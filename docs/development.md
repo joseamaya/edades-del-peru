@@ -1107,8 +1107,13 @@ shared infantry body in its side's soldier uniform on the `Torso2` bone (`docs/a
 §13–15); without the worker asset the horse goes riderless. There is no mounted mapping before 1532, and
 `modelAssetIdsForMatch` preloads the asset for the affected periods. The SHA-256 values are in `PROVENANCE.md`. Measure it
 with `yarn bench --scenario=mounted --units=4,12,24 --assert`; `yarn bench:check` includes the mounted, siege,
-tank and vehicles scenarios. The current merged rig renders at ~20 draws and ~8.4k triangles per unit including
-the shadow pass, inside the 40-draw / 12k-triangle budget.
+tank and vehicles scenarios. The mount loads as one mesh per material (eight draws, plus its shadow) and no
+variant dresser touched it, so `dressMounted` consolidates it onto the horse's own skeleton — after the coat
+tints and before the saddle, because the merged material borrows the first part's roughness/metalness; the
+rider is a separate rig and stays out of that pass. That takes the unit from 16 to **9 draws** (one merged
+horse, the saddle and the rider, plus the shadow pass), and the merged mesh casts the whole horse, so the
+shadow reads ~15.3k triangles per unit against the unchanged 15.5k budget (14.7k with the single-material
+body shadow).
 
 The siege rig (`siege_rig.glb`, #241b) is the project-authored companion for `ARTILLERY`, `MORTAR` and
 `TANK`: a 33-bone rig with hidden cannon/mortar/crew/tank groups, four clips and per-culture palette variants

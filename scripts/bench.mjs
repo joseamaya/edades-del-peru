@@ -98,7 +98,9 @@ const RIG_BUDGETS = {
   // consolidated alpaca (2 draws: mesh + shadow).
   worker: { drawCalls: 40, triangles: 40000 },
   // The rider is the shared infantry body in its closed uniform (~11.4k) on the Quaternius horse with its
-  // saddle (~3.3k): 14.7k per unit, under the art-direction 25k common-unit ceiling.
+  // saddle (~3.3k). The mount merges into one draw at dress time, so its shadow covers the whole horse (a
+  // single-material body shadow before): 15.4k per unit, still under the 15.5k cap and the art-direction
+  // 25k common-unit ceiling.
   mounted: { drawCalls: 40, triangles: 15500 },
   siege: { drawCalls: 24, triangles: 12000 },
   tank: { drawCalls: 12, triangles: 12000 },

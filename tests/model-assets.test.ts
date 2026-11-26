@@ -29,6 +29,7 @@ import {
   type LoadedModelAsset,
 } from '../src/rendering/ModelAssets';
 import { MODEL_ASSET_DEFS } from '../src/rendering/modelAssetRegistry';
+import { CONSOLIDATED_SOURCE_LAYER } from '../src/rendering/modelConsolidation';
 
 const MODEL_URL = new URL('../src/assets/models/ual_mannequin.glb', import.meta.url);
 const WORKER_URL = new URL('../src/assets/models/caral_worker.glb', import.meta.url);
@@ -631,6 +632,35 @@ describe('rigged model assets', () => {
     };
     expect(coatOf(rig.root)).toBe(MOUNTED_SPECS.mounted_realistas.horseCoat);
     expect(rig.root.getObjectByName('attire_mounted_saddle')).toBeDefined();
+    // The mount loads as one mesh per material; `dressMounted` merges them (the saddle stays its own draw)
+    // into one vertex-coloured mesh. The eight sources stay on layer 31 with their materials inspectable.
+    const drawn: THREE.Mesh[] = [];
+    const sources: THREE.Mesh[] = [];
+    rig.root.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh || !mesh.visible) return;
+      if (mesh.layers.mask === (1 << CONSOLIDATED_SOURCE_LAYER) >>> 0) sources.push(mesh);
+      else if (mesh.name === 'rig:consolidated') drawn.push(mesh);
+    });
+    expect(drawn).toHaveLength(1);
+    expect(sources.filter((mesh) => mesh.name.startsWith('Horse'))).toHaveLength(8);
+    const merged = drawn[0].material as THREE.MeshStandardMaterial;
+    expect(merged.vertexColors).toBe(true);
+    // The merged material keeps the horse's surface, not the matte saddle leather that is attached after.
+    const horse = sources.find((mesh) => mesh.name === 'Horse_1')!.material as THREE.MeshStandardMaterial;
+    expect(merged.roughness).toBe(horse.roughness);
+    expect(merged.metalness).toBe(horse.metalness);
+    // The coat colour is baked into vertex colours: at least one vertex carries the side's coat.
+    const coat = new THREE.Color(MOUNTED_SPECS.mounted_realistas.horseCoat);
+    const color = drawn[0].geometry.getAttribute('color');
+    let coatBaked = false;
+    for (let i = 0; i < color.count && !coatBaked; i++) {
+      coatBaked =
+        Math.abs(color.getX(i) - coat.r) < 1e-3 &&
+        Math.abs(color.getY(i) - coat.g) < 1e-3 &&
+        Math.abs(color.getZ(i) - coat.b) < 1e-3;
+    }
+    expect(coatBaked).toBe(true);
     // The shared worker is not cached in this test: the horse goes riderless instead of a placeholder.
     let rider = false;
     rig.root.traverse((o) => {
@@ -642,6 +672,46 @@ describe('rigged model assets', () => {
     const patriot = acquireRig('mounted_rig', 'mounted_patriotas')!;
     expect(coatOf(patriot.root)).toBe(MOUNTED_SPECS.mounted_patriotas.horseCoat);
     patriot.dispose();
+  });
+
+  it('seats the rider on its own skeleton and keeps it out of the mount merge', async () => {
+    const read = (url: URL): ArrayBuffer => {
+      const file = fs.readFileSync(fileURLToPath(url));
+      return file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength) as ArrayBuffer;
+    };
+    // The worker carries textures; Node has no `self`/image decoding, and the seat only needs the rig.
+    const previousSelf = (globalThis as { self?: unknown }).self;
+    const textureLoad = THREE.TextureLoader.prototype.load;
+    (globalThis as { self?: unknown }).self = globalThis;
+    THREE.TextureLoader.prototype.load = function (_url, onLoad) {
+      const texture = new THREE.Texture();
+      onLoad?.(texture);
+      return texture;
+    };
+    try {
+      await loadModelAssetFromData('mounted_rig', read(MOUNTED_URL));
+      await loadModelAssetFromData('caral_worker', read(WORKER_URL));
+      const rig = acquireRig('mounted_rig', 'mounted_realistas')!;
+
+      const rider = rig.root.getObjectByName('rig:caral_worker');
+      expect(rider).toBeDefined();
+      expect(rider!.parent?.name).toBe('Torso2');
+
+      // The merged horse mesh is the consolidated draw that is not the rider's own.
+      let mergedHorse: THREE.SkinnedMesh | null = null;
+      rig.root.traverse((o) => {
+        const mesh = o as THREE.SkinnedMesh;
+        const workerBones = mesh.skeleton?.bones.some((b) => b.name === 'pelvis') ?? true;
+        if (!mergedHorse && mesh.isSkinnedMesh && mesh.name === 'rig:consolidated' && !workerBones) mergedHorse = mesh;
+      });
+      expect(mergedHorse).not.toBeNull();
+      expect(mergedHorse!.skeleton.bones.some((b) => b.name === 'thigh_l')).toBe(false);
+      rig.dispose();
+    } finally {
+      THREE.TextureLoader.prototype.load = textureLoad;
+      if (previousSelf === undefined) delete (globalThis as { self?: unknown }).self;
+      else (globalThis as { self?: unknown }).self = previousSelf;
+    }
   });
 
   it('falls back from run to walk on rigs without a gallop', async () => {
