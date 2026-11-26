@@ -650,6 +650,17 @@ describe('rigged model assets', () => {
     const horse = sources.find((mesh) => mesh.name === 'Horse_1')!.material as THREE.MeshStandardMaterial;
     expect(merged.roughness).toBe(horse.roughness);
     expect(merged.metalness).toBe(horse.metalness);
+    // The coat colour is baked into vertex colours: at least one vertex carries the side's coat.
+    const coat = new THREE.Color(MOUNTED_SPECS.mounted_realistas.horseCoat);
+    const color = drawn[0].geometry.getAttribute('color');
+    let coatBaked = false;
+    for (let i = 0; i < color.count && !coatBaked; i++) {
+      coatBaked =
+        Math.abs(color.getX(i) - coat.r) < 1e-3 &&
+        Math.abs(color.getY(i) - coat.g) < 1e-3 &&
+        Math.abs(color.getZ(i) - coat.b) < 1e-3;
+    }
+    expect(coatBaked).toBe(true);
     // The shared worker is not cached in this test: the horse goes riderless instead of a placeholder.
     let rider = false;
     rig.root.traverse((o) => {
