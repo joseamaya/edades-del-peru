@@ -1422,6 +1422,23 @@ slot is absent (offline / without assets).
   before row shows the horses inside each other; the after row shows the same-side bodies separated.
 - **Review**: no art or historical claim; a simulation-behaviour capture of a seeded skirmish.
 
+### Tambotoco Killke kit (in-engine evidence)
+
+- **Location**: `docs/media/tambotoco-killke-before-after.webp`, 1772x1862 WebP q74.
+- **Source**: `node scripts/capture_ayllu_kit.mjs --tag=killke-after`; the before row runs the same script
+  from a worktree at `main` (`47d4b1ef`) with tag `before-kit`, same seed, sun, camera and `fundada` phase.
+  The sheet is composed with `node scripts/sites_sheet.mjs --before=review/killke-before
+  --after=review/killke-after --rows=hualla,inticancha,shrine,valley --captions="Hualla,Inticancha
+  fundada,Huanacaure,Valle del Cusco" --footer="Tambotoco · same seed, camera, sun and fundada phase · hut,
+  qollqa, ramada and shrine platform now Killke kit pieces · src/model/defs/tambotocoCity.ts"
+  --out=docs/media/tambotoco-killke-before-after.webp`.
+- **Content**: the hualla hamlet, the founded Inticancha ring, the Huanacaure platform and a wide valley
+  view. The before row draws the huts, qollqas, ramadas and platform procedurally; the after row draws them
+  from `build_killke_architecture_kit.py` and keeps the paving, fields, paths, cave and huaca procedural.
+- **Review**: the kit is project-owned procedural geometry (no third-party asset); each piece manifest
+  records `confidence` and sources, and the kit stays `reviewed: false` like every architecture kit. The
+  forms follow the domestic Killke language in `docs/historia/arquitectura.md` §1.
+
 ### Character legibility (in-engine evidence)
 
 - **Location**: `docs/media/character-legibility-before-after.webp`, 1520x856 WebP q72.

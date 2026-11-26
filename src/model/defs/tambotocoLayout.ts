@@ -9,14 +9,6 @@ export const TAMBOTOCO_INTICANCHA = { x: 168, z: 190 } as const;
 /** Levelled plaza radius and the cancha plot footprint the `inticancha` phase traces. */
 export const TAMBOTOCO_PLAZA_RADIUS = 6;
 export const AYLLU_CANCHA_SIZE = { w: 4.8, d: 4.0 } as const;
-/** Huanacaure's three stepped tiers (top-down) and the height of each. */
-export const TAMBOTOCO_SHRINE_TIERS = [
-  { w: 9, d: 7.5 },
-  { w: 7, d: 5.5 },
-  { w: 5, d: 4 },
-] as const;
-export const TAMBOTOCO_SHRINE_TIER_HEIGHT = 0.75;
-
 export type AylluHutKind = 'house' | 'storehouse' | 'shed';
 
 export interface AylluHut {

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { AylluSite } from '../src/rendering/AylluSite';
-import { ageSurface, aylluHut, box, slab, terracedField, villageDressing, type Parts } from '../src/rendering/aylluKit';
+import { ageSurface, box, slab, terracedField, villageDressing, type Parts } from '../src/rendering/aylluKit';
 import {
   TAMBOTOCO_FIELDS,
   TAMBOTOCO_INTICANCHA_HUTS,
@@ -87,19 +87,6 @@ describe('the ayllu kit', () => {
     expect(range.max).toBeCloseTo(top, 5);
   });
 
-  it('stands every house volume on its own plinth', () => {
-    for (const hut of HUTS) {
-      const parts: Parts = [];
-      const result = aylluHut(parts, hut, slope);
-      const ground = slope(hut.x, hut.z);
-      // The roof rises above the eave, but by a roof's height, not a tower's.
-      expect(result.top - result.eave, `${hut.kind ?? 'house'} at ${hut.x},${hut.z}`).toBeGreaterThan(0.4);
-      expect(result.top - result.eave).toBeLessThan(1.4);
-      // The plinth is buried at the lowest corner of its footprint, so nothing floats on the slope.
-      expect(verticalRange(parts).min).toBeLessThan(ground);
-    }
-  });
-
   it('draws three distinct dwelling silhouettes and uses all of them in the layout', () => {
     const kinds = new Set(HUTS.map((h) => h.kind ?? 'house'));
     expect([...kinds].sort()).toEqual(['house', 'shed', 'storehouse']);
@@ -127,9 +114,7 @@ describe('the ayllu kit', () => {
     });
     const cave = site.group.children.find((group) => group.name === 'ayllu:cave')!;
     const families = cave.children.map((mesh) => mesh.name.split(':').pop());
-    expect(families).toEqual(
-      expect.arrayContaining(['stone', 'earth', 'plaster', 'thatch', 'wood', 'crops', 'people']),
-    );
+    expect(families).toEqual(expect.arrayContaining(['stone', 'earth', 'plaster', 'wood', 'crops', 'people', 'rock']));
     const crops = cave.children.find((child) => child.name.endsWith(':crops'))!;
     site.updateLod(100);
     expect(crops.visible).toBe(false);

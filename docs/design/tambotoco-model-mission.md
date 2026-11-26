@@ -61,17 +61,22 @@ Painted ground is sampled at 128 × 128 over 256 m; the worker crosses in ≈2:2
 
 ## Site and factions
 
-`tambotoco_site` is drawn by `AylluSite`: the cave mouth, the Huanacaure shrine, three valley hamlets and
-Inticancha, with smoke, fires, villagers and llamas. The kit is modular and terrain-conformed
-(`rendering/aylluKit.ts`). The 2026-11-16 art pass split it into per-surface materials (stone, rock, earth,
-plaster, thatch, wood, crops and the static villagers) with generated PBR detail, world-scale UVs and one
-merged mesh per family and phase. Houses now have fieldstone footings, dark base courses, corner stones,
-deep-eave thatch roofs with exposed ridge poles, a lintelled door and a vent; qollqas have a corbel ring and
-a raised threshold; ramadas have a brush roof and a stone back; canchas are packed-earth enclosures with low
-walls and a threshold rather than empty pads; the plaza has a low kerb, four packed-earth axes and a stepped
-altar; fields follow the relief with a retaining face, ridges and standing crop. The cave mouth is an
-extruded arch in a rock ring with a scree apron, and Huanacaure's monolith is a shorter tapered huaca with a
-carved niche. A stone footpath network ties the shrine, the hamlets, the fields and Inticancha.
+`tambotoco_site` draws its **buildings from the Killke/ayllu architecture kit**
+(`rendering/architectureKit.ts` + `model/defs/tambotocoCity.ts`): the Huanacaure stepped platform, the two
+shrine huts, every hualla/sauaseray/alcabizas house, qollqa and ramada, and the Inticancha ring. The kit
+(`scripts/blender/build_killke_architecture_kit.py`, five pieces, seven materials) carries fieldstone
+footings with mud mortar, earth or plaster walls, deep-eave thatch roofs with exposed ridge poles, round
+qollqas with a corbel ring and raised threshold, open ramadas and the shrine's three tiers. Each authored hut
+maps to a piece scaled to its dimensions, and the same layout yields the site blockers, so a house cannot be
+walked through, headless included. Hillside pieces seat at the ground under their centre: the modelled
+footing reaches down the slope and the uphill wall cuts into it.
+
+The **ground and the heroes stay procedural** (`rendering/AylluSite.ts` + `rendering/aylluKit.ts`): the cave
+mouth (a hero GLB with a procedural fallback), Huanacaure's monolith, the paved plaza and its altar, the four
+cancha plots, the terraces, the fields with their retaining faces, ridges and crops, the stone footpaths, the
+bridges and the static villagers, merged per surface family and phase. The 2026-11-16 pass had drawn the huts
+and shrine in code too; the 2026-11-26 kit pass replaced those volumes and kept every ground surface, which
+must follow the relief vertex by vertex because the player builds and walks on it.
 
 Every piece samples the ground it spans, so huts, canchas, terraces and fields sit on the Pacaritambo slope
 instead of floating; the fields and terraces also live on dry, gently sloping ground
@@ -293,7 +298,8 @@ macro, Inticancha yard and Huanacaure offerings).
    heroes now carry readable props and the base has its cancha houses, but they remain inside the cap. The
    performance row is **Met**. Run `node scripts/bench_scene.mjs --mission=m_tambotoco [--stage=late]
    [--gpu] --assert`.
-2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry), now a modular,
-   terrain-conformed kit; a Blender architecture kit could replace it later without touching the layout.
+2. The buildings are Killke kit GLBs since 2026-11-26 (`art-src/blender/exports/killke`, seven materials);
+   the cave/huaca heroes and the continuous ground (paving, terraces, fields, paths, people) stay
+   procedural by design.
 3. A manual 30–40 minute playtest without isolated attrition, checking that the eight nameplates stay
    readable at the default zoom.

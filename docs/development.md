@@ -151,11 +151,11 @@ Definition of Done and the building audit see
   (`scripts/build_geographic_heightmaps.py`). `cusco_inca_site` has no field of its own: both missions that use
   it supply one, which pays for the new data inside the `dist` budget.
 - **Site landmarks retired** (2026-11-25): the procedural `SiteLandmarks` composition and
-  `MissionLayout.siteLandmarks` are gone. Every authored site except Tambotoco (still `AylluSite`) draws from an architecture kit: Cusco,
-  colonial, Republican (`republicCity.ts`), Independence (`independenceCity.ts`), Moche/Chimú
-  (`mocheChimuCity.ts`) and Wari/Chanca/Vilcabamba (`wariChancaCity.ts`, whose domestic pieces build the
-  refuge). `AuthoredSiteDef.hideModel` drops the bundled GLB; the retired GLBs stay in the registry.
-  Guarded by `tests/site-landmarks.test.ts` and the per-kit tests.
+  `MissionLayout.siteLandmarks` are gone. Every authored site draws its buildings from an architecture kit:
+  Cusco, colonial, Republican (`republicCity.ts`), Independence (`independenceCity.ts`), Moche/Chimú
+  (`mocheChimuCity.ts`), Wari/Chanca/Vilcabamba (`wariChancaCity.ts`, whose domestic pieces build the
+  refuge) and Tambotoco (`tambotocoCity.ts`, Killke/ayllu). `AuthoredSiteDef.hideModel` drops the bundled GLB;
+  the retired GLBs stay in the registry. Guarded by `tests/site-landmarks.test.ts` and the per-kit tests.
 - **Palettized ground**: the model-mission pattern wants painted ground at ~2 m per point, and a 128 x 128 RGBA
   grid is 64 KB, so per-mission grids store a 4-bit index per cell into a 16-entry palette
   (`src/model/defs/groundCodec.ts`) and decode to the RGBA weights `sampleAuthoredGround` expects. The palette
@@ -608,7 +608,9 @@ Definition of Done and the building audit see
   kit footprints stay reserved from the opening. This changes placement, so `REPLAY_VERSION` is 45; guarded by
   `tests/headless-game.test.ts` and `tests/e2e/campaign-playtest.spec.ts`.
 - **Architecture-kit seating** (2026-11-25): `ArchitectureCity` seats a piece on the **lowest** ground under
-  its model bounding box and sinks it 0.08 m; lifted floors use the highest ground instead. A long thin
+  its model bounding box and sinks it 0.08 m; lifted floors use the highest ground instead. A hillside piece
+  that models its own deep footing can set `seat: 'centre'` and sit at the ground under its centre (Tambotoco),
+  so the uphill wall cuts into the slope and the downhill face shows the foundation. A long thin
   piece whose box reaches downhill (a 20 m wall plus a ditch) therefore sinks its wall into the crest — the
   Tarapacá parapet dropped its ditch and keeps a tight wall footprint. Keep a wall's footprint on the wall,
   not on the slope or the trench it faces.
@@ -640,6 +642,16 @@ Definition of Done and the building audit see
   changes the simulation, so `REPLAY_VERSION` is 51 (the follow-up below changes it to 52);
   guarded by `tests/unit-separation.test.ts`; evidence `docs/media/cavalry-melee-before-after.webp`
   (`node scripts/capture_cavalry_melee.mjs --out=review/cavalry-after`).
+- **Killke/ayllu kit** (2026-11-26): Tambotoco's shrine platform, houses, qollqas and ramadas draw from
+  `tambotocoCity.ts` (5 pieces, 7 materials) built by `build_killke_architecture_kit.py`; every authored hut
+  in `tambotocoLayout.ts` maps to a piece and the same layout yields the blockers, so the site sets
+  `simulationCollision`. A hillside piece seats at the ground under its centre (`seat: 'centre'`) instead of
+  the lowest corner: the modelled footing reaches 4.2 m down, so the uphill wall cuts into the slope and the
+  downhill face shows the foundation, exactly the stance the procedural kit took. The cave and huaca GLBs,
+  the plaza and cancha paving, the terraces, the fields, the paths and the people stay in `AylluSite`
+  (continuous ground, art-direction §4.2). This changes the blockers and the headless pathing, so
+  `REPLAY_VERSION` is 52; guarded by `tests/killke-architecture-kit.test.ts`,
+  `tests/tambotoco-layout.test.ts` and `tests/e2e/fow-zones.spec.ts`.
 - **Wari/Chanca kit** (2026-11-25): the Wari complex and the Chanca pucará draw from `wariChancaCity.ts`
   (9 pieces, 8 materials) built by `build_wari_architecture_kit.py` on `scripts/blender/arch_kit.py`; both
   sites set `simulationCollision` and the old site GLBs stay in the registry, no longer drawn. The dry

@@ -1,0 +1,79 @@
+{
+  "asset_id": "killke_shrine",
+  "source_scene": "scenes/killke_architecture_kit.blend",
+  "script": "scripts/blender/build_killke_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "tambotocoBlockers in src/model/defs/tambotocoCity.ts",
+  "confidence": "stylized",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/tambotoco-model-mission.md",
+    "docs/design/art-direction.md",
+    "docs/historia/campanas/tambotoco.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 220,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_KillkeCutstone",
+        "MAT-Arch_KillkeStone"
+      ],
+      "bounds": {
+        "min": [
+          -4.7,
+          -5.45,
+          -0.9
+        ],
+        "max": [
+          4.7,
+          3.95,
+          3.07
+        ],
+        "size": [
+          9.4,
+          9.4,
+          3.97
+        ]
+      },
+      "file": "killke_shrine_lod0.glb",
+      "bytes": 20644
+    },
+    "LOD1": {
+      "triangles": 110,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_KillkeCutstone",
+        "MAT-Arch_KillkeStone"
+      ],
+      "bounds": {
+        "min": [
+          -4.7,
+          -5.45,
+          -0.9
+        ],
+        "max": [
+          4.7,
+          3.95,
+          2.41
+        ],
+        "size": [
+          9.4,
+          9.4,
+          3.31
+        ]
+      },
+      "file": "killke_shrine_lod1.glb",
+      "bytes": 11636
+    }
+  }
+}

@@ -662,9 +662,9 @@ rock outcrops and puna density if the budget allows.
 - **Modified asset:** none.
 - **Generation system:** none.
 
-**Audit of Huanacaure and Inticancha.** Huanacaure is implemented as a three-tier shrine hill with a route
-and a discovery; Inticancha is implemented in `AylluSite` as a paved plaza, altar and four cancha plots,
-raised in phases. These are the strongest foundation beats in the catalogue and match the dossier’s
+**Audit of Huanacaure and Inticancha.** Huanacaure is implemented as a three-tier shrine platform with a
+route and a discovery; Inticancha is a paved plaza, altar and four cancha plots, raised in phases, ringed by
+Killke kit houses. These are the strongest foundation beats in the catalogue and match the dossier’s
 four-cancha account. Keep them. The only gap is the surrounding highland (distant peaks, rock outcrops,
 puna density), not the foundation plan.
 

@@ -1,0 +1,83 @@
+{
+  "asset_id": "killke_ramada",
+  "source_scene": "scenes/killke_architecture_kit.blend",
+  "script": "scripts/blender/build_killke_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "tambotocoBlockers in src/model/defs/tambotocoCity.ts",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/tambotoco-model-mission.md",
+    "docs/design/art-direction.md",
+    "docs/historia/campanas/tambotoco.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 246,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_KillkeEarth",
+        "MAT-Arch_KillkeStone",
+        "MAT-Arch_KillkeThatch",
+        "MAT-Arch_KillkeWood"
+      ],
+      "bounds": {
+        "min": [
+          -2.0,
+          -1.74,
+          -4.2
+        ],
+        "max": [
+          2.0,
+          1.74,
+          3.78
+        ],
+        "size": [
+          4.0,
+          3.48,
+          7.98
+        ]
+      },
+      "file": "killke_ramada_lod0.glb",
+      "bytes": 24556
+    },
+    "LOD1": {
+      "triangles": 140,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_KillkeEarth",
+        "MAT-Arch_KillkeStone",
+        "MAT-Arch_KillkeThatch",
+        "MAT-Arch_KillkeWood"
+      ],
+      "bounds": {
+        "min": [
+          -2.0,
+          -1.74,
+          -4.2
+        ],
+        "max": [
+          2.0,
+          1.74,
+          3.78
+        ],
+        "size": [
+          4.0,
+          3.48,
+          7.98
+        ]
+      },
+      "file": "killke_ramada_lod1.glb",
+      "bytes": 15904
+    }
+  }
+}

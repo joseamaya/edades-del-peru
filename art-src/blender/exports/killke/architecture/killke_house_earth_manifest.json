@@ -1,0 +1,83 @@
+{
+  "asset_id": "killke_house_earth",
+  "source_scene": "scenes/killke_architecture_kit.blend",
+  "script": "scripts/blender/build_killke_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "tambotocoBlockers in src/model/defs/tambotocoCity.ts",
+  "confidence": "plausible",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/tambotoco-model-mission.md",
+    "docs/design/art-direction.md",
+    "docs/historia/campanas/tambotoco.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 380,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_KillkeDark",
+        "MAT-Arch_KillkeEarth",
+        "MAT-Arch_KillkeStone",
+        "MAT-Arch_KillkeThatch"
+      ],
+      "bounds": {
+        "min": [
+          -3.58,
+          -2.72,
+          -4.2
+        ],
+        "max": [
+          3.58,
+          2.72,
+          4.35
+        ],
+        "size": [
+          7.16,
+          5.44,
+          8.55
+        ]
+      },
+      "file": "killke_house_earth_lod0.glb",
+      "bytes": 35576
+    },
+    "LOD1": {
+      "triangles": 204,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_KillkeDark",
+        "MAT-Arch_KillkeEarth",
+        "MAT-Arch_KillkeStone",
+        "MAT-Arch_KillkeThatch"
+      ],
+      "bounds": {
+        "min": [
+          -3.58,
+          -2.72,
+          -4.2
+        ],
+        "max": [
+          3.58,
+          2.72,
+          4.35
+        ],
+        "size": [
+          7.16,
+          5.44,
+          8.55
+        ]
+      },
+      "file": "killke_house_earth_lod1.glb",
+      "bytes": 20892
+    }
+  }
+}

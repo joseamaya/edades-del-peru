@@ -2,7 +2,7 @@ import type { SiteBlocker } from './sites';
 
 /** Shared data contract for the Blender architecture kits (Caral, Chavín, Cusco, colonial, republican, independence, moche, wari). */
 export type ArchitectureKitId =
-  'caral' | 'chavin' | 'cusco' | 'colonial' | 'republic' | 'independence' | 'moche' | 'wari';
+  'caral' | 'chavin' | 'cusco' | 'colonial' | 'republic' | 'independence' | 'moche' | 'wari' | 'killke';
 export type ArchAssetId = string;
 
 export interface ArchPlacement {
@@ -21,6 +21,12 @@ export interface ArchPlacement {
   until?: string;
   /** Asset used instead of `asset` in each phase (e.g. the Caral Pyramid Mayor). */
   phaseAssets?: Partial<Record<string, ArchAssetId>>;
+  /**
+   * Seat the piece at the ground under its centre instead of the lowest point of its footprint, for a
+   * hillside building whose modelled footing reaches down. The doorway stays at grade and the uphill
+   * wall cuts into the slope.
+   */
+  seat?: 'centre';
 }
 
 /** A kit piece's solid ground footprint in its own model space (metres, +Z front), before scaling. */

@@ -16,15 +16,14 @@ import {
   TAMBOTOCO_VILLAGES,
   type AylluHut,
 } from '../model/defs/tambotocoLayout';
+import { hutApex, KILLKE_SHRINE_TOP } from '../model/defs/tambotocoCity';
 import {
   ageSurface,
-  aylluHut,
   canchaPlot,
   caveMouth,
   pavedPlaza,
   retainingTerrace,
   shrineOfferings,
-  shrinePlatform,
   shrineStone,
   stoneBridge,
   stonePath,
@@ -71,11 +70,11 @@ interface PhaseGroup {
 }
 
 /**
- * The ayllu world of the Tambotoco mission: the cave mouth, the Huanacaure shrine, three valley
- * hamlets and the planned Inticancha. The pieces come from `aylluKit`, which samples the terrain for
- * every plinth, terrace and field; positions live in `model/defs/tambotocoLayout.ts`.
- * Presentation only: the static geometry is merged per phase and the life particles are emitted
- * from `Game.updateCityLife`.
+ * The ayllu ground of the Tambotoco mission: the cave mouth, Huanacaure's offerings, the three valley
+ * hamlets' yards and fields, the paved Inticancha and its canchas, the paths and the static villagers.
+ * The buildings themselves are Killke kit pieces (`tambotocoCity.ts`); this layer keeps the continuous
+ * ground, the hero cave/huaca GLBs and the life particles, all sampling the terrain vertex by vertex.
+ * Positions live in `model/defs/tambotocoLayout.ts`.
  */
 export class AylluSite {
   readonly group = new THREE.Group();
@@ -136,12 +135,12 @@ export class AylluSite {
       phase: PHASE_CAVE,
       kind: 'smoke',
     });
-    const platformTop = shrinePlatform(caveParts, TAMBOTOCO_SHRINE.x, TAMBOTOCO_SHRINE.z, ground);
+    const platformTop = ground(TAMBOTOCO_SHRINE.x, TAMBOTOCO_SHRINE.z) + KILLKE_SHRINE_TOP - 0.08;
     shrineOfferings(caveParts, TAMBOTOCO_SHRINE.x, TAMBOTOCO_SHRINE.z, platformTop);
     villagers(caveParts, TAMBOTOCO_SHRINE.x - 1.8, platformTop, TAMBOTOCO_SHRINE.z + 1.8, 2);
-    for (const h of TAMBOTOCO_SHRINE_HUTS) this.hut(caveParts, h, ground, PHASE_CAVE);
+    for (const h of TAMBOTOCO_SHRINE_HUTS) this.smoke(h, ground, PHASE_CAVE);
     for (const village of TAMBOTOCO_VILLAGES) {
-      for (const h of village.huts) this.hut(caveParts, h, ground, PHASE_CAVE);
+      for (const h of village.huts) this.smoke(h, ground, PHASE_CAVE);
       const yard = villageDressing(caveParts, village.x, village.z, ground, 'village', true, undefined, false);
       villagers(caveParts, village.x, yard, village.z, 2);
       terracedField(caveParts, village.field, ground);
@@ -179,7 +178,7 @@ export class AylluSite {
     const founded: Parts = [];
     for (const terrace of TAMBOTOCO_TERRACES) retainingTerrace(founded, terrace, ground);
     for (const f of TAMBOTOCO_FIELDS) terracedField(founded, f, ground);
-    for (const h of TAMBOTOCO_INTICANCHA_HUTS) this.hut(founded, h, ground, PHASE_FOUNDED);
+    for (const h of TAMBOTOCO_INTICANCHA_HUTS) this.smoke(h, ground, PHASE_FOUNDED);
     villageDressing(
       founded,
       plaza.x - 6.4,
@@ -204,14 +203,13 @@ export class AylluSite {
     this.setPhase(this.plan.initial);
   }
 
-  /** Draw one authored hut and register its smoke at the roof apex the kit reports. */
-  private hut(parts: Parts, h: AylluHut, ground: (x: number, z: number) => number, phase: string): void {
-    const { top } = aylluHut(parts, h, ground);
+  /** Register the smoke of a kit hut at its roof apex; the kit draws the piece itself. */
+  private smoke(h: AylluHut, ground: (x: number, z: number) => number, phase: string): void {
     if (!h.smoke) return;
     this.life.push({
       x: h.x,
       z: h.z,
-      y: this.baseY + top + 0.3,
+      y: this.baseY + ground(h.x, h.z) + hutApex(h) - 0.08,
       phase,
       kind: 'smoke',
     });
