@@ -1255,8 +1255,8 @@ slot is absent (offline / without assets).
     `Push_Loop` is an explicit pushing/placing abstraction. The source hair-card eyebrows were rebuilt as
     low-poly strips on each body's `Head` bone.
   - Historical basis: `docs/historia/atuendos.md` records **cotton textiles for Caral-Supe** but marks the
-    specific garments, skin tone and facial features as **not documented**. The short-sleeved tunic, skirt/sash,
-    reserved chasqui runner set (short-sleeve tunic, long skirt, belt, canteen, ochre headband), skin palette
+    specific garments, skin tone and facial features as **not documented**. The tunic, skirt/sash, reserved chasqui runner set
+    (tunic, long skirt, belt, canteen, ochre headband), skin palette
     and hair are an **abstraction/plausible** treatment, not a reconstruction or a portrait. The Caral scout
     uses the commoner tunic/skirt or wrap, a manta and a plain headband, with no chasqui gear; the Chasqui
     identity and outfit are reserved for the Inca. Gender is a presentation-only

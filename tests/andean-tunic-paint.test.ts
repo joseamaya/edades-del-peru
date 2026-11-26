@@ -245,7 +245,7 @@ describe('Andean tunic body paint', () => {
           for (let i = 0; i < bones.length; i++) {
             if (bones[i] !== `upperarm_${side}`) continue;
             body.getVertexPosition(i, point).applyMatrix4(body.matrixWorld);
-            if (point.y < shoulderY - 0.045) {
+            if (point.y < shoulderY - 0.04 - 1e-6) {
               expect(paintAlpha(body, i), `${variant} bare ${side} arm vertex ${i}`).toBe(0);
             }
             if (point.y >= shoulderY - 0.02 && paintAlpha(body, i) === 1) cap++;
