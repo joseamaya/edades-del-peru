@@ -34,7 +34,7 @@ const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: stri
   independence_site: { lod0: independenceLod0Url, lod1: independenceLod1Url },
   arica_site: { lod0: aricaLod0Url, lod1: aricaLod1Url },
   // Real Felipe and Tarapacá keep a registry fallback; their missions set `hideModel` and draw
-  // procedural landmarks instead (src/rendering/SiteLandmarks.ts).
+  // architecture-kit layouts instead.
   real_felipe_site: { lod0: aricaLod0Url, lod1: aricaLod1Url },
   tarapaca_site: { lod0: aricaLod0Url, lod1: aricaLod1Url },
   brena_site: { lod0: independenceLod0Url, lod1: independenceLod1Url },

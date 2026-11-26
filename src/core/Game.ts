@@ -38,7 +38,6 @@ import { OrderMarkers } from '../entities/OrderMarker';
 import { TreeInstances, kitLod0RadiusFor } from '../rendering/TreeInstances';
 import { PropKitInstances } from '../rendering/PropKitInstances';
 import type { SiteCrew } from '../rendering/SiteCrew';
-import type { SiteLandmarks } from '../rendering/SiteLandmarks';
 import type { CaralMayorPhase } from '../model/defs/caralPhases';
 import { loadPropsKit } from '../rendering/propsKit';
 import { isCoastalRegion, loadKitModel, VEGETATION_PACKS } from '../rendering/vegetationKit';
@@ -245,7 +244,6 @@ export class Game {
   /** The loaded authored site GLB, so a founding can hide it until the city phase. */
   siteModel: THREE.Group | null = null;
   /** Mission-scoped procedural landmarks that complete or replace the authored site model. */
-  siteLandmarks: SiteLandmarks | null = null;
   /** Presentation-only construction crew in the Caral camp (issue 422); null elsewhere. */
   siteCrew: SiteCrew | null = null;
   /** Named environmental events and their progress (0 = off, 1 = fully applied). */
@@ -473,7 +471,7 @@ export class Game {
     });
     if (this.headless && this.missionLayout?.site) {
       // A layout-converted site blocks in the simulation too (sim, benches, probes).
-      this.world.applyHeadlessSiteCollision(this.missionLayout.site);
+      this.world.applyHeadlessSiteCollision();
     }
     if (!this.headless) {
       if (this.missionLayout?.site) {
@@ -2333,8 +2331,6 @@ export class Game {
     this.aylluSite = null;
     this.colonialSite?.dispose();
     this.colonialSite = null;
-    this.siteLandmarks?.dispose();
-    this.siteLandmarks = null;
     this.siteModel = null;
     this.wildlife.dispose();
     if (this.landmark) {

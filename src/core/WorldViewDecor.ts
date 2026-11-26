@@ -10,7 +10,6 @@ import { FISHERS_PER_GROUND, HARVEST_STAND_RANGE } from '../entities/Unit';
 import { disposeStaticGltf } from '../rendering/StaticModel';
 import { loadSceneryModel } from '../rendering/sceneryModels';
 import { loadSiteModel } from '../rendering/siteModels';
-import { SiteLandmarks, siteLandmarkObstacles } from '../rendering/SiteLandmarks';
 import { mergeStaticByMaterial } from '../rendering/mergeStatic';
 import { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
 import type { ArchitectureKitId, ArchPlacement } from '../model/defs/architectureKit';
@@ -243,13 +242,12 @@ export class WorldViewDecor {
   /**
    * Site collision for a match with no renderer. Only sites whose blockers come from their kit layout opt in
    * (`simulationCollision`): that layout is the single source of what blocks, so the headless simulation
-   * must see it. Procedural sites keep their renderer-only blockers until they are converted.
+   * must see it.
    */
-  applyHeadlessSiteCollision(site: MissionSite): void {
+  applyHeadlessSiteCollision(): void {
     const def = this.game.siteDef;
     if (!def?.simulationCollision) return;
     this.addSiteObstacles(def);
-    this.addSiteLandmarkObstacles(site.y ?? 0);
   }
 
   /** Load the authored campaign site; monumental volumes block pathing, not the whole footprint. */
@@ -274,9 +272,7 @@ export class WorldViewDecor {
     }
     this.game.siteAnchor = { ...def.anchor };
     this.addSiteObstacles(def);
-    this.addSiteLandmarkObstacles(site.y ?? 0);
     this.addSiteHeritageProxies(group, def.heritageProxies);
-    this.spawnSiteLandmarks(site.y ?? 0);
     if (def.hideModel || site.hideModel) {
       // Keep the authored site's name discoverable by tooling (bench_scene, capture scripts) even
       // when the procedural composition replaces its GLB.
@@ -527,37 +523,6 @@ export class WorldViewDecor {
       .catch((error: unknown) => {
         console.warn(`[site] failed to load authored ${def.id} site`, error);
       });
-  }
-
-  /** The remaining mission-scoped landmark (Vilcabamba) blocks movement, headless too. */
-  private addSiteLandmarkObstacles(baseY: number): void {
-    const specs = this.game.missionLayout?.siteLandmarks;
-    if (!specs?.length) return;
-    const obstacles = siteLandmarkObstacles(
-      specs,
-      this.game.settings.mapSize,
-      (x, z) => this.game.terrain.getHeight(x, z),
-      baseY,
-    );
-    for (const obstacle of obstacles) this.game.pathfinder.addObstacle(obstacle);
-  }
-
-  spawnSiteLandmarks(baseY: number): void {
-    if (this.game.headless) return;
-    const specs = this.game.missionLayout?.siteLandmarks;
-    this.game.siteLandmarks?.dispose();
-    this.game.siteLandmarks = null;
-    if (!specs?.length) return;
-    const landmarks = new SiteLandmarks(
-      specs,
-      this.game.settings.mapSize,
-      (x, z) => this.game.terrain.getHeight(x, z),
-      baseY,
-    );
-    this.game.siteLandmarks = landmarks;
-    this.game.scene.add(landmarks.group);
-    applyFowToObject(landmarks.group, this.game.fowUniforms);
-    this.enableLandmarkShadows(landmarks.group);
   }
 
   /** Frame the base, or the base/site midpoint for sites that need both in shot. */

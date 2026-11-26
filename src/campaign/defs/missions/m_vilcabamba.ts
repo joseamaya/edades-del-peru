@@ -67,8 +67,6 @@ export const mVilcabamba: MissionDef = {
       keepout: [{ x: VILCABAMBA_FORT.x / 256, z: VILCABAMBA_FORT.z / 256, rx: 0.075, rz: 0.07 }],
       buildKeepout: [{ x: VILCABAMBA_FORT.x / 256, z: VILCABAMBA_FORT.z / 256, rx: 0.065, rz: 0.06 }],
     },
-    // The Chanca hillfort GLB is not loaded: Vilcabamba is a low cloud-forest platform and longhouses.
-    siteLandmarks: [{ kind: 'vilcabamba-refuge', x: VILCABAMBA_FORT.x / 256, z: VILCABAMBA_FORT.z / 256 }],
     roads: [
       {
         from: { dx: VILCABAMBA_CAMP.x, dz: VILCABAMBA_CAMP.z },

@@ -18,7 +18,6 @@ import type { AuthoredHeightField } from '../model/defs/authoredTerrain';
 import type { SetpieceId } from '../model/defs/setpieces';
 import type { HeritageBuildingId } from '../model/defs/heritage';
 import type { AuthoredSiteId, DecorModelId } from '../model/defs/sites';
-import type { MissionSiteLandmark } from '../model/defs/siteLandmarks';
 
 /** Normalized map point (0..1); resolved to world units from the mission map size. */
 export interface MissionAnchor {
@@ -169,7 +168,6 @@ export interface MissionLayout {
    * Mission-scoped procedural landmarks that complete or replace the authored site model (the
    * Vilcabamba refuge; Cusco and the Republican sites draw from their kits).
    */
-  siteLandmarks?: readonly MissionSiteLandmark[];
   terrain?: TerrainLayout;
   /** Authored canal used by a mission mechanic (visual-only geometry + a reach target). */
   canal?: MissionCanal;
