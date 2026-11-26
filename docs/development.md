@@ -628,7 +628,8 @@ Definition of Done and the building audit see
   are removed. This changes the refuge's pathing, so `REPLAY_VERSION` is 50; guarded by
   `tests/site-landmarks.test.ts` and `tests/e2e/vilcabamba.spec.ts`.
 - **Stop-and-fight separation** (2026-11-25): `Unit.applySeparation` keeps its walking velocity force and
-  adds `relaxSeparation`, a positional correction for same-side bodies within 80 % of the pair's spacing.
+  adds `relaxSeparation`, a positional correction for same-side **mounted** bodies within 80 % of the pair's
+  spacing (infantry keeps its shoulder-to-shoulder line; see the 2026-11-26 follow-up).
   While a unit is stopped it also cancels the closing velocity, so cavalry ordered onto the same target no
   longer stop inside each other. The correction goes through `stepAllowed`, the same walkable-cell and
   segment contract movement uses, so a unit's centre never ends in a blocked cell (the 2 m pathfinding grid
@@ -636,7 +637,7 @@ Definition of Done and the building audit see
   reaches a shared destination; the positional pass runs when the unit stops or chases an attack target.
   `stepAllowed` now checks the destination cell before its tiny-step shortcut, so a stopped unit cannot
   creep across a cell boundary in millimetres. Enemy targets are exempt (melee must keep contact). This
-  changes the simulation, so `REPLAY_VERSION` is 51;
+  changes the simulation, so `REPLAY_VERSION` is 51 (the follow-up below changes it to 52);
   guarded by `tests/unit-separation.test.ts`; evidence `docs/media/cavalry-melee-before-after.webp`
   (`node scripts/capture_cavalry_melee.mjs --out=review/cavalry-after`).
 - **Wari/Chanca kit** (2026-11-25): the Wari complex and the Chanca pucará draw from `wariChancaCity.ts`
