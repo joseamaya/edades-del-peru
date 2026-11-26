@@ -627,6 +627,18 @@ Definition of Done and the building audit see
   pieces (`VILCABAMBA_REFUGE_LAYOUT`) with a wide south gate; the procedural renderer and its mission field
   are removed. This changes the refuge's pathing, so `REPLAY_VERSION` is 50; guarded by
   `tests/site-landmarks.test.ts` and `tests/e2e/vilcabamba.spec.ts`.
+- **Stop-and-fight separation** (2026-11-25): `Unit.applySeparation` keeps its walking velocity force and
+  adds `relaxSeparation`, a positional correction for same-side bodies within 80 % of the pair's spacing.
+  While a unit is stopped it also cancels the closing velocity, so cavalry ordered onto the same target no
+  longer stop inside each other. The correction goes through `stepAllowed`, the same walkable-cell and
+  segment contract movement uses, so a unit's centre never ends in a blocked cell (the 2 m pathfinding grid
+  is centre-based). A plain move/gather/build keeps only the velocity force, so a 40-unit group still
+  reaches a shared destination; the positional pass runs when the unit stops or chases an attack target.
+  `stepAllowed` now checks the destination cell before its tiny-step shortcut, so a stopped unit cannot
+  creep across a cell boundary in millimetres. Enemy targets are exempt (melee must keep contact). This
+  changes the simulation, so `REPLAY_VERSION` is 51;
+  guarded by `tests/unit-separation.test.ts`; evidence `docs/media/cavalry-melee-before-after.webp`
+  (`node scripts/capture_cavalry_melee.mjs --out=review/cavalry-after`).
 - **Wari/Chanca kit** (2026-11-25): the Wari complex and the Chanca pucará draw from `wariChancaCity.ts`
   (9 pieces, 8 materials) built by `build_wari_architecture_kit.py` on `scripts/blender/arch_kit.py`; both
   sites set `simulationCollision` and the old site GLBs stay in the registry, no longer drawn. The dry

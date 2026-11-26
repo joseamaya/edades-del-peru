@@ -55,6 +55,7 @@
     "diagnose:resources": "node scripts/diagnose-resources.mjs",
     "evidence": "node scripts/pr_evidence.mjs",
     "capture:characters": "node scripts/capture_character_pilot.mjs",
+    "capture:cavalry": "node scripts/capture_cavalry_melee.mjs",
     "art:pilot": "node scripts/capture_art_pilot.mjs",
     "capture:fauna": "node scripts/capture_fauna.mjs",
     "capture:sites": "node scripts/capture_site_review.mjs",
