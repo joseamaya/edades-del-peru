@@ -243,7 +243,6 @@ export class Game {
   colonialSite: ColonialLife | null = null;
   /** The loaded authored site GLB, so a founding can hide it until the city phase. */
   siteModel: THREE.Group | null = null;
-  /** Mission-scoped procedural landmarks that complete or replace the authored site model. */
   /** Presentation-only construction crew in the Caral camp (issue 422); null elsewhere. */
   siteCrew: SiteCrew | null = null;
   /** Named environmental events and their progress (0 = off, 1 = fully applied). */

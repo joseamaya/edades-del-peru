@@ -83,7 +83,6 @@ describe('Tarapacá battle contract', () => {
     expect(blockersCover(site.blockers, 106, 168), 'the east approach must stay walkable').toBe(false);
     expect(blockersCover(site.blockers, 160, 123), 'the crest has its parapet').toBe(true);
     expect(blockersCover(site.blockers, 198, 158), 'Pachica has its corral').toBe(true);
-    expect(mTarapaca.layout?.siteLandmarks).toBeUndefined();
     expect(mTarapaca.layout?.terrain?.flats?.map((f) => f.name)).not.toContain('Alturas');
     expect(mTarapaca.mapOverrides?.resources?.scatter).toBe(0);
     expect(mTarapaca.mapOverrides?.culturalLandscape).toBeNull();

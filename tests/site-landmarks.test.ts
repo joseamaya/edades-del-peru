@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import { CivId, Era } from '../src/core/types';
@@ -19,7 +18,6 @@ describe('mission site landmarks', () => {
     // Quipaipán and Cusco 1536 share one authored site and one composition (cuscoCity.ts): showing the grey
     // ushnu GLB in one campaign and the finished city in the other was the inconsistency this pins shut.
     for (const id of ['m_cusco_1536', 'm6b_guerra_civil']) {
-      expect(mission(id).layout?.siteLandmarks, id).toBeUndefined();
       expect(mission(id).layout?.site?.id, id).toBe('cusco_inca_site');
       expect(mission(id).layout?.site?.hideModel, id).toBe(true);
     }
@@ -36,9 +34,6 @@ describe('mission site landmarks', () => {
   it('draws the Republican sites from the kit and hides the borrowed GLBs', () => {
     // Arica, Real Felipe and Tarapacá no longer use mission-scoped procedural landmarks: the Republican
     // kit draws their compositions from one shared layout-and-blocker source.
-    for (const id of ['m9_guerra_pacifico', 'm_real_felipe', 'm_tarapaca']) {
-      expect(mission(id).layout?.siteLandmarks, id).toBeUndefined();
-    }
     for (const siteId of ['arica_site', 'real_felipe_site', 'tarapaca_site'] as const) {
       const site = getAuthoredSite(siteId)!;
       expect(site.hideModel, siteId).toBe(true);
@@ -53,9 +48,6 @@ describe('mission site landmarks', () => {
   });
 
   it('draws the Independence sites from the kit and hides the borrowed GLB', () => {
-    for (const id of ['m8_independencia', 'm_brena']) {
-      expect(mission(id).layout?.siteLandmarks, id).toBeUndefined();
-    }
     for (const siteId of ['independence_site', 'brena_site'] as const) {
       const site = getAuthoredSite(siteId)!;
       expect(site.hideModel, siteId).toBe(true);

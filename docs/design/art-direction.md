@@ -134,8 +134,7 @@ colonial cities (Lima 1535/1821, Cusco 1780/1814, Miraflores: `colonialCity.ts`)
 (Arica, Real Felipe, Tarapacá: `republicCity.ts`), Independencia/Breña (`independenceCity.ts`), the
 north-coast sites (Huacas de Moche and Chan Chan: `mocheChimuCity.ts`) and the highland sites (Wari and the
 Chanca pucará: `wariChancaCity.ts`) are on the whole standard, blockers included. Caral (m1) and Chavín (m2)
-draw from a kit but keep hand-written blocker arrays, and Vilcabamba and the rest of Tambotoco are still to
-be moved to it.
+draw from a kit but keep hand-written blocker arrays; only the rest of Tambotoco is still to be moved to it.
 
 The Tambotoco site uses a **domestic Killke/ayllu language**, not imperial Inca (see
 [`../historia/arquitectura.md`](../historia/arquitectura.md) §1):

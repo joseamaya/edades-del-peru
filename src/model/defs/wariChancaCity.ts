@@ -88,7 +88,7 @@ export function chancaCityBlockers() {
  * longhouses, a small plaza, a perimeter wall and the Huayna Pucará tower. It is a late-Inca settlement, not
  * an imperial complex, so the D-shaped temple, the galleries and the niches stay out of it.
  *
- * The perimeter wall keeps a **5 m gate** on the south side: the refuge must never be a sealed box (the
+ * The perimeter wall keeps a **wide south gate** (about 9 m): the refuge must never be a sealed box (the
  * no-walkable-building rule needs a way in for the mission's columns).
  */
 export const VILCABAMBA_REFUGE_ANCHOR = { x: 180, z: 97 } as const;

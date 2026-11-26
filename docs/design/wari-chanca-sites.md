@@ -1,8 +1,9 @@
 # Wari kit: Wari complex and Chanca pucará
 
-The two highland missions draw their architecture from a shared Blender kit: the Wari complex (`m4_wari`)
-and the Chanca pucará of Yahuar Pampa (`m5_yahuar_pampa`). Both are project-owned representative massings,
-**not surveys and not historical photographs**.
+The highland missions draw their architecture from a shared Blender kit: the Wari complex (`m4_wari`), the
+Chanca pucará of Yahuar Pampa (`m5_yahuar_pampa`) and the Vilcabamba refuge (`m_vilcabamba`, which uses the
+kit's domestic pieces). They are project-owned representative massings, **not surveys and not historical
+photographs**.
 
 ## Sources
 
@@ -18,9 +19,10 @@ and the Chanca pucará of Yahuar Pampa (`m5_yahuar_pampa`). Both are project-own
   Kit scene `art-src/blender/scenes/wari_architecture_kit.blend` (Git LFS); uncompressed exports and
   per-piece manifests in `art-src/blender/exports/wari/architecture/`; the game copies are meshopt-
   compressed with `yarn art:models --only=<file>`.
-- Layout: [`../../src/model/defs/wariChancaCity.ts`](../../src/model/defs/wariChancaCity.ts) places both
+- Layout: [`../../src/model/defs/wariChancaCity.ts`](../../src/model/defs/wariChancaCity.ts) places the three
   compositions and derives each site's blockers from the same placements (`layoutBlockers`).
-  `WorldViewDecor` bakes them with `ArchitectureCity`; both sites set `hideModel` and `simulationCollision`.
+  `WorldViewDecor` bakes them with `ArchitectureCity`; all three sites set `hideModel` and
+  `simulationCollision`.
   The old `wari_site` and `chanca_fortress` GLBs stay in the registry and are no longer drawn.
 - `?lod=0` previews LOD0.
 
@@ -35,6 +37,7 @@ below the temple.
 | --- | --- |
 | Complejo Wari (`wariHeightmap.ts`) | 5.0 m (x 127–175, z 90–142 flat) |
 | Pucará chanca (`chancaHeightmap.ts`) | 5.0 m (x 168–196, z 82–110 flat) |
+| Refugio de Vilcabamba (`vilcabambaHeightmap.ts`) | 5.0 m (x 168–196, z 85–109 flat) |
 
 The Wari composition stays on that flat core (the pad falls away west of x 127), so every piece seats within
 0.1 m; the pucará sits on its own 5.0 m terrace.

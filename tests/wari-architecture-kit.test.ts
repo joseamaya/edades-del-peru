@@ -8,8 +8,11 @@ import {
   CHANCA_CITY_LAYOUT,
   WARI_CITY_ANCHOR,
   WARI_CITY_LAYOUT,
+  VILCABAMBA_REFUGE_ANCHOR,
+  VILCABAMBA_REFUGE_LAYOUT,
   WARI_KIT_FOOTPRINTS,
   chancaCityBlockers,
+  vilcabambaRefugeBlockers,
   wariCityBlockers,
 } from '../src/model/defs/wariChancaCity';
 import { AUTHORED_SITES } from '../src/model/defs/sites';
@@ -122,7 +125,7 @@ describe('wari architecture kit', () => {
   });
 
   it('places every layout asset from the kit', () => {
-    for (const layout of [WARI_CITY_LAYOUT, CHANCA_CITY_LAYOUT]) {
+    for (const layout of [WARI_CITY_LAYOUT, CHANCA_CITY_LAYOUT, VILCABAMBA_REFUGE_LAYOUT]) {
       for (const placement of layout) {
         expect(names, `${placement.asset} in the kit`).toContain(placement.asset);
       }
@@ -174,7 +177,7 @@ describe('highland layouts', () => {
   });
 
   it('leaves ≥2 m between buildings; the pucará walls and towers meet at their corners', () => {
-    for (const layout of [WARI_CITY_LAYOUT, CHANCA_CITY_LAYOUT]) {
+    for (const layout of [WARI_CITY_LAYOUT, CHANCA_CITY_LAYOUT, VILCABAMBA_REFUGE_LAYOUT]) {
       const solid = layoutBlockers(
         layout.filter((placement) => !placement.lift),
         WARI_KIT_FOOTPRINTS,
@@ -203,10 +206,22 @@ describe('highland layouts', () => {
     }
   });
 
+  it('draws the Vilcabamba refuge with its south gate open', () => {
+    const blockers = vilcabambaRefugeBlockers();
+    const a = VILCABAMBA_REFUGE_ANCHOR;
+    expect(blockers).toHaveLength(9);
+    expect(blockersCover(blockers, a.x, a.z - 11), 'north wall').toBe(true);
+    expect(blockersCover(blockers, a.x - 10.5, a.z), 'west wall').toBe(true);
+    expect(blockersCover(blockers, a.x - 4.6, a.z - 5), 'longhouse').toBe(true);
+    expect(blockersCover(blockers, a.x, a.z + 2), 'plaza').toBe(false);
+    expect(blockersCover(blockers, a.x, a.z + 9), 'south gate').toBe(false);
+  });
+
   it('is the collision each site uses', () => {
     expect(AUTHORED_SITES.wari_site.blockers).toEqual(wariCityBlockers());
     expect(AUTHORED_SITES.chanca_site.blockers).toEqual(chancaCityBlockers());
-    for (const id of ['wari_site', 'chanca_site'] as const) {
+    expect(AUTHORED_SITES.vilcabamba_site.blockers).toEqual(vilcabambaRefugeBlockers());
+    for (const id of ['wari_site', 'chanca_site', 'vilcabamba_site'] as const) {
       expect(AUTHORED_SITES[id].simulationCollision, id).toBe(true);
       expect(AUTHORED_SITES[id].style, id).toBe('wari');
       expect(AUTHORED_SITES[id].hideModel, id).toBe(true);
