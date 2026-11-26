@@ -1,0 +1,85 @@
+{
+  "asset_id": "moche_altar",
+  "source_scene": "scenes/moche_architecture_kit.blend",
+  "script": "scripts/blender/build_moche_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "mocheCityBlockers / chimuCityBlockers in src/model/defs/mocheChimuCity.ts",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/moche-chimu-sites.md",
+    "docs/historia/civilizaciones/moche.md",
+    "docs/historia/campanas/moche_recuay.md",
+    "docs/historia/campanas/chimu_inca.md",
+    "docs/design/moche-sacred-site.md",
+    "docs/design/chimu-site.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 40,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_MocheAdobe",
+        "MAT-Arch_MocheAdobeDark",
+        "MAT-Arch_MocheFriezeCream",
+        "MAT-Arch_MochePlaster"
+      ],
+      "bounds": {
+        "min": [
+          -2.1,
+          -1.67,
+          0.0
+        ],
+        "max": [
+          2.1,
+          1.6,
+          1.75
+        ],
+        "size": [
+          4.2,
+          3.27,
+          1.75
+        ]
+      },
+      "file": "moche_altar_lod0.glb",
+      "bytes": 7508
+    },
+    "LOD1": {
+      "triangles": 30,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_MocheAdobe",
+        "MAT-Arch_MocheAdobeDark",
+        "MAT-Arch_MochePlaster"
+      ],
+      "bounds": {
+        "min": [
+          -2.1,
+          -1.6,
+          0.0
+        ],
+        "max": [
+          2.1,
+          1.6,
+          1.75
+        ],
+        "size": [
+          4.2,
+          3.2,
+          1.75
+        ]
+      },
+      "file": "moche_altar_lod1.glb",
+      "bytes": 5752
+    }
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "asset_id": "moche_frieze",
+  "source_scene": "scenes/moche_architecture_kit.blend",
+  "script": "scripts/blender/build_moche_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "mocheCityBlockers / chimuCityBlockers in src/model/defs/mocheChimuCity.ts",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/moche-chimu-sites.md",
+    "docs/historia/civilizaciones/moche.md",
+    "docs/historia/campanas/moche_recuay.md",
+    "docs/historia/campanas/chimu_inca.md",
+    "docs/design/moche-sacred-site.md",
+    "docs/design/chimu-site.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 60,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_MocheAdobeDark",
+        "MAT-Arch_MocheDark",
+        "MAT-Arch_MocheFriezeCream",
+        "MAT-Arch_MocheFriezeRed"
+      ],
+      "bounds": {
+        "min": [
+          -5.1,
+          -0.35,
+          0.0
+        ],
+        "max": [
+          5.1,
+          0.35,
+          2.78
+        ],
+        "size": [
+          10.2,
+          0.7,
+          2.78
+        ]
+      },
+      "file": "moche_frieze_lod0.glb",
+      "bytes": 9276
+    },
+    "LOD1": {
+      "triangles": 20,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_MocheAdobeDark",
+        "MAT-Arch_MocheFriezeCream"
+      ],
+      "bounds": {
+        "min": [
+          -5.1,
+          -0.35,
+          0.0
+        ],
+        "max": [
+          5.1,
+          0.35,
+          2.78
+        ],
+        "size": [
+          10.2,
+          0.7,
+          2.78
+        ]
+      },
+      "file": "moche_frieze_lod1.glb",
+      "bytes": 3976
+    }
+  }
+}

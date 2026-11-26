@@ -42,10 +42,10 @@ test('m3 loads the authored Huacas de Moche site', { tag: '@smoke' }, async ({ p
   expect(out.heritage).toBe('moche_huaca_luna');
   expect(out.anchor.x).toBeCloseTo(164, 3);
   expect(out.anchor.z).toBeCloseTo(108, 3);
-  expect(out.proxies.sol?.x).toBeCloseTo(146, 3);
+  expect(out.proxies.sol?.x).toBeCloseTo(146.033, 3);
   expect(out.proxies.sol?.z).toBeCloseTo(97.333, 3);
-  expect(out.proxies.luna?.x).toBeCloseTo(176.667, 3);
-  expect(out.proxies.luna?.z).toBeCloseTo(94.667, 3);
+  expect(out.proxies.luna?.x).toBeCloseTo(176.633, 3);
+  expect(out.proxies.luna?.z).toBeCloseTo(94.733, 3);
   expect(out.proxies.plaza?.x).toBeCloseTo(161.333, 3);
   expect(out.proxies.plaza?.z).toBeCloseTo(101.333, 3);
   expect(out.lunaWalkable).toBe(false);

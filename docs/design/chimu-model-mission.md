@@ -41,12 +41,14 @@ The horizontal composition scales 4/3 (start offsets, wave centres and radii, ca
 and Paramonga as its own point in the valley (world 150, 80), with the objective ring clear of the capital's keepout,
 plus the counterattack's Paramonga-side entry point,
 site proxies and corridor included). The heightfield keeps the 192 m vertical amplitude, so slopes read
-gentler; the site GLB scales uniformly with the terrace. Both are presentation trade-offs, not a survey.
+gentler. The kit pieces are placed in world metres on the flat Chimú terrace. Both are presentation
+trade-offs, not a survey.
 
 ## Site
 
-`chimu_site` (scale `0.7 × 256/192`, anchor `(190.4, 86.7)`, camera height 73.3) reuses the Chimú compound
-GLB, its heritage proxy, blocker and corridor, scaled with the terrace. The site has **no construction
+`chimu_site` (anchor `(190.4, 86.7)`, camera height 73.3) draws the compound from the shared Moche kit
+([`moche-chimu-sites.md`](./moche-chimu-sites.md)); its heritage proxy, blockers and corridor follow the same
+layout. The site has **no construction
 phases**: Chan Chan is a living capital, not a monument the player builds; the exception is recorded here and
 in the quality bar.
 

@@ -51,6 +51,12 @@ const independenceUrls = import.meta.glob('../assets/architecture/independence/*
   import: 'default',
 }) as Record<string, string>;
 
+const mocheUrls = import.meta.glob('../assets/architecture/moche/*.glb', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
+
 const KIT_URLS: Record<ArchitectureKitId, Record<string, string>> = {
   caral: caralUrls,
   chavin: chavinUrls,
@@ -58,6 +64,7 @@ const KIT_URLS: Record<ArchitectureKitId, Record<string, string>> = {
   colonial: colonialUrls,
   republic: republicUrls,
   independence: independenceUrls,
+  moche: mocheUrls,
 };
 
 export function archKitUrl(kit: ArchitectureKitId, id: ArchAssetId, lod: 0 | 1): string | undefined {
@@ -209,6 +216,17 @@ export const ARCH_SURFACES: Record<
   'MAT-Arch_IndependenceCanvas': { set: 'plaster_detail', normal: 0.5, keepColor: true },
   'MAT-Arch_IndependenceEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
   'MAT-Arch_IndependenceDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  // North coast (Moche and Chimú): packed adobe, its shadowed face, lime plaster and the painted friezes
+  // keep their documented paint under the plaster detail set; the packed plaza is the same set, and the
+  // timber is mapped like the other kits' wood.
+  'MAT-Arch_MocheAdobe': { set: 'plaster_detail', normal: 0.9, keepColor: true },
+  'MAT-Arch_MocheAdobeDark': { set: 'plaster_detail', normal: 0.8, keepColor: true },
+  'MAT-Arch_MochePlaster': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  'MAT-Arch_MocheFriezeCream': { set: 'plaster_detail', normal: 0.5, keepColor: true },
+  'MAT-Arch_MocheFriezeRed': { set: 'plaster_detail', normal: 0.5, keepColor: true },
+  'MAT-Arch_MocheEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
+  'MAT-Arch_MocheWood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
+  'MAT-Arch_MocheDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
 };
 
 /** Mix a sampled diffuse colour towards its luma; `saturation` 1 keeps the map, 0 is grey. */

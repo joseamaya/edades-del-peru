@@ -126,6 +126,16 @@ import {
   independenceCityBlockers,
 } from './independenceCity';
 import {
+  CHIMU_CITY_ANCHOR,
+  CHIMU_SITE_ANCHOR,
+  MOCHE_CITY_ANCHOR,
+  MOCHE_HUACA_LUNA_ANCHOR,
+  MOCHE_HUACA_SOL_ANCHOR,
+  chimuCityBlockers,
+  mocheCityBlockers,
+} from './mocheChimuCity';
+
+import {
   LIMA_GROUND,
   LIMA_GROUND_SIZE,
   LIMA_HEIGHTMAP,
@@ -298,7 +308,7 @@ export interface AuthoredSiteDef {
    */
   hideModel?: boolean;
   /** Authored presentation family; the renderer picks the overlay from it. */
-  style?: 'ayllu' | 'colonial' | 'republic' | 'independence';
+  style?: 'ayllu' | 'colonial' | 'republic' | 'independence' | 'moche';
   /** Source meshes hidden because the game heightfield/scene owns that layer. */
   hideNodePatterns?: readonly RegExp[];
   /** Clears an approach strip from the player base to the site anchor. */
@@ -558,6 +568,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'moche_site',
     label: 'Huacas de Moche',
     modelName: 'moche_site',
+    hideModel: true,
+    style: 'moche',
     // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
     // scale with it so the huacas still cover their terrace.
     scale: mocheLength(0.25),
@@ -575,34 +587,34 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     heritageProxies: [
       {
         id: 'moche_huaca_sol',
-        ...mochePoint({ x: 109.5, z: 73 }),
-        w: mocheLength(23),
-        d: mocheLength(15.5),
-        h: mocheLength(12),
+        ...MOCHE_HUACA_SOL_ANCHOR,
+        w: 24,
+        d: 18.5,
+        h: 13.6,
       },
       {
         id: 'moche_huaca_luna',
-        ...mochePoint({ x: 132.5, z: 71 }),
-        w: mocheLength(16.5),
-        d: mocheLength(12),
-        h: mocheLength(9),
+        ...MOCHE_HUACA_LUNA_ANCHOR,
+        w: 14,
+        d: 12.8,
+        h: 6.5,
       },
       {
         id: 'moche_plaza',
-        ...mochePoint({ x: 121, z: 76 }),
-        w: mocheLength(20.5),
-        d: mocheLength(13.5),
-        h: mocheLength(2),
+        ...MOCHE_CITY_ANCHOR,
+        w: 30,
+        d: 20,
+        h: 0.4,
       },
     ],
-    blockers: [
-      { ...mochePoint({ x: 109.5, z: 73 }), w: mocheLength(23), d: mocheLength(15.5) },
-      { ...mochePoint({ x: 132.5, z: 71 }), w: mocheLength(16.5), d: mocheLength(12) },
-    ],
+    // The kit composition around the plaza; the same layout derives the blockers.
+    blockers: mocheCityBlockers(),
+    simulationCollision: true,
     blockerPadding: mocheLength(0.5),
     buildKeepout: [{ x: 0.62, z: 0.38, rx: 0.18, rz: 0.15 }],
     wallCollision: {
-      meshPatterns: [/Moche_LOD[01]_Walls/, /^Cube/],
+      // The Moche kit owns its own merged geometry and blockers; the hidden GLB is no longer loaded.
+      meshPatterns: [],
       maxStartYAboveBase: 1.2,
     },
     walkableCorridor: { width: mocheLength(8) },
@@ -726,11 +738,13 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'chimu_site',
     label: 'Conjunto chimú de Chan Chan',
     modelName: 'chimu_site',
+    hideModel: true,
+    style: 'moche',
     // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
     // scale with it so Chan Chan still covers its terrace.
     scale: chimuLength(0.7),
     origin: chimuPoint({ x: 142.8, z: 65 }),
-    anchor: chimuPoint({ x: 142.8, z: 65 }),
+    anchor: CHIMU_SITE_ANCHOR,
     cameraHeight: chimuLength(55),
     framing: 'site-biased',
     heightField: {
@@ -743,17 +757,20 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     heritageProxies: [
       {
         id: 'chimu_compound',
-        ...chimuPoint({ x: 142.8, z: 65 }),
-        w: chimuLength(11),
-        d: chimuLength(8.5),
-        h: chimuLength(4.5),
+        ...CHIMU_CITY_ANCHOR,
+        w: 24,
+        d: 20,
+        h: 11,
       },
     ],
-    blockers: [{ ...chimuPoint({ x: 142.8, z: 65 }), w: chimuLength(11), d: chimuLength(8.5) }],
+    // The kit composition around the compound; the same layout derives the blockers.
+    blockers: chimuCityBlockers(),
+    simulationCollision: true,
     blockerPadding: chimuLength(0.5),
     buildKeepout: [{ x: 0.744, z: 0.339, rx: 0.075, rz: 0.065 }],
     wallCollision: {
-      meshPatterns: [/chimu/i],
+      // The north-coast kit owns its own merged geometry and blockers; the hidden GLB is no longer loaded.
+      meshPatterns: [],
       maxStartYAboveBase: chimuLength(1.2),
     },
     walkableCorridor: { width: chimuLength(8) },

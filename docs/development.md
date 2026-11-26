@@ -77,12 +77,13 @@ Definition of Done and the building audit see
   `src/model/defs/buildingCards.ts` to state that both names are gameplay abstractions. The Plaza
   Central card exposes `startAssembly()` once `obj_complejo` is complete, which activates the hidden
   optional `obj_asamblea` hold; a worker must remain in the plaza for 20 seconds.
-- **Authored preinca sites**: `m1_caral`, `m2_chavin` and `m3_moche_recuay` load their own GLB through
-  `src/rendering/siteModels.ts`. Moche adds `moche_site` with a 1 m grid, monument AABBs, an 8 m approach
-  corridor, a southern plaza anchor and a canal gate. The site is a project-owned reconstruction; the
-  Blender source and export live in `art-src/blender/moche/` and `scripts/blender/build_moche_site.py`.
-  The mission uses the `trade` heritage operation at the Huaca de la Luna and `recordDelivery` fills required
-  `deliver` goals before optional ones. See `docs/design/moche-sacred-site.md`.
+- **Authored preinca sites**: `m1_caral` and `m2_chavin` load their own GLB through
+  `src/rendering/siteModels.ts`; `m3_moche_recuay` draws its site from the Moche architecture kit
+  (`mocheChimuCity.ts`, 1 m grid, blockers from the layout, a walked south-west approach and a canal gate).
+  The site is a project-owned reconstruction; the pre-kit master stays in `art-src/blender/moche/` and the
+  retired GLB is a fallback. The mission uses the `trade` heritage operation at the Huaca de la Luna and
+  `recordDelivery` fills required `deliver` goals before optional ones. See
+  `docs/design/moche-chimu-sites.md`.
 - **Wari network**: `m4_wari` loads `wari_site` and uses the `network` objective (`ObjectiveDef.nodes`) to require a completed `Mercado` at each frontier node. `MissionLayout.roads` draws terrain-following, visual-only ribbons with `SettlementOverlay` (`Game.spawnMissionRoads`). The frontier hold is gated by the network; there is no active enemy. Source and export live in `art-src/blender/wari/` and `scripts/blender/build_wari_site.py`. See `docs/design/wari-sacred-site.md`.
 - **Mission canals**: `MissionLayout.canal` (`src/campaign/types.ts`) gives a normalized canal site and, optionally, an authored `path`; `Game.spawnCanal` builds relief-following ribbons (`src/rendering/canal.ts`) when the path exists, or the legacy straight box for m3/m6. `MissionPoint.ref: 'canal'` resolves the site for a `reach` objective; `canalIrrigationAt` measures the farm bonus along the trace and `Game.canPlace`/`isReserved` keep buildings and props off the channel. m1's closed communal gate raises `farmYieldAt` along the trace; m6 uses the canal as the Chan Chan surrender target. The canal has no pathfinding obstacle. See `tests/canal.test.ts`, `tests/e2e/campaign.spec.ts` and `tests/e2e/caral-city.spec.ts`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an
@@ -150,7 +151,8 @@ Definition of Done and the building audit see
   GLB is a labelled abstraction from another place and whose kit has not landed yet: the Vilcabamba refuge.
   Cusco's plaza and Sacsayhuamán are the Cusco kit; the Real Felipe bastions and the Tarapacá
   village/heights/Pachica are the Republican kit (`src/model/defs/republicCity.ts`, which also owns their
-  blockers). `SiteLandmarks` merges geometry per material and lives in its own scene group so disposing a
+  blockers); the Huacas de Moche and Chan Chan are the Moche kit (`src/model/defs/mocheChimuCity.ts`).
+  `SiteLandmarks` merges geometry per material and lives in its own scene group so disposing a
   match never touches the shared generated PBR textures. `MissionSite.hideModel` drops the bundled GLB per
   mission (Cusco 1536) while `AuthoredSiteDef.hideModel` does it for a site (Arica, Real Felipe, Tarapacá,
   Vilcabamba); both are presentation-only. Guarded by `tests/site-landmarks.test.ts`.
@@ -621,6 +623,16 @@ Definition of Done and the building audit see
   Junín–Ayacucho march and the 10.7 m walkable corridor cross the site; the blockers come from the layout,
   not a hand-written fortress. This changes m8/Breña pathing, so `REPLAY_VERSION` is 47; guarded by
   `tests/independence-architecture-kit.test.ts`, `tests/e2e/brena.spec.ts` and the m8 playtest.
+- **Moche/Chimú kit** (2026-11-25): the Huacas del Sol y de la Luna and the Chan Chan compound draw from
+  `mocheChimuCity.ts` (9 pieces, 8 materials) built by `build_moche_architecture_kit.py` on the shared
+  `arch_kit.py`; both sites set `simulationCollision` and the old site GLBs stay as fallbacks. The Moche
+  layouts keep the south-west approach and the Chimú gate open, and the access ramps are part of the
+  footprints so units walk around them. This changes m3/m6 pathing, so `REPLAY_VERSION` is 48; guarded by
+  `tests/moche-architecture-kit.test.ts`, the m3/m6 campaign specs and `campaign-completable`.
+- **Shared Blender kit module** (2026-11-25): `scripts/blender/arch_kit.py` owns the bmesh builder, the
+  wall/roof/stair primitives, the box UVs, the vertex tint, the GLB export and the manifests. The Moche kit
+  is its first user; the Caral, Chavín, Cusco, colonial, Republican and Independence scripts still carry
+  their own copies and should be migrated in a mechanical, no-visual-change pass.
 - **Authored canal traces** (issue 384): `MissionCanal.path` (normalized) becomes `Game.canalPath` in world
   units; `canalIrrigationAt` measures the farm bonus by distance to the trace, `Game.canPlace` keeps buildings
   out of the channel, `Game.isReserved` keeps props out, and `spawnCanal` builds relief-following ribbons plus a
