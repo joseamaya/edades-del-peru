@@ -179,6 +179,7 @@ try {
           return { canvas, ctx };
         };
         const hip = makeMask();
+        const waist = makeMask();
         const faceMask = makeMask();
         const bodyMask = makeMask();
         const geometry = bodyMesh.geometry;
@@ -189,9 +190,13 @@ try {
         const index = geometry.index;
         const triangles = index ? index.count / 3 : positions.count / 3;
         const faceBones = ['Head', 'neck_01'];
+        // The upper arm too: below the short sleeve the source texture's light suit sleeve showed as a pale
+        // band between the hem and the elbow.
         const bodyBones = [
           'hand_l',
           'hand_r',
+          'upperarm_l',
+          'upperarm_r',
           'lowerarm_l',
           'lowerarm_r',
           'thigh_l',
@@ -230,11 +235,18 @@ try {
             return y >= 0.62 && y <= 1.08 && Math.abs(positions.getX(i)) < 0.42 && Math.abs(positions.getZ(i)) < 0.32;
           });
           if (isHip) fill(hip.ctx, ia, ib, ic);
+          // The waist between the tunic hem and the wrap, which a stride uncovers.
+          const isWaist = [ia, ib, ic].every((i) => {
+            const y = positions.getY(i);
+            return y >= 0.9 && y <= 1.25 && Math.abs(positions.getX(i)) < 0.42 && Math.abs(positions.getZ(i)) < 0.32;
+          });
+          if (isWaist) fill(waist.ctx, ia, ib, ic);
           const jointsOf = [ia, ib, ic].map(dominantJoint);
           if (jointsOf.every((joint) => faceJoints.has(joint))) fill(faceMask.ctx, ia, ib, ic);
           if (jointsOf.every((joint) => bodyJoints.has(joint))) fill(bodyMask.ctx, ia, ib, ic);
         }
         const hipData = hip.ctx.getImageData(0, 0, width, height).data;
+        const waistData = waist.ctx.getImageData(0, 0, width, height).data;
         const faceData = faceMask.ctx.getImageData(0, 0, width, height).data;
         const bodyData = bodyMask.ctx.getImageData(0, 0, width, height).data;
         const canvas = document.createElement('canvas');
@@ -271,6 +283,13 @@ try {
               pixels[i + 1] = Math.round(g * 0.15 + targetRgb[1] * shade * 0.85);
               pixels[i + 2] = Math.round(b * 0.15 + targetRgb[2] * shade * 0.85);
             }
+          }
+          // The source suit's black belt showed below the male tunic hem (blue in the sky-lit shadow): dark
+          // waist pixels become skin.
+          if (waistData[i + 3] !== 0 && hipData[i + 3] === 0 && max < 80) {
+            pixels[i] = Math.round(targetRgb[0] * 0.8);
+            pixels[i + 1] = Math.round(targetRgb[1] * 0.8);
+            pixels[i + 2] = Math.round(targetRgb[2] * 0.8);
           }
           if (bodyData[i + 3] !== 0 && max >= 50) {
             // Exposed hands/forearms/legs: tint the whole surface (the source
@@ -588,7 +607,7 @@ try {
       // every hollow of the body: the plain offset shell read as a painted bodysuit.
       const makeTunic = (
         sourceBody,
-        { topY = 1.48, bottomY = 0.88, sideX = 0.22, offset = 0.03, drape = true } = {},
+        { topY = 1.48, bottomY = 0.88, sideX = 0.22, offset = 0.03, drape = true, sleeve = 0.15 } = {},
       ) => {
         const geometry = sourceBody.geometry;
         const positions = geometry.getAttribute('position');
@@ -647,17 +666,53 @@ try {
         const planes = [
           [0, 1, 0, -topY],
           [0, -1, 0, bottomY],
-          [1, 0, 0, -sideX],
-          [-1, 0, 0, -sideX],
           [0, 0, 1, -sideX],
           [0, 0, -1, -sideX],
         ];
+        /**
+         * The sleeve ends `sleeve` metres down the upper arm, cut square to the bone. The old cut was a
+         * vertical plane at |x| = sideX through the sloping bind-pose arm: a long oblique ellipse whose
+         * sliver triangles straddled the shoulder and the upper-arm weights and tore into shards once
+         * posed. The plane only cuts the arm's own triangles (the arm bones carry most of their weight), so
+         * it cannot slice the torso it passes behind; the outer x plane still bounds the stray rest.
+         */
+        const bindInverse = sourceBody.bindMatrixInverse;
+        const bonePosition = (name) => {
+          const i = sourceBody.skeleton.bones.findIndex((bone) => bone.name === name);
+          if (i < 0) throw new Error(`bone ${name} not found`);
+          const world = sourceBody.skeleton.boneInverses[i].clone().invert();
+          return new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().multiplyMatrices(bindInverse, world));
+        };
+        const armSides = ['l', 'r'].map((side) => {
+          const shoulder = bonePosition(`upperarm_${side}`);
+          const elbow = bonePosition(`lowerarm_${side}`);
+          const axis = elbow.clone().sub(shoulder).normalize();
+          const cut = shoulder.clone().addScaledVector(axis, sleeve);
+          const bones = new Set();
+          sourceBody.skeleton.bones
+            .find((bone) => bone.name === `upperarm_${side}`)
+            .traverse((bone) => {
+              const i = sourceBody.skeleton.bones.indexOf(bone);
+              if (i >= 0) bones.add(i);
+            });
+          return { plane: [axis.x, axis.y, axis.z, -axis.dot(cut)], bones, x: Math.sign(shoulder.x) };
+        });
+        const outerX = sideX + 0.25;
         for (let t = 0; t < triangles; t++) {
           const ia = index ? index.getX(t * 3) : t * 3;
           const ib = index ? index.getX(t * 3 + 1) : t * 3 + 1;
           const ic = index ? index.getX(t * 3 + 2) : t * 3 + 2;
           let poly = [vertex(ia), vertex(ib), vertex(ic)];
-          for (const [nx, ny, nz, d] of planes) {
+          const triPlanes = [...planes, [1, 0, 0, -outerX], [-1, 0, 0, -outerX]];
+          for (const arm of armSides) {
+            const weight =
+              poly.reduce(
+                (sum, v) => sum + v.si.reduce((w, bone, k) => w + (arm.bones.has(bone) ? v.sw[k] : 0), 0),
+                0,
+              ) / 3;
+            if (weight >= 0.5) triPlanes.push(arm.plane);
+          }
+          for (const [nx, ny, nz, d] of triPlanes) {
             poly = clip(poly, nx, ny, nz, d);
             if (poly.length < 3) break;
           }
@@ -786,7 +841,9 @@ try {
         // The hero's uncu is longer than the worker's: a second silhouette layer under the mantle.
         tunicM.removeFromParent();
         addSkinned(
-          makeTunic(addedMaleBody, { topY: 1.48, bottomY: 0.68, sideX: 0.34, offset: 0.04 }),
+          // The hero's long uncu keeps the body-following shell: the hang filled the upper back through the
+          // rigid mantle and, below the crotch, pushed the inner thighs out into a bulge between the legs.
+          makeTunic(addedMaleBody, { topY: 1.48, bottomY: 0.68, sideX: 0.34, offset: 0.04, drape: false }),
           cotton.clone(),
           'attire_tunic_m',
           maleBody.bindMatrix,
@@ -826,8 +883,10 @@ try {
         makeTube({
           topY: 0.97,
           bottomY: 0.78,
-          topRx: 0.25,
-          topRz: 0.2,
+          // The waist hugs the hips: wider, the open top of the tube showed its dark inside as a band
+          // between the tunic hem and the wrap.
+          topRx: 0.235,
+          topRz: 0.18,
           // The hem flares: at 0.29 x 0.22 the forward thigh cut through the wrap on every stride.
           bottomRx: 0.31,
           bottomRz: 0.27,

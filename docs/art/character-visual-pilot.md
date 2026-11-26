@@ -670,10 +670,36 @@ The pipeline was checked first: rebuilding the old script reproduced the committ
 GLB stays at 2.57 MB and the garment triangle counts are unchanged. The hero GLB (`tambotoco_hero.glb`) was
 not rebuilt; it picks up the drape the next time `yarn models:hero` runs.
 
-**Still open.** The sleeve edges are cut by vertical planes through the arm and read as jagged up close. The
-dark slit at the back of the female skirt is the sash's hanging end, not a hole.
+**Still open.** The dark slit at the back of the female skirt is the sash's hanging end, not a hole. The
+sleeves and the hero are handled in §22.
 
-## See also
+## 22. Sleeves, arm skin and the hero
+
+The 2026-11-26 close capture of the shoulders showed three problems:
+
+- **Torn sleeve hems.** The sleeve was cut by vertical planes at |x| = `sideX` across the whole shell.
+- **A pale band on the upper arm.** Below the sleeve the source texture's light suit sleeve showed, because
+  the skin recolour covered the forearms and legs but not the upper arm.
+- **A dark band at the male waist.** The suit's black belt showed below the tunic hem and turned blue in the
+  sky-lit shadow.
+
+What changed in `scripts/build_caral_worker.mjs`:
+
+- **Sleeve cut.** The sleeve ends `sleeve` (0.15 m) down the upper arm, cut square to the bone. The cut
+  applies only to triangles that the arm bones carry at least half of, so it cannot slice the torso. The
+  bind pose is a T-pose, so for the worker the cut is close to the old one and the gain is a clean hem.
+- **Arm skin.** The upper arm joins the skin-tinted region.
+- **Waist.** Dark pixels in the waist band (0.9–1.25 m, outside the hip mask) become skin.
+- **Male wrap.** Its top hugs the hips (0.235 × 0.18 m), so its open top no longer shows its inside.
+
+The Tambotoco hero is rebuilt with `yarn models:hero` (Blender 5.3):
+
+- **Checked first.** With the old script, the rebuild matches the committed hero's structure exactly:
+  meshes, triangles, 65 joints, clips and materials. The bytes differ, which is numeric drift from the
+  Blender version.
+- **No drape.** The hero takes the new sleeve cut and the arm and waist skin, but keeps the
+  body-following uncu (`drape: false`). With the drape, the filled upper back cut through the rigid mantle
+  and, below the crotch, the long uncu bulged between the legs.
 
 [`../design/art-direction.md`](../design/art-direction.md) §4.1 ·
 [`../design/characters.md`](../design/characters.md) ·
