@@ -6,7 +6,7 @@
   "up": "Y",
   "front": "+Z",
   "pivot": "footprint centre at ground level",
-  "collision": "wariCityBlockers / chancaCityBlockers in src/model/defs/wariChancaCity.ts",
+  "collision": "wariCityBlockers / chancaCityBlockers / vilcabambaRefugeBlockers in src/model/defs/wariChancaCity.ts",
   "confidence": "documented",
   "sources": [
     "docs/design/wari-chanca-sites.md",

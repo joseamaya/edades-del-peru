@@ -26,9 +26,11 @@ The Inca's capture and execution are narrated in the epilogue; no counterfactual
 ## Map and site
 
 - 256 m jungle transect, painted ground every 2 m, worker crossing ≈2:22.
-- `vilcabamba_site` reuses the **heightfield** of the Chanca map and draws a low cloud-forest platform and
-  longhouses instead of the Chanca hillfort GLB (accepted as an abstraction on 2026-11-23); the real
-  Vilcabamba (Espíritu Pampa) has no surveyed heightfield in the repo.
+- `vilcabamba_site` keeps its own mission heightfield (`VILCABAMBA_HEIGHTFIELD`) and draws a low
+  cloud-forest refuge from the **Wari kit's domestic pieces** ([`wari-chanca-sites.md`](./wari-chanca-sites.md)):
+  three thatch longhouses, a small plaza, the Huayna Pucará tower and a stone perimeter wall that keeps a wide
+  south gate. The retired procedural refuge (`SiteLandmarks`) is gone; the real Vilcabamba (Espíritu Pampa)
+  has no surveyed heightfield in the repo, so the composition is an abstraction.
 - Player camp in the valley, Huayna Pucará on the height, Spanish column from the Cusco road, escape to the
   lower Urubamba.
 - Own in-engine captures (`scripts/capture_virreinato_arc.mjs`), documented in `PROVENANCE.md`.
@@ -67,5 +69,4 @@ The Inca's capture and execution are narrated in the epilogue; no counterfactual
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts`.
 - Real-command full path: `tests/e2e/release-playtest.spec.ts` (nightly slow tier). The opening row is in
   `yarn bench:check`.
-- The procedural refuge site was accepted as an abstraction on 2026-11-23 (Miguel Amaya); open: human
-  no-cheat playtest.
+- The kit refuge keeps the abstraction accepted on 2026-11-23 (Miguel Amaya); open: human no-cheat playtest.

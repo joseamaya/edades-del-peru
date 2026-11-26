@@ -1,8 +1,9 @@
 # Wari kit: Wari complex and Chanca pucará
 
-The two highland missions draw their architecture from a shared Blender kit: the Wari complex (`m4_wari`)
-and the Chanca pucará of Yahuar Pampa (`m5_yahuar_pampa`). Both are project-owned representative massings,
-**not surveys and not historical photographs**.
+The highland missions draw their architecture from a shared Blender kit: the Wari complex (`m4_wari`), the
+Chanca pucará of Yahuar Pampa (`m5_yahuar_pampa`) and the Vilcabamba refuge (`m_vilcabamba`, which uses the
+kit's domestic pieces). They are project-owned representative massings, **not surveys and not historical
+photographs**.
 
 ## Sources
 
@@ -18,9 +19,10 @@ and the Chanca pucará of Yahuar Pampa (`m5_yahuar_pampa`). Both are project-own
   Kit scene `art-src/blender/scenes/wari_architecture_kit.blend` (Git LFS); uncompressed exports and
   per-piece manifests in `art-src/blender/exports/wari/architecture/`; the game copies are meshopt-
   compressed with `yarn art:models --only=<file>`.
-- Layout: [`../../src/model/defs/wariChancaCity.ts`](../../src/model/defs/wariChancaCity.ts) places both
+- Layout: [`../../src/model/defs/wariChancaCity.ts`](../../src/model/defs/wariChancaCity.ts) places the three
   compositions and derives each site's blockers from the same placements (`layoutBlockers`).
-  `WorldViewDecor` bakes them with `ArchitectureCity`; both sites set `hideModel` and `simulationCollision`.
+  `WorldViewDecor` bakes them with `ArchitectureCity`; all three sites set `hideModel` and
+  `simulationCollision`.
   The old `wari_site` and `chanca_fortress` GLBs stay in the registry and are no longer drawn.
 - `?lod=0` previews LOD0.
 
@@ -35,6 +37,7 @@ below the temple.
 | --- | --- |
 | Complejo Wari (`wariHeightmap.ts`) | 5.0 m (x 127–175, z 90–142 flat) |
 | Pucará chanca (`chancaHeightmap.ts`) | 5.0 m (x 168–196, z 82–110 flat) |
+| Refugio de Vilcabamba (`vilcabambaHeightmap.ts`) | 5.0 m (x 168–196, z 85–109 flat) |
 
 The Wari composition stays on that flat core (the pad falls away west of x 127), so every piece seats within
 0.1 m; the pucará sits on its own 5.0 m terrace.
@@ -78,7 +81,11 @@ LOD0 ≤ 5k and LOD1 ≤ 1.5k triangles per piece, with the D-shaped temple as t
   its south edge with the altar inside the plaza, the long galleries flank it, and two highland houses stand
   behind the temple. The provincial roads enter from the south, so that edge stays open.
 - **Chanca (`m5_yahuar_pampa`).** The terraced enclosure inside thick stone walls on three sides, the two
-  southern segments leaving the 4 m gate, four round towers at the corners and the altar on the terrace.
+  southern segments leaving the 4.4 m gate, four round towers at the corners and the altar on the terrace.
+- **Vilcabamba (`m_vilcabamba`).** The refuge uses only the kit's domestic pieces: three thatch longhouses, a
+  small plaza, the Huayna Pucará tower and a stone perimeter wall with a **wide south gate** (the refuge is
+  never a sealed box). It is a late-Inca settlement, so the temple, galleries and niches stay out of it; the
+  procedural `SiteLandmarks` composition is retired.
 
 The pucará walls and towers form one trace: their corners close to a joint, and the gate is the only passage
 through the south side. The terrace is a walkable step, not an obstacle.
@@ -91,6 +98,7 @@ through the south side. The terrace is a walkable step, not an obstacle.
 | Walled plaza and galleries | Documented Wari ceremonial architecture | Plaza and two galleries. |
 | Red/cream facade painting | Documented Wari practice | Abstract registers on the temple and panels. |
 | Chanca pucará walls and gate | Documented highland defensive practice (the tower typology is an RTS abstraction) | Thick merloned walls, four round towers, one gate. |
+| Vilcabamba refuge | Documented Espíritu Pampa occupation; its plan and the Huayna Pucará location are debated | Domestic longhouses, plaza, perimeter wall with a south gate and a tower. |
 | Exact plans, tier and tower counts | Not reproduced | Marked `inferred` in the manifests; never a survey. |
 
 ## Evidence
@@ -120,6 +128,17 @@ The site-bearing stills were regenerated with the kit:
 node scripts/capture_cinema.mjs --mission=m4_wari --only=cine-complejo
 node scripts/capture_wari_intro.mjs
 node scripts/capture_chanca_intro.mjs
+```
+
+`docs/media/vilcabamba-kit-before-after.webp` (1772 × 536) is the refuge's own sheet, before (the
+procedural composition) and after (the kit), from the same `m_vilcabamba` capture:
+
+```
+yarn shot vilcabamba --url="/?mission=m_vilcabamba&seed=777&fog=0&intro=0" \
+  --click --site --height=48 --no-hud --no-labels --wait=9000
+node scripts/sites_sheet.mjs --before=review/vilca-before --after=review/vilca-after \
+  --rows=vilcabamba --captions="Vilcabamba · ~1540" \
+  --out=docs/media/vilcabamba-kit-before-after.webp
 ```
 
 ## Tests

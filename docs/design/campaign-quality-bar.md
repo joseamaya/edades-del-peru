@@ -494,11 +494,11 @@ The 2026-11-18 pass completed the conquest-to-Vilcabamba arc:
   the Cusco Blender kit (shared with `m6b`). It takes Sacsayhuamán, holds the Cusco siege through a food-consuming «siembra» and
   withdraws to Ollantaytambo with Manco alive. Real-command test: `tests/e2e/cusco-1536.spec.ts`. Open: human
   no-cheat playtest and the mission's own art review.
-- **`m_vilcabamba`** adds `vilcabamba_site`, drawing a low cloud-forest platform and longhouses in place of the
+- **`m_vilcabamba`** adds `vilcabamba_site`, drawing a low cloud-forest refuge from the highland kit's domestic pieces in place of the
   Chanca hillfort GLB. It defends Huayna Pucará, evacuates Vilcabamba (the expedition burns it) and saves
 the court at the lower
   Urubamba; the capture and execution are told in the epilogue. Real-command test:
-  `tests/e2e/vilcabamba.spec.ts`. The procedural site was accepted as an abstraction on 2026-11-23 (Miguel
+  `tests/e2e/vilcabamba.spec.ts`. The kit refuge keeps the abstraction accepted on 2026-11-23 (Miguel
   Amaya); open: human no-cheat playtest.
 
 Both have dossier, design document, tutorial, educational entry, own in-engine captures, epilogue and the

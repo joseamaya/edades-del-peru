@@ -134,7 +134,7 @@ import {
   chimuCityBlockers,
   mocheCityBlockers,
 } from './mocheChimuCity';
-import { CHANCA_CITY_ANCHOR, chancaCityBlockers, wariCityBlockers } from './wariChancaCity';
+import { CHANCA_CITY_ANCHOR, chancaCityBlockers, vilcabambaRefugeBlockers, wariCityBlockers } from './wariChancaCity';
 
 import {
   LIMA_GROUND,
@@ -1173,10 +1173,11 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     label: 'Vilcabamba y Huayna Pucará',
     modelName: 'chanca_site',
     hideModel: true,
-    scale: chancaLength(0.7),
-    origin: chancaPoint({ x: 112.4, z: 60.8 }),
-    anchor: chancaPoint({ x: 112.4, z: 60.8 }),
-    cameraHeight: chancaLength(48),
+    style: 'wari',
+    scale: 1,
+    origin: { x: 180, z: 97 },
+    anchor: { x: 180, z: 97 },
+    cameraHeight: 50,
     framing: 'site-biased',
     heightField: {
       size: CHANCA_HEIGHTMAP_SIZE,
@@ -1186,7 +1187,9 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     },
     pathCellSize: 1,
     heritageProxies: [],
-    blockers: [{ ...chancaPoint({ x: 112.4, z: 60.8 }), w: chancaLength(11), d: chancaLength(9) }],
+    // The refuge drawn from the highland kit's domestic pieces; its perimeter wall keeps a wide south gate.
+    blockers: vilcabambaRefugeBlockers(),
+    simulationCollision: true,
     blockerPadding: chancaLength(0.5),
     buildKeepout: [{ x: 0.7025, z: 0.38, rx: 0.085, rz: 0.075 }],
     wallCollision: { meshPatterns: [], maxStartYAboveBase: chancaLength(1.2) },

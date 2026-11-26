@@ -1034,7 +1034,10 @@ slot is absent (offline / without assets).
 - **Evidence**: `docs/media/wari-kit-before-after.webp` (1772x978 WebP q74): two rows, the Wari complex and
   the Chanca pucará, before and after the kit, same mission, seed, camera and light; produced with the
   `yarn shot` commands in `docs/design/wari-chanca-sites.md` and `scripts/sites_sheet.mjs`. The
-  `cine-complejo` still and the Wari/Chanca intro sets were regenerated with the kit.
+  `cine-complejo` still and the Wari/Chanca intro sets were regenerated with the kit. The Vilcabamba refuge
+  (the last procedural `SiteLandmarks` composition) uses the kit's domestic pieces
+  (`VILCABAMBA_REFUGE_LAYOUT`) and has its own sheet, `docs/media/vilcabamba-kit-before-after.webp`
+  (1772x536), before and after; the procedural renderer and its mission field were removed.
 
 ### Moche architecture kit (m3_moche_recuay, m6_chimu_inca)
 

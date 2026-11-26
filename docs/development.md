@@ -150,17 +150,12 @@ Definition of Done and the building audit see
   Lima 1821, Miraflores, Callao, Tarapacá, Vilcabamba and Mantaro
   (`scripts/build_geographic_heightmaps.py`). `cusco_inca_site` has no field of its own: both missions that use
   it supply one, which pays for the new data inside the `dist` budget.
-- **Mission-scoped site landmarks**: `MissionLayout.siteLandmarks`
-  (`src/model/defs/siteLandmarks.ts`) draws procedural landmark compositions only for the sites whose bundled
-  GLB is a labelled abstraction from another place and whose kit has not landed yet: the Vilcabamba refuge.
-  Cusco's plaza and Sacsayhuamán are the Cusco kit; the Real Felipe bastions and the Tarapacá
-  village/heights/Pachica are the Republican kit (`src/model/defs/republicCity.ts`, which also owns their
-  blockers); the Huacas de Moche and Chan Chan are the Moche kit (`src/model/defs/mocheChimuCity.ts`) and
-  the Wari complex and the Chanca pucará are the Wari kit (`src/model/defs/wariChancaCity.ts`).
-  `SiteLandmarks` merges geometry per material and lives in its own scene group so disposing a
-  match never touches the shared generated PBR textures. `MissionSite.hideModel` drops the bundled GLB per
-  mission (Cusco 1536) while `AuthoredSiteDef.hideModel` does it for a site (Arica, Real Felipe, Tarapacá,
-  Vilcabamba); both are presentation-only. Guarded by `tests/site-landmarks.test.ts`.
+- **Site landmarks retired** (2026-11-25): the procedural `SiteLandmarks` composition and
+  `MissionLayout.siteLandmarks` are gone. Every authored site except Tambotoco (still `AylluSite`) draws from an architecture kit: Cusco,
+  colonial, Republican (`republicCity.ts`), Independence (`independenceCity.ts`), Moche/Chimú
+  (`mocheChimuCity.ts`) and Wari/Chanca/Vilcabamba (`wariChancaCity.ts`, whose domestic pieces build the
+  refuge). `AuthoredSiteDef.hideModel` drops the bundled GLB; the retired GLBs stay in the registry.
+  Guarded by `tests/site-landmarks.test.ts` and the per-kit tests.
 - **Palettized ground**: the model-mission pattern wants painted ground at ~2 m per point, and a 128 x 128 RGBA
   grid is 64 KB, so per-mission grids store a 4-bit index per cell into a 16-entry palette
   (`src/model/defs/groundCodec.ts`) and decode to the RGBA weights `sampleAuthoredGround` expects. The palette
@@ -628,6 +623,10 @@ Definition of Done and the building audit see
   Junín–Ayacucho march and the 10.7 m walkable corridor cross the site; the blockers come from the layout,
   not a hand-written fortress. This changes m8/Breña pathing, so `REPLAY_VERSION` is 47; guarded by
   `tests/independence-architecture-kit.test.ts`, `tests/e2e/brena.spec.ts` and the m8 playtest.
+- **Vilcabamba refuge** (2026-11-25): the last `SiteLandmarks` user draws from the Wari kit's domestic
+  pieces (`VILCABAMBA_REFUGE_LAYOUT`) with a wide south gate; the procedural renderer and its mission field
+  are removed. This changes the refuge's pathing, so `REPLAY_VERSION` is 50; guarded by
+  `tests/site-landmarks.test.ts` and `tests/e2e/vilcabamba.spec.ts`.
 - **Wari/Chanca kit** (2026-11-25): the Wari complex and the Chanca pucará draw from `wariChancaCity.ts`
   (9 pieces, 8 materials) built by `build_wari_architecture_kit.py` on `scripts/blender/arch_kit.py`; both
   sites set `simulationCollision` and the old site GLBs stay in the registry, no longer drawn. The dry

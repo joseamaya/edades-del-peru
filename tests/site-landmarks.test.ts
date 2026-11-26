@@ -1,12 +1,9 @@
-import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import { CivId, Era } from '../src/core/types';
 import { archProfileFor, isColonialAndeanProfile, usesAndeanArchitecture } from '../src/model/defs/architecture';
 import { getAuthoredSite } from '../src/model/defs/sites';
 import { blockersCover } from './site-blockers';
-import { SiteLandmarks } from '../src/rendering/SiteLandmarks';
-import type { SiteLandmarkKind } from '../src/model/defs/siteLandmarks';
 import { CUSCO_SITE_POINT, CUSCO_SITE_SACSAY } from '../src/campaign/defs/cuscoSite';
 import { CUSCO_CITY_LAYOUT } from '../src/model/defs/cuscoCity';
 
@@ -21,7 +18,6 @@ describe('mission site landmarks', () => {
     // Quipaipán and Cusco 1536 share one authored site and one composition (cuscoCity.ts): showing the grey
     // ushnu GLB in one campaign and the finished city in the other was the inconsistency this pins shut.
     for (const id of ['m_cusco_1536', 'm6b_guerra_civil']) {
-      expect(mission(id).layout?.siteLandmarks, id).toBeUndefined();
       expect(mission(id).layout?.site?.id, id).toBe('cusco_inca_site');
       expect(mission(id).layout?.site?.hideModel, id).toBe(true);
     }
@@ -38,26 +34,20 @@ describe('mission site landmarks', () => {
   it('draws the Republican sites from the kit and hides the borrowed GLBs', () => {
     // Arica, Real Felipe and Tarapacá no longer use mission-scoped procedural landmarks: the Republican
     // kit draws their compositions from one shared layout-and-blocker source.
-    for (const id of ['m9_guerra_pacifico', 'm_real_felipe', 'm_tarapaca']) {
-      expect(mission(id).layout?.siteLandmarks, id).toBeUndefined();
-    }
     for (const siteId of ['arica_site', 'real_felipe_site', 'tarapaca_site'] as const) {
       const site = getAuthoredSite(siteId)!;
       expect(site.hideModel, siteId).toBe(true);
       expect(site.style, siteId).toBe('republic');
       expect(site.simulationCollision, siteId).toBe(true);
     }
-    // Vilcabamba keeps its procedural refuge until its own kit lands.
-    expect(mission('m_vilcabamba').layout?.siteLandmarks?.map((landmark) => landmark.kind)).toEqual([
-      'vilcabamba-refuge',
-    ]);
-    expect(getAuthoredSite('vilcabamba_site')?.hideModel).toBe(true);
+    // Vilcabamba draws its refuge from the highland kit's domestic pieces.
+    const vilcabamba = getAuthoredSite('vilcabamba_site')!;
+    expect(vilcabamba.hideModel).toBe(true);
+    expect(vilcabamba.style).toBe('wari');
+    expect(vilcabamba.simulationCollision).toBe(true);
   });
 
   it('draws the Independence sites from the kit and hides the borrowed GLB', () => {
-    for (const id of ['m8_independencia', 'm_brena']) {
-      expect(mission(id).layout?.siteLandmarks, id).toBeUndefined();
-    }
     for (const siteId of ['independence_site', 'brena_site'] as const) {
       const site = getAuthoredSite(siteId)!;
       expect(site.hideModel, siteId).toBe(true);
@@ -82,24 +72,6 @@ describe('mission site landmarks', () => {
     const layout = mission('m_tarapaca').layout!;
     expect(layout.site?.focus).toEqual({ x: 96 / 256, z: 168 / 256 });
     expect(layout.site?.y).toBeCloseTo(6.942, 3);
-  });
-
-  it('builds visible geometry for the Vilcabamba refuge', () => {
-    const kinds: SiteLandmarkKind[] = ['vilcabamba-refuge'];
-    const heightAt = (x: number, z: number): number => 5 + Math.sin(x * 0.02) * 0.25 + Math.cos(z * 0.02) * 0.2;
-    for (const kind of kinds) {
-      const landmarks = new SiteLandmarks([{ kind, x: 0.5, z: 0.5 }], 256, heightAt, 5);
-      const meshes: THREE.Mesh[] = [];
-      landmarks.group.traverse((object) => {
-        const mesh = object as THREE.Mesh;
-        if (mesh.isMesh) meshes.push(mesh);
-      });
-      expect(meshes.length, `${kind} meshes`).toBeGreaterThan(1);
-      const size = new THREE.Box3().setFromObject(landmarks.group).getSize(new THREE.Vector3());
-      expect(size.x, `${kind} width`).toBeGreaterThan(6);
-      expect(size.z, `${kind} depth`).toBeGreaterThan(6);
-      landmarks.dispose();
-    }
   });
 
   it('registers the Real Felipe walls with the sally gates open', () => {

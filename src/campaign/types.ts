@@ -18,7 +18,6 @@ import type { AuthoredHeightField } from '../model/defs/authoredTerrain';
 import type { SetpieceId } from '../model/defs/setpieces';
 import type { HeritageBuildingId } from '../model/defs/heritage';
 import type { AuthoredSiteId, DecorModelId } from '../model/defs/sites';
-import type { MissionSiteLandmark } from '../model/defs/siteLandmarks';
 
 /** Normalized map point (0..1); resolved to world units from the mission map size. */
 export interface MissionAnchor {
@@ -115,8 +114,8 @@ export interface MissionSite {
   /** Vertical offset of the model floor in world metres. */
   y?: number;
   /**
-   * Mission-scoped replacement of the authored GLB by the mission's procedural landmarks.
-   * Needed when two missions share a site but only one should drop the bundled model (Cusco).
+   * Drops the bundled site GLB (the site's architecture kit draws instead). Needed when two missions share a
+   * site but only one should drop the model (Cusco).
    */
   hideModel?: boolean;
   /** Optional camera framing anchor for the intro. */
@@ -165,11 +164,6 @@ export interface MissionLayout {
   setpiece?: MissionSetpiece;
   /** Authored site model; takes precedence over the modular setpiece. */
   site?: MissionSite;
-  /**
-   * Mission-scoped procedural landmarks that complete or replace the authored site model (the
-   * Vilcabamba refuge; Cusco and the Republican sites draw from their kits).
-   */
-  siteLandmarks?: readonly MissionSiteLandmark[];
   terrain?: TerrainLayout;
   /** Authored canal used by a mission mechanic (visual-only geometry + a reach target). */
   canal?: MissionCanal;

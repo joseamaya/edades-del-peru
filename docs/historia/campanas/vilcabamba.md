@@ -38,7 +38,7 @@
 | Quema de Vilcabamba | Documentado (expedición) | La ciudad fue ocupada e incendiada por la expedición; la misión representa la evacuación previa, no una quema ordenada por el jugador. |
 | Cifras de tropas | Aproximado | Las fuentes varían; no se muestran como dato duro. |
 | Legalidad del proceso | Debatido | La historiografía discute la razón de Estado y el reproche de Felipe II. |
-| Vilcabamba y la selva | Abstracción | El sitio se dibuja como plataforma baja de ceja de selva; no es Espíritu Pampa ni una planta arqueológica. |
+| Vilcabamba y la selva | Abstracción | El sitio se dibuja como refugio bajo de ceja de selva (casas de tapial y paja, muro perimetral, torre del Huayna Pucará); no es Espíritu Pampa ni una planta arqueológica. |
 
 ## Fuentes
 
