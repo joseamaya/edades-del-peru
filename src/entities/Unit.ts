@@ -505,6 +505,9 @@ export class Unit {
       const after = Math.hypot(exit.x - tx, exit.z - tz);
       return after < before - 1e-4;
     }
+    // Check the destination before the tiny-step shortcut: a stopped unit can accumulate millimetres
+    // per tick and creep across a cell boundary into a blocked cell.
+    if (!this.ctx.isWalkable(tx, tz, this.owner)) return false;
     const dx = tx - this.pos.x;
     const dz = tz - this.pos.z;
     const dist = Math.hypot(dx, dz);
@@ -1240,14 +1243,16 @@ export class Unit {
   /** Move positionally, never into blocked terrain (the same contract as `integrateSafely`). */
   private pushOut(dx: number, dz: number): void {
     const size = this.ctx.worldSize;
-    const nx = clamp(this.pos.x + dx, 2, size - 2);
-    const nz = clamp(this.pos.z + dz, 2, size - 2);
+    const fromX = this.pos.x;
+    const fromZ = this.pos.z;
+    const nx = clamp(fromX + dx, 2, size - 2);
+    const nz = clamp(fromZ + dz, 2, size - 2);
     if (this.stepAllowed(nx, nz)) {
       this.pos.x = nx;
       this.pos.z = nz;
-    } else if (this.stepAllowed(nx, this.pos.z)) {
+    } else if (this.stepAllowed(nx, fromZ)) {
       this.pos.x = nx;
-    } else if (this.stepAllowed(this.pos.x, nz)) {
+    } else if (this.stepAllowed(fromX, nz)) {
       this.pos.z = nz;
     } else {
       return;

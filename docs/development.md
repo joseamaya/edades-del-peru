@@ -634,7 +634,9 @@ Definition of Done and the building audit see
   segment contract movement uses, so a unit's centre never ends in a blocked cell (the 2 m pathfinding grid
   is centre-based). A plain move/gather/build keeps only the velocity force, so a 40-unit group still
   reaches a shared destination; the positional pass runs when the unit stops or chases an attack target.
-  Enemy targets are exempt (melee must keep contact). This changes the simulation, so `REPLAY_VERSION` is 51;
+  `stepAllowed` now checks the destination cell before its tiny-step shortcut, so a stopped unit cannot
+  creep across a cell boundary in millimetres. Enemy targets are exempt (melee must keep contact). This
+  changes the simulation, so `REPLAY_VERSION` is 51;
   guarded by `tests/unit-separation.test.ts`; evidence `docs/media/cavalry-melee-before-after.webp`
   (`node scripts/capture_cavalry_melee.mjs --out=review/cavalry-after`).
 - **Wari/Chanca kit** (2026-11-25): the Wari complex and the Chanca pucará draw from `wariChancaCity.ts`
