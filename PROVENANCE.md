@@ -1415,7 +1415,9 @@ slot is absent (offline / without assets).
   same script from a worktree at `main` (`9f09bcce`) after copying the new script into it, with the same
   seed, light, camera and six seconds of fixed steps. Left column before, right column after. The sheet is
   composed with `node scripts/sites_sheet.mjs --before=review/cavalry-before --after=review/cavalry-after
-  --rows=cavalry --captions="Cavalry melee" --out=docs/media/cavalry-melee-before-after.webp`.
+  --rows=cavalry --captions="Cavalry melee" --footer="Ten dragons against fourteen soldiers · separation
+  runs stopped and attacking, same side only · src/entities/Unit.ts"
+  --out=docs/media/cavalry-melee-before-after.webp`.
 - **Content**: ten `realista_dragon` ordered onto five soldiers, with fourteen soldiers in the line. The
   before row shows the horses inside each other; the after row shows the same-side bodies separated.
 - **Review**: no art or historical claim; a simulation-behaviour capture of a seeded skirmish.
