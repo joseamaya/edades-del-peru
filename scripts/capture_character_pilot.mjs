@@ -8,7 +8,8 @@ import { ensureRiggedUnit, selectCases } from './character_pilot_cases.mjs';
  * light, with the HUD hidden.
  *
  * Usage:
- *   node scripts/capture_character_pilot.mjs --out=review/pilot [--only=inca,slinger]
+ *   node scripts/capture_character_pilot.mjs --out=review/pilot [--only=inca,slinger] [--close]
+ * `--close` overrides each case's camera with a tighter head-to-thigh frame for garment paint evidence.
  *
  * The before set is produced by running the same script from a worktree at `origin/main` (the old
  * `workerAttire.ts`/`uniformAttire.ts`) with `--out=review/pilot-before`; the committed comparison for the
@@ -16,6 +17,7 @@ import { ensureRiggedUnit, selectCases } from './character_pilot_cases.mjs';
  */
 const OUT = path.resolve(cliArg('out', 'review/pilot'));
 const CASES = selectCases(cliArg('only', ''));
+const CLOSE = process.argv.includes('--close');
 fs.mkdirSync(OUT, { recursive: true });
 
 const { base, close } = await withViteServer({ optimizeDeps: { noDiscovery: true } });
@@ -41,7 +43,7 @@ try {
 
       const place = async (yaw, state, phase = 0, frameIndex = 1) => {
         await page.evaluate(
-          ({ kind, yaw: rotation, state: pose, at, frame }) => {
+          ({ kind, yaw: rotation, state: pose, at, frame, close: tight }) => {
             const g = window.game;
             g.loop.stop();
             g.settings.timeOfDay = 'noon';
@@ -80,14 +82,14 @@ try {
               unit.rig.update(at);
             }
             const subject = { x: unit.pos.x, y: unit.pos.y, z: unit.pos.z };
-            const distance = frame?.distance ?? 4.1;
-            const height = frame?.height ?? 1.55;
-            const lookAt = frame?.lookAt ?? 1.0;
+            const distance = tight ? 2.6 : (frame?.distance ?? 4.1);
+            const height = tight ? 1.15 : (frame?.height ?? 1.55);
+            const lookAt = tight ? 0.9 : (frame?.lookAt ?? 1.0);
             g.camera.camera.position.set(subject.x + distance * 0.63, subject.y + height, subject.z + distance * 0.78);
             g.camera.camera.lookAt(subject.x, subject.y + lookAt, subject.z);
             g.renderer.render(g.scene, g.camera.camera);
           },
-          { kind: entry.kind, yaw, state, at: phase, frame: entry.frame },
+          { kind: entry.kind, yaw, state, at: phase, frame: entry.frame, close: CLOSE },
         );
         const suffix = frameIndex > 1 ? `-${frameIndex}` : '';
         await page.screenshot({

@@ -113,6 +113,8 @@ copied. No external asset was downloaded or added.
   applied it to every Andean soldier).
 - Usuta sandals (sole plus strap) per foot.
 - The shared uncu/skirt/wrap keep their existing skinning and are tinted from the civilization palette.
+- The uncu is sleeveless: the body paint covers only the shoulder cap, and the skirt paint stops above the
+  local hem, so no cloth band runs down the bare thigh.
 
 ### Spanish and Republican (`src/rendering/uniformAttire.ts`)
 
@@ -568,13 +570,17 @@ What changed:
 | Bare arms and legs | skin | still skin: only the garment volumes are painted |
 | Hero (Ayar Manco) | the palette tint under the longer uncu | follows the accent after `dressHero` |
 
-The classifier cannot use bone names alone (the tunic is short-sleeved and the skirt stops at the hem), and a
-garment-wide box would paint the hands, which hang inside the tunic's box in the bind pose. `workerAttire.ts`
+The classifier cannot use bone names alone (the uncu is sleeveless and the skirt stops at an uneven hem), and
+a garment-wide box would paint the hands, which hang inside the tunic's box in the bind pose. `workerAttire.ts`
 therefore takes the **posed world boxes of the tunic and skirt meshes** and gates them by the body's dominant
-bone: `spine`/`clavicle`/`upperarm` for the tunic and `pelvis`/`thigh`/`spine_01` for the skirt. The skirt is
-the outer layer at the waist and wins the overlap; the hero's longer uncu is recognized by its tunic box
-reaching below the wrap, and `UnitView.dressHero` repaints the body with the commander accent after retinting
-the cloth.
+bone: `spine`/`clavicle` and the shoulder cap of `upperarm` for the tunic, and `pelvis`/`thigh`/`spine_01` for
+the skirt. The skirt is the outer layer at the waist and wins the overlap; its thigh boundary follows the
+local hem sampled in 24 angular bins, so no cloth band runs down the bare leg. The hero's longer uncu is
+recognized by its tunic box reaching below the wrap, and `UnitView.dressHero` repaints the body with the
+commander accent after retinting the cloth.
+
+Evidence for the sleeve and hem correction: `docs/media/andean-garment-paint-before-after.webp` (Inca and
+Moche at the close frame, before and after).
 
 The colour is the garment's own: the mean of the cotton weave texture (`#c3b18b`) times the material's tinted
 colour, so the patch matches the Inca gold, the Moche red or Caral's cream. The body is a textured draw of its

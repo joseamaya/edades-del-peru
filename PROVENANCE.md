@@ -1255,8 +1255,8 @@ slot is absent (offline / without assets).
     `Push_Loop` is an explicit pushing/placing abstraction. The source hair-card eyebrows were rebuilt as
     low-poly strips on each body's `Head` bone.
   - Historical basis: `docs/historia/atuendos.md` records **cotton textiles for Caral-Supe** but marks the
-    specific garments, skin tone and facial features as **not documented**. The short-sleeved tunic, skirt/sash,
-    reserved chasqui runner set (short-sleeve tunic, long skirt, belt, canteen, ochre headband), skin palette
+    specific garments, skin tone and facial features as **not documented**. The tunic, skirt/sash, reserved chasqui runner set
+    (tunic, long skirt, belt, canteen, ochre headband), skin palette
     and hair are an **abstraction/plausible** treatment, not a reconstruction or a portrait. The Caral scout
     uses the commoner tunic/skirt or wrap, a manta and a plain headband, with no chasqui gear; the Chasqui
     identity and outfit are reserved for the Inca. Gender is a presentation-only
@@ -1392,6 +1392,22 @@ slot is absent (offline / without assets).
 - **Content**: the Plaza Mayor of `m_junta_cusco` and the Ayacucho chapel of `m8_independencia`, same camera
   and seed per row; both kits share the `TILE_SURFACE` mapping, so the change is shown on both.
 - **Review**: no historic or material claim; a runtime palette capture of the existing tile texture.
+
+### Andean garment paint (in-engine evidence)
+
+- **Location**: `docs/media/andean-garment-paint-before-after.webp`, 952x1642 WebP q76.
+- **Source**: `node scripts/capture_character_pilot.mjs --only=inca,moche --close --out=review/paint-after`;
+  the before row copies this PR's `capture_character_pilot.mjs` into a worktree at `main` (only
+  `src/rendering/workerAttire.ts` differs) and runs it with `--out=review/paint-before`, same seed, light,
+  camera and close frame. Then `node scripts/andean_paint_sheet.mjs --before=review/paint-before
+  --after=review/paint-after --out=docs/media/andean-garment-paint-before-after.webp`.
+- **Content**: the Inca and Moche warriors at the close frame; the before row has tunic-coloured upper arms
+  (a short sleeve) and a cloth band on the moche thigh, the after row has skin arms with only the shoulder
+  cap painted and a clean thigh under the skirt.
+- **Review**: no historical change; the uncu is documented as sleeveless in `docs/historia/atuendos.md` §1
+  (sources LACMA, Museo de América), and the thigh is bare below the short wrap/skirt of the same outfit.
+  This is a body-paint capture, not new geometry.
+
 
 
 ### Character legibility (in-engine evidence)
