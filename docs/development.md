@@ -151,7 +151,7 @@ Definition of Done and the building audit see
   (`scripts/build_geographic_heightmaps.py`). `cusco_inca_site` has no field of its own: both missions that use
   it supply one, which pays for the new data inside the `dist` budget.
 - **Site landmarks retired** (2026-11-25): the procedural `SiteLandmarks` composition and
-  `MissionLayout.siteLandmarks` are gone. Every authored site now draws from an architecture kit: Cusco,
+  `MissionLayout.siteLandmarks` are gone. Every authored site except Tambotoco (still `AylluSite`) draws from an architecture kit: Cusco,
   colonial, Republican (`republicCity.ts`), Independence (`independenceCity.ts`), Moche/Chimú
   (`mocheChimuCity.ts`) and Wari/Chanca/Vilcabamba (`wariChancaCity.ts`, whose domestic pieces build the
   refuge). `AuthoredSiteDef.hideModel` drops the bundled GLB; the retired GLBs stay in the registry.

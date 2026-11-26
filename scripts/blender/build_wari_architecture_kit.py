@@ -201,7 +201,7 @@ def main():
             'docs/historia/campanas/wari_tiahuanaco.md',
             'docs/historia/campanas/yahuar_pampa.md',
         ],
-        collision='wariCityBlockers / chancaCityBlockers in src/model/defs/wariChancaCity.ts',
+        collision='wariCityBlockers / chancaCityBlockers / vilcabambaRefugeBlockers in src/model/defs/wariChancaCity.ts',
         export_dir=EXPORT_DIR,
         game_dir=GAME_DIR,
         source_blend=SOURCE_BLEND,

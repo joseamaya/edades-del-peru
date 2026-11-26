@@ -88,19 +88,19 @@ export function chancaCityBlockers() {
  * longhouses, a small plaza, a perimeter wall and the Huayna Pucará tower. It is a late-Inca settlement, not
  * an imperial complex, so the D-shaped temple, the galleries and the niches stay out of it.
  *
- * The perimeter wall keeps a **wide south gate** (about 9 m): the refuge must never be a sealed box (the
+ * The perimeter wall is closed on three sides and keeps a **wide south gate** (about 10 m): the refuge must never be a sealed box (the
  * no-walkable-building rule needs a way in for the mission's columns).
  */
 export const VILCABAMBA_REFUGE_ANCHOR = { x: 180, z: 97 } as const;
 
 export const VILCABAMBA_REFUGE_LAYOUT: readonly ArchPlacement[] = [
   { asset: 'plaza', ...at(VILCABAMBA_REFUGE_ANCHOR, 0, 2), rotY: 0, scale: [0.42, 1, 0.34], lift: 0.02 },
-  { asset: 'room', ...at(VILCABAMBA_REFUGE_ANCHOR, -4.6, -5), rotY: 0, scale: [0.7, 1, 0.7] },
-  { asset: 'room', ...at(VILCABAMBA_REFUGE_ANCHOR, 4.6, -5), rotY: 0, scale: [0.7, 1, 0.7] },
+  { asset: 'room', ...at(VILCABAMBA_REFUGE_ANCHOR, -4.6, -6), rotY: 0, scale: [0.7, 1, 0.7] },
+  { asset: 'room', ...at(VILCABAMBA_REFUGE_ANCHOR, 2.8, -6), rotY: 0, scale: [0.7, 1, 0.7] },
   { asset: 'room', ...at(VILCABAMBA_REFUGE_ANCHOR, -5, 3), rotY: Math.PI / 2, scale: [0.8, 1, 0.8] },
-  { asset: 'pukara_wall', ...at(VILCABAMBA_REFUGE_ANCHOR, 0, -11), rotY: 0, scale: [1.4, 1, 1] },
-  { asset: 'pukara_wall', ...at(VILCABAMBA_REFUGE_ANCHOR, -10.5, 0), rotY: Math.PI / 2, scale: [1.1, 1, 1] },
-  { asset: 'pukara_wall', ...at(VILCABAMBA_REFUGE_ANCHOR, 10.5, 0), rotY: -Math.PI / 2, scale: [1.1, 1, 1] },
+  { asset: 'pukara_wall', ...at(VILCABAMBA_REFUGE_ANCHOR, 0, -11), rotY: 0, scale: [1.86, 1, 1] },
+  { asset: 'pukara_wall', ...at(VILCABAMBA_REFUGE_ANCHOR, -10.5, -2), rotY: Math.PI / 2, scale: [2, 1, 1] },
+  { asset: 'pukara_wall', ...at(VILCABAMBA_REFUGE_ANCHOR, 10.5, -2), rotY: -Math.PI / 2, scale: [2, 1, 1] },
   { asset: 'pukara_wall', ...at(VILCABAMBA_REFUGE_ANCHOR, -8.2, 9), rotY: 0, scale: [0.62, 1, 1] },
   { asset: 'pukara_wall', ...at(VILCABAMBA_REFUGE_ANCHOR, 8.2, 9), rotY: 0, scale: [0.62, 1, 1] },
   { asset: 'tower', ...at(VILCABAMBA_REFUGE_ANCHOR, 5.5, 4.5), rotY: 0, scale: [0.8, 1, 0.8] },

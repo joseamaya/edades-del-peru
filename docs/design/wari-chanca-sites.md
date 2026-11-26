@@ -98,6 +98,7 @@ through the south side. The terrace is a walkable step, not an obstacle.
 | Walled plaza and galleries | Documented Wari ceremonial architecture | Plaza and two galleries. |
 | Red/cream facade painting | Documented Wari practice | Abstract registers on the temple and panels. |
 | Chanca pucará walls and gate | Documented highland defensive practice (the tower typology is an RTS abstraction) | Thick merloned walls, four round towers, one gate. |
+| Vilcabamba refuge | Documented Espíritu Pampa occupation; its plan and the Huayna Pucará location are debated | Domestic longhouses, plaza, perimeter wall with a south gate and a tower. |
 | Exact plans, tier and tower counts | Not reproduced | Marked `inferred` in the manifests; never a survey. |
 
 ## Evidence

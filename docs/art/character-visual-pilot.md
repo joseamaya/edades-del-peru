@@ -485,8 +485,8 @@ other. Each one had its own cause.
   formation's slots are as wide as its bulkiest member.
 - **Units through houses.** Sites drawn only with a renderer did not reach the navigation grid. Cusco and the
   Republican sites (Arica, Real Felipe, Tarapacá) now derive their blockers from the kit layout
-  (`layoutBlockers`); the remaining procedural landmark (Vilcabamba) still registers its halls through
-  the site layout blockers. Walls, terraces, trenches and corrals stay walkable where the battlefield needs it.
+  (`layoutBlockers`); every authored site, Vilcabamba's refuge included, blocks from that layout. Walls,
+  terraces, trenches and corrals stay walkable where the battlefield needs it.
 
 `verify:fast`, `bench:check`, `bench:characters`, the rig, mission and movement E2E specs are the gate.
 

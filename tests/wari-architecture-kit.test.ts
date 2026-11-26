@@ -214,6 +214,9 @@ describe('highland layouts', () => {
     expect(blockersCover(blockers, a.x - 10.5, a.z), 'west wall').toBe(true);
     expect(blockersCover(blockers, a.x - 4.6, a.z - 5), 'longhouse').toBe(true);
     expect(blockersCover(blockers, a.x, a.z + 2), 'plaza').toBe(false);
+    expect(blockersCover(blockers, a.x + 10.5, a.z - 2), 'east wall').toBe(true);
+    expect(blockersCover(blockers, a.x - 8.2, a.z + 9), 'south-west wall').toBe(true);
+    expect(blockersCover(blockers, a.x + 8.2, a.z + 9), 'south-east wall').toBe(true);
     expect(blockersCover(blockers, a.x, a.z + 9), 'south gate').toBe(false);
   });
 
