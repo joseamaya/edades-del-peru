@@ -1,0 +1,50 @@
+{
+  "fps": 30,
+  "intro": { "folder": "epic:caral-amanecer", "seconds": 3, "start": 10 },
+  "acts": [
+    {
+      "title": "CULTURAS PREINCAS",
+      "shots": [
+        { "name": "caral", "seconds": 5, "hero": "", "place": "Caral · c. 3000 a.C." },
+        { "name": "chavin", "seconds": 3.5, "hero": "", "place": "Chavín de Huántar · c. 900 a.C." },
+        { "name": "moche", "seconds": 3.5, "hero": "", "place": "Moche · c. 500 d.C." }
+      ]
+    },
+    {
+      "title": "EL TAHUANTINSUYO",
+      "shots": [
+        { "name": "yahuar", "seconds": 3.5, "hero": "Cusi Yupanqui", "place": "Yahuar Pampa · 1438" },
+        { "name": "chanchan", "seconds": 4, "hero": "Túpac Yupanqui", "place": "Chan Chan · c. 1470" }
+      ]
+    },
+    {
+      "title": "EL VIRREINATO",
+      "shots": [
+        { "name": "cusco_llamas", "seconds": 4.5, "hero": "", "place": "Cusco en llamas · 1536", "grade": "night" },
+        { "name": "tupac", "seconds": 3.5, "hero": "Túpac Amaru II", "place": "Cusco · 1780" }
+      ]
+    },
+    {
+      "title": "LA INDEPENDENCIA",
+      "shots": [
+        { "name": "junin", "seconds": 6, "hero": "Antonio José de Sucre", "place": "Junín · 1824" },
+        { "name": "real_felipe", "seconds": 4, "hero": "", "place": "Real Felipe · Callao · 1826" }
+      ]
+    },
+    {
+      "title": "LA REPÚBLICA",
+      "shots": [
+        { "name": "arica", "seconds": 5, "hero": "Francisco Bolognesi", "place": "Arica · 1880" },
+        { "name": "brena", "seconds": 4, "hero": "Andrés A. Cáceres", "place": "La Breña · 1882" }
+      ]
+    }
+  ],
+  "montage": {
+    "shots": [
+      { "name": "g_construye", "seconds": 1.5, "text": "CONSTRUYE" },
+      { "name": "g_conquista", "seconds": 1.5, "text": "CONQUISTA" },
+      { "name": "g_resiste", "seconds": 1.5, "text": "RESISTE" }
+    ]
+  },
+  "end": { "folder": "epic:final-caral", "seconds": 6, "start": 4 }
+}
