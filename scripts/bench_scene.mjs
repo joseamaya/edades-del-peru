@@ -109,9 +109,12 @@ const BUDGETS = {
   // ground (the 2026-11-16 pass measured 927,198/928); hardware high 1,134,038/931 (1,267,920/1,226 with
   // VSM), over §7's target. The 1.2M cap gives the groves ~6% headroom over both.
   m_lima_late: { sceneTriangles: 1_200_000, sceneDrawCalls: 1_250, kitTriangles: 140_000, kitDrawCalls: 25 },
-  // La Junta's opening army is large; a regression cap, still over §7's target. Measured 673,132 / 669
-  // with 14,334 / 12 kit after the highland pack.
-  m_junta_cusco: { sceneTriangles: 780_000, sceneDrawCalls: 1000, kitTriangles: 20_000, kitDrawCalls: 14 },
+  // La Junta's opening army is large; a regression cap, still over §7's target. Remeasured 629,854 /
+  // 438-439 with 9,876 / 12 kit on 2026-11-26 (software), down from the 673,132 / 669 recorded when the
+  // highland pack landed; an occasional heavy highland-kit load measures 647,850 / 433 with a 41.6k kit.
+  // 690k/520 leaves 6-9% / 19% headroom; the 35 rigged units are 248 calls and their shadow pass 42, so
+  // the call margin needs a rig or Blender pass, not more scene merging.
+  m_junta_cusco: { sceneTriangles: 690_000, sceneDrawCalls: 520, kitTriangles: 20_000, kitDrawCalls: 14 },
   // Moche valley opening on the 256 m transect: the canal, the huacas and the starting column. Measured
   // ~550k / 332; first-pass cap with ~6 % headroom.
   m3_moche_recuay: { sceneTriangles: 590_000, sceneDrawCalls: 372, kitTriangles: 12_000, kitDrawCalls: 4 },

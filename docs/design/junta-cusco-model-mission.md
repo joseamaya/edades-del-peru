@@ -94,7 +94,7 @@ hold La Apacheta, resist at Umachiri. The informational montonera step advances 
 - Scale: `tests/campaign-scale.test.ts` enforces the 256 m map, 128² ground and crossing band.
 - E2E: the general campaign specs cover briefing, epilogue, HUD layout, save/load and the campaign path;
   the mission-specific playtest reaches the acts with real orders.
-- Bench: the opening view is registered in `scripts/bench_scene.mjs` under a 780k/1000 regression cap; it still exceeds the art-direction §11 target (see open item 3).
+- Bench: the opening view is registered in `scripts/bench_scene.mjs` under a 690k/520 regression cap; it still exceeds the art-direction §7 target (see open item 3).
 
 ## Open items
 
@@ -104,7 +104,8 @@ hold La Apacheta, resist at Umachiri. The informational montonera step advances 
 2. A manual 30–40 minute playtest; the automated path covers the three acts with attrition isolated, not a
    no-cheat victory. The mission is tuned so a player who keeps the line can hold both positions, but that
    path needs a human run.
-3. Performance: the high-preset opening measures ~741k triangles / ~986 draw calls in
-   `scripts/bench_scene.mjs`, dominated by the unit rigs at the base. It passes the 780k/1000 regression
-   cap but is not within art-direction §11's 600k/200 target.
+3. Performance: the high-preset opening measures **629,854 triangles / 438–439 draw calls** in
+   `scripts/bench_scene.mjs` (software, 1600×900, remeasured 2026-11-26), dominated by the 35 unit rigs
+   (248 calls and their 42-call shadow pass). It passes the ratcheted 690k/520 regression cap but is not
+   within art-direction §7's 600k/200 target; closing the call gap needs a rig or Blender pass.
 4. The plaza intro render is approved; any future Blender pieces still need their own review.
