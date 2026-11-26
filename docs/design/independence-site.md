@@ -43,7 +43,7 @@ textures in the GLBs. At runtime the shared PBR detail sets are mapped by `ARCH_
 | --- | --- | --- |
 | `MAT-Arch_IndependencePlaster` | `plaster_detail`, kept colour | Chapel and hacienda walls |
 | `MAT-Arch_IndependenceAdobe` | `plaster_detail`, kept colour | Community houses and hearths |
-| `MAT-Arch_IndependenceTile` | `tile`, pulled towards luma and lifted | Chapel, tower and hacienda roofs |
+| `MAT-Arch_IndependenceTile` | `tile`, 50 % saturation, warm sand tint, lifted (shared with the colonial kit) | Chapel, tower and hacienda roofs |
 | `MAT-Arch_IndependenceStone` | `wall_fieldstone`, lifted | Bases, camp walls, wells, kerbs |
 | `MAT-Arch_IndependenceWood` | `wood` | Doors, tent poles, well frame, cross |
 | `MAT-Arch_IndependenceCanvas` | `plaster_detail`, kept colour | Tents |

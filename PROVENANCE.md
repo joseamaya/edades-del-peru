@@ -1376,6 +1376,20 @@ slot is absent (offline / without assets).
   the after one is sunlit and reads warm stone.
 - **Review**: no historical or material change; a lighting capture of an existing site.
 
+### Colonial tile warmth (in-engine evidence)
+
+- **Location**: `docs/media/colonial-tile-warmth-before-after.webp`, 1772x536 WebP q74.
+- **Source**: `yarn shot junta-colonial-roofs --url="/?mission=m_junta_cusco&seed=777&fog=0&intro=0"
+  --click --site --height=42 --no-hud --no-labels --wait=9000`; the before row runs the same command from a
+  worktree at `main` (42 % saturation, `0xefd9bf` tint), the after row on this change (50 %, `0xf2d3a6`).
+  Rename each `_0` capture to `review/tile-{before,after}/roofs_0.png`, then
+  `node scripts/sites_sheet.mjs --before=review/tile-before --after=review/tile-after --rows=roofs
+  --captions="Colonial plaza · roofs" --out=docs/media/colonial-tile-warmth-before-after.webp`.
+- **Content**: the same Plaza Mayor at morning, same camera and seed; the colonial and independence kits share
+  the `TILE_SURFACE` mapping, so the change covers both.
+- **Review**: no historic or material claim; a runtime palette capture of the existing tile texture.
+
+
 ### Character legibility (in-engine evidence)
 
 - **Location**: `docs/media/character-legibility-before-after.webp`, 1520x856 WebP q72.

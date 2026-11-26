@@ -103,6 +103,10 @@ describe('runtime surfaces', () => {
       'MAT-Arch_ColonialPaving',
     );
   });
+
+  it('uses the same fired-clay mapping as the independence kit', () => {
+    expect(ARCH_SURFACES['MAT-Arch_ColonialTile']).toEqual(ARCH_SURFACES['MAT-Arch_IndependenceTile']);
+  });
 });
 
 describe('fog material program keys', () => {

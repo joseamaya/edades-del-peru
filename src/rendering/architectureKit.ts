@@ -148,6 +148,9 @@ function footprint(model: ArchModel): THREE.Box3 {
  * are box-projected at world scale (TILE in the Blender script). `keepColor` keeps the material's
  * documented paint colour under a near-white detail map; otherwise `tint` (times `lift`) colours the set.
  */
+/** Fired-clay roofs shared by the colonial and independence kits: the same photographed tile map. */
+const TILE_SURFACE = { set: 'tile', tint: 0xf2d3a6, normal: 0.7, saturation: 0.5, lift: 1.15 };
+
 export const ARCH_SURFACES: Record<
   string,
   { set: string; tint?: number; normal: number; keepColor?: boolean; lift?: number; saturation?: number }
@@ -178,18 +181,12 @@ export const ARCH_SURFACES: Record<
   'MAT-Arch_IncaEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
   'MAT-Arch_IncaSand': { set: 'plaster_detail', normal: 0.4, keepColor: true },
   // Colonial: lime plaster and adobe keep their documented paint. The photographed tile is a saturated
-  // red (#b24541); a warm multiply alone raises its saturation in linear space, so the shader pulls it
-  // towards luma and a near-neutral tint leaves a weathered terracotta. The plaza floor has its own light
-  // paving set; the stone is lifted so the kerb and the fountain do not read black.
+  // red (#b24541); pulled halfway to luma and multiplied by a warm sand tint it reads as fired terracotta
+  // instead of the pink it took with the near-neutral tint under the cool sky. The plaza floor has its own
+  // light paving set; the stone is lifted so the kerb and the fountain do not read black.
   'MAT-Arch_ColonialPlaster': { set: 'plaster_detail', normal: 0.6, keepColor: true },
   'MAT-Arch_ColonialAdobe': { set: 'plaster_detail', normal: 0.9, keepColor: true },
-  'MAT-Arch_ColonialTile': {
-    set: 'tile',
-    tint: 0xefd9bf,
-    normal: 0.7,
-    saturation: 0.42,
-    lift: 1.15,
-  },
+  'MAT-Arch_ColonialTile': TILE_SURFACE,
   'MAT-Arch_ColonialWood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
   'MAT-Arch_ColonialStone': { set: 'wall_cutstone', tint: 0xd8d2c2, normal: 0.8, lift: 1.25 },
   'MAT-Arch_ColonialPaving': { set: 'ground_plaza', tint: 0xf0e6d6, normal: 0.5, lift: 1.25 },
@@ -211,13 +208,7 @@ export const ARCH_SURFACES: Record<
   // tile is weathered like the colonial one, and the stone is lifted.
   'MAT-Arch_IndependencePlaster': { set: 'plaster_detail', normal: 0.6, keepColor: true },
   'MAT-Arch_IndependenceAdobe': { set: 'plaster_detail', normal: 0.9, keepColor: true },
-  'MAT-Arch_IndependenceTile': {
-    set: 'tile',
-    tint: 0xefd9bf,
-    normal: 0.7,
-    saturation: 0.42,
-    lift: 1.15,
-  },
+  'MAT-Arch_IndependenceTile': TILE_SURFACE,
   'MAT-Arch_IndependenceStone': { set: 'wall_fieldstone', tint: 0xd8d2c2, normal: 0.8, lift: 1.4 },
   'MAT-Arch_IndependenceWood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
   'MAT-Arch_IndependenceCanvas': { set: 'plaster_detail', normal: 0.5, keepColor: true },

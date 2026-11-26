@@ -40,7 +40,7 @@ shared PBR sets onto them (`ARCH_SURFACES` in `src/rendering/architectureKit.ts`
 | Material | Runtime surface | Why |
 | --- | --- | --- |
 | Lime plaster, adobe, dark openings | `plaster_detail`, keeping the painted colour | trowel swirls and grit without changing the documented paint. |
-| Tile roofs | photographed `tile`, keeping 42 % of its colour (58 % towards luma) + a light warm-neutral tint | the source texture is a saturated red; a warm multiply raises its saturation in linear space, which read as fresh paint. |
+| Tile roofs | photographed `tile`, keeping 50 % of its colour (50 % towards luma) + a warm sand tint (`0xf2d3a6`) | the source texture is a saturated red; the near-neutral tint read pink under the cool sky, so the tint is warmer and keeps a little more of the map's chroma. |
 | Paving | `ground_plaza`, warmed and lifted | the floor has its own light set; the kerb and fountain keep the wall stone. |
 | Stone (kerb, fountain, bands) | `wall_cutstone`, lifted 1.25 | the cut-stone mortar read black at the RTS zoom. |
 | Wood | `wood` | balconies and doors. |
@@ -48,7 +48,8 @@ shared PBR sets onto them (`ARCH_SURFACES` in `src/rendering/architectureKit.ts`
 The plaza floor and the stone up-faces (kerb, fountain bowls, copings) skip the wall-foot grime in the
 Blender vertex tint: horizontal ground at z ≈ 0 would otherwise read nearly black, so it gets a light mottle
 instead. The kit is seven materials (the §4.2 ceiling is eight per kit and four per building). Evidence:
-`docs/media/colonial-kit-color-before-after.webp`.
+`docs/media/colonial-kit-color-before-after.webp` (material pass) and
+`docs/media/colonial-tile-warmth-before-after.webp` (warm-tint rebalance).
 
 ## Attested elements and abstractions
 
