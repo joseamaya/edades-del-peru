@@ -1182,11 +1182,12 @@ export class Unit {
       this.vel.z += fz * 4.5 * dt;
     }
     // A stopped unit damps its velocity and walk cycle every tick, so the walking force cannot keep it
-    // apart. A unit chasing an attack target needs the same correction mid-stride; a plain move, gather
-    // or build keeps only the velocity force, or the crowd at a shared destination is pushed off its
-    // path (the navigation smoke test caught 37/40 arrivals).
+    // apart. Only mounted bodies take the positional correction: a foot line is meant to stand shoulder to
+    // shoulder, and opening it changed the m6b hold enough that the army lost the field. The reported
+    // overlap ("three riders on two horses") is a cavalry one, where the horse's length is the problem.
+    const mounted = unitClassFor(this.kind) === 'cavalry';
     const chasing = this.targetEntityId !== null;
-    if (!walking || chasing) this.relaxSeparation(nearby, !walking || chasing);
+    if (mounted && (!walking || chasing)) this.relaxSeparation(nearby, !walking || chasing);
   }
 
   /**
