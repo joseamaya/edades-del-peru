@@ -131,6 +131,7 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
       clip: worker.rig?.currentClipName ?? null,
       carry: !!worker.rig?.root.getObjectByName('attire_carry')?.visible,
       tool: !!worker.rig?.root.getObjectByName('attire_tool')?.visible,
+      axe: !!worker.rig?.root.getObjectByName('attire_axe')?.visible,
     });
     const place = (x: number, z: number): void => {
       worker.clearOrders();
@@ -192,9 +193,16 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
     worker.currentResource = null;
     return { gather, build, deliver };
   });
-  expect(tasks.gather).toMatchObject({ state: 'gather', clip: 'Farm_Harvest', carry: false, tool: true });
-  expect(tasks.build).toMatchObject({ state: 'build', clip: 'Push_Loop', carry: false, tool: false });
-  expect(tasks.deliver).toMatchObject({ state: 'walk_carry', clip: 'Walk_Carry_Loop', carry: true, tool: false });
+  // Felling is a swing with the stone axe, not the field harvest with the digging stick.
+  expect(tasks.gather).toMatchObject({ state: 'chop', clip: 'TreeChopping_Loop', tool: false, axe: true });
+  expect(tasks.build).toMatchObject({ state: 'build', clip: 'Push_Loop', carry: false, tool: false, axe: false });
+  expect(tasks.deliver).toMatchObject({
+    state: 'walk_carry',
+    clip: 'Walk_Carry_Loop',
+    carry: true,
+    tool: false,
+    axe: false,
+  });
 
   const transitions = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;

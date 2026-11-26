@@ -77,7 +77,7 @@ export type RigVariant =
   | VehicleRigVariant;
 
 /** Animation states mapped to clips; `eat` is fauna-only. A rig may omit any state except `idle`. */
-export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'run' | 'gather' | 'build' | 'attack' | 'eat';
+export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'run' | 'gather' | 'chop' | 'build' | 'attack' | 'eat';
 
 export const RIG_CLIP_STATES: readonly RigClipState[] = [
   'idle',
@@ -85,6 +85,7 @@ export const RIG_CLIP_STATES: readonly RigClipState[] = [
   'walk_carry',
   'run',
   'gather',
+  'chop',
   'build',
   'attack',
   'eat',
@@ -99,8 +100,10 @@ const ANDEAN_NON_WORKER_CLIPS: Partial<Record<RigClipState, string | null>> = {
 };
 
 const ANDEAN_CLIP_OVERRIDES: Record<AndeanRole, Partial<Record<RigClipState, string | null>>> = {
-  // A worker has no war club: the existing jab is the least-wrong unarmed defence.
-  worker: { attack: 'Punch_Jab' },
+  // A worker has no war club: the existing jab is the least-wrong unarmed defence. Felling and quarrying
+  // swing the stone axe or hammerstone the Andean worker holds (`workerAttire.ts`); the colonial and modern
+  // workers carry no tool, so they keep the harvest clip.
+  worker: { attack: 'Punch_Jab', chop: 'TreeChopping_Loop' },
   scout: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'Punch_Jab' },
   soldier: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'Sword_Regular_A' },
   // A slinger throws: the old Punch_Jab made every hondero punch the air.
@@ -209,8 +212,8 @@ export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigCli
   ...MOUNTED_VARIANT_CLIPS,
   ...SIEGE_VARIANT_CLIPS,
   ...VEHICLE_VARIANT_CLIPS,
-  caral_worker_f: { attack: 'TreeChopping_Loop' },
-  caral_worker_m: { attack: 'TreeChopping_Loop' },
+  caral_worker_f: { attack: 'TreeChopping_Loop', chop: 'TreeChopping_Loop' },
+  caral_worker_m: { attack: 'TreeChopping_Loop', chop: 'TreeChopping_Loop' },
   caral_scout_f: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   caral_scout_m: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   inca_chasqui_f: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
@@ -233,6 +236,8 @@ export interface RigStateInput {
   attacking: boolean;
   carrying: boolean;
   running?: boolean;
+  /** The work is felling or quarrying: a swing, not the field harvest (rigs without `chop` fall back). */
+  chopping?: boolean;
 }
 
 /**
@@ -244,7 +249,7 @@ export function rigClipStateFor(input: RigStateInput): RigClipState {
     if (input.running && !input.carrying) return 'run';
     return input.carrying ? 'walk_carry' : 'walk';
   }
-  if (input.gathering) return 'gather';
+  if (input.gathering) return input.chopping ? 'chop' : 'gather';
   if (input.building) return 'build';
   if (input.attacking) return 'attack';
   return 'idle';

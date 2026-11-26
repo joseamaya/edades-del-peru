@@ -17,7 +17,8 @@ import { dressVehicle } from './vehicleAttire';
 import { dressCaralWorker } from './workerAttire';
 
 export interface RigVariantHandle {
-  setCarrying?(carrying: boolean, color?: number): void;
+  /** `resource` names the load ('stone' swaps the bundle for a shicra on the Andean worker). */
+  setCarrying?(carrying: boolean, color?: number, resource?: string): void;
   setTask?(state: RigClipState): void;
   /** Kind of the resource node being worked ('fishing' swaps the tool for a net), or null. */
   setGatherKind?(kind: string | null): void;

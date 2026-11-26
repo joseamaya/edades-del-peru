@@ -18,7 +18,7 @@ import { unitTrainableInPeriod } from '../src/model/defs/units';
 import { MOUNTED_SPECS } from '../src/model/defs/mountedCharacters';
 import { MODERN_SPECS } from '../src/model/defs/modernCharacters';
 import { siegeSpecForVariant } from '../src/model/defs/siegeCharacters';
-import { HEAD_FIT } from '../src/rendering/workerAttire';
+import { HEAD_FIT, workerToolFor } from '../src/rendering/workerAttire';
 import {
   acquireRig,
   clearModelAssets,
@@ -1142,6 +1142,63 @@ describe('rigged model assets', () => {
     const dispose = vi.spyOn(headband.geometry, 'dispose');
     rig.dispose();
     expect(dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('hands the Caral worker the tool of the task and a shicra for stone', async () => {
+    await load();
+    const rig = acquireRig('ual_mannequin', 'caral_worker_m')!;
+    const stick = rig.root.getObjectByName('attire_tool')!;
+    const axe = rig.root.getObjectByName('attire_axe')!;
+    const maul = rig.root.getObjectByName('attire_maul')!;
+    const shicra = rig.root.getObjectByName('attire_shicra')!;
+    expect([stick, axe, maul, shicra].every(Boolean)).toBe(true);
+    expect(workerToolFor('tree')).toBe('axe');
+    expect(workerToolFor('well')).toBe('maul');
+    expect(workerToolFor('berry')).toBe('stick');
+    const shown = () => [stick.visible, axe.visible, maul.visible];
+
+    rig.setGatherKind('tree');
+    rig.play('chop', 0);
+    expect(shown()).toEqual([false, true, false]);
+    // The load fills on the back while the swing goes on: the axe stays in hand (it used to vanish).
+    rig.setCarrying(true, 0x8a7a5a, 'wood');
+    expect(axe.visible).toBe(true);
+    expect(shicra.visible).toBe(false);
+    rig.play('walk_carry', 0);
+    expect(shown()).toEqual([false, false, false]);
+
+    rig.setGatherKind('well');
+    rig.setCarrying(true, 0x8a7a5a, 'stone');
+    expect(shicra.visible).toBe(true);
+    rig.play('chop', 0);
+    expect(shown()).toEqual([false, false, true]);
+
+    rig.setCarrying(false);
+    rig.setGatherKind('berry');
+    rig.play('gather', 0);
+    expect(shown()).toEqual([true, false, false]);
+    rig.dispose();
+  });
+
+  it('swings at trees and quarries and falls back to the harvest on rigs without the swing', () => {
+    expect(
+      rigClipStateFor({
+        moving: false,
+        gathering: true,
+        building: false,
+        attacking: false,
+        carrying: false,
+        chopping: true,
+      }),
+    ).toBe('chop');
+    expect(
+      rigClipStateFor({ moving: false, gathering: true, building: false, attacking: false, carrying: false }),
+    ).toBe('gather');
+    // Only the Andean workers, who hold an axe or a hammerstone, swing; the tool-less colonial worker harvests.
+    expect(RIG_VARIANT_CLIPS.caral_worker_m?.chop).toBe('TreeChopping_Loop');
+    expect(RIG_VARIANT_CLIPS.inca_worker_m?.chop).toBe('TreeChopping_Loop');
+    expect(MODEL_ASSET_DEFS.caral_worker.clips.chop).toBeUndefined();
+    expect(RIG_VARIANT_CLIPS.realistas_worker_m?.chop).toBeUndefined();
   });
 
   it('dresses the Caral scout with commoner clothes but no chasqui gear', async () => {

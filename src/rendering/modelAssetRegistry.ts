@@ -99,7 +99,8 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     shadowSkipMeshes: CARAL_WORKER_SHADOW_SKIP_MESHES,
     // Farm_Harvest reads as the digging-stick harvest; the asset has no
     // construction clip, so Push_Loop is the explicit pushing/placing
-    // abstraction for building. TreeChopping_Loop stays for the Caral tool swing.
+    // abstraction for building. TreeChopping_Loop is the Caral worker's attack and,
+    // through the Andean worker variants only, the axe/hammerstone swing (`chop`).
     clips: {
       idle: 'Idle_Loop',
       walk: 'Walk_Loop',

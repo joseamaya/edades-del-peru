@@ -25,15 +25,15 @@ restate the dossiers.
 The runtime source of truth is `src/model/defs/modelAssets.ts` and
 `src/rendering/modelAssetRegistry.ts`. Every humanoid unit uses one asset, `caral_worker.glb`:
 
-| Item | Measured |
-| --- | --- |
-| Skeleton | 65 bones, shared by every humanoid variant |
-| Clips | 11: idle, walk, walk-carry, gather, build, jab, shoot, sword, throw, death, tree-chop |
-| Geometry | 14,367 triangles, 10 materials, 15 meshes |
-| File | 2.36 MiB, of which 1.53 MiB are four embedded PNG textures |
-| Per-unit cost (bench baseline) | ~9.3k triangles and ~8–9 draw calls including the shadow pass |
-| Budget | 40 draws / 40k triangles (bench); art-direction target 25 / 25k for a common unit |
-| `dist/` | 27.61 MiB of 28 MiB; first-play payload 1.87 MiB gzip |
+| Item                           | Measured                                                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------- |
+| Skeleton                       | 65 bones, shared by every humanoid variant                                            |
+| Clips                          | 11: idle, walk, walk-carry, gather, build, jab, shoot, sword, throw, death, tree-chop |
+| Geometry                       | 14,367 triangles, 10 materials, 15 meshes                                             |
+| File                           | 2.36 MiB, of which 1.53 MiB are four embedded PNG textures                            |
+| Per-unit cost (bench baseline) | ~9.3k triangles and ~8–9 draw calls including the shadow pass                         |
+| Budget                         | 40 draws / 40k triangles (bench); art-direction target 25 / 25k for a common unit     |
+| `dist/`                        | 27.61 MiB of 28 MiB; first-play payload 1.87 MiB gzip                                 |
 
 The mounted, siege and vehicle rigs are separate GLBs and were not changed; this pilot is infantry-only. The
 art-direction camera distances are 28 (close), 54 (default) and max zoom; the captures validate close and
@@ -75,11 +75,11 @@ budget.
 
 ## 3. The three units
 
-| Unit | Unit kinds / variants | Mission used for validation | Why this unit |
-| --- | --- | --- | --- |
-| **Guerrero inca** | `INCA_WARRIOR` and Inca `SOLDIER` → `inca_soldier_*`; slinger → `inca_ranged_*` | `m_cusco_1536` (12 + Manco Inca), `m_vilcabamba`, allies in `m_lima` | The imperial infantry is the icon of the Tahuantinsuyo and appears in formation. |
-| **Arcabucero, 1535–1572** | `MUSKETEER` and `SOLDIER` realistas with the morion → `realistas_soldier_*` / `realistas_ranged_*` | `m_lima` (3 arcabuceros + 8 soldiers; player is the Hueste indiana) | The conquest mission; the firearm and morion are the period signature. |
-| **Fusilero / defensor, 1879** | `REPUBLICA_DEFENSOR` and `RIFLEMAN` → `republica_soldier_*` / `republica_ranged_*`; Chile shares the gear | `m_tarapaca` (8 defensores + 3 fusileros + Cáceres) | The War of the Pacific is the third distinct material language: wool, leather, steel and the kepi. |
+| Unit                          | Unit kinds / variants                                                                                     | Mission used for validation                                          | Why this unit                                                                                      |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Guerrero inca**             | `INCA_WARRIOR` and Inca `SOLDIER` → `inca_soldier_*`; slinger → `inca_ranged_*`                           | `m_cusco_1536` (12 + Manco Inca), `m_vilcabamba`, allies in `m_lima` | The imperial infantry is the icon of the Tahuantinsuyo and appears in formation.                   |
+| **Arcabucero, 1535–1572**     | `MUSKETEER` and `SOLDIER` realistas with the morion → `realistas_soldier_*` / `realistas_ranged_*`        | `m_lima` (3 arcabuceros + 8 soldiers; player is the Hueste indiana)  | The conquest mission; the firearm and morion are the period signature.                             |
+| **Fusilero / defensor, 1879** | `REPUBLICA_DEFENSOR` and `RIFLEMAN` → `republica_soldier_*` / `republica_ranged_*`; Chile shares the gear | `m_tarapaca` (8 defensores + 3 fusileros + Cáceres)                  | The War of the Pacific is the third distinct material language: wool, leather, steel and the kepi. |
 
 `INCA_SLINGER` is pinned to the Andean rig, so the slinger also receives the Inca helmet/yoke but keeps
 `sling`/`OverhandThrow`. The Ayar and the Killke/ayllu cultures stay on the old shared dressing.
@@ -88,15 +88,15 @@ budget.
 
 The certainty table distinguishes documentation from reconstruction; no new historical claim is introduced.
 
-| Element | Status | Basis |
-| --- | --- | --- |
-| Inca uncu, taparrabos, rodela, porra/macana, honda, padded protection | Documented | `atuendos.md` §1–2, §6 (Museo Larco, Métraux, LACMA/Dumbarton Oaks/Met) |
-| Inca tocapu/checkerboard and red V yoke | Documented as a garment pattern; the exact layout is an abstraction | `atuendos.md` §1 |
-| Inca quilted helmet, V yoke and usuta sandals | Plausible reconstruction | Padded protection is documented; the specific helmet/sandal shape is a game abstraction |
-| 1879 Peruvian blue guerrera, kepi, rifle and bayonet | Documented | `atuendos.md` §4 (Guerra del Pacífico uniformology report) |
-| 1878–79 Chilean blue coat, kepi, garance trousers | Documented | `atuendos.md` §4 (Chilean uniform decree, 1878) |
-| 1535–1572 morion, doublet, breeches, boots, arquebus, sword | **Plausible reconstruction** | The repository has no 16th-century regimental uniform source; the blue/red table entry is 18th-century (Bourbon) |
-| Exact regiment, buttons, facings and colours | Not claimed | Deliberately omitted |
+| Element                                                               | Status                                                              | Basis                                                                                                            |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Inca uncu, taparrabos, rodela, porra/macana, honda, padded protection | Documented                                                          | `atuendos.md` §1–2, §6 (Museo Larco, Métraux, LACMA/Dumbarton Oaks/Met)                                          |
+| Inca tocapu/checkerboard and red V yoke                               | Documented as a garment pattern; the exact layout is an abstraction | `atuendos.md` §1                                                                                                 |
+| Inca quilted helmet, V yoke and usuta sandals                         | Plausible reconstruction                                            | Padded protection is documented; the specific helmet/sandal shape is a game abstraction                          |
+| 1879 Peruvian blue guerrera, kepi, rifle and bayonet                  | Documented                                                          | `atuendos.md` §4 (Guerra del Pacífico uniformology report)                                                       |
+| 1878–79 Chilean blue coat, kepi, garance trousers                     | Documented                                                          | `atuendos.md` §4 (Chilean uniform decree, 1878)                                                                  |
+| 1535–1572 morion, doublet, breeches, boots, arquebus, sword           | **Plausible reconstruction**                                        | The repository has no 16th-century regimental uniform source; the blue/red table entry is 18th-century (Bourbon) |
+| Exact regiment, buttons, facings and colours                          | Not claimed                                                         | Deliberately omitted                                                                                             |
 
 Visual references are Age of Empires IV (readability at two camera distances, material honesty) and 0 A.D.
 (civilization differentiation by silhouette). Only principles were studied; no model, texture or design was
@@ -143,11 +143,11 @@ No gameplay, balance, combat, save or replay behaviour changed. No new dependenc
 
 The contact sheet at the top compares the same three units, missions and camera setup:
 
-| Unit | Before | After |
-| --- | --- | --- |
-| Inca | Headband, flat shield, box-headed club, bare feet | Padded helmet, red V yoke, convex rodela, stone macana, sandals |
-| Spanish 1535–1572 | Blue cylinder coat, cone morion, bare feet | Buff coat with sleeves, breeches, boots, lathe morion, sash, bandolier, arquebus |
-| Republican 1879 | Blue cylinder coat, plain kepi, bare feet | Blue coat with sleeves, kepi with visor, gaiters, cartridge belt, rifle and bayonet |
+| Unit              | Before                                            | After                                                                               |
+| ----------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Inca              | Headband, flat shield, box-headed club, bare feet | Padded helmet, red V yoke, convex rodela, stone macana, sandals                     |
+| Spanish 1535–1572 | Blue cylinder coat, cone morion, bare feet        | Buff coat with sleeves, breeches, boots, lathe morion, sash, bandolier, arquebus    |
+| Republican 1879   | Blue cylinder coat, plain kepi, bare feet         | Blue coat with sleeves, kepi with visor, gaiters, cartridge belt, rifle and bayonet |
 
 Committed captures: [`character-pilot-before-after.webp`](../media/character-pilot-before-after.webp),
 [`character-pilot-lineup.webp`](../media/character-pilot-lineup.webp),
@@ -168,14 +168,14 @@ column uses `Death01`; the firearm attack is the shared one-handed pistol clip, 
 
 ## 7. Tests and performance
 
-| Gate | Result |
-| --- | --- |
-| `yarn typecheck` | pass |
-| `yarn lint` | pass, 0 warnings |
-| `yarn format:check` | pass |
-| `yarn test` | 129 files, 1,091 tests, pass |
-| `yarn build` | pass |
-| `yarn dist:check` | 27.61 MiB / 28 MiB; first play 1.88 MiB gzip; loader 2 KB gzip |
+| Gate                    | Result                                                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `yarn typecheck`        | pass                                                                                                                                               |
+| `yarn lint`             | pass, 0 warnings                                                                                                                                   |
+| `yarn format:check`     | pass                                                                                                                                               |
+| `yarn test`             | 129 files, 1,091 tests, pass                                                                                                                       |
+| `yarn build`            | pass                                                                                                                                               |
+| `yarn dist:check`       | 27.61 MiB / 28 MiB; first play 1.88 MiB gzip; loader 2 KB gzip                                                                                     |
 | `yarn bench:characters` | Inca 9 / 10.7k; Spanish 6 / 10.5k; Republican 6 / 9.5k; Moche 9 / 9.4k; Wari 9 / 10.1k; Chimú 9 / 9.1k; late realista 6 / 9.7k (draws / triangles) |
 
 The measurement is the isolated unit cost (main + shadow pass) in its mission or skirmish, using the same
@@ -200,13 +200,13 @@ late-colonial bicorn. Only elements the dossier already describes were shaped; c
 
 ![Before and after: Moche, Wari, Chimú and the late realista](../media/character-standard-andean.webp)
 
-| Culture / unit | Documented element | Runtime change | Certainty |
-| --- | --- | --- | --- |
-| **Moche** (`moche_soldier_*`) | conical metal helmet, trapezoidal backflap, ear spools, circular shield, star/rosette club heads | cone with a brow rim and a top knob; trapezoid back plate; flared ear spools; domed rodela with a boss; six-point star head | conical shape documented; the rim and top knob are game abstractions. The backflap is a contrasting textile panel |
-| **Wari** (`wari_soldier_*`) | chest and back armour joined by the shoulders, pectoral disc, ear spools | domed chest disc with a rim and central boss, matching back plate and two shoulder straps, all outside the tunic | documented; the plate is modelled as a metal disc |
-| **Chimú / Recuay** (`chimu_*`, `recuay_*`) | metal ear spools (Chimú also masks/tumi) | flared ear spools; the shared rodela and star macana | spools documented; **no garment is claimed** and the masks/tumi stay unmodelled, as the dossier already notes |
-| **Chanca** (`chanca_*`) | face paint | unchanged | documented |
-| **Late realistas / patriotas** (1780–1826) | bicorn | lens brim with upswept corners and a low crown, replacing the box brim + cylinder that read as a top hat | documented headwear; the exact crown is an abstraction |
+| Culture / unit                             | Documented element                                                                               | Runtime change                                                                                                              | Certainty                                                                                                         |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Moche** (`moche_soldier_*`)              | conical metal helmet, trapezoidal backflap, ear spools, circular shield, star/rosette club heads | cone with a brow rim and a top knob; trapezoid back plate; flared ear spools; domed rodela with a boss; six-point star head | conical shape documented; the rim and top knob are game abstractions. The backflap is a contrasting textile panel |
+| **Wari** (`wari_soldier_*`)                | chest and back armour joined by the shoulders, pectoral disc, ear spools                         | domed chest disc with a rim and central boss, matching back plate and two shoulder straps, all outside the tunic            | documented; the plate is modelled as a metal disc                                                                 |
+| **Chimú / Recuay** (`chimu_*`, `recuay_*`) | metal ear spools (Chimú also masks/tumi)                                                         | flared ear spools; the shared rodela and star macana                                                                        | spools documented; **no garment is claimed** and the masks/tumi stay unmodelled, as the dossier already notes     |
+| **Chanca** (`chanca_*`)                    | face paint                                                                                       | unchanged                                                                                                                   | documented                                                                                                        |
+| **Late realistas / patriotas** (1780–1826) | bicorn                                                                                           | lens brim with upswept corners and a low crown, replacing the box brim + cylinder that read as a top hat                    | documented headwear; the exact crown is an abstraction                                                            |
 
 The Moche backflap material is not documented. The dossier describes a «túnica con armadura de espalda»; the
 game paints the plate in the civilization's secondary textile colour so it reads against the red tunic, without
@@ -259,12 +259,12 @@ skeleton and the bind matrices are untouched:
 
 ### Costs
 
-| Gate | Result |
-| --- | --- |
-| `caral_worker.glb` | 2.36 → 2.45 MiB (2 clips) |
-| `tambotoco_hero.glb` | 1.38 → 1.48 MiB (2 clips) |
-| `dist` | 27.61 → 27.80 MB (limit 28 MB, 1024-based; ~0.20 MB headroom); first play 1.88 MB gzip |
-| Unit cost | unchanged (the clips do not add draws or triangles) |
+| Gate                 | Result                                                                                 |
+| -------------------- | -------------------------------------------------------------------------------------- |
+| `caral_worker.glb`   | 2.36 → 2.45 MiB (2 clips)                                                              |
+| `tambotoco_hero.glb` | 1.38 → 1.48 MiB (2 clips)                                                              |
+| `dist`               | 27.61 → 27.80 MB (limit 28 MB, 1024-based; ~0.20 MB headroom); first play 1.88 MB gzip |
+| Unit cost            | unchanged (the clips do not add draws or triangles)                                    |
 
 The `run` reference speed is a stylized 3.0 m/s (`runReferenceSpeed`), not a measured gait; at a 5.4 m/s scout
 the clip plays near 1.5–1.8× instead of the 2.2× clamp and the feet slide less.
@@ -284,13 +284,13 @@ The pilot left the shared CC0 body at ~8 heads. The hero already had a baked pro
 worker now gets the same pass **inside `build_caral_worker.mjs`**, before the tunic is derived from the body,
 so every humanoid variant shares the new silhouette.
 
-| Measure | Before | After |
-| --- | --- | --- |
-| `Body_f` head/body | 7.77 heads | 7.04 heads |
-| `Body_m` head/body | 7.94 heads | 7.21 heads |
-| Head/hand scale | 1.00 | 1.12 around the bone pivots |
-| `caral_worker.glb` | 2,571,908 bytes | 2,572,416 bytes |
-| `dist` | 27.80 MB | 27.80 MB (1024-based) |
+| Measure            | Before          | After                       |
+| ------------------ | --------------- | --------------------------- |
+| `Body_f` head/body | 7.77 heads      | 7.04 heads                  |
+| `Body_m` head/body | 7.94 heads      | 7.21 heads                  |
+| Head/hand scale    | 1.00            | 1.12 around the bone pivots |
+| `caral_worker.glb` | 2,571,908 bytes | 2,572,416 bytes             |
+| `dist`             | 27.80 MB        | 27.80 MB (1024-based)       |
 
 The ratio is measured on the dominant-`Head` vertices against the body bbox in the bind pose; the absolute
 head height depends on which vertices are counted, so the table uses the ratio the art direction specifies.
@@ -511,16 +511,16 @@ default RTS zoom as well:
 
 What changed:
 
-| Piece | Before | After |
-| --- | --- | --- |
-| Head measurement | none (bone origin only) | dominant-`Head` vertices of `Body_m`/`Body_f`, recorded in `HEAD_FIT` |
-| Inca padded cap | 0.145 hemisphere at +0.13, three hoops | lathe cap from the brow (0.12/0.11) to the crown (0.292/0.250), rim + one seam, hair hidden |
-| Moche conical helmet | straight 0.135 × 0.25 cone sunk in the skull | fitted cap that rises to a point above the crown |
-| Ear spools | base at 0.096, 0.13, behind the jaw | base at 0.088, 0.115, inside the skull so only the flange reads |
-| Shared headband | 0.098 ring inside the temples | 0.108 ring at the hairline, ellipse in depth, dropped under a helmet |
-| Porra | two meshes, fixed rest angle | one grip group, shaft down local −Z, star crossed on two planes |
-| Porra aim | clip only | head up and outboard at rest/run (`update()` per frame); the swing owns it at attack; released on death |
-| Rodela | 0.28 below the hand, edge-on | at the hand, outboard of the arm, facing forward-outward |
+| Piece                | Before                                       | After                                                                                                   |
+| -------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Head measurement     | none (bone origin only)                      | dominant-`Head` vertices of `Body_m`/`Body_f`, recorded in `HEAD_FIT`                                   |
+| Inca padded cap      | 0.145 hemisphere at +0.13, three hoops       | lathe cap from the brow (0.12/0.11) to the crown (0.292/0.250), rim + one seam, hair hidden             |
+| Moche conical helmet | straight 0.135 × 0.25 cone sunk in the skull | fitted cap that rises to a point above the crown                                                        |
+| Ear spools           | base at 0.096, 0.13, behind the jaw          | base at 0.088, 0.115, inside the skull so only the flange reads                                         |
+| Shared headband      | 0.098 ring inside the temples                | 0.108 ring at the hairline, ellipse in depth, dropped under a helmet                                    |
+| Porra                | two meshes, fixed rest angle                 | one grip group, shaft down local −Z, star crossed on two planes                                         |
+| Porra aim            | clip only                                    | head up and outboard at rest/run (`update()` per frame); the swing owns it at attack; released on death |
+| Rodela               | 0.28 below the hand, edge-on                 | at the hand, outboard of the arm, facing forward-outward                                                |
 
 The two dresses now share one pattern: measure the body part, express the piece in that measurement, attach it
 to the bone that moves with the part, and re-aim it after the mixer when the shared clip would contradict it.
@@ -563,12 +563,12 @@ body shows through the cloth. The post-1532 uniforms already painted the body un
 
 What changed:
 
-| Piece | Before | After |
-| --- | --- | --- |
-| Inca warrior | skin patches at the chest, shoulder and belly | the tunic's gold over the covered torso |
-| Moche warrior | skin at the bust and shoulder | the tunic's red, the wrap's beige at the hip |
-| Bare arms and legs | skin | still skin: only the garment volumes are painted |
-| Hero (Ayar Manco) | the palette tint under the longer uncu | follows the accent after `dressHero` |
+| Piece              | Before                                        | After                                            |
+| ------------------ | --------------------------------------------- | ------------------------------------------------ |
+| Inca warrior       | skin patches at the chest, shoulder and belly | the tunic's gold over the covered torso          |
+| Moche warrior      | skin at the bust and shoulder                 | the tunic's red, the wrap's beige at the hip     |
+| Bare arms and legs | skin                                          | still skin: only the garment volumes are painted |
+| Hero (Ayar Manco)  | the palette tint under the longer uncu        | follows the accent after `dressHero`             |
 
 The classifier cannot use bone names alone (the uncu is sleeveless and the skirt stops at an uneven hem), and
 a garment-wide box would paint the hands, which hang inside the tunic's box in the bind pose. `workerAttire.ts`
@@ -604,6 +604,40 @@ The hero's checked pattern map replaces the weave, so the body under it keeps th
 approximation for a patterned uncu.
 
 ![Andean tunics before and after: skin patches through the Inca and Moche cloth, then the body painted in the garment's own colour](../media/character-tunic-before-after.webp)
+
+## 20. Caral work tools
+
+The 2026-11-26 close capture of Caral workers at their tasks showed two problems:
+
+- **One tool for every job.** Felling, quarrying, harvesting and digging all used the same stick with a
+  stone cone at the tip. At the game camera it read as a spear.
+- **The tool vanished after the first load.** `syncTool` hid the tool whenever the worker carried anything.
+  The load fills on the back while the worker keeps working, so after the first unit the worker harvested
+  bare-handed. The fisher's net disappeared the same way.
+
+What changed:
+
+| Task (node kind)                 | Tool                                                                             | Clip                                   |
+| -------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------- |
+| Felling (`tree`)                 | Hafted ground-stone axe, a polished wedge lashed through the haft (`attire_axe`) | `TreeChopping_Loop` (new `chop` state) |
+| Quarrying (`well`, `mine`)       | Hafted hammerstone, a river cobble bound to a haft (`attire_maul`)               | `TreeChopping_Loop`                    |
+| Fields, gardens, everything else | Digging stick with a fire-hardened point and no stone blade (`attire_tool`)      | `Farm_Harvest`                         |
+| Fishing                          | The cotton net, kept in hand while the load fills                                | `Farm_Harvest`                         |
+| Carrying stone                   | A shicra: an open fibre bag of fieldstones on the back (`attire_shicra`)         | `Walk_Carry_Loop`                      |
+
+- **Rules.** `workerToolFor` picks the tool from the node kind, and the `chopping` input to
+  `rigClipStateFor` picks the swing.
+- **Fallback.** Only the Andean worker variants map `chop`; a rig without it falls back to `gather`. The
+  colonial and modern workers share the body but hold no tool, so they keep the harvest clip.
+- **When the tool is put away.** It is hidden only to walk the load home (`walk_carry`) and to build (the push
+  clip has no tool).
+- **Site crew.** The Caral site crew's carriers now show the shicra too.
+- **Cost.** Each tool is its own dynamic part and only one is visible at a time, so a worker's draw count is
+  unchanged.
+
+**Certainty.** The shicra is documented for Caral (`docs/historia/civilizaciones/caral.md`), and so are the
+cotton net and the gourd floats. The axe, the hammerstone and the digging stick are plausible Late Archaic
+stone and wood tools; no specific Caral exemplar is reproduced. No metal is used.
 
 ## See also
 
