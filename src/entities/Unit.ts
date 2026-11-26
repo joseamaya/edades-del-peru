@@ -166,6 +166,16 @@ const SEPARATION = 1.4;
  * tighter than the marching spacing, so the full spacing cannot be enforced around a target.
  */
 const SEPARATION_RELAX = 0.8;
+/**
+ * Share of the spacing an idle foot soldier keeps. A foot line stands shoulder to shoulder at the full 1.4 m,
+ * so this only opens units that ended a move on the same point, never a formed line.
+ */
+const SEPARATION_IDLE_FOOT = 0.6;
+/**
+ * Share of the spacing two enemy riders keep in a melee: under the 0.9 m reach plus the target's body, so
+ * they still strike, but the horses no longer run through each other.
+ */
+const SEPARATION_ENEMY_MOUNTED = 0.5;
 /** Largest positional correction per tick, so a crowded melee settles instead of snapping. */
 const SEPARATION_PUSH = 0.14;
 /**
@@ -1184,29 +1194,35 @@ export class Unit {
       this.vel.z += fz * 4.5 * dt;
     }
     // A stopped unit damps its velocity and walk cycle every tick, so the walking force cannot keep it
-    // apart. Only mounted bodies take the positional correction: a foot line is meant to stand shoulder to
-    // shoulder, and opening it changed the m6b hold enough that the army lost the field. The reported
-    // overlap ("three riders on two horses") is a cavalry one, where the horse's length is the problem.
+    // apart. Mounted bodies take the full positional correction whenever they stop or fight. A foot line is
+    // meant to stand shoulder to shoulder, and opening it in combat changed the m6b hold enough that the
+    // army lost the field, so foot soldiers only open when idle, and only from a shared point.
     const mounted = unitClassFor(this.kind) === 'cavalry';
     const chasing = this.targetEntityId !== null;
-    if (mounted && (!walking || chasing)) this.relaxSeparation(nearby, !walking || chasing);
+    if (mounted && (!walking || chasing)) this.relaxSeparation(nearby, !walking || chasing, SEPARATION_RELAX);
+    else if (!mounted && !walking && !chasing && this.orderQueue.length === 0)
+      this.relaxSeparation(nearby, false, SEPARATION_IDLE_FOOT);
   }
 
   /**
    * Keep stop-and-fight groups from collapsing into the same point. A walking unit's velocity force is
    * not enough here: an attack damps `vel` and the walk cycle every tick, so jockeys ordered onto the same
-   * target used to end up inside each other. This pushes the position itself, but only against units on the
-   * same side — a melee attacker must stay in contact with its enemy target.
+   * target used to end up inside each other. This pushes the position itself against units on the same side
+   * at `share` of the pair's spacing. Enemies are left alone (a melee attacker must stay in contact with its
+   * target), except two riders, who keep a contact distance inside the melee reach.
    */
-  private relaxSeparation(nearby: Unit[], cancelClosing: boolean): void {
+  private relaxSeparation(nearby: Unit[], cancelClosing: boolean, share: number): void {
+    const mounted = unitClassFor(this.kind) === 'cavalry';
     let px = 0;
     let pz = 0;
     for (const u of nearby) {
-      if (u.id === this.id || u.garrisonedIn !== null || !this.sameSide(u)) continue;
+      if (u.id === this.id || u.garrisonedIn !== null) continue;
+      const ally = this.sameSide(u);
+      if (!ally && !(mounted && unitClassFor(u.kind) === 'cavalry')) continue;
       const dx = this.pos.x - u.pos.x;
       const dz = this.pos.z - u.pos.z;
       const d = Math.sqrt(dx * dx + dz * dz);
-      const space = Math.max(this.spacing, u.spacing) * SEPARATION_RELAX;
+      const space = Math.max(this.spacing, u.spacing) * (ally ? share : SEPARATION_ENEMY_MOUNTED);
       if (d >= space) continue;
       if (d > 0.001) {
         // Stop pressing into the neighbour, or its walk toward a shared target would compress the pair
