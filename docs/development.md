@@ -685,8 +685,15 @@ Definition of Done and the building audit see
   `tests/moche-architecture-kit.test.ts`, the m3/m6 campaign specs and `campaign-completable`.
 - **Shared Blender kit module** (2026-11-25): `scripts/blender/arch_kit.py` owns the bmesh builder, the
   wall/roof/stair primitives, the box UVs, the vertex tint, the GLB export and the manifests. The Moche kit
-  is its first user; the Caral, Chavín, Cusco, colonial, Republican and Independence scripts still carry
-  their own copies and should be migrated in a mechanical, no-visual-change pass.
+  is its first user; the older kits keep their own builders (see the 2026-11-26 follow-up).
+- **Shared Blender plumbing, builders stay** (2026-11-26): Caral, Cusco, colonial, Republican and
+  Independence import `arch_kit.py`'s `parse_args`, GLB export and `stats` instead of their own copies of the
+  same code, so the manifest and export path is one. Their piece builders stay local: each uses its own bmesh
+  primitives, material order and tint ledges, and moving them onto `Kit` would change geometry rather than
+  just plumbing. Chavín is a converter (extracts groups from a source `.blend`, one manifest per LOD), not a
+  procedural kit, and stays separate. Verified by rebuilding one piece per kit with `--python-exit-code 1`
+  and comparing triangles, draw calls, materials and bounds to the committed manifest: identical. The
+  regenerated manifests reset their review fields, so those files were restored, not committed.
 - **Authored canal traces** (issue 384): `MissionCanal.path` (normalized) becomes `Game.canalPath` in world
   units; `canalIrrigationAt` measures the farm bonus by distance to the trace, `Game.canPlace` keeps buildings
   out of the channel, `Game.isReserved` keeps props out, and `spawnCanal` builds relief-following ribbons plus a

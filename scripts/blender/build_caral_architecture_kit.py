@@ -29,7 +29,6 @@ Run from the repository root:
   blender --background --python scripts/blender/build_caral_architecture_kit.py -- [--only=pyramid_mayor]
 """
 
-import argparse
 import json
 import math
 import os
@@ -41,10 +40,12 @@ import bmesh
 import bpy
 from mathutils import Vector, noise
 
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import arch_kit as ak  # noqa: E402  (needs the script directory on sys.path)
 import build_caral_slice as slice_kit  # noqa: E402  (shared bmesh helpers and palette)
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 EXPORT_DIR = os.path.join(ROOT, 'art-src', 'blender', 'exports', 'caral', 'architecture')
 GAME_DIR = os.path.join(ROOT, 'src', 'assets', 'architecture', 'caral')
 SOURCE_BLEND = os.path.join(ROOT, 'art-src', 'blender', 'scenes', 'caral_architecture_kit.blend')
@@ -66,12 +67,7 @@ MAYOR_LEVEL_H = 2.7
 LEDGES = [0.0]
 
 
-def parse_args():
-    argv = sys.argv[sys.argv.index('--') + 1 :] if '--' in sys.argv else []
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--only', default='')
-    return parser.parse_args(argv)
-
+parse_args = ak.parse_args  # shared helper
 
 # ----------------------------------------------------------------------- materials
 
@@ -852,32 +848,10 @@ def build_object(asset, lod, mats):
     return obj
 
 
-def export_glb(obj, path):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    saved = obj.location.copy()
-    obj.location = (0, 0, 0)
-    bpy.context.view_layer.update()
-    for o in bpy.context.view_layer.objects:
-        o.select_set(o == obj)
-    bpy.context.view_layer.objects.active = obj
-    kwargs = dict(filepath=path, export_format='GLB', use_selection=True, export_apply=True, export_yup=True,
-                  export_animations=False, export_materials='EXPORT', export_normals=True, export_tangents=False)
-    try:
-        bpy.ops.export_scene.gltf(**kwargs, export_vertex_color='ACTIVE')
-    except TypeError:
-        bpy.ops.export_scene.gltf(**kwargs)
-    obj.location = saved
+export_glb = ak.export_glb  # shared helper
 
 
-def stats(obj):
-    mesh = obj.data
-    tris = sum(len(p.vertices) - 2 for p in mesh.polygons)
-    used = sorted({mesh.materials[p.material_index].name for p in mesh.polygons})
-    lo = Vector([min(v.co[i] for v in mesh.vertices) for i in range(3)])
-    hi = Vector([max(v.co[i] for v in mesh.vertices) for i in range(3)])
-    return {'triangles': tris, 'draw_calls': len(used), 'materials': used,
-            'bounds': {'min': [round(c, 3) for c in lo], 'max': [round(c, 3) for c in hi],
-                       'size': [round(c, 3) for c in hi - lo]}}
+stats = ak.stats  # shared helper
 
 
 CONFIDENCE = {
