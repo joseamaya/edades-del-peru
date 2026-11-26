@@ -147,8 +147,14 @@ The grey `ground_plaza` set read cold grey and near-black in the courtyard shado
 of `m_real_felipe`, so the mapping is warmed and lifted (`tint 0xf2e2c4`, `lift 1.7`) with flatter joints
 (`normal 0.35`), in the direction of the colonial paving but stronger and flatter than it. The texture set
 and the geometry are untouched: it is a runtime mapping change in `ARCH_SURFACES`, not a new render or a
-historical claim. The cinematic still `public/media/real-felipe/cine-bastion.webp`, which looks into the
-courtyard, is regenerated with `node scripts/capture_cinema.mjs --mission=m_real_felipe --only=cine-bastion`.
+historical claim.
+
+The courtyard still received only the blue hemisphere light: at `timeOfDay: 'dusk'` (`t = 0.28`, a sun
+about 11° above the horizon) the walls shadowed almost all of it, so even the warmed slab read navy. The
+mission now sets `timeOfDayValue: 0.33` (a sun about 28°), the light its `cine-bastion` still already uses
+(`time: 0.33` in `scripts/cinema-shots/independencia.mjs`), so the patio reads warm without changing the
+dusk label or the intro. The still is unchanged and now matches the live mission. Evidence:
+`docs/media/republic-fort-courtyard-light-before-after.webp`.
 
 ## Tests
 
