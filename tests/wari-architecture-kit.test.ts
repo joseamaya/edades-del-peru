@@ -153,9 +153,9 @@ describe('highland layouts', () => {
     const a = WARI_CITY_ANCHOR;
     expect(blockers).toHaveLength(8);
     expect(blockersCover(blockers, a.x, a.z - 4), 'temple').toBe(true);
-    expect(blockersCover(blockers, a.x - 19, a.z + 8), 'west gallery').toBe(true);
-    expect(blockersCover(blockers, a.x, a.z + 9), 'plaza floor').toBe(false);
-    expect(blockersCover(blockers, a.x, a.z + 22), 'south road').toBe(false);
+    expect(blockersCover(blockers, a.x - 12.8, a.z + 7), 'west gallery').toBe(true);
+    expect(blockersCover(blockers, a.x, a.z + 7), 'plaza floor').toBe(false);
+    expect(blockersCover(blockers, a.x, a.z + 20), 'south road').toBe(false);
   });
 
   it('blocks the pucará walls and towers but keeps the gate open', () => {

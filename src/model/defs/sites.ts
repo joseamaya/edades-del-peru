@@ -642,7 +642,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     // The retired 192 m composition's scale stays for the registry fallback; the kit draws in world metres.
     scale: wariLength(0.25),
     origin: wariPoint({ x: 107.5, z: 86.4 }),
-    anchor: wariPoint({ x: 107.5, z: 102 }),
+    // The site anchor frames the kit composition (the mission focus is its own point).
+    anchor: wariPoint({ x: 107.5, z: 97.5 }),
     cameraHeight: wariLength(70),
     framing: 'site-biased',
     heightField: {

@@ -32,7 +32,7 @@ an abstraction of documented highland defensive practice, **not** a survey and
 
 | Element | Source status | In game |
 | --- | --- | --- |
-| Chanca fortified height / pucará | Defensive practice documented | Platform, walls and three towers as a legible abstraction. |
+| Chanca fortified height / pucará | Defensive practice documented | Terraced enclosure, thick walls and four round towers as a legible abstraction. |
 | Chanca camp | Campaign context | Walled enclosure and gate; no exact camp plan is claimed. |
 | Cusco pampa and approach | Documented setting | Authored highland terrain and flat approach corridor. |
 | Cusco defenses | Scenario abstraction | Four starting pucarás around the player center keep the siege playable. |
@@ -41,7 +41,7 @@ an abstraction of documented highland defensive practice, **not** a survey and
 ## Implementation
 
 - Mission data: `src/campaign/defs/missions/m5_yahuar_pampa.ts`.
-- Site registry: `src/model/defs/sites.ts`; loader: `src/rendering/siteModels.ts`.
+- Site registry: `src/model/defs/sites.ts`; layout: `src/model/defs/wariChancaCity.ts`.
 - Heightfield: `scripts/build_chanca_heightmap.py` → `src/model/defs/chancaHeightmap.ts`.
 - Heritage: `chanca_pucara` in `src/model/defs/heritage.ts`.
 - Tests: `tests/e2e/campaign.spec.ts`, `tests/authored-sites.test.ts`,

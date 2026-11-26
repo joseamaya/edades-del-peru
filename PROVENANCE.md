@@ -1019,8 +1019,8 @@ slot is absent (offline / without assets).
   openings, `roof_thatch` onto thatch and `wood` onto the timber. LOD0 ≤ 5000 / LOD1 ≤ 1500 triangles per
   piece; the D-shaped temple is the monument piece (≤ 8000 / 2400).
 - **Historical basis**: documented: the Wari D-shaped temple plan, the walled plaza, the long galleries and
-  the andenes; the red and cream facade painting; the Chanca pucará's thick walls, round towers and single
-  gate. Assumed (licences in the manifests): the tier, gallery and tower counts, the temple dimensions, the
+  the andenes; the red and cream facade painting; the Chanca pucará's thick walls and single gate (the round
+  tower typology is an RTS abstraction). Assumed (licences in the manifests): the tier, gallery and tower counts, the temple dimensions, the
   gate width and the wall profiles. Sources: `docs/historia/arquitectura.md`,
   `docs/historia/civilizaciones/wari.md`, `docs/historia/campanas/{wari_tiahuanaco,yahuar_pampa}.md`,
   `docs/design/{wari-chanca-sites,wari-sacred-site,chanca-site}.md`.

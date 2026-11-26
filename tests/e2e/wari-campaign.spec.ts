@@ -30,7 +30,7 @@ test('m4 loads the authored Wari site', async ({ page }) => {
   expect(out.procedural).toBeNull();
   expect(out.heritage).toBe('wari_templo_d');
   expect(out.anchor.x).toBeCloseTo(143.333, 3);
-  expect(out.anchor.z).toBeCloseTo(136, 3);
+  expect(out.anchor.z).toBeCloseTo(130, 3);
   expect(out.names.some((name) => /Wari_LOD1_(Apron|Terrain)/.test(name))).toBe(false);
 });
 

@@ -85,8 +85,14 @@ def ground_weights(x: float, z: float) -> tuple[float, float, float, float]:
         smoothstep(154.0, 184.0, z),
         smoothstep(22.0, 6.0, x),
     )
+    # The same quebrada suppression the height field uses: the flattened site pad must not keep its sand
+    # and dirt stripe.
     quebrada = max(
-        math.exp(-((z - 103.0) / 3.0) ** 2) * smoothstep(70.0, 92.0, x) * (1.0 - smoothstep(142.0, 160.0, x)),
+        math.exp(-((z - 103.0) / 3.0) ** 2)
+        * smoothstep(70.0, 92.0, x)
+        * (1.0 - smoothstep(142.0, 160.0, x))
+        * (1.0 - (smoothstep(86.0, 95.0, x) * (1.0 - smoothstep(131.0, 140.0, x))
+                  * smoothstep(59.0, 68.0, z) * (1.0 - smoothstep(108.0, 117.0, z)))),
         math.exp(-((x - 142.0) / 4.0) ** 2) * smoothstep(70.0, 88.0, z) * (1.0 - smoothstep(125.0, 145.0, z)),
     )
     mottle = 0.85 + 0.3 * (0.5 + 0.5 * math.sin(x * 0.12 + 0.6) * math.sin(z * 0.1 + 0.3))

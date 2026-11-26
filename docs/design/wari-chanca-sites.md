@@ -33,10 +33,11 @@ below the temple.
 
 | Site | Pad |
 | --- | --- |
-| Complejo Wari (`wariHeightmap.ts`) | 5.0 m (x 115–174, z 96–142 flat) |
+| Complejo Wari (`wariHeightmap.ts`) | 5.0 m (x 127–175, z 90–142 flat) |
 | Pucará chanca (`chancaHeightmap.ts`) | 5.0 m (x 168–196, z 82–110 flat) |
 
-The Wari galleries sit on the western pad edge and seat 0.25 m lower; everything else is within 0.1 m.
+The Wari composition stays on that flat core (the pad falls away west of x 127), so every piece seats within
+0.1 m; the pucará sits on its own 5.0 m terrace.
 
 ## Materials
 
@@ -73,9 +74,9 @@ LOD0 ≤ 5k and LOD1 ≤ 1.5k triangles per piece, with the D-shaped temple as t
 
 ## Compositions
 
-- **Wari (`m4_wari`).** The D-shaped temple closes the north of a 26 × 18 m plaza; two painted panels and
-  the altar sit on its south edge, the long galleries flank it, two highland houses stand behind, and
-  two andenes frame the west and east. The provincial roads enter from the south, so that edge stays open.
+- **Wari (`m4_wari`).** The D-shaped temple closes the north of a 26 × 18 m plaza; two painted panels sit on
+  its south edge with the altar inside the plaza, the long galleries flank it, and two highland houses stand
+  behind the temple. The provincial roads enter from the south, so that edge stays open.
 - **Chanca (`m5_yahuar_pampa`).** The terraced enclosure inside thick stone walls on three sides, the two
   southern segments leaving the 4 m gate, four round towers at the corners and the altar on the terrace.
 
@@ -87,9 +88,9 @@ through the south side. The terrace is a walkable step, not an obstacle.
 | Element | Source status | In game |
 | --- | --- | --- |
 | D-shaped temple | Documented Wari plan type | Plastered D platform with the red band, facade and summit altar. |
-| Walled plaza, galleries, andenes | Documented Wari ceremonial architecture | Plaza, two galleries and two andenes. |
+| Walled plaza and galleries | Documented Wari ceremonial architecture | Plaza and two galleries. |
 | Red/cream facade painting | Documented Wari practice | Abstract registers on the temple and panels. |
-| Chanca pucará walls, towers and gate | Documented highland defensive practice | Thick merloned walls, four round towers, one gate. |
+| Chanca pucará walls and gate | Documented highland defensive practice (the tower typology is an RTS abstraction) | Thick merloned walls, four round towers, one gate. |
 | Exact plans, tier and tower counts | Not reproduced | Marked `inferred` in the manifests; never a survey. |
 
 ## Evidence

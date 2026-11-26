@@ -275,7 +275,7 @@ describe('authored campaign sites', () => {
     const wari = getAuthoredSite('wari_site')!;
     expect(wari.scale).toBeCloseTo(0.25 * WARI_COMPOSITION_SCALE, 3);
     expect(wari.anchor.x).toBeCloseTo(107.5 * WARI_COMPOSITION_SCALE, 3);
-    expect(wari.anchor.z).toBeCloseTo(102 * WARI_COMPOSITION_SCALE, 3);
+    expect(wari.anchor.z).toBeCloseTo(97.5 * WARI_COMPOSITION_SCALE, 3);
     expect(wari.heritageProxies.map((p) => p.id)).toEqual([
       'wari_templo_d',
       'wari_plaza',
