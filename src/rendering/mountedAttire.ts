@@ -89,12 +89,14 @@ export function dressMounted(rig: RigInstance, variant: RigVariant): RigVariantH
     mesh.material = mat;
   });
 
-  addSaddle(tools, spec.trim);
   // The mount loads as one mesh per material (eight draws, plus its shadow) and is the only rig nothing
-  // dresses, so `consolidateRig` never ran on it. Now the coat colours and the saddle are final: merge the
-  // flat parts onto the horse's own skeleton. The rider is a separate rig with its own skeleton and is
-  // attached below, so it stays out of this pass.
-  consolidateRig(root, { cacheKey: variant });
+  // dresses, so `consolidateRig` never ran on it. Now the coat colours are final: merge the flat horse parts
+  // onto the horse's own skeleton. Before the saddle, because the merged material borrows the first part's
+  // roughness/metalness and the saddle's matte leather would flatten the horse's coat. The rider is a
+  // separate rig with its own skeleton and is attached below, so it stays out of this pass.
+  const consolidated = consolidateRig(root, { cacheKey: variant });
+  tools.ownedMaterials.push(...consolidated.materials);
+  addSaddle(tools, spec.trim);
 
   const rider = seatRider(rig, MOUNTED_RIDER_VARIANTS[variant]);
   if (!rider) return { dispose };

@@ -29,6 +29,7 @@ import {
   type LoadedModelAsset,
 } from '../src/rendering/ModelAssets';
 import { MODEL_ASSET_DEFS } from '../src/rendering/modelAssetRegistry';
+import { CONSOLIDATED_SOURCE_LAYER } from '../src/rendering/modelConsolidation';
 
 const MODEL_URL = new URL('../src/assets/models/ual_mannequin.glb', import.meta.url);
 const WORKER_URL = new URL('../src/assets/models/caral_worker.glb', import.meta.url);
@@ -631,15 +632,24 @@ describe('rigged model assets', () => {
     };
     expect(coatOf(rig.root)).toBe(MOUNTED_SPECS.mounted_realistas.horseCoat);
     expect(rig.root.getObjectByName('attire_mounted_saddle')).toBeDefined();
-    // The mount loads as one mesh per material; `dressMounted` merges them (and the saddle) into one
-    // vertex-coloured draw. Sources stay in the tree on layer 31 and must not be counted.
+    // The mount loads as one mesh per material; `dressMounted` merges them (the saddle stays its own draw)
+    // into one vertex-coloured mesh. The eight sources stay on layer 31 with their materials inspectable.
     const drawn: THREE.Mesh[] = [];
+    const sources: THREE.Mesh[] = [];
     rig.root.traverse((o) => {
       const mesh = o as THREE.Mesh;
-      if (mesh.isMesh && mesh.visible && mesh.layers.mask === 1) drawn.push(mesh);
+      if (!mesh.isMesh || !mesh.visible) return;
+      if (mesh.layers.mask === (1 << CONSOLIDATED_SOURCE_LAYER) >>> 0) sources.push(mesh);
+      else if (mesh.name === 'rig:consolidated') drawn.push(mesh);
     });
     expect(drawn).toHaveLength(1);
-    expect((drawn[0].material as THREE.MeshStandardMaterial).vertexColors).toBe(true);
+    expect(sources.filter((mesh) => mesh.name.startsWith('Horse'))).toHaveLength(8);
+    const merged = drawn[0].material as THREE.MeshStandardMaterial;
+    expect(merged.vertexColors).toBe(true);
+    // The merged material keeps the horse's surface, not the matte saddle leather that is attached after.
+    const horse = sources.find((mesh) => mesh.name === 'Horse_1')!.material as THREE.MeshStandardMaterial;
+    expect(merged.roughness).toBe(horse.roughness);
+    expect(merged.metalness).toBe(horse.metalness);
     // The shared worker is not cached in this test: the horse goes riderless instead of a placeholder.
     let rider = false;
     rig.root.traverse((o) => {
