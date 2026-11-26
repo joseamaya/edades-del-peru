@@ -21,6 +21,9 @@ export function limitShadowCasters(root: THREE.Object3D, coverage = RIG_SHADOW_C
   const meshes: THREE.Mesh[] = [];
   root.traverse((object) => {
     const mesh = object as THREE.Mesh;
+    // The layer-31 sources `consolidateRig` keeps for inspection are counted on purpose: the shadow camera
+    // renders layer 0, so they never cast, but they raise the coverage denominator and keep this rule
+    // conservative. Excluding them makes the mounted horse lose its shadow; see docs/development.md.
     if (mesh.isMesh && mesh.visible) meshes.push(mesh);
   });
   if (meshes.length === 0) return 0;
