@@ -189,7 +189,9 @@ export const ARCH_SURFACES: Record<
   'MAT-Arch_RepublicEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
   'MAT-Arch_RepublicWood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
   'MAT-Arch_RepublicPaving': { set: 'plaster_detail', normal: 0.6, keepColor: true },
-  'MAT-Arch_RepublicPlaza': { set: 'ground_plaza', tint: 0xe8dcc6, normal: 0.5, lift: 1.2 },
+  // The fort courtyard is the one Republican floor seen at dusk (Real Felipe); the grey slab set read navy
+  // under the cool dusk sky, so it is warmed and lifted like the colonial paving, with flatter joints.
+  'MAT-Arch_RepublicPlaza': { set: 'ground_plaza', tint: 0xf2e2c4, normal: 0.35, lift: 1.7 },
   'MAT-Arch_RepublicDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
   // Independence: lime plaster, adobe, canvas and earth keep their paint under the plaster detail set, the
   // tile is weathered like the colonial one, and the stone is lifted.

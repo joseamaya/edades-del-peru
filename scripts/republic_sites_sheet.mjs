@@ -8,9 +8,10 @@ import { cliArg } from './lib.mjs';
  *
  * Usage:
  *   node scripts/republic_sites_sheet.mjs --before=review/republic-before --after=review/republic-after \
- *     --out=docs/media/republic-sites-before-after.webp [--footer="…"]
+ *     --out=docs/media/republic-sites-before-after.webp [--rows=real-felipe] [--footer="…"]
  *
  * The same camera, seed and HUD flags produce both runs; each tile is the 1600x900 site capture.
+ * `--rows` keeps a subset of the sites, comma separated, for a single-site change.
  */
 
 const before = path.resolve(cliArg('before', 'review/republic-before'));
@@ -20,11 +21,17 @@ const footer = cliArg(
   'footer',
   'Republican kit · Arica, Real Felipe and Tarapacá · scripts/blender/build_republic_architecture_kit.py',
 );
-const ROWS = [
+const ALL_ROWS = [
   { file: 'arica', caption: 'Arica · 1880' },
   { file: 'real-felipe', caption: 'Real Felipe · 1826' },
   { file: 'tarapaca', caption: 'Tarapacá · 1879' },
 ];
+const wanted = cliArg('rows', '')
+  .split(',')
+  .map((row) => row.trim())
+  .filter(Boolean);
+const ROWS = wanted.length ? ALL_ROWS.filter((row) => wanted.includes(row.file)) : ALL_ROWS;
+if (!ROWS.length) throw new Error(`no site matches --rows=${wanted.join(',')}`);
 const TILE = { width: 720, height: 405 };
 const PAD = 14;
 const LABEL = 170;
