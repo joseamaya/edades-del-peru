@@ -23,8 +23,8 @@ export const WARI_CITY_ANCHOR = wariPoint({ x: 107.5, z: 92 });
 export const CHANCA_CITY_ANCHOR = chancaPoint({ x: 112.4, z: 60.8 });
 
 /**
- * Solid footprints in model space (Blender bounds, game +Z = Blender -Y). The plaza floor has none and
- * stays walkable; the terrace is a low step the layout treats as solid so units walk around it.
+ * Solid footprints in model space (Blender bounds, game +Z = Blender -Y). The plaza floor has none and the
+ * andén is a low step (1.2 m), so both stay walkable; the walls, towers and buildings block.
  */
 export const WARI_KIT_FOOTPRINTS: Partial<Record<string, ArchFootprint>> = {
   d_temple: { minX: -9, maxX: 9, minZ: -9, maxZ: 9 },
@@ -63,12 +63,12 @@ export const WARI_CITY_LAYOUT: readonly ArchPlacement[] = [
 export const CHANCA_CITY_LAYOUT: readonly ArchPlacement[] = [
   { asset: 'plaza', ...CHANCA_CITY_ANCHOR, rotY: 0, scale: [0.5, 1, 0.6], lift: 0.02 },
   { asset: 'terrace', ...CHANCA_CITY_ANCHOR, rotY: 0, scale: [0.8, 1, 0.8] },
-  { asset: 'altar', ...CHANCA_CITY_ANCHOR, rotY: 0, scale: ONE, lift: 1.2 },
+  { asset: 'altar', ...CHANCA_CITY_ANCHOR, rotY: 0, scale: ONE, lift: 1.12 },
   { asset: 'pukara_wall', ...at(CHANCA_CITY_ANCHOR, 0, -6.2), rotY: 0, scale: ONE },
   { asset: 'pukara_wall', ...at(CHANCA_CITY_ANCHOR, -7.6, 0), rotY: Math.PI / 2, scale: ONE },
   { asset: 'pukara_wall', ...at(CHANCA_CITY_ANCHOR, 7.6, 0), rotY: -Math.PI / 2, scale: ONE },
-  { asset: 'pukara_wall', ...at(CHANCA_CITY_ANCHOR, -5.2, 6.4), rotY: 0, scale: ONE },
-  { asset: 'pukara_wall', ...at(CHANCA_CITY_ANCHOR, 5.2, 6.4), rotY: 0, scale: ONE },
+  { asset: 'pukara_wall', ...at(CHANCA_CITY_ANCHOR, -5.2, 6.4), rotY: 0, scale: [0.6, 1, 1] },
+  { asset: 'pukara_wall', ...at(CHANCA_CITY_ANCHOR, 5.2, 6.4), rotY: 0, scale: [0.6, 1, 1] },
   { asset: 'tower', ...at(CHANCA_CITY_ANCHOR, -9.3, -8.7), rotY: 0, scale: ONE },
   { asset: 'tower', ...at(CHANCA_CITY_ANCHOR, 9.3, -8.7), rotY: 0, scale: ONE },
   { asset: 'tower', ...at(CHANCA_CITY_ANCHOR, -10.2, 7.6), rotY: 0, scale: ONE },

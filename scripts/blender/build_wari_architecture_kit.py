@@ -198,7 +198,7 @@ def main():
             'docs/historia/arquitectura.md',
             'docs/design/wari-sacred-site.md',
             'docs/design/chanca-site.md',
-            'docs/historia/campanas/wari.md',
+            'docs/historia/campanas/wari_tiahuanaco.md',
             'docs/historia/campanas/yahuar_pampa.md',
         ],
         collision='wariCityBlockers / chancaCityBlockers in src/model/defs/wariChancaCity.ts',

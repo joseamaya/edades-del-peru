@@ -84,7 +84,11 @@ Definition of Done and the building audit see
   retired GLB is a fallback. The mission uses the `trade` heritage operation at the Huaca de la Luna and
   `recordDelivery` fills required `deliver` goals before optional ones. See
   `docs/design/moche-chimu-sites.md`.
-- **Wari network**: `m4_wari` loads `wari_site` and uses the `network` objective (`ObjectiveDef.nodes`) to require a completed `Mercado` at each frontier node. `MissionLayout.roads` draws terrain-following, visual-only ribbons with `SettlementOverlay` (`Game.spawnMissionRoads`). The frontier hold is gated by the network; there is no active enemy. Source and export live in `art-src/blender/wari/` and `scripts/blender/build_wari_site.py`. See `docs/design/wari-sacred-site.md`.
+- **Wari network**: `m4_wari` draws its site from the Wari kit (`wariChancaCity.ts`) and uses the `network`
+  objective (`ObjectiveDef.nodes`) to require a completed `Mercado` at each frontier node.
+  `MissionLayout.roads` draws terrain-following, visual-only ribbons with `SettlementOverlay`
+  (`Game.spawnMissionRoads`). The frontier hold is gated by the network; there is no active enemy. The
+  pre-kit master stays in `art-src/blender/wari/`. See `docs/design/wari-chanca-sites.md`.
 - **Mission canals**: `MissionLayout.canal` (`src/campaign/types.ts`) gives a normalized canal site and, optionally, an authored `path`; `Game.spawnCanal` builds relief-following ribbons (`src/rendering/canal.ts`) when the path exists, or the legacy straight box for m3/m6. `MissionPoint.ref: 'canal'` resolves the site for a `reach` objective; `canalIrrigationAt` measures the farm bonus along the trace and `Game.canPlace`/`isReserved` keep buildings and props off the channel. m1's closed communal gate raises `farmYieldAt` along the trace; m6 uses the canal as the Chan Chan surrender target. The canal has no pathfinding obstacle. See `tests/canal.test.ts`, `tests/e2e/campaign.spec.ts` and `tests/e2e/caral-city.spec.ts`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an
   AI-generated material via `TEX_GEN` (e.g. `adobe → wall_adobe`, `brick → wall_brick`, `roof → tile`,

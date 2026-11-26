@@ -165,6 +165,10 @@ describe('highland layouts', () => {
     expect(blockersCover(blockers, a.x, a.z - 6.2), 'north wall').toBe(true);
     expect(blockersCover(blockers, a.x + 3, a.z + 2), 'terrace').toBe(false);
     expect(blockersCover(blockers, a.x, a.z + 6.4), 'gate').toBe(false);
+    // The two southern segments leave a gate wide enough for the site pad (0.8 m per side at runtime).
+    const south = blockers.filter((b) => b.z > a.z + 4 && b.d < 3).sort((l, r) => l.x - r.x);
+    const gate = south[1]!.x - south[1]!.w / 2 - (south[0]!.x + south[0]!.w / 2);
+    expect(gate, 'gate width').toBeGreaterThanOrEqual(4);
     expect(blockersCover(blockers, a.x - 5.2, a.z + 6.4), 'south wall').toBe(true);
     expect(blockersCover(blockers, a.x - 9.3, a.z - 8.7), 'north-west tower').toBe(true);
   });

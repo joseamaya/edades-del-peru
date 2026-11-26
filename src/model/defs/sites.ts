@@ -639,8 +639,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     modelName: 'wari_site',
     hideModel: true,
     style: 'wari',
-    // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
-    // scale with it so the complex still covers its terrace.
+    // The retired 192 m composition's scale stays for the registry fallback; the kit draws in world metres.
     scale: wariLength(0.25),
     origin: wariPoint({ x: 107.5, z: 86.4 }),
     anchor: wariPoint({ x: 107.5, z: 102 }),
@@ -689,8 +688,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     modelName: 'chanca_site',
     hideModel: true,
     style: 'wari',
-    // The 160 m composition is scaled by 1.6 into the 256 m transect; the model, proxies and blockers
-    // scale with it so the pucará still covers its terrace.
+    // The retired 160 m composition's scale stays for the registry fallback; the kit draws in world metres.
     scale: chancaLength(0.7),
     origin: chancaPoint({ x: 112.4, z: 60.8 }),
     anchor: chancaPoint({ x: 112.4, z: 60.8 }),

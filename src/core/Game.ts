@@ -2350,6 +2350,8 @@ export class Game {
       this.colonialCity = null;
       this.republicCity = null;
       this.independenceCity = null;
+      this.mocheCity = null;
+      this.wariCity = null;
     }
     this.sitePhase = this.siteDef?.phases?.initial ?? 'in_use';
     this.sitePhaseRestored = false;

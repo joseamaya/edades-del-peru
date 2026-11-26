@@ -1011,7 +1011,7 @@ slot is absent (offline / without assets).
 - **Source**: generated in Blender 5.3 by `scripts/blender/build_wari_architecture_kit.py` on the shared
   `scripts/blender/arch_kit.py`; kit scene `art-src/blender/scenes/wari_architecture_kit.blend` (Git LFS).
   Uncompressed exports and per-piece manifests in `art-src/blender/exports/wari/architecture/`; the game
-  copies were meshopt-compressed with `yarn art:models --only=<file>` (156,028 B for the 18 copies).
+  copies were meshopt-compressed with `yarn art:models --only=<file>` (156,060 B for the 18 copies).
 - **Content**: project-owned procedural geometry. Eight Principled materials (field stone, cut stone, lime
   plaster white and red, packed earth, thatch, timber and dark openings) with world-scale box-projected UVs
   and a per-vertex tint; no textures in the GLBs. At runtime the game maps `wall_fieldstone` and
