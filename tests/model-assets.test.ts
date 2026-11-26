@@ -663,6 +663,46 @@ describe('rigged model assets', () => {
     patriot.dispose();
   });
 
+  it('seats the rider on its own skeleton and keeps it out of the mount merge', async () => {
+    const read = (url: URL): ArrayBuffer => {
+      const file = fs.readFileSync(fileURLToPath(url));
+      return file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength) as ArrayBuffer;
+    };
+    // The worker carries textures; Node has no `self`/image decoding, and the seat only needs the rig.
+    const previousSelf = (globalThis as { self?: unknown }).self;
+    const textureLoad = THREE.TextureLoader.prototype.load;
+    (globalThis as { self?: unknown }).self = globalThis;
+    THREE.TextureLoader.prototype.load = function (_url, onLoad) {
+      const texture = new THREE.Texture();
+      onLoad?.(texture);
+      return texture;
+    };
+    try {
+      await loadModelAssetFromData('mounted_rig', read(MOUNTED_URL));
+      await loadModelAssetFromData('caral_worker', read(WORKER_URL));
+      const rig = acquireRig('mounted_rig', 'mounted_realistas')!;
+
+      const rider = rig.root.getObjectByName('rig:caral_worker');
+      expect(rider).toBeDefined();
+      expect(rider!.parent?.name).toBe('Torso2');
+
+      // The merged horse mesh is the consolidated draw that is not the rider's own.
+      let mergedHorse: THREE.SkinnedMesh | null = null;
+      rig.root.traverse((o) => {
+        const mesh = o as THREE.SkinnedMesh;
+        const workerBones = mesh.skeleton?.bones.some((b) => b.name === 'pelvis') ?? true;
+        if (!mergedHorse && mesh.isSkinnedMesh && mesh.name === 'rig:consolidated' && !workerBones) mergedHorse = mesh;
+      });
+      expect(mergedHorse).not.toBeNull();
+      expect(mergedHorse!.skeleton.bones.some((b) => b.name === 'thigh_l')).toBe(false);
+      rig.dispose();
+    } finally {
+      THREE.TextureLoader.prototype.load = textureLoad;
+      if (previousSelf === undefined) delete (globalThis as { self?: unknown }).self;
+      else (globalThis as { self?: unknown }).self = previousSelf;
+    }
+  });
+
   it('falls back from run to walk on rigs without a gallop', async () => {
     await load();
     const rig = acquireRig('ual_mannequin')!;
