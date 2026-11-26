@@ -174,7 +174,7 @@ describe('stop-and-fight separation', () => {
     expect(game.units.length).toBe(2);
   });
 
-  it('drops the engagement target when an attack-move reaches its destination', () => {
+  it('drops the engagement target as soon as an attack-move stops engaging', () => {
     const game = harness();
     const dragon = game.spawn(UnitKind.REALISTA_DRAGON, 1, 100, 100);
     const soldier = game.spawn(UnitKind.SOLDIER, 0, 100, 104);
@@ -183,10 +183,13 @@ describe('stop-and-fight separation', () => {
     game.run(1);
     expect(dragon.targetEntityId).toBe(soldier.id);
 
-    // The enemy withdraws out of the engagement envelope; the march resumes and finishes.
+    // The enemy withdraws out of the engagement envelope; the march resumes.
     soldier.pos.set(200, 0, 200);
-    game.run(20);
+    game.run(0.2);
+    expect(dragon.targetEntityId).toBeNull();
+    expect(Math.hypot(dragon.pos.x - 100, dragon.pos.z - 120)).toBeGreaterThan(2);
 
+    game.run(20);
     expect(dragon.targetEntityId).toBeNull();
     expect(Math.hypot(dragon.pos.x - 100, dragon.pos.z - 120)).toBeLessThan(2);
   });
@@ -218,6 +221,23 @@ describe('stop-and-fight separation', () => {
     expect(soldier.dead).toBe(true);
     expect(missionary.targetEntityId).toBeNull();
     expect(missionary.isBusy()).toBe(false);
+  });
+
+  it('stops an attack when its target converts to the attacker side', () => {
+    const game = harness();
+    const missionary = game.spawn(UnitKind.MISSIONARY, 0, 100, 100);
+    const soldier = game.spawn(UnitKind.SOLDIER, 1, 100.5, 100.5);
+    const dragon = game.spawn(UnitKind.REALISTA_DRAGON, 0, 100, 103);
+    dragon.issueOrder({ kind: OrderKind.ATTACK, entityId: soldier.id });
+    missionary.issueOrder({ kind: OrderKind.CONVERT, entityId: soldier.id });
+
+    game.run(6);
+    expect(soldier.owner).toBe(0);
+    expect(dragon.targetEntityId).toBeNull();
+
+    const hp = soldier.hp;
+    game.run(2);
+    expect(soldier.hp).toBe(hp);
   });
 
   it('uses the larger body spacing and leaves enemy melee contact alone', () => {

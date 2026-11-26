@@ -1236,7 +1236,7 @@ export class Unit {
   }
 
   /** The same player or an ally on the same team: bodies on one side of a battle keep their spacing. */
-  private sameSide(other: Unit): boolean {
+  private sameSide(other: { owner: number }): boolean {
     if (other.owner === this.owner) return true;
     const mine = this.ctx.getPlayer(this.owner);
     const theirs = this.ctx.getPlayer(other.owner);
@@ -1333,10 +1333,15 @@ export class Unit {
       this.targetEntityId = best.id;
       this.attackingTarget = true;
       this.updateAttack({ kind: OrderKind.ATTACK, entityId: best.id }, dt, time);
-    } else if (this.isPathDone()) {
+      return;
+    }
+    if (this.attackingTarget) {
+      // The engagement ended mid-march (the enemy died, left the envelope or changed sides): drop the id,
+      // or the mounted separation would keep reading the unit as chasing for the rest of the advance.
       this.attackingTarget = false;
-      // The engagement is over: a stale id would keep the mounted separation in its "chasing" mode.
       this.targetEntityId = null;
+    }
+    if (this.isPathDone()) {
       // The advance has arrived: from here the unit holds this ground as its defensive post.
       if (this.combatStance === 'defensivo' && !this.leashOrigin) {
         this.leashOrigin = { x: this.pos.x, z: this.pos.z };
@@ -1351,7 +1356,7 @@ export class Unit {
       this.targetEntityId !== null
         ? (this.ctx.entitiesById.get(this.targetEntityId) ?? this.ctx.buildings.get(this.targetEntityId))
         : null;
-    if (!target || target.dead || (target.hp !== undefined && target.hp <= 0)) {
+    if (!target || target.dead || (target.hp !== undefined && target.hp <= 0) || this.sameSide(target)) {
       this.targetEntityId = null;
       if (this.attackingTarget) {
         // resume the attack-move march toward its original destination
