@@ -1408,7 +1408,15 @@ slot is absent (offline / without assets).
   (sources LACMA, Museo de América), and the thigh is bare below the short wrap/skirt of the same outfit.
   This is a body-paint capture, not new geometry.
 
+### Cavalry melee separation (in-engine evidence)
 
+- **Location**: `docs/media/cavalry-melee-before-after.webp`, 1772x536 WebP q74.
+- **Source**: `node scripts/capture_cavalry_melee.mjs --out=review/cavalry-after`; the before row runs the
+  same script from a worktree at `main` (`9f09bcce`), with the same seed, light, camera and six seconds of
+  fixed steps. Left column before, right column after.
+- **Content**: ten `realista_dragon` ordered onto five soldiers, with fourteen soldiers in the line. The
+  before row shows the horses inside each other; the after row shows the same-owner bodies separated.
+- **Review**: no art or historical claim; a simulation-behaviour capture of a seeded skirmish.
 
 ### Character legibility (in-engine evidence)
 

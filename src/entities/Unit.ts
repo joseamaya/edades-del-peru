@@ -162,6 +162,13 @@ const MOVE_ARRIVAL_DIST = 1.2;
 /** Personal space of a soldier on foot: two units closer than this push apart while they move. */
 const SEPARATION = 1.4;
 /**
+ * Share of a pair's spacing that positional separation keeps once units stop or fight. A melee ring is
+ * tighter than the marching spacing, so the full spacing cannot be enforced around a target.
+ */
+const SEPARATION_RELAX = 0.8;
+/** Largest positional correction per tick, so a crowded melee settles instead of snapping. */
+const SEPARATION_PUSH = 0.14;
+/**
  * Personal space by body: a horse is ~2.4 m nose to tail and a gun carriage or a tank ~2 m, so with the foot
  * soldier's 1.4 m a squadron marched and charged with the horses run through each other.
  */
@@ -1148,27 +1155,94 @@ export class Unit {
   }
 
   private applySeparation(dt: number): void {
-    if (this.walkCycle <= 0.01) return;
     // Each pair keeps the larger of the two spacings. The query stays at the unit's own spacing (a foot
     // soldier's search does not grow), so a horse or a gun clears the room it needs from its own side.
     const nearby = this.ctx.unitsNear(this.pos.x, this.pos.z, this.spacing);
-    let fx = 0;
-    let fz = 0;
+    const walking = this.walkCycle > 0.01;
+    if (walking) {
+      let fx = 0;
+      let fz = 0;
+      for (const u of nearby) {
+        if (u.id === this.id) continue;
+        if (u.garrisonedIn !== null) continue;
+        const dx = this.pos.x - u.pos.x;
+        const dz = this.pos.z - u.pos.z;
+        const d = Math.sqrt(dx * dx + dz * dz);
+        const space = Math.max(this.spacing, u.spacing);
+        if (d < space && d > 0.001) {
+          const f = (space - d) / space;
+          fx += (dx / d) * f;
+          fz += (dz / d) * f;
+        }
+      }
+      this.vel.x += fx * 4.5 * dt;
+      this.vel.z += fz * 4.5 * dt;
+    }
+    // A stopped or attacking unit damps its velocity and walk cycle every tick, so the walking force
+    // cannot keep it apart; the position correction runs either way. Only a stopped unit also has its
+    // closing velocity cancelled: doing that while it walks to a slot or a waypoint can pin it in place.
+    this.relaxSeparation(nearby, !walking);
+  }
+
+  /**
+   * Keep stop-and-fight groups from collapsing into the same point. A walking unit's velocity force is
+   * not enough here: an attack damps `vel` and the walk cycle every tick, so jockeys ordered onto the same
+   * target used to end up inside each other. This pushes the position itself, but only against units of the
+   * same owner — a melee attacker must stay in contact with its enemy target.
+   */
+  private relaxSeparation(nearby: Unit[], cancelClosing: boolean): void {
+    let px = 0;
+    let pz = 0;
     for (const u of nearby) {
-      if (u.id === this.id) continue;
-      if (u.garrisonedIn !== null) continue;
+      if (u.id === this.id || u.garrisonedIn !== null || u.owner !== this.owner) continue;
       const dx = this.pos.x - u.pos.x;
       const dz = this.pos.z - u.pos.z;
       const d = Math.sqrt(dx * dx + dz * dz);
-      const space = Math.max(this.spacing, u.spacing);
-      if (d < space && d > 0.001) {
-        const f = (space - d) / space;
-        fx += (dx / d) * f;
-        fz += (dz / d) * f;
+      const space = Math.max(this.spacing, u.spacing) * SEPARATION_RELAX;
+      if (d >= space) continue;
+      if (d > 0.001) {
+        // Stop pressing into the neighbour, or its walk toward a shared target would compress the pair
+        // faster than the positional correction can open it.
+        const nx = dx / d;
+        const nz = dz / d;
+        const closing = cancelClosing ? -(this.vel.x * nx + this.vel.z * nz) : 0;
+        if (closing > 0) {
+          this.vel.x += nx * closing;
+          this.vel.z += nz * closing;
+        }
+        const push = (space - d) * 0.75;
+        px += nx * push;
+        pz += nz * push;
+      } else {
+        // Exactly co-located units need a deterministic direction, or the pair never separates.
+        const angle = (this.id * 2.399963229728653 + u.id * 0.7) % (Math.PI * 2);
+        const push = space * 0.5;
+        px += Math.cos(angle) * push;
+        pz += Math.sin(angle) * push;
       }
     }
-    this.vel.x += fx * 4.5 * dt;
-    this.vel.z += fz * 4.5 * dt;
+    const length = Math.sqrt(px * px + pz * pz);
+    if (length < 1e-4) return;
+    const scale = Math.min(1, SEPARATION_PUSH / length);
+    this.pushOut(px * scale, pz * scale);
+  }
+
+  /** Move positionally, never into blocked terrain (the same contract as `integrateSafely`). */
+  private pushOut(dx: number, dz: number): void {
+    const size = this.ctx.worldSize;
+    const nx = clamp(this.pos.x + dx, 2, size - 2);
+    const nz = clamp(this.pos.z + dz, 2, size - 2);
+    if (this.stepAllowed(nx, nz)) {
+      this.pos.x = nx;
+      this.pos.z = nz;
+    } else if (this.stepAllowed(nx, this.pos.z)) {
+      this.pos.x = nx;
+    } else if (this.stepAllowed(this.pos.x, nz)) {
+      this.pos.z = nz;
+    } else {
+      return;
+    }
+    this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
   }
 
   // --- specific orders ---
