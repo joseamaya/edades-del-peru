@@ -642,6 +642,15 @@ Definition of Done and the building audit see
   changes the simulation, so `REPLAY_VERSION` is 51 (the follow-up below changes it to 52);
   guarded by `tests/unit-separation.test.ts`; evidence `docs/media/cavalry-melee-before-after.webp`
   (`node scripts/capture_cavalry_melee.mjs --out=review/cavalry-after`).
+- **Headless site collision** (2026-11-26): Caral and Chavín were the last authored sites whose walls
+  the headless match did not see (`simulationCollision` was off). Chavín's three temple masses now opt in
+  through `def.blockers`; Caral's heritage list is joined by the kit city, the camp, Áspero and the Supe
+  hamlets through one `addCaralSiteBlockers` helper shared by the renderer and `applyHeadlessSiteCollision`.
+  With the Áspero houses finally blocking the headless coast, `retargetNearbyGather` now skips a depleted
+  fishing bank whose shore is unreachable (it used to walk at the wall and abandon the order), so
+  `REPLAY_VERSION` is 54. Guarded by `tests/headless-game.test.ts` (Caral's kit house and Chavín's temple are
+  not walkable without a renderer), the all-sites check in `tests/architecture-layout-blockers.test.ts` and
+  `tests/fishing-grounds.test.ts` (the stress group uses a bank whose neighbours stay reachable).
 - **Killke/ayllu kit** (2026-11-26): Tambotoco's shrine platform, houses, qollqas and ramadas draw from
   `tambotocoCity.ts` (5 pieces, 7 materials) built by `build_killke_architecture_kit.py`; every authored hut
   in `tambotocoLayout.ts` maps to a piece and the same layout yields the blockers, so the site sets

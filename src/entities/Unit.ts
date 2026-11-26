@@ -1728,6 +1728,21 @@ export class Unit {
       if (this.fishingNodeBlocked(node)) continue;
       const d = distance2D(last.x, last.z, node.pos.x, node.pos.z);
       if (d >= GATHER_RETARGET_RADIUS) continue;
+      // A bank whose shore is blocked by a building is not a retarget: the worker would walk at the wall
+      // and abandon the order. The group distribution already checks reachability; this is the depletion path.
+      if (
+        !this.ctx.reachableToNode(
+          this.pos.x,
+          this.pos.z,
+          node.pos.x,
+          node.pos.z,
+          HARVEST_STAND_RANGE,
+          this.owner,
+          fishingApproach(),
+        )
+      ) {
+        continue;
+      }
       options.push({ node, d, room: this.fishingNodeHasRoom(node) });
     }
     if (options.length === 0) return false;

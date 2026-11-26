@@ -66,6 +66,7 @@ describe('Chavín architecture kit', () => {
       expect(Math.abs(proxy.x - origin.x), `${proxy.id} x offset`).toBeLessThan(16);
       expect(Math.abs(proxy.z - origin.z), `${proxy.id} z offset`).toBeLessThan(18);
     }
+    expect(AUTHORED_SITES.chavin_site.simulationCollision).toBe(true);
     for (const blocker of CHAVIN_CITY_BLOCKERS) {
       const matchesProxy = site.heritageProxies.some(
         (p) => Math.abs(p.x - blocker.x) < 2 && Math.abs(p.z - blocker.z) < 2,

@@ -247,8 +247,23 @@ export class WorldViewDecor {
    */
   applyHeadlessSiteCollision(): void {
     const def = this.game.siteDef;
-    if (!def?.simulationCollision) return;
-    this.addSiteObstacles(def);
+    if (!def) return;
+    if (def.simulationCollision) this.addSiteObstacles(def);
+    // Caral's city, camp, Áspero and Supe hamlets are phased blockers owned by the kit layout, applied by
+    // the renderer path too; the headless match must see the same walls.
+    if (def.id === 'caral_site') this.addCaralSiteBlockers(def);
+  }
+
+  /** The Caral kit blockers that are not part of the site's heritage list (city, camp, Áspero, hamlets). */
+  private addCaralSiteBlockers(def: AuthoredSiteDef): void {
+    for (const blocker of [
+      ...CARAL_CITY_BLOCKERS,
+      ...CARAL_CAMP_BLOCKERS,
+      ...ASPERO_BLOCKERS,
+      ...SUPE_HAMLET_BLOCKERS,
+    ]) {
+      this.addSiteBlocker(blocker, def.blockerPadding * 2);
+    }
   }
 
   /** Load the authored campaign site; monumental volumes block pathing, not the whole footprint. */
@@ -430,14 +445,7 @@ export class WorldViewDecor {
     }
     if (def.id === 'caral_site') {
       // The in-use city's houses are part of the simulation (headless too), independent of the kit load.
-      for (const blocker of [
-        ...CARAL_CITY_BLOCKERS,
-        ...CARAL_CAMP_BLOCKERS,
-        ...ASPERO_BLOCKERS,
-        ...SUPE_HAMLET_BLOCKERS,
-      ]) {
-        this.addSiteBlocker(blocker, def.blockerPadding * 2);
-      }
+      this.addCaralSiteBlockers(def);
       if (!this.game.headless) {
         // Blender architecture kit: the city in use replaces the ruins GLB, which stays the fallback until
         // the kit is ready and then only keeps its (hidden, still clickable) heritage nodes.

@@ -476,6 +476,9 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     phases: CARAL_PHASE_PLAN,
     heritageSince: CARAL_HERITAGE_SINCE,
     blockers: CARAL_SITE_BLOCKERS,
+    // The heritage volumes opt in here; WorldViewDecor.addCaralSiteBlockers adds the kit city's houses,
+    // the camp, Áspero and the Supe hamlets to both the renderer and the headless match.
+    simulationCollision: true,
     blockerPadding: CARAL_SITE_BLOCKER_PADDING,
     buildKeepout: CARAL_SITE_BUILD_KEEPOUT,
     // No wall collision from the ruins GLB: m1 draws the city in use (architecture kit), whose houses
@@ -546,6 +549,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     phases: CHAVIN_PHASE_PLAN,
     heritageSince: CHAVIN_HERITAGE_SINCE,
     blockers: CHAVIN_CITY_BLOCKERS,
+    // The kit draws three temple masses; the headless match must block the same walls.
+    simulationCollision: true,
     blockerPadding: 0.5,
     buildKeepout: [chavinKeepout({ x: 0.51, z: 0.456, rx: 0.17, rz: 0.14 })],
     // The kit draws the city; walls taken from the hidden source GLB would be invisible obstacles.

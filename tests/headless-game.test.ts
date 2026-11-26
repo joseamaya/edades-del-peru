@@ -5,6 +5,8 @@ import { BuildingKind } from '../src/core/types';
 import { bus } from '../src/core/EventBus';
 import { CUSCO_CITY_PLAZA } from '../src/model/defs/cuscoCity';
 import { headlessMission } from './headless';
+import { CARAL_CITY_HOUSE_BLOCKERS } from '../src/model/defs/caralCity';
+import { CHAVIN_CITY_BLOCKERS } from '../src/model/defs/chavinCity';
 
 describe('headless Game', () => {
   it('runs an AI-vs-AI match without DOM or renderer', () => {
@@ -266,6 +268,53 @@ describe('headless authored-site collision', () => {
     // The cathedral sits 19.5 m north of the plaza anchor; the plaza itself stays open around the fountain.
     expect(game.pathfinder.isWalkable(site.anchor.x, site.anchor.z - 19.5)).toBe(false);
     expect(game.pathfinder.isWalkable(site.anchor.x + 4, site.anchor.z + 4)).toBe(true);
+    game.destroy();
+    setAutoStart(true);
+  });
+
+  it('blocks Caral’s kit houses without a renderer once the city is in use', () => {
+    setAutoStart(false);
+    const game = new Game(
+      {
+        ...DEFAULT_SETTINGS,
+        missionId: 'm1_caral',
+        fogOfWar: false,
+        cinematic: false,
+        showHints: false,
+        soundEnabled: false,
+      },
+      null,
+      null,
+      false,
+      true,
+    );
+    game.setSitePhase('in_use');
+    const house = CARAL_CITY_HOUSE_BLOCKERS[0]!;
+    expect(game.pathfinder.isWalkable(house.x, house.z)).toBe(false);
+    expect(game.pathfinder.isWalkable(house.x + 30, house.z + 30)).toBe(true);
+    game.destroy();
+    setAutoStart(true);
+  });
+
+  it('blocks Chavín’s temple masses without a renderer', () => {
+    setAutoStart(false);
+    const game = new Game(
+      {
+        ...DEFAULT_SETTINGS,
+        missionId: 'm2_chavin',
+        fogOfWar: false,
+        cinematic: false,
+        showHints: false,
+        soundEnabled: false,
+      },
+      null,
+      null,
+      false,
+      true,
+    );
+    const temple = CHAVIN_CITY_BLOCKERS[0]!;
+    expect(game.pathfinder.isWalkable(temple.x, temple.z)).toBe(false);
+    expect(game.pathfinder.isWalkable(temple.x + 25, temple.z + 25)).toBe(true);
     game.destroy();
     setAutoStart(true);
   });
