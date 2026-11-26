@@ -49,7 +49,7 @@ The plaza floor and the stone up-faces (kerb, fountain bowls, copings) skip the 
 Blender vertex tint: horizontal ground at z ≈ 0 would otherwise read nearly black, so it gets a light mottle
 instead. The kit is seven materials (the §4.2 ceiling is eight per kit and four per building). Evidence:
 `docs/media/colonial-kit-color-before-after.webp` (material pass) and
-`docs/media/colonial-tile-warmth-before-after.webp` (warm-tint rebalance).
+`docs/media/colonial-tile-warmth-before-after.webp` (hue and tint rebalance).
 
 ## Attested elements and abstractions
 

@@ -151,7 +151,6 @@ const TILE_SURFACE = { set: 'tile', tint: 0xf2d3a6, normal: 0.7, saturation: 0.5
  * are box-projected at world scale (TILE in the Blender script). `keepColor` keeps the material's
  * documented paint colour under a near-white detail map; otherwise `tint` (times `lift`) colours the set.
  */
-
 export const ARCH_SURFACES: Record<
   string,
   {
