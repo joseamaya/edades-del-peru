@@ -98,6 +98,14 @@ const FAUNA_TREE_CLEARANCE = 7;
 // How close the army has to be to an authored opening point for that point to frame the settled camera.
 const OPENING_HOLD_RADIUS = 20;
 
+/** Caral's phased kit blockers: the city houses, the camp, Áspero and the Supe hamlets. */
+const CARAL_KIT_BLOCKERS: readonly SiteBlocker[] = [
+  ...CARAL_CITY_BLOCKERS,
+  ...CARAL_CAMP_BLOCKERS,
+  ...ASPERO_BLOCKERS,
+  ...SUPE_HAMLET_BLOCKERS,
+];
+
 export class WorldViewDecor {
   /** The deterministic valley scenery is drawn once (opening base or loaded save), never twice. */
   private caralValleyDrawn = false;
@@ -143,8 +151,8 @@ export class WorldViewDecor {
   }
 
   /** Block the source's monumental volumes while leaving plazas and paths walkable. */
-  addSiteObstacles(def: AuthoredSiteDef): void {
-    for (const blocker of def.blockers) this.addSiteBlocker(blocker, def.blockerPadding * 2);
+  addSiteObstacles(def: AuthoredSiteDef, blockers: readonly SiteBlocker[] = def.blockers): void {
+    for (const blocker of blockers) this.addSiteBlocker(blocker, def.blockerPadding * 2);
   }
 
   /** Obstacles of buildings that only stand from a construction phase on (m1's growing city). */
@@ -249,21 +257,10 @@ export class WorldViewDecor {
     const def = this.game.siteDef;
     if (!def) return;
     if (def.simulationCollision) this.addSiteObstacles(def);
-    // Caral's city, camp, Áspero and Supe hamlets are phased blockers owned by the kit layout, applied by
-    // the renderer path too; the headless match must see the same walls.
-    if (def.id === 'caral_site') this.addCaralSiteBlockers(def);
-  }
-
-  /** The Caral kit blockers that are not part of the site's heritage list (city, camp, Áspero, hamlets). */
-  private addCaralSiteBlockers(def: AuthoredSiteDef): void {
-    for (const blocker of [
-      ...CARAL_CITY_BLOCKERS,
-      ...CARAL_CAMP_BLOCKERS,
-      ...ASPERO_BLOCKERS,
-      ...SUPE_HAMLET_BLOCKERS,
-    ]) {
-      this.addSiteBlocker(blocker, def.blockerPadding * 2);
-    }
+    // Caral's city, camp and coastal hamlets are phased, hand-written blockers beside its heritage list;
+    // the renderer adds them too. `sites.ts` cannot hold the combined array because `caralCity.ts` reads
+    // the heritage constants from it (a runtime import cycle).
+    if (def.id === 'caral_site') this.addSiteObstacles(def, CARAL_KIT_BLOCKERS);
   }
 
   /** Load the authored campaign site; monumental volumes block pathing, not the whole footprint. */
@@ -445,7 +442,7 @@ export class WorldViewDecor {
     }
     if (def.id === 'caral_site') {
       // The in-use city's houses are part of the simulation (headless too), independent of the kit load.
-      this.addCaralSiteBlockers(def);
+      this.addSiteObstacles(def, CARAL_KIT_BLOCKERS);
       if (!this.game.headless) {
         // Blender architecture kit: the city in use replaces the ruins GLB, which stays the fallback until
         // the kit is ready and then only keeps its (hidden, still clickable) heritage nodes.
@@ -1587,12 +1584,7 @@ export class WorldViewDecor {
       isWalkable: (px, pz) => this.game.pathfinder.isWalkable(px, pz),
       getHeight: (px, pz) => this.game.terrain.getHeight(px, pz),
       isOccupied: (px, pz) =>
-        [
-          ...(this.game.siteDef?.blockers ?? []),
-          ...CARAL_CITY_BLOCKERS,
-          ...CARAL_CAMP_BLOCKERS,
-          ...ASPERO_BLOCKERS,
-        ].some(
+        [...(this.game.siteDef?.blockers ?? []), ...CARAL_KIT_BLOCKERS].some(
           (blocker: { x: number; z: number; w: number; d: number }) =>
             Math.abs(px - blocker.x) <= blocker.w / 2 + 3 && Math.abs(pz - blocker.z) <= blocker.d / 2 + 3,
         ) ||

@@ -293,7 +293,10 @@ export interface AuthoredSiteDef {
   /** Phase from which each heritage card stands; omitted entries stand from the opening. */
   heritageSince?: Partial<Record<HeritageBuildingId, string>>;
   blockers: readonly SiteBlocker[];
-  /** The blockers come from the kit layout, so a headless match must apply them too. */
+  /**
+   * Apply these blockers in a headless match too. Most sites' blockers come from their kit layout; Caral
+   * joins its heritage volumes with hand-written city/camp/hamlet arrays that `WorldViewDecor` applies.
+   */
   simulationCollision?: boolean;
   blockerPadding: number;
   buildKeepout: readonly SiteKeepoutRect[];

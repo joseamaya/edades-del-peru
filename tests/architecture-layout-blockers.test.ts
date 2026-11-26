@@ -30,7 +30,7 @@ describe('layoutBlockers', () => {
 });
 
 describe('authored-site collision', () => {
-  it('gives every authored site its walls in a headless match', () => {
+  it('opts every authored site with blockers into headless collision', () => {
     for (const [id, site] of Object.entries(AUTHORED_SITES)) {
       if (site.blockers.length === 0) continue;
       expect(site.simulationCollision, id).toBe(true);
