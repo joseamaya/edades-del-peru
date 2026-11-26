@@ -32,6 +32,9 @@ import { andeanSlingPieces } from './workerAttire';
 import { clamp } from '../util/math';
 import type { Resources } from '../core/types';
 
+/** Nodes worked with a swing (stone axe, hammerstone) rather than the field harvest. */
+const CHOP_NODES = new Set(['tree', 'well', 'mine']);
+
 const CARRY_COLORS: Record<keyof Resources, number> = {
   food: 0xc8a04a,
   wood: 0x8a6a3a,
@@ -315,6 +318,7 @@ export class UnitView {
         attacking: u.isAttackingTarget() || (order === 'attack' && u.targetEntityId !== null),
         carrying: u.carryCountNow() > 0,
         running,
+        chopping: CHOP_NODES.has(u.lastGather?.kind ?? ''),
       });
       this.rig.play(state);
       if (!u.dead && u.hitReact > 0 && !this.rig.hitPlaying) this.rig.playHit();
@@ -396,7 +400,7 @@ export class UnitView {
     const u = this.unit;
     const carrying = u.carryCountNow() > 0;
     const res = u.carriedResource();
-    this.rig?.setCarrying(carrying, CARRY_COLORS[res]);
+    this.rig?.setCarrying(carrying, CARRY_COLORS[res], res);
     if (!this.carryPivot) return;
     this.carryPivot.visible = carrying;
     if (carrying && this.carryMat) this.carryMat.color.setHex(CARRY_COLORS[res]);

@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { applyGeneratedPbr } from './Biomes';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
@@ -28,7 +27,20 @@ import {
 } from '../model/defs/andeanCharacters';
 
 export interface CaralWorkerHandle extends RigVariantHandle {
-  setCarrying(carrying: boolean, color?: number): void;
+  setCarrying(carrying: boolean, color?: number, resource?: string): void;
+}
+
+/** Hand tool by the kind of node being worked. Presentation only. */
+export type WorkerToolKind = 'stick' | 'axe' | 'maul';
+
+/**
+ * Felling swings a hafted stone axe, quarrying a hafted hammerstone; fields, gardens and everything else
+ * keep the digging stick. A fisher holds the net instead (see `syncTool`).
+ */
+export function workerToolFor(gatherKind: string | null): WorkerToolKind {
+  if (gatherKind === 'tree') return 'axe';
+  if (gatherKind === 'well' || gatherKind === 'mine') return 'maul';
+  return 'stick';
 }
 
 /**
@@ -211,6 +223,8 @@ const WORKER_DYNAMIC_PARTS = [
   ...HERO_HIDDEN_PARTS,
   ...HERO_WEAPON_PARTS,
   'attire_tool',
+  'attire_axe',
+  'attire_maul',
   'attire_carry',
   'attire_net',
 ] as const;
@@ -418,6 +432,40 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       cord.rotation.z = side * 0.25;
       carry.add(cord);
     }
+    // A shicra: the open-weave fibre bag of fieldstones Caral's builders filled the platforms with
+    // (`docs/historia/civilizaciones/caral.md`). Carried on the back instead of the bundle when the load is
+    // stone; the stones bulge through the top of the net.
+    const fibre = new THREE.Color(0xa88c5c);
+    const shicraPieces: [THREE.BufferGeometry, THREE.Color][] = [
+      [new THREE.SphereGeometry(0.15, 10, 8).scale(1, 1.05, 0.78), fibre],
+      [new THREE.TorusGeometry(0.12, 0.012, 4, 14).rotateX(Math.PI / 2).translate(0, 0.12, 0), fibre],
+    ];
+    for (const [x, y, z, r, grey] of [
+      [0.05, 0.14, 0.02, 0.055, 0x8d8a84],
+      [-0.06, 0.13, -0.02, 0.05, 0x9a958c],
+      [0.0, 0.16, -0.04, 0.045, 0x7f7c77],
+      [0.11, 0.02, 0.07, 0.045, 0x8a857e],
+      [-0.1, -0.05, 0.07, 0.05, 0x95918a],
+      [0.02, -0.08, 0.1, 0.045, 0x85827c],
+    ] as const) {
+      shicraPieces.push([new THREE.DodecahedronGeometry(r, 0).translate(x, y, z), new THREE.Color(grey)]);
+    }
+    for (const side of [-1, 1]) {
+      shicraPieces.push([
+        new THREE.CylinderGeometry(0.009, 0.009, 0.3, 4).rotateZ(side * 0.25).translate(side * 0.08, 0.2, 0.02),
+        fibre,
+      ]);
+    }
+    const shicraGeo = mergeColoredGeometry(shicraPieces);
+    if (shicraGeo) {
+      const shicraMat = makeMaterial(0xffffff, 0.95);
+      shicraMat.vertexColors = true;
+      const shicra = new THREE.Mesh(trackGeometry(shicraGeo), shicraMat);
+      shicra.name = 'attire_shicra';
+      shicra.visible = false;
+      shicra.position.y = 0.02;
+      carry.add(shicra);
+    }
     attach('spine_03', carry, new THREE.Vector3(spine.x, spine.y - 0.02, spine.z - 0.17));
   }
 
@@ -436,65 +484,91 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     }
   }
 
-  let tool: THREE.Group | null = null;
+  const toolSet = new Map<WorkerToolKind, THREE.Group>();
   let net: THREE.Group | null = null;
   let garmentTints: { tunic: THREE.Color; skirt: THREE.Color } | null = null;
   let carrying = false;
+  let load: string | null = null;
   let task: RigClipState = 'idle';
   let weapon: AndeanWeaponGrip | null = null;
   let gatherKind: string | null = null;
   let netInHand = true;
   const syncTool = (): void => {
     const fishing = gatherKind === 'fishing' && task === 'gather';
-    if (tool) tool.visible = !carrying && task !== 'build' && !fishing;
-    if (net) net.visible = !carrying && fishing && netInHand;
+    // The load rides on the back, so the tool stays in hand while the worker keeps filling it; it is only
+    // put away to walk the load home and to build (the push clip has no tool).
+    const working = task === 'gather' || task === 'chop';
+    const handsFree = task !== 'build' && task !== 'walk_carry' && (!carrying || working);
+    const active = workerToolFor(gatherKind);
+    for (const [kind, group] of toolSet) group.visible = handsFree && !fishing && kind === active;
+    if (net) net.visible = fishing && netInHand;
+    const shicra = carry?.getObjectByName('attire_shicra');
+    const bundle = carry?.children[0];
+    const stone = load === 'stone';
+    if (shicra) shicra.visible = stone;
+    if (bundle && bundle !== shicra) bundle.visible = !stone;
+    for (const child of carry?.children ?? []) if (child !== shicra && child !== bundle) child.visible = !stone;
   };
   if (worker && hand) {
-    tool = new THREE.Group();
-    tool.name = 'attire_tool';
-    // Wooden shaft, binding and stone blade in one vertex-coloured mesh: one draw call per pass.
-    const parts: [THREE.BufferGeometry, THREE.Color][] = [
-      [new THREE.CylinderGeometry(0.014, 0.017, 0.8, 6).translate(0, -0.2, 0), woodMat.color],
-      [new THREE.CylinderGeometry(0.021, 0.021, 0.06, 6).translate(0, -0.56, 0), woodMat.color],
-      [new THREE.ConeGeometry(0.042, 0.12, 5).rotateX(Math.PI).translate(0, -0.67, 0), stoneMat.color],
-    ];
-    for (const [geometry, color] of parts) {
-      const n = geometry.getAttribute('position').count;
-      const colors = new Float32Array(n * 3);
-      for (let i = 0; i < n; i++) color.toArray(colors, i * 3);
-      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    }
-    const toolGeo = mergeGeometries(
-      parts.map(([g]) => g),
-      false,
-    );
-    parts.forEach(([g]) => g.dispose());
     const toolMat = makeMaterial(0xffffff, 0.9);
     toolMat.vertexColors = true;
-    if (toolGeo) tool.add(new THREE.Mesh(trackGeometry(toolGeo), toolMat));
-    tool.rotation.set(-0.15, 0, 0);
+    const wood = woodMat.color;
+    const charred = new THREE.Color(0x3a2a1e);
+    const fibreCord = new THREE.Color(0xb8a27a);
+    const polished = new THREE.Color(0x4e5552);
+    const cobble = new THREE.Color(0x9b968d);
+    // Every tool hangs from the fist along -Y: the hand closes 0.1–0.15 m from the top of the shaft and the
+    // working end is the far one, so the farm and chop clips swing it like the old stick.
+    const toolGeometry: Record<WorkerToolKind, [THREE.BufferGeometry, THREE.Color][]> = {
+      // Palo cavador: a straight hardwood stick, its point hardened in the fire. No stone blade: the old
+      // stone-tipped stick read as a spear.
+      stick: [
+        [new THREE.CylinderGeometry(0.016, 0.019, 0.95, 6).translate(0, -0.33, 0), wood],
+        [new THREE.ConeGeometry(0.019, 0.13, 6).rotateX(Math.PI).translate(0, -0.865, 0), charred],
+      ],
+      // Ground-stone axe: a polished wedge set through the haft and lashed above and below.
+      axe: [
+        [new THREE.CylinderGeometry(0.016, 0.019, 0.62, 6).translate(0, -0.21, 0), wood],
+        [new THREE.BoxGeometry(0.17, 0.065, 0.032).translate(0.05, -0.47, 0), polished],
+        [
+          new THREE.ConeGeometry(0.034, 0.05, 4)
+            .rotateZ(-Math.PI / 2)
+            .scale(1, 1, 0.5)
+            .translate(0.16, -0.47, 0),
+          polished,
+        ],
+        [new THREE.CylinderGeometry(0.024, 0.024, 0.03, 6).translate(0, -0.42, 0), fibreCord],
+        [new THREE.CylinderGeometry(0.024, 0.024, 0.03, 6).translate(0, -0.52, 0), fibreCord],
+      ],
+      // Hafted hammerstone: a river cobble bound in a bent haft, the quarry and dressing tool.
+      maul: [
+        [new THREE.CylinderGeometry(0.016, 0.019, 0.52, 6).translate(0, -0.16, 0), wood],
+        [new THREE.SphereGeometry(0.075, 8, 6).scale(1.35, 0.95, 1).translate(0.02, -0.46, 0), cobble],
+        [new THREE.TorusGeometry(0.07, 0.012, 4, 10).rotateY(Math.PI / 2).translate(0.02, -0.46, 0), fibreCord],
+      ],
+    };
     const toBody = new THREE.Vector3(root.position.x - hand.x, 0, root.position.z - hand.z).normalize();
-    attach('hand_r', tool, hand.clone().addScaledVector(toBody, 0.03));
+    for (const kind of ['stick', 'axe', 'maul'] as const) {
+      const geometry = mergeColoredGeometry(toolGeometry[kind]);
+      if (!geometry) continue;
+      const group = new THREE.Group();
+      // The stick keeps the old part name, so captures, tests and the hero path still find it.
+      group.name = kind === 'stick' ? 'attire_tool' : `attire_${kind}`;
+      group.add(new THREE.Mesh(trackGeometry(geometry), toolMat));
+      group.rotation.set(-0.15, 0, 0);
+      group.visible = kind === 'stick';
+      attach('hand_r', group, hand.clone().addScaledVector(toBody, 0.03));
+      toolSet.set(kind, group);
+    }
 
     // Folded cotton net with two gourd floats (both documented at Áspero), held while fishing.
     net = new THREE.Group();
     net.name = 'attire_net';
-    const netParts: [THREE.BufferGeometry, THREE.Color][] = [
+    const netGeo = mergeColoredGeometry([
       [new THREE.SphereGeometry(0.11, 8, 6).scale(1, 1.5, 0.7).translate(0, -0.14, 0), new THREE.Color(0xe6dcc2)],
       [new THREE.SphereGeometry(0.035, 6, 5).translate(0.08, -0.28, 0.02), gourdMat.color],
       [new THREE.SphereGeometry(0.035, 6, 5).translate(-0.07, -0.3, -0.02), gourdMat.color],
-    ];
-    for (const [geometry, color] of netParts) {
-      const n = geometry.getAttribute('position').count;
-      const colors = new Float32Array(n * 3);
-      for (let i = 0; i < n; i++) color.toArray(colors, i * 3);
-      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    }
-    const netGeo = mergeGeometries(
-      netParts.map(([g]) => g),
-      false,
-    );
-    netParts.forEach(([g]) => g.dispose());
+    ]);
     if (netGeo) net.add(new THREE.Mesh(trackGeometry(netGeo), toolMat));
     net.visible = false;
     attach('hand_r', net, hand.clone().addScaledVector(toBody, 0.03));
@@ -872,8 +946,9 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   bodyOnlyShadows(root);
 
   return {
-    setCarrying(next: boolean, color?: number): void {
+    setCarrying(next: boolean, color?: number, resource?: string): void {
       carrying = next;
+      load = next ? (resource ?? null) : null;
       if (carry) carry.visible = next;
       if (next && color !== undefined) carryMat.color.setHex(color);
       syncTool();

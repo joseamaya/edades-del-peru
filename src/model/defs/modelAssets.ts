@@ -77,7 +77,7 @@ export type RigVariant =
   | VehicleRigVariant;
 
 /** Animation states mapped to clips; `eat` is fauna-only. A rig may omit any state except `idle`. */
-export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'run' | 'gather' | 'build' | 'attack' | 'eat';
+export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'run' | 'gather' | 'chop' | 'build' | 'attack' | 'eat';
 
 export const RIG_CLIP_STATES: readonly RigClipState[] = [
   'idle',
@@ -85,6 +85,7 @@ export const RIG_CLIP_STATES: readonly RigClipState[] = [
   'walk_carry',
   'run',
   'gather',
+  'chop',
   'build',
   'attack',
   'eat',
@@ -233,6 +234,8 @@ export interface RigStateInput {
   attacking: boolean;
   carrying: boolean;
   running?: boolean;
+  /** The work is felling or quarrying: a swing, not the field harvest (rigs without `chop` fall back). */
+  chopping?: boolean;
 }
 
 /**
@@ -244,7 +247,7 @@ export function rigClipStateFor(input: RigStateInput): RigClipState {
     if (input.running && !input.carrying) return 'run';
     return input.carrying ? 'walk_carry' : 'walk';
   }
-  if (input.gathering) return 'gather';
+  if (input.gathering) return input.chopping ? 'chop' : 'gather';
   if (input.building) return 'build';
   if (input.attacking) return 'attack';
   return 'idle';

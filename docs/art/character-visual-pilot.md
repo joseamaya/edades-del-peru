@@ -605,6 +605,40 @@ approximation for a patterned uncu.
 
 ![Andean tunics before and after: skin patches through the Inca and Moche cloth, then the body painted in the garment's own colour](../media/character-tunic-before-after.webp)
 
+## 20. Caral work tools
+
+The 2026-11-26 close capture of Caral workers at their tasks showed two problems:
+
+- **One tool for every job.** Felling, quarrying, harvesting and digging all used the same stick with a
+  stone cone at the tip. At the game camera it read as a spear.
+- **The tool vanished after the first load.** `syncTool` hid the tool whenever the worker carried anything.
+  The load fills on the back while the worker keeps working, so after the first unit the worker harvested
+  bare-handed. The fisher's net disappeared the same way.
+
+What changed:
+
+| Task (node kind) | Tool | Clip |
+| --- | --- | --- |
+| Felling (`tree`) | Hafted ground-stone axe, a polished wedge lashed through the haft (`attire_axe`) | `TreeChopping_Loop` (new `chop` state) |
+| Quarrying (`well`, `mine`) | Hafted hammerstone, a river cobble bound to a haft (`attire_maul`) | `TreeChopping_Loop` |
+| Fields, gardens, everything else | Digging stick with a fire-hardened point and no stone blade (`attire_tool`) | `Farm_Harvest` |
+| Fishing | The cotton net, kept in hand while the load fills | `Farm_Harvest` |
+| Carrying stone | A shicra: an open fibre bag of fieldstones on the back (`attire_shicra`) | `Walk_Carry_Loop` |
+
+- **Rules.** `workerToolFor` picks the tool from the node kind, and the `chopping` input to
+  `rigClipStateFor` picks the swing.
+- **Fallback.** A rig without a `chop` clip falls back to `gather`, so the colonial and modern workers do not
+  change.
+- **When the tool is put away.** It is hidden only to walk the load home (`walk_carry`) and to build (the push
+  clip has no tool).
+- **Site crew.** The Caral site crew's carriers now show the shicra too.
+- **Cost.** Each tool is its own dynamic part and only one is visible at a time, so a worker's draw count is
+  unchanged.
+
+**Certainty.** The shicra is documented for Caral (`docs/historia/civilizaciones/caral.md`), and so are the
+cotton net and the gourd floats. The axe, the hammerstone and the digging stick are plausible Late Archaic
+stone and wood tools; no specific Caral exemplar is reproduced. No metal is used.
+
 ## See also
 
 [`../design/art-direction.md`](../design/art-direction.md) §4.1 ·

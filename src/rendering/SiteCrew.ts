@@ -162,7 +162,8 @@ export class SiteCrew {
         station,
       };
       this.actors.push(actor);
-      rig.setCarrying(mode === 'carry');
+      // The carriers bring shicras (stone-filled fibre bags) from the heap to the wall.
+      rig.setCarrying(mode === 'carry', undefined, 'stone');
       if (mode === 'carry') {
         rig.play('walk_carry');
         this.placeCarrier(actor);

@@ -137,6 +137,8 @@ export class RigInstance {
   /** Resolve a requested state to the action this rig actually has. */
   private resolveState(state: RigClipState): RigClipState {
     if (this.actions.has(state)) return state;
+    // A rig without a felling swing keeps its harvest clip.
+    if (state === 'chop' && this.actions.has('gather')) return 'gather';
     // A rig without a gallop should keep its walk/trot, not freeze in idle.
     return state === 'run' && this.actions.has('walk') ? 'walk' : 'idle';
   }
@@ -210,8 +212,8 @@ export class RigInstance {
   }
 
   /** Show/hide variant attachments (carried resources) without touching gameplay. */
-  setCarrying(carrying: boolean, color?: number): void {
-    this.variant?.setCarrying?.(carrying, color);
+  setCarrying(carrying: boolean, color?: number, resource?: string): void {
+    this.variant?.setCarrying?.(carrying, color, resource);
   }
 
   /** Kind of the node being gathered (presentation: a fisher holds a net instead of the tool). */
