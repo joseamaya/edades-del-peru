@@ -33,16 +33,16 @@ It is a project-owned low-poly abstraction, **not** a survey and **not** a histo
 Eight Principled materials for the whole kit, box-projected UVs at world scale, a COLOR_0 tint and no
 textures in the GLBs. At runtime the shared PBR detail sets are mapped by `ARCH_SURFACES`.
 
-| Material                  | Runtime set                       | Use                                                                 |
-| ------------------------- | --------------------------------- | ------------------------------------------------------------------- |
-| `MAT-Arch_RepublicBrick`  | `wall_brick`, warm tint and lift  | Real Felipe curtains, bastions and magazine                         |
-| `MAT-Arch_RepublicStone`  | `wall_fieldstone`, lifted         | Battery, fort bases, kerbs, corral, parapet, outcrops               |
-| `MAT-Arch_RepublicAdobe`  | `plaster_detail`, kept colour     | Warehouse, quebrada houses and chapel                               |
-| `MAT-Arch_RepublicEarth`  | `plaster_detail`, kept colour     | Earth gable roofs and flat parapet roofs                            |
-| `MAT-Arch_RepublicWood`   | `wood`                            | Pier, doors, lintels, gun carriages, flagpole                       |
-| `MAT-Arch_RepublicPaving` | `plaster_detail`, kept colour     | Packed-earth terrace, village plaza                                 |
-| `MAT-Arch_RepublicPlaza`  | `ground_plaza`, warmed and lifted | Real Felipe courtyard paving, the one Republican floor seen at dusk |
-| `MAT-Arch_RepublicDark`   | `plaster_detail`, kept colour     | Openings, embrasures, gun muzzles                                   |
+| Material | Runtime set | Use |
+| --- | --- | --- |
+| `MAT-Arch_RepublicBrick` | `wall_brick`, warm tint and lift | Real Felipe curtains, bastions and magazine |
+| `MAT-Arch_RepublicStone` | `wall_fieldstone`, lifted | Battery, fort bases, kerbs, corral, parapet, outcrops |
+| `MAT-Arch_RepublicAdobe` | `plaster_detail`, kept colour | Warehouse, quebrada houses and chapel |
+| `MAT-Arch_RepublicEarth` | `plaster_detail`, kept colour | Earth gable roofs and flat parapet roofs |
+| `MAT-Arch_RepublicWood` | `wood` | Pier, doors, lintels, gun carriages, flagpole |
+| `MAT-Arch_RepublicPaving` | `plaster_detail`, kept colour | Packed-earth terrace, village plaza |
+| `MAT-Arch_RepublicPlaza` | `ground_plaza`, warmed and lifted | Real Felipe courtyard paving, the one Republican floor seen at dusk |
+| `MAT-Arch_RepublicDark` | `plaster_detail`, kept colour | Openings, embrasures, gun muzzles |
 
 Maximum 4 materials per piece; LOD0 ≤ 5k and LOD1 ≤ 1.5k triangles, with the chapel and the bastion as
 monument pieces (≤ 8k / 2.4k). Every piece is terrain-conformed; floors and the pier have no footprint and
@@ -54,32 +54,32 @@ Sampled from the authored heightfields before placing. `ArchitectureCity` seats 
 ground under its footprint (floors use the highest and a `lift`); the heights below are the pads the kit
 was checked against:
 
-| Pad                                                          | Height    |
-| ------------------------------------------------------------ | --------- |
-| Arica port terrace                                           | 4.0 m     |
-| Callao fort pad (the mission overrides the site heightfield) | 3.535 m   |
-| Tarapacá village                                             | 6.942 m   |
-| Tarapacá crest                                               | 9.0–9.5 m |
-| Pachica                                                      | 6.94 m    |
+| Pad | Height |
+| --- | --- |
+| Arica port terrace | 4.0 m |
+| Callao fort pad (the mission overrides the site heightfield) | 3.535 m |
+| Tarapacá village | 6.942 m |
+| Tarapacá crest | 9.0–9.5 m |
+| Pachica | 6.94 m |
 
 ## Pieces
 
-| Asset         | Composition                                             | Footprint       |
-| ------------- | ------------------------------------------------------- | --------------- |
-| `apron`       | Arica's paved port terrace and Tarapacá's packed plaza  | none (floor)    |
-| `battery`     | Five-gun stone rampart, terreplein, magazine, flagpole  | 13 × 7.4 m      |
-| `warehouse`   | Adobe port warehouse with a loading door and earth roof | 10 × 6 m        |
-| `pier`        | Timber landing on piles                                 | none (walkable) |
-| `curtain`     | 12 m brick curtain on a stone base, crenellated         | 12 × 2.1 m      |
-| `bastion`     | Pentagonal Real Felipe corner bastion                   | 10 × 8.5 m      |
-| `magazine`    | Vaulted brick magazine under an earth roof              | 8 × 6 m         |
-| `fort_plaza`  | Paved fort courtyard                                    | none (floor)    |
-| `well`        | Stone well with timber frame                            | 2.2 × 2.2 m     |
-| `chapel`      | Adobe nave, earth roof and espadaña                     | 7 × 10 m        |
-| `adobe_house` | Flat-roofed quebrada house with a low parapet           | 8 × 6 m         |
-| `corral_wall` | 10 m stone corral wall                                  | 10 × 0.7 m      |
-| `parapet`     | 20 m stone crest parapet                                | 20 × 1 m        |
-| `outcrop`     | Low rock outcrop for the heights                        | 3.4 × 2.8 m     |
+| Asset | Composition | Footprint |
+| --- | --- | --- |
+| `apron` | Arica's paved port terrace and Tarapacá's packed plaza | none (floor) |
+| `battery` | Five-gun stone rampart, terreplein, magazine, flagpole | 13 × 7.4 m |
+| `warehouse` | Adobe port warehouse with a loading door and earth roof | 10 × 6 m |
+| `pier` | Timber landing on piles | none (walkable) |
+| `curtain` | 12 m brick curtain on a stone base, crenellated | 12 × 2.1 m |
+| `bastion` | Pentagonal Real Felipe corner bastion | 10 × 8.5 m |
+| `magazine` | Vaulted brick magazine under an earth roof | 8 × 6 m |
+| `fort_plaza` | Paved fort courtyard | none (floor) |
+| `well` | Stone well with timber frame | 2.2 × 2.2 m |
+| `chapel` | Adobe nave, earth roof and espadaña | 7 × 10 m |
+| `adobe_house` | Flat-roofed quebrada house with a low parapet | 8 × 6 m |
+| `corral_wall` | 10 m stone corral wall | 10 × 0.7 m |
+| `parapet` | 20 m stone crest parapet | 20 × 1 m |
+| `outcrop` | Low rock outcrop for the heights | 3.4 × 2.8 m |
 
 ## Compositions
 
@@ -97,13 +97,13 @@ was checked against:
 
 ## Attested elements and abstractions
 
-| Element                             | Source status                                 | In game                                                                       |
-| ----------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------- |
-| Port terrace, battery and warehouse | Documented port functions and defensive works | Kit pieces on the authored terrace.                                           |
-| Real Felipe bastions and curtains   | Documented fort form                          | Kit trace; the 24 m side and gate positions are compressed for the RTS scale. |
-| Adobe village, chapel and corral    | Documented quebrada settlement                | Kit houses, chapel with espadaña and stone corral.                            |
-| Trench/parapet on the heights       | Documented defensive line                     | Stone parapet and outcrops.                                                   |
-| Exact plans, bay counts, gun counts | Not reproduced                                | Marked plausible in the manifests; never presented as a survey.               |
+| Element | Source status | In game |
+| --- | --- | --- |
+| Port terrace, battery and warehouse | Documented port functions and defensive works | Kit pieces on the authored terrace. |
+| Real Felipe bastions and curtains | Documented fort form | Kit trace; the 24 m side and gate positions are compressed for the RTS scale. |
+| Adobe village, chapel and corral | Documented quebrada settlement | Kit houses, chapel with espadaña and stone corral. |
+| Trench/parapet on the heights | Documented defensive line | Stone parapet and outcrops. |
+| Exact plans, bay counts, gun counts | Not reproduced | Marked plausible in the manifests; never presented as a survey. |
 
 ## Evidence
 
@@ -128,13 +128,27 @@ node scripts/republic_sites_sheet.mjs --before=review/republic-before --after=re
 ```
 
 The courtyard has its own before/after, `docs/media/republic-fort-courtyard-before-after.webp`, because
-`MAT-Arch_RepublicPlaza` is the only material used by a single piece (`fort_plaza`). Capture it by
-stashing the `ARCH_SURFACES` line, running the Real Felipe command above into `review/fort-before`, then
-reapplying it and capturing into `review/fort-after`; compose with `--rows=real-felipe`.
+`MAT-Arch_RepublicPlaza` is the only material used by a single piece (`fort_plaza`). Run the Real Felipe
+command above **without** the change in `src/rendering/architectureKit.ts`
+(`git diff -- src/rendering/architectureKit.ts > /tmp/fort.patch && git checkout -- src/rendering/architectureKit.ts`)
+and copy `review/republic-real-felipe_0.png` to `review/fort-before/real-felipe_0.png`; reapply the patch
+(`git apply /tmp/fort.patch`), capture again and copy to `review/fort-after/real-felipe_0.png`. Then:
 
-The grey `ground_plaza` set read navy under the cool dusk light of `m_real_felipe`, so the courtyard is
-warmed and lifted (`tint 0xf2e2c4`, `lift 1.7`) with flatter joints (`normal 0.35`), like the colonial
-paving. It is a light correction to the shared set at runtime, not a new render or a historical claim.
+```
+node scripts/republic_sites_sheet.mjs --before=review/fort-before --after=review/fort-after \
+  --rows=real-felipe --out=docs/media/republic-fort-courtyard-before-after.webp \
+  --footer="Real Felipe courtyard · MAT-Arch_RepublicPlaza · scripts/blender/build_republic_architecture_kit.py"
+```
+
+The frames come from two live runs, so the sea, the trees and the units move between them; the fort,
+camera and light are the same, and the courtyard is the only intentional difference.
+
+The grey `ground_plaza` set read cold grey and near-black in the courtyard shadow under the cool dusk light
+of `m_real_felipe`, so the mapping is warmed and lifted (`tint 0xf2e2c4`, `lift 1.7`) with flatter joints
+(`normal 0.35`), in the direction of the colonial paving but stronger and flatter than it. The texture set
+and the geometry are untouched: it is a runtime mapping change in `ARCH_SURFACES`, not a new render or a
+historical claim. The cinematic still `public/media/real-felipe/cine-bastion.webp`, which looks into the
+courtyard, is regenerated with `node scripts/capture_cinema.mjs --mission=m_real_felipe --only=cine-bastion`.
 
 ## Tests
 
