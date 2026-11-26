@@ -40,11 +40,12 @@ import bmesh
 import bpy
 from mathutils import Vector, noise
 
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import arch_kit as ak  # noqa: E402  (shared plumbing; see arch_kit.py)
+
+import arch_kit as ak  # noqa: E402  (needs the script directory on sys.path)
 import build_caral_slice as slice_kit  # noqa: E402  (shared bmesh helpers and palette)
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 EXPORT_DIR = os.path.join(ROOT, 'art-src', 'blender', 'exports', 'caral', 'architecture')
 GAME_DIR = os.path.join(ROOT, 'src', 'assets', 'architecture', 'caral')
 SOURCE_BLEND = os.path.join(ROOT, 'art-src', 'blender', 'scenes', 'caral_architecture_kit.blend')

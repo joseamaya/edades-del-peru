@@ -36,10 +36,11 @@ import bmesh
 import bpy
 from mathutils import Vector, noise
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import arch_kit as ak  # noqa: E402  (shared plumbing; see arch_kit.py)
-
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import arch_kit as ak  # noqa: E402  (needs the script directory on sys.path)
+
 EXPORT_DIR = os.path.join(ROOT, 'art-src', 'blender', 'exports', 'republic', 'architecture')
 GAME_DIR = os.path.join(ROOT, 'src', 'assets', 'architecture', 'republic')
 SOURCE_BLEND = os.path.join(ROOT, 'art-src', 'blender', 'scenes', 'republic_architecture_kit.blend')
