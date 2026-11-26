@@ -1,6 +1,6 @@
 """Build the north-coast adobe architecture kit: the Huacas de Moche and Chan Chan.
 
-One script, eight pieces and two LODs, following the Caral method (art-direction §4.2): modelled volumes,
+One script, nine pieces and two LODs, following the Caral method (art-direction §4.2): modelled volumes,
 box-projected UVs, a per-vertex tint and shared PBR detail sets at runtime. Run with
 
     blender --background --python scripts/blender/build_moche_architecture_kit.py -- --only=huaca
@@ -25,8 +25,8 @@ EXPORT_DIR = os.path.join(ROOT, 'art-src', 'blender', 'exports', 'moche', 'archi
 GAME_DIR = os.path.join(ROOT, 'src', 'assets', 'architecture', 'moche')
 SOURCE_BLEND = os.path.join(ROOT, 'art-src', 'blender', 'scenes', 'moche_architecture_kit.blend')
 
-# Ocho materiales para todo el kit: adobe, su cara en sombra, revoque, los dos frisos, el suelo de tierra, la
-# madera y las aberturas. El adobe y el revoque son la identidad costeña compartida por Moche y Chimú.
+# Eight materials for the whole kit: adobe, its shadowed face, plaster, the two friezes, the packed earth, the
+# timber and the openings. Adobe and plaster are the coastal identity Moche and Chimú share.
 MATERIALS = {
     'adobe': ('MAT-Arch_MocheAdobe', ak.hex_rgb('#c9a878'), 0.96),
     'adobe_dark': ('MAT-Arch_MocheAdobeDark', ak.hex_rgb('#a8835c'), 0.96),
@@ -201,9 +201,6 @@ ASSETS = {
     'frieze': frieze,
 }
 
-FILES = {'sources': 'art-src/blender/moche (pre-kit master)', 'docs': 'docs/design/moche-sacred-site.md'}
-
-
 def main():
     ak.run_kit(
         kit=KIT,
@@ -214,13 +211,13 @@ def main():
         confidence=CONFIDENCE,
         sources=[
             'docs/historia/arquitectura.md',
+            'docs/design/moche-chimu-sites.md',
             'docs/historia/civilizaciones/moche.md',
             'docs/historia/campanas/moche_recuay.md',
             'docs/historia/campanas/chimu_inca.md',
             'docs/design/moche-sacred-site.md',
             'docs/design/chimu-site.md',
         ],
-        files=FILES,
         collision='mocheCityBlockers / chimuCityBlockers in src/model/defs/mocheChimuCity.ts',
         export_dir=EXPORT_DIR,
         game_dir=GAME_DIR,

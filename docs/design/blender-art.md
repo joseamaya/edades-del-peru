@@ -113,12 +113,11 @@ project-owned low-poly interpretation, not the scan. See
 
 ## Moche site source
 
-`m3_moche_recuay` uses a project-owned reconstruction of the Huacas del Sol y
-de la Luna. The editable master and LODs live in
-`art-src/blender/moche/` (Git LFS); the runtime GLBs are
-`src/assets/sites/moche/moche_site_lod0.glb` / `moche_site_lod1.glb`. The
-reproducible builder/exporter is `scripts/blender/build_moche_site.py`; the
-campaign render is `art-src/blender/moche/renders/moche_hero.png`. It is a
+`m3_moche_recuay` draws the Huacas del Sol y de la Luna from the shared Moche architecture kit
+([`moche-chimu-sites.md`](./moche-chimu-sites.md)): `src/assets/architecture/moche/`, built by
+`scripts/blender/build_moche_architecture_kit.py` on `scripts/blender/arch_kit.py`, with the kit scene in
+`art-src/blender/scenes/moche_architecture_kit.blend` (Git LFS). The pre-kit master and its campaign render
+stay in `art-src/blender/moche/`; the retired `moche_site` GLB is a registry fallback. It is a
 representative reconstruction, not a survey. See `docs/design/moche-sacred-site.md`.
 
 ## Wari site source

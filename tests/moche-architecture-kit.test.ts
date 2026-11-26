@@ -103,6 +103,16 @@ describe('moche architecture kit', () => {
     }
   });
 
+  it('ships the same materials the manifests declare in the compressed game GLBs', () => {
+    for (const [name, manifest] of manifests) {
+      for (const lod of ['LOD0', 'LOD1'] as const) {
+        const glb = glbJson(path.resolve(`src/assets/architecture/moche/moche_${name}_lod${lod.slice(-1)}.glb`));
+        const shipped = (glb.materials ?? []).map((material: { name?: string }) => material.name).sort();
+        expect(shipped, `${name} ${lod}`).toEqual([...manifest.lods[lod].materials].sort());
+      }
+    }
+  });
+
   it('places every layout asset from the kit and ships both LODs in the game folder', () => {
     for (const layout of [MOCHE_CITY_LAYOUT, CHIMU_CITY_LAYOUT]) {
       for (const placement of layout) {

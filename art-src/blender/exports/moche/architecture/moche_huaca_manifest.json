@@ -10,6 +10,7 @@
   "confidence": "inferred",
   "sources": [
     "docs/historia/arquitectura.md",
+    "docs/design/moche-chimu-sites.md",
     "docs/historia/civilizaciones/moche.md",
     "docs/historia/campanas/moche_recuay.md",
     "docs/historia/campanas/chimu_inca.md",
@@ -22,12 +23,6 @@
     "LOD1": 2400
   },
   "reviewed": false,
-  "files": {
-    "sources": "art-src/blender/moche (pre-kit master)",
-    "docs": "docs/design/moche-sacred-site.md",
-    "assets": "src/assets/architecture/moche",
-    "exports": "/home/jamaya/Projects/edades-del-peru/art-src/blender/exports/moche/architecture"
-  },
   "lods": {
     "LOD0": {
       "triangles": 190,

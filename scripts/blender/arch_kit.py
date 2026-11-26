@@ -4,6 +4,10 @@ A kit script builds a handful of pieces twice (LOD0 and LOD1), exports one GLB p
 game assets and writes a per-piece manifest. This module owns the parts every kit script repeats: the bmesh
 builder, the wall/roof primitives, world-scale box UVs, the vertex tint, the GLB export and the manifest.
 
+The six kits that landed before this module (Caral, Chavín, Cusco, colonial, Republican, Independence)
+still carry their own copy of these helpers; they should be migrated here in a mechanical, no-visual-change
+pass rather than adding a seventh copy.
+
 Usage from a kit script:
 
     import arch_kit as ak
@@ -378,7 +382,7 @@ def material_names(materials):
     return {key: value[0] for key, value in materials.items()}
 
 
-def run_kit(*, kit, materials, tile, assets, budgets=None, confidence=None, sources, files,
+def run_kit(*, kit, materials, tile, assets, budgets=None, confidence=None, sources,
             collision, export_dir, game_dir, source_blend, tint_sets=None, confidence_default='inferred'):
     """Build every piece twice, copy the GLBs into the game and write the manifests."""
     args = parse_args()
@@ -399,9 +403,7 @@ def run_kit(*, kit, materials, tile, assets, budgets=None, confidence=None, sour
                     'front': '+Z', 'pivot': 'footprint centre at ground level',
                     'collision': collision, 'confidence': confidence.get(asset, confidence_default),
                     'sources': sources, 'license': 'project-owned procedural geometry (no third-party asset)',
-                    'budget': {'LOD0': limit[0], 'LOD1': limit[1]}, 'reviewed': False,
-                    'files': {**files, 'assets': f'src/assets/architecture/{kit}', 'exports': export_dir},
-                    'lods': {}}
+                    'budget': {'LOD0': limit[0], 'LOD1': limit[1]}, 'reviewed': False, 'lods': {}}
         for lod in (0, 1):
             built = assets[asset](mats, lod)
             obj = make_object(built, kit, asset, lod, names, tile, index, tint_sets)
