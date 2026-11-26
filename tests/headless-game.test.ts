@@ -5,7 +5,7 @@ import { BuildingKind } from '../src/core/types';
 import { bus } from '../src/core/EventBus';
 import { CUSCO_CITY_PLAZA } from '../src/model/defs/cuscoCity';
 import { headlessMission } from './headless';
-import { CARAL_CITY_HOUSE_BLOCKERS } from '../src/model/defs/caralCity';
+import { CARAL_CAMP_BLOCKERS, CARAL_CITY_HOUSE_BLOCKERS } from '../src/model/defs/caralCity';
 import { CHAVIN_CITY_BLOCKERS } from '../src/model/defs/chavinCity';
 
 describe('headless Game', () => {
@@ -288,9 +288,14 @@ describe('headless authored-site collision', () => {
       false,
       true,
     );
-    game.setSitePhase('in_use');
     const house = CARAL_CITY_HOUSE_BLOCKERS[0]!;
+    const camp = CARAL_CAMP_BLOCKERS[0]!;
+    // The house waits for `finished`, the camp stands from `foundation` until the city is in use.
+    expect(game.pathfinder.isWalkable(house.x, house.z)).toBe(true);
+    expect(game.pathfinder.isWalkable(camp.x, camp.z)).toBe(false);
+    game.setSitePhase('in_use');
     expect(game.pathfinder.isWalkable(house.x, house.z)).toBe(false);
+    expect(game.pathfinder.isWalkable(camp.x, camp.z)).toBe(true);
     expect(game.pathfinder.isWalkable(house.x + 30, house.z + 30)).toBe(true);
     game.destroy();
     setAutoStart(true);
@@ -313,7 +318,12 @@ describe('headless authored-site collision', () => {
       true,
     );
     const temple = CHAVIN_CITY_BLOCKERS[0]!;
+    const portada = CHAVIN_CITY_BLOCKERS[2]!;
     expect(game.pathfinder.isWalkable(temple.x, temple.z)).toBe(false);
+    // The portada waits for the New Temple.
+    expect(game.pathfinder.isWalkable(portada.x, portada.z)).toBe(true);
+    game.setSitePhase('new_temple');
+    expect(game.pathfinder.isWalkable(portada.x, portada.z)).toBe(false);
     expect(game.pathfinder.isWalkable(temple.x + 25, temple.z + 25)).toBe(true);
     game.destroy();
     setAutoStart(true);

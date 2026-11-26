@@ -160,7 +160,7 @@ export class WorldViewDecor {
 
   addSiteBlocker(blocker: SiteBlocker, pad: number): void {
     const obstacle = { x: blocker.x, z: blocker.z, w: blocker.w + pad, d: blocker.d + pad };
-    if (!blocker.since) {
+    if (!blocker.since && !blocker.until) {
       this.game.pathfinder.addObstacle(obstacle);
       return;
     }
