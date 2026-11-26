@@ -795,7 +795,9 @@ export class Unit {
   private retaliationTarget(): Unit | null {
     if (this.retaliationTimer <= 0 || this.retaliationId === null) return null;
     const target = this.ctx?.entitiesById?.get(this.retaliationId) as Unit | undefined;
-    if (!target || target.dead) {
+    // A converted shooter is an ally now: the remembered attacker must still be on the other side, or the
+    // unit would answer a Misionero by attacking the soldier it just converted.
+    if (!target || target.dead || this.sameSide(target)) {
       this.clearRetaliation();
       return null;
     }
@@ -1333,6 +1335,8 @@ export class Unit {
       this.updateAttack({ kind: OrderKind.ATTACK, entityId: best.id }, dt, time);
     } else if (this.isPathDone()) {
       this.attackingTarget = false;
+      // The engagement is over: a stale id would keep the mounted separation in its "chasing" mode.
+      this.targetEntityId = null;
       // The advance has arrived: from here the unit holds this ground as its defensive post.
       if (this.combatStance === 'defensivo' && !this.leashOrigin) {
         this.leashOrigin = { x: this.pos.x, z: this.pos.z };
@@ -2134,6 +2138,7 @@ export class Unit {
   private updateConvert(_order: Order, dt: number, time: number): void {
     const target = this.targetEntityId !== null ? this.ctx.entitiesById.get(this.targetEntityId) : null;
     if (!target || target.dead) {
+      this.targetEntityId = null;
       this.finishOrder();
       return;
     }
@@ -2165,6 +2170,7 @@ export class Unit {
       const from = target.owner;
       target.owner = this.owner;
       target.clearOrders?.();
+      this.targetEntityId = null;
       this.ctx.event('unit:converted', { id: target.id, from, to: this.owner });
       this.finishOrder();
     }

@@ -174,6 +174,35 @@ describe('stop-and-fight separation', () => {
     expect(game.units.length).toBe(2);
   });
 
+  it('drops the engagement target when an attack-move reaches its destination', () => {
+    const game = harness();
+    const dragon = game.spawn(UnitKind.REALISTA_DRAGON, 1, 100, 100);
+    const soldier = game.spawn(UnitKind.SOLDIER, 0, 100, 104);
+    dragon.issueOrder({ kind: OrderKind.ATTACK_MOVE, target: { x: 100, z: 120 } });
+
+    game.run(1);
+    expect(dragon.targetEntityId).toBe(soldier.id);
+
+    // The enemy withdraws out of the engagement envelope; the march resumes and finishes.
+    soldier.pos.set(200, 0, 200);
+    game.run(20);
+
+    expect(dragon.targetEntityId).toBeNull();
+    expect(Math.hypot(dragon.pos.x - 100, dragon.pos.z - 120)).toBeLessThan(2);
+  });
+
+  it('drops the conversion target once the enemy converts', () => {
+    const game = harness();
+    const missionary = game.spawn(UnitKind.MISSIONARY, 0, 100, 100);
+    const soldier = game.spawn(UnitKind.SOLDIER, 1, 100.5, 100);
+    missionary.issueOrder({ kind: OrderKind.CONVERT, entityId: soldier.id });
+
+    game.run(6);
+
+    expect(soldier.owner).toBe(0);
+    expect(missionary.targetEntityId).toBeNull();
+  });
+
   it('uses the larger body spacing and leaves enemy melee contact alone', () => {
     expect(unitSpacing(UnitKind.REALISTA_DRAGON)).toBe(2.4);
     expect(unitSpacing(UnitKind.SOLDIER)).toBe(1.4);
