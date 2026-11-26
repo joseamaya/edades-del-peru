@@ -791,7 +791,7 @@ export class Unit {
     return distance <= Math.min(reach, this.attackEnvelope() + RETALIATION_RADIUS);
   }
 
-  /** Living enemy that damaged this unit recently; cleared once it dies or the memory lapses. */
+  /** Living enemy that damaged this unit recently; cleared once it dies, changes sides or the memory lapses. */
   private retaliationTarget(): Unit | null {
     if (this.retaliationTimer <= 0 || this.retaliationId === null) return null;
     const target = this.ctx?.entitiesById?.get(this.retaliationId) as Unit | undefined;

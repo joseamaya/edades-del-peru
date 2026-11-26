@@ -203,6 +203,23 @@ describe('stop-and-fight separation', () => {
     expect(missionary.targetEntityId).toBeNull();
   });
 
+  it('drops the conversion target when it dies mid-cast', () => {
+    const game = harness();
+    const missionary = game.spawn(UnitKind.MISSIONARY, 0, 100, 100);
+    const soldier = game.spawn(UnitKind.SOLDIER, 1, 100.5, 100);
+    missionary.issueOrder({ kind: OrderKind.CONVERT, entityId: soldier.id });
+
+    game.run(1);
+    expect(missionary.targetEntityId).toBe(soldier.id);
+
+    soldier.takeDamage(1e9);
+    game.run(0.2);
+
+    expect(soldier.dead).toBe(true);
+    expect(missionary.targetEntityId).toBeNull();
+    expect(missionary.isBusy()).toBe(false);
+  });
+
   it('uses the larger body spacing and leaves enemy melee contact alone', () => {
     expect(unitSpacing(UnitKind.REALISTA_DRAGON)).toBe(2.4);
     expect(unitSpacing(UnitKind.SOLDIER)).toBe(1.4);
