@@ -151,6 +151,19 @@ describe('stop-and-fight separation', () => {
     expect(closestPair(soldiers)).toBeGreaterThanOrEqual(0.8);
   });
 
+  it('leaves an idle packed line alone while an enemy is near (the m6b hold)', () => {
+    const game = harness();
+    const soldiers = Array.from({ length: 6 }, (_, i) => game.spawn(UnitKind.SOLDIER, 0, 100 + i * 0.2, 100));
+    // Out of reach of a fight, but inside the engagement envelope: the line keeps the battle's shape.
+    const enemy = game.spawn(UnitKind.SOLDIER, 1, 112, 100);
+    enemy.setCombatStance('pasivo');
+    for (const s of soldiers) s.setCombatStance('pasivo');
+
+    game.run(3);
+
+    expect(closestPair(soldiers)).toBeLessThan(0.3);
+  });
+
   it('keeps charging riders of both sides from running through each other', () => {
     const game = harness();
     // Two ranks a side, the files offset by a metre so the horses meet head to shoulder (Junín).
