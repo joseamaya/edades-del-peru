@@ -1,0 +1,81 @@
+{
+  "asset_id": "killke_qollqa",
+  "source_scene": "scenes/killke_architecture_kit.blend",
+  "script": "scripts/blender/build_killke_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "tambotocoBlockers in src/model/defs/tambotocoCity.ts",
+  "confidence": "plausible",
+  "sources": [
+    "docs/historia/arquitectura.md",
+    "docs/design/tambotoco-model-mission.md",
+    "docs/design/art-direction.md",
+    "docs/historia/campanas/tambotoco.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 208,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_KillkeDark",
+        "MAT-Arch_KillkeStone",
+        "MAT-Arch_KillkeThatch"
+      ],
+      "bounds": {
+        "min": [
+          -2.12,
+          -2.016,
+          -4.2
+        ],
+        "max": [
+          2.12,
+          2.016,
+          4.21
+        ],
+        "size": [
+          4.24,
+          4.032,
+          8.41
+        ]
+      },
+      "file": "killke_qollqa_lod0.glb",
+      "bytes": 20004
+    },
+    "LOD1": {
+      "triangles": 162,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_KillkeDark",
+        "MAT-Arch_KillkeStone",
+        "MAT-Arch_KillkeThatch"
+      ],
+      "bounds": {
+        "min": [
+          -2.12,
+          -2.12,
+          -4.2
+        ],
+        "max": [
+          2.12,
+          2.12,
+          4.21
+        ],
+        "size": [
+          4.24,
+          4.24,
+          8.41
+        ]
+      },
+      "file": "killke_qollqa_lod1.glb",
+      "bytes": 16528
+    }
+  }
+}

@@ -18,7 +18,7 @@ This is the engineering roadmap, not the content proposal. The live per-mission 
   Lima, La Junta and Arica intro renders are approved, and the site-view review closed on 2026-11-23.
 - **Art pending:** Chavín, Chimú, the civil war, Túpac Amaru and Independencia still lack mostly art.
 - **Art direction:** Tambotoco is the new reference scene; E0–E6 of the pilot are implemented (docs,
-  terrain shadows, palette, plaza, procedural architecture finish, cave/huaca GLBs, highland vegetation,
+  terrain shadows, palette, plaza, Killke kit architecture, cave/huaca GLBs, highland vegetation,
   soft banks/ford and paths, Killke/ayllu variants, the Manco GLB, hero/detail/wide beats and the 3 × 3
   validation set) and the pilot closed with the 2026-11-17 approval; E7 was delivered on 2026-11-17 (baked hero proportions, scoped terrain macro, Inticancha/shrine detail; the 3X recording wins with the optional goals missed), with unique Ayar outfits/portraits, a hand-sculpted body, an andes GLB and new fauna as future work
   ([`../design/tambotoco-art-pilot.md`](../design/tambotoco-art-pilot.md)).

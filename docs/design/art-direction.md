@@ -133,8 +133,11 @@ kit takes a licence and its manifest says so (`confidence`, sources). Cusco (m_c
 colonial cities (Lima 1535/1821, Cusco 1780/1814, Miraflores: `colonialCity.ts`), the Republican sites
 (Arica, Real Felipe, Tarapacá: `republicCity.ts`), Independencia/Breña (`independenceCity.ts`), the
 north-coast sites (Huacas de Moche and Chan Chan: `mocheChimuCity.ts`) and the highland sites (Wari and the
-Chanca pucará: `wariChancaCity.ts`) are on the whole standard, blockers included. Caral (m1) and Chavín (m2)
-draw from a kit but keep hand-written blocker arrays; only the rest of Tambotoco is still to be moved to it.
+Chanca pucará: `wariChancaCity.ts`) and Tambotoco (the Killke/ayllu hamlets, qollqas, ramadas and shrine
+platform: `tambotocoCity.ts`) are on the whole standard, blockers included. Caral (m1) and Chavín (m2) draw
+from a kit but keep hand-written blocker arrays. Tambotoco keeps its cave and huaca hero GLBs and builds the
+continuous ground — paving, canchas, terraces, fields, paths — in code, because the player builds on it and
+it must follow the relief vertex by vertex.
 
 The Tambotoco site uses a **domestic Killke/ayllu language**, not imperial Inca (see
 [`../historia/arquitectura.md`](../historia/arquitectura.md) §1):
@@ -164,7 +167,8 @@ The Tambotoco site uses a **domestic Killke/ayllu language**, not imperial Inca 
 | Inticancha hero house, altar, plaza furniture       | Blender GLB or hybrid modules      | Unique forms that carry the foundation moment             |
 | Ayar headdresses, props, garments                   | Blender GLB + runtime accessories | Identity at close range; shared skeleton                  |
 | Highland trees, shrubs, reeds                       | Blender GLB kit                   | Organic silhouettes and wind; two LODs                    |
-| Repeated huts, qollqas, canchas, terraces          | Blender kit modules from data     | The §4.2 standard: one source for look and collision      |
+| Repeated huts, qollqas, ramadas, shrine platforms   | Blender kit modules from data     | The §4.2 standard: one source for look and collision      |
+| Cancha paving, terrace faces                        | Procedural (ground)               | Ground the player builds and walks on; follows the relief |
 | Fields                                              | Procedural                        | Variation, terrain-conformity and per-material merging    |
 | Paths, ground cover, wear, decals                   | Terrain paint / procedural        | Cheap, continuous and easy to revise                      |
 | Stone outcrops and quarry props                     | Blender GLB kit                   | Readable material break; instanced                        |

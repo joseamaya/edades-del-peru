@@ -106,7 +106,8 @@ import {
   TAMBOTOCO_STREAM_HALF_WIDTH,
   TAMBOTOCO_STREAM_PATH,
 } from './tambotocoHeightmap';
-import { TAMBOTOCO_CAVE, TAMBOTOCO_INTICANCHA_HUTS, TAMBOTOCO_SHRINE, TAMBOTOCO_VILLAGES } from './tambotocoLayout';
+import { TAMBOTOCO_SHRINE } from './tambotocoLayout';
+import { TAMBOTOCO_PHASE_PLAN, tambotocoBlockers } from './tambotocoCity';
 import { CUSCO_COLONIAL, LIMA_COLONIAL } from './colonialLayout';
 import { colonialCityBlockers } from './colonialCity';
 import {
@@ -1203,14 +1204,15 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       water: { deep: '#183a33', shallow: '#35685a', sheen: 0.12, foam: 0.1, fog: 0.3, refraction: 0.15 },
     },
   },
-  // Huanacaure (legendary Ayar route) on a new 256 m Pacaritambo–Cusco transect. The ayllu world is
-  // drawn by `AylluSite`: cave mouth, Huanacaure shrine, valley hamlets and the planned Inticancha.
+  // Huanacaure (legendary Ayar route) on a new 256 m Pacaritambo–Cusco transect. The hamlets, Inticancha
+  // and the shrine platform are drawn from the Killke kit (`tambotocoCity.ts`); the cave and huaca heroes,
+  // the paved plaza, the canchas and the fields stay in `TambotocoSite`.
   tambotoco_site: {
     id: 'tambotoco_site',
     label: 'Huanacaure y el valle del Cusco',
     modelName: 'ayllu_site',
     style: 'ayllu',
-    // Kept for the site contract; the procedural kit draws in world coordinates.
+    // Kept for the site contract; the kit draws in world coordinates.
     scale: 0.7,
     origin: { x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z },
     anchor: { x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z },
@@ -1226,20 +1228,11 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       fords: [{ z: 190, halfWidth: 10 }],
     },
     pathCellSize: 1,
-    phases: { phases: ['cave', 'huanacaure', 'inticancha', 'fundada'], initial: 'cave' },
+    phases: TAMBOTOCO_PHASE_PLAN,
     heritageProxies: [{ id: 'tambotoco_huanacaure', x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z, w: 12, d: 10, h: 5 }],
-    blockers: [
-      { x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z, w: 12, d: 10 },
-      { x: TAMBOTOCO_CAVE.x, z: TAMBOTOCO_CAVE.z, w: 11, d: 9 },
-      ...TAMBOTOCO_VILLAGES.flatMap((v) => v.huts.map((h) => ({ x: h.x, z: h.z, w: h.w + 1.4, d: h.d + 1.4 }))),
-      ...TAMBOTOCO_INTICANCHA_HUTS.map((h) => ({
-        x: h.x,
-        z: h.z,
-        w: h.w + 1.4,
-        d: h.d + 1.4,
-        since: 'fundada',
-      })),
-    ],
+    // One source: the cave footprint plus every solid Killke piece, derived from the same layout that draws them.
+    blockers: tambotocoBlockers(),
+    simulationCollision: true,
     blockerPadding: 0.5,
     buildKeepout: [{ x: TAMBOTOCO_SHRINE.x / 256, z: TAMBOTOCO_SHRINE.z / 256, rx: 0.07, rz: 0.065 }],
     wallCollision: {

@@ -120,6 +120,13 @@ The 2026-11-16 pass was the baseline for the art-direction pilot, which closed i
 shadows, palette, architecture finish, highland vegetation, the Manco hero variant, the presentation pass and
 the approved 3 × 3 captures ([`tambotoco-art-pilot.md`](./tambotoco-art-pilot.md)).
 
+**Tambotoco buildings moved to the Killke kit (2026-11-26).** The shrine platform, houses, qollgas and ramadas
+are now modelled Blender pieces (`build_killke_architecture_kit.py`, five pieces, seven materials, LOD0 ≤ 430
+triangles) placed from `tambotocoCity.ts`, and the same layout yields their blockers; the cave/huaca heroes and
+the continuous ground stay procedural. This closes art-direction §4.2's last procedural buildings. The
+before/after sheet is `docs/media/tambotoco-killke-before-after.webp` and the structural
+`bench_scene --mission=m_tambotoco` counts stay inside the 500k/280 and 660k/360 caps.
+
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
 their spawn); every authored start fits its population cap (Lima 31/22, Junta 38/22, m8 24/22, Tambotoco

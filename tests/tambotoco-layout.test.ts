@@ -13,6 +13,7 @@ import {
   TAMBOTOCO_VILLAGES,
   type AylluHut,
 } from '../src/model/defs/tambotocoLayout';
+import { hutPlacement } from '../src/model/defs/tambotocoCity';
 import { canchaPlot, pavedPlaza, type Parts } from '../src/rendering/aylluKit';
 import { TerrainData } from '../src/sim/TerrainData';
 
@@ -66,6 +67,20 @@ describe('Tambotoco authored huts', () => {
     const ford = ground(153.5, 190);
     expect(ford[2], 'the ford bar reads as gravel').toBeGreaterThan(0.45);
     expect(ford[0]).toBeLessThan(0.2);
+  });
+
+  it('keeps every hut inside the modelled footing, so no kit piece floats on the slope', () => {
+    for (const { name, hut } of huts()) {
+      let lowest = Infinity;
+      for (let dz = -hut.d / 2; dz <= hut.d / 2 + 1e-6; dz += 0.25) {
+        for (let dx = -hut.w / 2; dx <= hut.w / 2 + 1e-6; dx += 0.25) {
+          lowest = Math.min(lowest, TERRAIN.getHeight(hut.x + dx, hut.z + dz));
+        }
+      }
+      // The piece seats at the centre ground and its plinth reaches 4.2 model metres down.
+      const footing = 4.2 * hutPlacement(hut).scale[1];
+      expect(TERRAIN.getHeight(hut.x, hut.z) - lowest, `${name} hut at ${hut.x},${hut.z}`).toBeLessThanOrEqual(footing);
+    }
   });
 
   it('does not overlap two hut footprints', () => {

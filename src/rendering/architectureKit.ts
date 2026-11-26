@@ -63,6 +63,12 @@ const wariUrls = import.meta.glob('../assets/architecture/wari/*.glb', {
   import: 'default',
 }) as Record<string, string>;
 
+const killkeUrls = import.meta.glob('../assets/architecture/killke/*.glb', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
+
 const KIT_URLS: Record<ArchitectureKitId, Record<string, string>> = {
   caral: caralUrls,
   chavin: chavinUrls,
@@ -72,6 +78,7 @@ const KIT_URLS: Record<ArchitectureKitId, Record<string, string>> = {
   independence: independenceUrls,
   moche: mocheUrls,
   wari: wariUrls,
+  killke: killkeUrls,
 };
 
 export function archKitUrl(kit: ArchitectureKitId, id: ArchAssetId, lod: 0 | 1): string | undefined {
@@ -245,6 +252,16 @@ export const ARCH_SURFACES: Record<
   'MAT-Arch_WariThatch': { set: 'roof_thatch', tint: 0xd9bf86, normal: 0.9 },
   'MAT-Arch_WariWood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
   'MAT-Arch_WariDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  // Killke (Tambotoco): the same warm highland fieldstone and straw thatch as the procedural ayllu kit
+  // it replaces, so the domestic vocabulary survives the move to modelled pieces. The stone and the cut
+  // thresholds are lifted out of the dark photographed sets; plaster, earth and openings keep their paint.
+  'MAT-Arch_KillkeStone': { set: 'wall_fieldstone', tint: 0xd9c9ae, normal: 0.85, lift: 1.45 },
+  'MAT-Arch_KillkeCutstone': { set: 'wall_cutstone', tint: 0xe8dbca, normal: 0.75, lift: 1.15 },
+  'MAT-Arch_KillkePlaster': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  'MAT-Arch_KillkeEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
+  'MAT-Arch_KillkeThatch': { set: 'roof_thatch', tint: 0xd9bf86, normal: 0.9 },
+  'MAT-Arch_KillkeWood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
+  'MAT-Arch_KillkeDark': { set: 'plaster_detail', normal: 0.6, keepColor: true },
 };
 
 /**
@@ -415,9 +432,13 @@ export class ArchitectureCity {
         if (!model) continue;
         // Buildings sit on the lowest ground under their footprint (slightly sunk, never floating);
         // lifted pieces (a plaza seated by its floor) on the highest, so the floor clears the terrain.
+        // A hillside piece with a modelled footing is seated at its centre so the uphill wall cuts into
+        // the slope and the downhill face shows the foundation, without the roof sinking into the hill.
         const y = p.lift
           ? this.groundUnder(p, model, Math.max) + p.lift * p.scale[1]
-          : this.groundUnder(p, model, Math.min) - 0.08;
+          : p.seat === 'centre'
+            ? this.heightAt(p.x, p.z) - 0.08
+            : this.groundUnder(p, model, Math.min) - 0.08;
         _q.setFromAxisAngle(_up, p.rotY);
         _m.compose(_pos.set(p.x, y, p.z), _q, _scale.set(p.scale[0], p.scale[1], p.scale[2]));
         for (const [name, part] of model.lods[lod]) {

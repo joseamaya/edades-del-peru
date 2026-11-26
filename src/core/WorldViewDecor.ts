@@ -14,6 +14,7 @@ import { mergeStaticByMaterial } from '../rendering/mergeStatic';
 import { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
 import type { ArchitectureKitId, ArchPlacement } from '../model/defs/architectureKit';
 import { AylluSite } from '../rendering/AylluSite';
+import { KILLKE_KIT, TAMBOTOCO_KIT_LAYOUT, TAMBOTOCO_PHASE_PLAN } from '../model/defs/tambotocoCity';
 import { loadTambotocoHeroAssets } from '../rendering/tambotocoHeroKit';
 import { ColonialLife } from '../rendering/ColonialLife';
 import { COLONIAL_LAYOUTS } from '../model/defs/colonialLayout';
@@ -390,8 +391,12 @@ export class WorldViewDecor {
       }
     }
     if (def.style === 'ayllu') {
-      // The legend has its own places: a cave mouth, the Huanacaure shrine, the valley hamlets and
-      // the planned Inticancha. The reused chanca pucará is no longer loaded for this site.
+      // The legend has its own places: the cave mouth, the Huanacaure shrine platform, the valley hamlets
+      // and Inticancha. The hamlets, qollqas, ramadas and shrine platform are Killke kit pieces; the
+      // ground site keeps the cave/huaca heroes, the paving, the fields and the people.
+      spawnKitCity('tambotoco_city', KILLKE_KIT, TAMBOTOCO_KIT_LAYOUT, def.phases ?? TAMBOTOCO_PHASE_PLAN, (city) => {
+        this.game.tambotocoCity = city;
+      });
       if (!this.game.headless) {
         this.game.aylluSite?.dispose();
         const ayllu = new AylluSite(
