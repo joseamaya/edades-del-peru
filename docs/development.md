@@ -1170,7 +1170,15 @@ body surface and exports the eleven clips. Rebuild with
 (in `rigAttire.ts`, applied by the worker, post-colonial and modern attire) keep every rig's detail meshes out
 of the shadow pass (both `castShadow` and `receiveShadow`, so a later shadow-mode change cannot add them back);
 `limitShadowCasters` applies the same silhouette rule to every other rig. This is what keeps the worker under
-40k tris in the benchmark. Measure with
+40k tris in the benchmark. Its traversal deliberately does not filter by layer, so the layer-31 sources
+`consolidateRig` leaves for inspection count toward the coverage denominator although the shadow camera
+(layer 0) never draws them: the 60 % is not 60 % of what casts. Dropping them is not a free cleanup — measured
+with `node scripts/bench.mjs --scenario=mounted|siege --units=12` on `e8558218`, filtering by
+`mesh.layers.isEnabled(0)` while keeping the rule takes the mounted horse's own shadow away (9.0 → 8.0 draws,
+15,313 → 13,131 triangles); filtering plus one caster per skeleton and 60 % of the remaining casters instead
+raises mounted to 10.0 draws / 15,393 triangles and the siege scenario to 19.0 / 7,116 from 13.0 / 6,066
+(artillery 14, mortar 12). Only change the rule with before/after captures of the worker, cavalry, siege and
+fauna rigs plus `yarn bench:check`. Recorded as ADR 0010. Measure with
 `yarn bench --scenario=rigs --units=4,12,24,48 --runs=2 --steps=600 --assert`.
 
 To add a model:
