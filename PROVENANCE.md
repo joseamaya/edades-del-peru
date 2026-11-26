@@ -1003,6 +1003,41 @@ slot is absent (offline / without assets).
   after the kit, same mission, seed, camera and light); produced with the `yarn shot` commands in
   `docs/design/independence-site.md` and `scripts/independence_sites_sheet.mjs`.
 
+### Moche architecture kit (m3_moche_recuay, m6_chimu_inca)
+
+- **Location**: `src/assets/architecture/moche/moche_<piece>_lod0.glb` and `_lod1.glb`: `huaca` (five
+  battered adobe tiers, painted friezes, summit room and stepped ramp), `platform` (two tiers with a
+  plastered summit room and ramp), `plaza` (packed floor and kerb), `wall`, `niche_wall` (four recessed
+  niches), `hall` (flat-roofed adobe hall), `audiencia` (raised Chimú hall with niches), `altar` and
+  `frieze` (painted panel, bands on both faces).
+- **Source**: generated in Blender 5.3 by `scripts/blender/build_moche_architecture_kit.py` on the shared
+  `scripts/blender/arch_kit.py`; kit scene `art-src/blender/scenes/moche_architecture_kit.blend` (Git LFS).
+  Uncompressed exports and per-piece manifests live in `art-src/blender/exports/moche/architecture/`; the
+  game copies were meshopt-compressed with `yarn art:models --only=<file>` (143,548 B for the 18 copies).
+- **Content**: project-owned procedural geometry. Eight Principled materials (adobe, its shadowed tone,
+  lime plaster, the two frieze colours, packed earth, timber and dark openings) with world-scale
+  box-projected UVs and a per-vertex tint; no textures in the GLBs. At runtime the game maps
+  `plaster_detail` (kept colour) onto adobe, plaster, friezes, earth and openings and `wood` onto the
+  timber. LOD0 ≤ 5000 / LOD1 ≤ 1500 triangles per piece; the huaca and the audiencia are monument pieces
+  (≤ 8000 / 2400).
+- **Historical basis**: documented: the Huaca del Sol and de la Luna as stepped platforms, Moche painted
+  friezes, the plaza and elite patios, Chan Chan's adobe compounds, audiencias and niched walls. Assumed
+  (licences in the manifests): the tier counts, the 24 x 16 m base, the niche and frieze counts, the gate
+  width and the ramp profiles. Sources: `docs/historia/arquitectura.md`,
+  `docs/historia/civilizaciones/moche.md`, `docs/historia/campanas/{moche_recuay,chimu_inca}.md`,
+  `docs/design/{moche-chimu-sites,moche-sacred-site,chimu-site}.md`.
+- **Runtime**: `src/model/defs/mocheChimuCity.ts` places the Huacas de Moche and Chan Chan compositions and
+  derives each site's pathfinding blockers from the same placements (`layoutBlockers`); `WorldViewDecor`
+  bakes them with `ArchitectureCity`. Both sites set `hideModel` and `simulationCollision`, so the headless
+  match blocks the same pieces. The Moche site keeps its south-west approach and the Chimú compound its
+  south gate open; the access ramps are part of the footprints. This retires the `moche_site` and
+  `chimu_compound` GLBs as drawn sites (they remain registry fallbacks).
+- **Evidence**: `docs/media/moche-kit-before-after.webp` (1772x978 WebP q74): two rows, the Huacas de Moche
+  and Chan Chan, before and after the kit, same mission, seed, camera and light; produced with the
+  `yarn shot` commands in `docs/design/moche-chimu-sites.md` and `scripts/sites_sheet.mjs`. The
+  `cine-huacas`, `cine-plaza` and `cine-costa` stills were regenerated with
+  `node scripts/capture_cinema.mjs --mission=<id> --only=<shot>`; they still showed the retired GLBs.
+
 ### Republican architecture kit (m9_guerra_pacifico, m_real_felipe, m_tarapaca)
 
 - **Location**: `src/assets/architecture/republic/republic_<piece>_lod0.glb` and `_lod1.glb`: `apron`

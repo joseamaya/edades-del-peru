@@ -131,10 +131,10 @@ blocks cannot drift apart and no building can be walked through, headless includ
 kept only for continuous ground: terrain paint, paths, ground cover and scatter. Where the record is silent the
 kit takes a licence and its manifest says so (`confidence`, sources). Cusco (m_cusco_1536, m6b), the
 colonial cities (Lima 1535/1821, Cusco 1780/1814, Miraflores: `colonialCity.ts`), the Republican sites
-(Arica, Real Felipe, Tarapacá: `republicCity.ts`) and Independencia/Breña (`independenceCity.ts`) are on the
-whole standard, blockers included; Caral (m1) and Chavín (m2) draw from a kit but keep hand-written blocker
-arrays, and the Moche/Wari/Chimú/Chanca sites, Vilcabamba and the rest of Tambotoco are to be moved to it in
-that order.
+(Arica, Real Felipe, Tarapacá: `republicCity.ts`), Independencia/Breña (`independenceCity.ts`) and the
+north-coast sites (Huacas de Moche and Chan Chan: `mocheChimuCity.ts`) are on the whole standard, blockers
+included; Caral (m1) and Chavín (m2) draw from a kit but keep hand-written blocker arrays, and the
+Wari/Chanca sites, Vilcabamba and the rest of Tambotoco are to be moved to it in that order.
 
 The Tambotoco site uses a **domestic Killke/ayllu language**, not imperial Inca (see
 [`../historia/arquitectura.md`](../historia/arquitectura.md) §1):

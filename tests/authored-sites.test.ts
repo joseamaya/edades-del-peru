@@ -89,7 +89,7 @@ describe('authored campaign sites', () => {
     const valley = sampleAuthoredGround(site.heightField!, 80, 60)!;
     expect(valley[0], 'the irrigated valley is painted grass').toBeGreaterThan(0.2);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['chimu_compound']);
-    expect(site.heritageProxies[0]?.w).toBeCloseTo(14.667, 3);
+    expect(site.heritageProxies[0]?.w).toBeCloseTo(24, 3);
     expect(site.walkableCorridor?.width).toBeCloseTo(10.667, 3);
     const mission = MISSIONS.find((m) => m.id === 'm6_chimu_inca')!;
     expect(mission.layout?.site?.id).toBe('chimu_site');
@@ -262,8 +262,8 @@ describe('authored campaign sites', () => {
     const valley = sampleAuthoredGround(moche.heightField!, 80, 100)!;
     expect(valley[0], 'the irrigated valley is painted grass').toBeGreaterThan(0.25);
     expect(moche.heritageProxies.map((p) => p.id)).toEqual(['moche_huaca_sol', 'moche_huaca_luna', 'moche_plaza']);
-    expect(moche.heritageProxies[0]?.w).toBeCloseTo(30.667, 3);
-    expect(moche.blockers.length).toBe(2);
+    expect(moche.heritageProxies[0]?.w).toBeCloseTo(24, 3);
+    expect(moche.blockers.length).toBeGreaterThanOrEqual(8);
     expect(moche.walkableCorridor?.width).toBeCloseTo(10.667, 3);
     const mission = MISSIONS.find((m) => m.id === 'm3_moche_recuay')!;
     expect(mission.layout?.site?.id).toBe('moche_site');

@@ -1014,7 +1014,8 @@ test('plays m3 Moche with real movement, the canal and the exchange', async ({ p
     const dt = 1 / 60;
     let t = 0;
     let reached = false;
-    for (let i = 0; i < Math.ceil(115 / dt) && !g.mission.ended; i++) {
+    // The kit's huacas and plaza push the march to ~60 s; the hold needs 90 s on top.
+    for (let i = 0; i < Math.ceil(165 / dt) && !g.mission.ended; i++) {
       document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       if (!reached && Math.hypot(workers[0].pos.x - anchor.x, workers[0].pos.z - anchor.z) < 12) reached = true;
       g.update(dt, t);

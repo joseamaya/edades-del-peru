@@ -150,7 +150,8 @@ Definition of Done and the building audit see
   GLB is a labelled abstraction from another place and whose kit has not landed yet: the Vilcabamba refuge.
   Cusco's plaza and Sacsayhuamán are the Cusco kit; the Real Felipe bastions and the Tarapacá
   village/heights/Pachica are the Republican kit (`src/model/defs/republicCity.ts`, which also owns their
-  blockers). `SiteLandmarks` merges geometry per material and lives in its own scene group so disposing a
+  blockers); the Huacas de Moche and Chan Chan are the Moche kit (`src/model/defs/mocheChimuCity.ts`).
+  `SiteLandmarks` merges geometry per material and lives in its own scene group so disposing a
   match never touches the shared generated PBR textures. `MissionSite.hideModel` drops the bundled GLB per
   mission (Cusco 1536) while `AuthoredSiteDef.hideModel` does it for a site (Arica, Real Felipe, Tarapacá,
   Vilcabamba); both are presentation-only. Guarded by `tests/site-landmarks.test.ts`.
@@ -621,6 +622,12 @@ Definition of Done and the building audit see
   Junín–Ayacucho march and the 10.7 m walkable corridor cross the site; the blockers come from the layout,
   not a hand-written fortress. This changes m8/Breña pathing, so `REPLAY_VERSION` is 47; guarded by
   `tests/independence-architecture-kit.test.ts`, `tests/e2e/brena.spec.ts` and the m8 playtest.
+- **Moche/Chimú kit** (2026-11-25): the Huacas del Sol y de la Luna and the Chan Chan compound draw from
+  `mocheChimuCity.ts` (9 pieces, 8 materials) built by `build_moche_architecture_kit.py` on the shared
+  `arch_kit.py`; both sites set `simulationCollision` and the old site GLBs stay as fallbacks. The Moche
+  layouts keep the south-west approach and the Chimú gate open, and the access ramps are part of the
+  footprints so units walk around them. This changes m3/m6 pathing, so `REPLAY_VERSION` is 48; guarded by
+  `tests/moche-architecture-kit.test.ts`, the m3/m6 campaign specs and `campaign-completable`.
 - **Authored canal traces** (issue 384): `MissionCanal.path` (normalized) becomes `Game.canalPath` in world
   units; `canalIrrigationAt` measures the farm bonus by distance to the trace, `Game.canPlace` keeps buildings
   out of the channel, `Game.isReserved` keeps props out, and `spawnCanal` builds relief-following ribbons plus a

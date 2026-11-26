@@ -35,6 +35,7 @@ import { CUSCO_CITY_LAYOUT, CUSCO_PHASE_PLAN } from '../model/defs/cuscoCity';
 import { COLONIAL_CITY_PHASE, COLONIAL_PHASE_PLAN, colonialLayoutAt } from '../model/defs/colonialCity';
 import { REPUBLIC_LAYOUTS, REPUBLIC_PHASE_PLAN } from '../model/defs/republicCity';
 import { INDEPENDENCE_LAYOUTS, INDEPENDENCE_PHASE_PLAN } from '../model/defs/independenceCity';
+import { MOCHE_LAYOUTS, MOCHE_PHASE_PLAN } from '../model/defs/mocheChimuCity';
 import { standsIn, type SitePhasePlan } from '../model/defs/sitePhases';
 import { fishingApproach, type Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
@@ -368,6 +369,16 @@ export class WorldViewDecor {
       if (layout) {
         spawnKitCity('independence_city', 'independence', layout, INDEPENDENCE_PHASE_PLAN, (city) => {
           this.game.independenceCity = city;
+        });
+      }
+    }
+    if (def.style === 'moche') {
+      // The Huacas de Moche and the Chimú compound share the north-coast adobe kit; the composition is
+      // chosen by id, and the same layout owns its blockers.
+      const layout = MOCHE_LAYOUTS[def.id as keyof typeof MOCHE_LAYOUTS];
+      if (layout) {
+        spawnKitCity('moche_city', 'moche', layout, MOCHE_PHASE_PLAN, (city) => {
+          this.game.mocheCity = city;
         });
       }
     }
