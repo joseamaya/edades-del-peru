@@ -786,22 +786,39 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       ? pelvis.getWorldPosition(new THREE.Vector3())
       : new THREE.Vector3().addVectors(lowerBox.min, lowerBox.max).multiplyScalar(0.5);
     const hem = new Array<number>(HEM_BINS).fill(Infinity);
+    const hemBin = (point: THREE.Vector3): number => {
+      const angle = Math.atan2(point.z - hip.z, point.x - hip.x);
+      return Math.floor(((angle + Math.PI) / (Math.PI * 2)) * HEM_BINS) % HEM_BINS;
+    };
     const skirt = lower as THREE.SkinnedMesh;
     const skirtPosition = lower.geometry.getAttribute('position');
     if (skirt.isSkinnedMesh && skirtPosition) {
       const point = new THREE.Vector3();
       for (let i = 0; i < skirtPosition.count; i++) {
         skirt.getVertexPosition(i, point).applyMatrix4(lower.matrixWorld);
-        const angle = Math.atan2(point.z - hip.z, point.x - hip.x);
-        const bin = Math.floor(((angle + Math.PI) / (Math.PI * 2)) * HEM_BINS) % HEM_BINS;
+        const bin = hemBin(point);
         hem[bin] = Math.min(hem[bin], point.y);
       }
     }
-    const hemAt = (point: THREE.Vector3): number => {
-      const angle = Math.atan2(point.z - hip.z, point.x - hip.x);
-      const bin = Math.floor(((angle + Math.PI) / (Math.PI * 2)) * HEM_BINS) % HEM_BINS;
-      return Number.isFinite(hem[bin]) ? hem[bin] : lowerBox.min.y;
-    };
+    // A low-poly skirt can leave a bin without a hem vertex; borrow the nearest finite bin, then fall
+    // back to the global lowest vertex rather than treating the gap as a higher hem.
+    for (let i = 0; i < HEM_BINS; i++) {
+      if (Number.isFinite(hem[i])) continue;
+      for (let step = 1; step < HEM_BINS; step++) {
+        const before = hem[(i - step + HEM_BINS) % HEM_BINS];
+        const after = hem[(i + step) % HEM_BINS];
+        if (Number.isFinite(before)) {
+          hem[i] = before;
+          break;
+        }
+        if (Number.isFinite(after)) {
+          hem[i] = after;
+          break;
+        }
+      }
+      if (!Number.isFinite(hem[i])) hem[i] = lowerBox.min.y;
+    }
+    const hemAt = (point: THREE.Vector3): number => hem[hemBin(point)];
     /**
      * The uncu is sleeveless: only the cap of the upper arm at the shoulder joint belongs to the tunic.
      * The rest of the upper arm stays skin, so the paint no longer draws a short sleeve.

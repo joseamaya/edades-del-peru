@@ -1397,14 +1397,16 @@ slot is absent (offline / without assets).
 
 - **Location**: `docs/media/andean-garment-paint-before-after.webp`, 952x1642 WebP q76.
 - **Source**: `node scripts/capture_character_pilot.mjs --only=inca,moche --close --out=review/paint-after`;
-  the before row runs the same script from a worktree at `main`, with the same seed, light, camera and
-  close frame. Then `node scripts/andean_paint_sheet.mjs --before=review/paint-before --after=review/paint-after
-  --out=docs/media/andean-garment-paint-before-after.webp`.
+  the before row copies this PR's `capture_character_pilot.mjs` into a worktree at `main` (only
+  `src/rendering/workerAttire.ts` differs) and runs it with `--out=review/paint-before`, same seed, light,
+  camera and close frame. Then `node scripts/andean_paint_sheet.mjs --before=review/paint-before
+  --after=review/paint-after --out=docs/media/andean-garment-paint-before-after.webp`.
 - **Content**: the Inca and Moche warriors at the close frame; the before row has tunic-coloured upper arms
   (a short sleeve) and a cloth band on the moche thigh, the after row has skin arms with only the shoulder
   cap painted and a clean thigh under the skirt.
-- **Review**: no historical change; the sleeveless uncu and the bare thigh are the documented garment
-  (`docs/historia/atuendos.md` §1–2). This is a body-paint capture, not new geometry.
+- **Review**: no historical change; the uncu is documented as sleeveless in `docs/historia/atuendos.md` §1
+  (sources LACMA, Museo de América), and the thigh is bare below the short wrap/skirt of the same outfit.
+  This is a body-paint capture, not new geometry.
 
 
 

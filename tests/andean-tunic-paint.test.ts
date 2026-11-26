@@ -230,6 +230,7 @@ describe('Andean tunic body paint', () => {
       ['inca_soldier_m', true, 'attire_wrap_m'],
       ['moche_soldier_m', true, 'attire_wrap_m'],
       ['inca_soldier_f', false, 'attire_skirt_f'],
+      ['inca_chasqui_f', false, 'attire_skirt_chasqui_f'],
     ] as const) {
       const rig = acquireRig('caral_worker', variant)!;
       try {
@@ -244,12 +245,12 @@ describe('Andean tunic body paint', () => {
           for (let i = 0; i < bones.length; i++) {
             if (bones[i] !== `upperarm_${side}`) continue;
             body.getVertexPosition(i, point).applyMatrix4(body.matrixWorld);
-            if (point.y < shoulderY - 0.06) {
+            if (point.y < shoulderY - 0.045) {
               expect(paintAlpha(body, i), `${variant} bare ${side} arm vertex ${i}`).toBe(0);
             }
             if (point.y >= shoulderY - 0.02 && paintAlpha(body, i) === 1) cap++;
           }
-          expect(cap, `${variant} shoulder cap ${side}`).toBeGreaterThan(0);
+          expect(cap, `${variant} shoulder cap ${side}`).toBeGreaterThanOrEqual(4);
         }
 
         const lower = rig.root.getObjectByName(lowerName) as THREE.SkinnedMesh;

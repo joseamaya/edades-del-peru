@@ -33,7 +33,7 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 - **Defensa mejor desarrollada que en otras zonas: cascos y armadura acolchada** (real protección
   contra hondas y dardos); **escudos (rodelas)** conocidos. — Métraux, *Weapons*.
 - **Prendas base**: **uncu/túnica** masculina tejida en tapiz (algodón + fibra de camélido) con
-  abertura central para la cabeza, **sobre un taparrabos**; telas finas (**cumbi**) reservadas a
+  abertura central para la cabeza, **sin mangas**, **sobre un taparrabos**; telas finas (**cumbi**) reservadas a
   élites y rituales; patrones de **tocapu** (motivos geométricos) y **ajedrezado con canesú rojo en V**
   (asociado a jefes militares/mando). — LACMA, *The Andean Uncu*; Dumbarton Oaks, *All T'oqapu Tunic*;
   The Met, *Tunic (Inca)*; NGA *Gold and the Incas*; Museo de América, *Uncu inca*.
