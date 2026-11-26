@@ -94,7 +94,7 @@ hold La Apacheta, resist at Umachiri. The informational montonera step advances 
 - Scale: `tests/campaign-scale.test.ts` enforces the 256 m map, 128² ground and crossing band.
 - E2E: the general campaign specs cover briefing, epilogue, HUD layout, save/load and the campaign path;
   the mission-specific playtest reaches the acts with real orders.
-- Bench: the opening view is registered in `scripts/bench_scene.mjs` under a 780k/1000 regression cap; it still exceeds the art-direction §11 target (see open item 3).
+- Bench: the opening view is registered in `scripts/bench_scene.mjs` under a 690k/520 regression cap; it still exceeds the art-direction §7 target (see open item 3).
 
 ## Open items
 
