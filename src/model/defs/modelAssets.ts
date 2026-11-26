@@ -100,8 +100,10 @@ const ANDEAN_NON_WORKER_CLIPS: Partial<Record<RigClipState, string | null>> = {
 };
 
 const ANDEAN_CLIP_OVERRIDES: Record<AndeanRole, Partial<Record<RigClipState, string | null>>> = {
-  // A worker has no war club: the existing jab is the least-wrong unarmed defence.
-  worker: { attack: 'Punch_Jab' },
+  // A worker has no war club: the existing jab is the least-wrong unarmed defence. Felling and quarrying
+  // swing the stone axe or hammerstone the Andean worker holds (`workerAttire.ts`); the colonial and modern
+  // workers carry no tool, so they keep the harvest clip.
+  worker: { attack: 'Punch_Jab', chop: 'TreeChopping_Loop' },
   scout: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'Punch_Jab' },
   soldier: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'Sword_Regular_A' },
   // A slinger throws: the old Punch_Jab made every hondero punch the air.
@@ -210,8 +212,8 @@ export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigCli
   ...MOUNTED_VARIANT_CLIPS,
   ...SIEGE_VARIANT_CLIPS,
   ...VEHICLE_VARIANT_CLIPS,
-  caral_worker_f: { attack: 'TreeChopping_Loop' },
-  caral_worker_m: { attack: 'TreeChopping_Loop' },
+  caral_worker_f: { attack: 'TreeChopping_Loop', chop: 'TreeChopping_Loop' },
+  caral_worker_m: { attack: 'TreeChopping_Loop', chop: 'TreeChopping_Loop' },
   caral_scout_f: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   caral_scout_m: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   inca_chasqui_f: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },

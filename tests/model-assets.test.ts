@@ -1194,7 +1194,11 @@ describe('rigged model assets', () => {
     expect(
       rigClipStateFor({ moving: false, gathering: true, building: false, attacking: false, carrying: false }),
     ).toBe('gather');
-    expect(MODEL_ASSET_DEFS.caral_worker.clips.chop).toBe('TreeChopping_Loop');
+    // Only the Andean workers, who hold an axe or a hammerstone, swing; the tool-less colonial worker harvests.
+    expect(RIG_VARIANT_CLIPS.caral_worker_m?.chop).toBe('TreeChopping_Loop');
+    expect(RIG_VARIANT_CLIPS.inca_worker_m?.chop).toBe('TreeChopping_Loop');
+    expect(MODEL_ASSET_DEFS.caral_worker.clips.chop).toBeUndefined();
+    expect(RIG_VARIANT_CLIPS.realistas_worker_m?.chop).toBeUndefined();
   });
 
   it('dresses the Caral scout with commoner clothes but no chasqui gear', async () => {
