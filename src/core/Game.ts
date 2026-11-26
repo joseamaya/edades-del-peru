@@ -236,6 +236,8 @@ export class Game {
   independenceCity: ArchitectureCity | null = null;
   /** The north-coast kit city (Huacas de Moche or Chan Chan). */
   mocheCity: ArchitectureCity | null = null;
+  /** The highland kit city (the Wari complex or the Chanca pucará). */
+  wariCity: ArchitectureCity | null = null;
   /** The ayllu world of Tambotoco (cave, shrine, hamlets, planned Inticancha); null elsewhere. */
   aylluSite: AylluSite | null = null;
   /** The colonial life around Lima/Cusco (houses, market, people); null elsewhere. */
@@ -1555,6 +1557,7 @@ export class Game {
     this.republicCity?.setPhase(phase);
     this.independenceCity?.setPhase(phase);
     this.mocheCity?.setPhase(phase);
+    this.wariCity?.setPhase(phase);
     this.colonialSite?.setPhase(phase);
     this.syncSiteModelVisibility();
     this.siteCrew?.setPhase(phase as CaralMayorPhase);
@@ -2347,6 +2350,8 @@ export class Game {
       this.colonialCity = null;
       this.republicCity = null;
       this.independenceCity = null;
+      this.mocheCity = null;
+      this.wariCity = null;
     }
     this.sitePhase = this.siteDef?.phases?.initial ?? 'in_use';
     this.sitePhaseRestored = false;

@@ -105,6 +105,7 @@ and new records change.
 | [`design/visual-language.md`](./design/visual-language.md) | Silhouettes, materials, emblems, rigged models and set-pieces | Living |
 | [`design/republic-sites.md`](./design/republic-sites.md) | The shared Republican kit: Arica, Real Felipe and Tarapacá pieces, compositions and collision | Living |
 | [`design/moche-chimu-sites.md`](./design/moche-chimu-sites.md) | The shared Moche kit: Huacas de Moche and Chan Chan pieces, compositions and collision | Living |
+| [`design/wari-chanca-sites.md`](./design/wari-chanca-sites.md) | The shared Wari kit: Wari complex and Chanca pucará pieces, compositions and collision | Living |
 | [`design/cultural-landscape.md`](./design/cultural-landscape.md) | Cultural-landscape layer: data model, rendering and integration | Living |
 | [`design/menu-ux.md`](./design/menu-ux.md) | Onboarding, campaign flow and menu behaviour | Living |
 | [`design/i18n.md`](./design/i18n.md) | Language split, keys and translation rules | Living |
@@ -120,9 +121,9 @@ document; a new mission is not complete without one. The quality bar is the live
 | Culturas Preincas | `m1_caral` | [`caral.md`](./historia/campanas/caral.md) | [`caral-model-mission.md`](./design/caral-model-mission.md) | [`caral-sacred-city.md`](./design/caral-sacred-city.md) |
 | Culturas Preincas | `m2_chavin` | [`chavin.md`](./historia/campanas/chavin.md) | [`chavin-model-mission.md`](./design/chavin-model-mission.md) | [`chavin-sacred-site.md`](./design/chavin-sacred-site.md) |
 | Culturas Preincas | `m3_moche_recuay` | [`moche_recuay.md`](./historia/campanas/moche_recuay.md) | [`moche-model-mission.md`](./design/moche-model-mission.md) | [`moche-chimu-sites.md`](./design/moche-chimu-sites.md) · [`moche-sacred-site.md`](./design/moche-sacred-site.md) |
-| Culturas Preincas | `m4_wari` | [`wari_tiahuanaco.md`](./historia/campanas/wari_tiahuanaco.md) | [`wari-model-mission.md`](./design/wari-model-mission.md) | [`wari-sacred-site.md`](./design/wari-sacred-site.md) |
+| Culturas Preincas | `m4_wari` | [`wari_tiahuanaco.md`](./historia/campanas/wari_tiahuanaco.md) | [`wari-model-mission.md`](./design/wari-model-mission.md) | [`wari-chanca-sites.md`](./design/wari-chanca-sites.md) · [`wari-sacred-site.md`](./design/wari-sacred-site.md) |
 | El Tahuantinsuyo | `m_tambotoco` | [`tambotoco.md`](./historia/campanas/tambotoco.md) | [`tambotoco-model-mission.md`](./design/tambotoco-model-mission.md) | — |
-| El Tahuantinsuyo | `m5_yahuar_pampa` | [`yahuar_pampa.md`](./historia/campanas/yahuar_pampa.md) | [`chanca-model-mission.md`](./design/chanca-model-mission.md) | [`chanca-site.md`](./design/chanca-site.md) |
+| El Tahuantinsuyo | `m5_yahuar_pampa` | [`yahuar_pampa.md`](./historia/campanas/yahuar_pampa.md) | [`chanca-model-mission.md`](./design/chanca-model-mission.md) | [`wari-chanca-sites.md`](./design/wari-chanca-sites.md) · [`chanca-site.md`](./design/chanca-site.md) |
 | El Tahuantinsuyo | `m6_chimu_inca` | [`chimu_inca.md`](./historia/campanas/chimu_inca.md) | [`chimu-model-mission.md`](./design/chimu-model-mission.md) | [`moche-chimu-sites.md`](./design/moche-chimu-sites.md) · [`chimu-site.md`](./design/chimu-site.md) |
 | El Tahuantinsuyo | `m6b_guerra_civil` | [`guerra_civil_inca.md`](./historia/campanas/guerra_civil_inca.md) | [`guerra-civil-model-mission.md`](./design/guerra-civil-model-mission.md) | [`cusco-site.md`](./design/cusco-site.md) |
 | El Virreinato | `m_lima` | [`lima.md`](./historia/campanas/lima.md) | [`lima-model-mission.md`](./design/lima-model-mission.md) | — |

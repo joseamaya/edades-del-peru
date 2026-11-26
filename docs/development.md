@@ -84,7 +84,11 @@ Definition of Done and the building audit see
   retired GLB is a fallback. The mission uses the `trade` heritage operation at the Huaca de la Luna and
   `recordDelivery` fills required `deliver` goals before optional ones. See
   `docs/design/moche-chimu-sites.md`.
-- **Wari network**: `m4_wari` loads `wari_site` and uses the `network` objective (`ObjectiveDef.nodes`) to require a completed `Mercado` at each frontier node. `MissionLayout.roads` draws terrain-following, visual-only ribbons with `SettlementOverlay` (`Game.spawnMissionRoads`). The frontier hold is gated by the network; there is no active enemy. Source and export live in `art-src/blender/wari/` and `scripts/blender/build_wari_site.py`. See `docs/design/wari-sacred-site.md`.
+- **Wari network**: `m4_wari` draws its site from the Wari kit (`wariChancaCity.ts`) and uses the `network`
+  objective (`ObjectiveDef.nodes`) to require a completed `Mercado` at each frontier node.
+  `MissionLayout.roads` draws terrain-following, visual-only ribbons with `SettlementOverlay`
+  (`Game.spawnMissionRoads`). The frontier hold is gated by the network; there is no active enemy. The
+  pre-kit master stays in `art-src/blender/wari/`. See `docs/design/wari-chanca-sites.md`.
 - **Mission canals**: `MissionLayout.canal` (`src/campaign/types.ts`) gives a normalized canal site and, optionally, an authored `path`; `Game.spawnCanal` builds relief-following ribbons (`src/rendering/canal.ts`) when the path exists, or the legacy straight box for m3/m6. `MissionPoint.ref: 'canal'` resolves the site for a `reach` objective; `canalIrrigationAt` measures the farm bonus along the trace and `Game.canPlace`/`isReserved` keep buildings and props off the channel. m1's closed communal gate raises `farmYieldAt` along the trace; m6 uses the canal as the Chan Chan surrender target. The canal has no pathfinding obstacle. See `tests/canal.test.ts`, `tests/e2e/campaign.spec.ts` and `tests/e2e/caral-city.spec.ts`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an
   AI-generated material via `TEX_GEN` (e.g. `adobe → wall_adobe`, `brick → wall_brick`, `roof → tile`,
@@ -151,7 +155,8 @@ Definition of Done and the building audit see
   GLB is a labelled abstraction from another place and whose kit has not landed yet: the Vilcabamba refuge.
   Cusco's plaza and Sacsayhuamán are the Cusco kit; the Real Felipe bastions and the Tarapacá
   village/heights/Pachica are the Republican kit (`src/model/defs/republicCity.ts`, which also owns their
-  blockers); the Huacas de Moche and Chan Chan are the Moche kit (`src/model/defs/mocheChimuCity.ts`).
+  blockers); the Huacas de Moche and Chan Chan are the Moche kit (`src/model/defs/mocheChimuCity.ts`) and
+  the Wari complex and the Chanca pucará are the Wari kit (`src/model/defs/wariChancaCity.ts`).
   `SiteLandmarks` merges geometry per material and lives in its own scene group so disposing a
   match never touches the shared generated PBR textures. `MissionSite.hideModel` drops the bundled GLB per
   mission (Cusco 1536) while `AuthoredSiteDef.hideModel` does it for a site (Arica, Real Felipe, Tarapacá,
@@ -623,6 +628,12 @@ Definition of Done and the building audit see
   Junín–Ayacucho march and the 10.7 m walkable corridor cross the site; the blockers come from the layout,
   not a hand-written fortress. This changes m8/Breña pathing, so `REPLAY_VERSION` is 47; guarded by
   `tests/independence-architecture-kit.test.ts`, `tests/e2e/brena.spec.ts` and the m8 playtest.
+- **Wari/Chanca kit** (2026-11-25): the Wari complex and the Chanca pucará draw from `wariChancaCity.ts`
+  (9 pieces, 8 materials) built by `build_wari_architecture_kit.py` on `scripts/blender/arch_kit.py`; both
+  sites set `simulationCollision` and the old site GLBs stay in the registry, no longer drawn. The dry
+  quebrada no longer cuts the Wari site pad (the field is regenerated and its identity hash updated), so the
+  plaza and the temple share one 5.0 m bench. This changes m4/m5 pathing, so `REPLAY_VERSION` is 49; guarded
+  by `tests/wari-architecture-kit.test.ts`, `tests/heightmap-identity.test.ts` and the m4/m5 specs.
 - **Moche/Chimú kit** (2026-11-25): the Huacas del Sol y de la Luna and the Chan Chan compound draw from
   `mocheChimuCity.ts` (9 pieces, 8 materials) built by `build_moche_architecture_kit.py` on the shared
   `arch_kit.py`; both sites set `simulationCollision` and the old site GLBs stay as fallbacks. The Moche

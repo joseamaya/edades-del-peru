@@ -1,0 +1,83 @@
+{
+  "asset_id": "wari_mural",
+  "source_scene": "scenes/wari_architecture_kit.blend",
+  "script": "scripts/blender/build_wari_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "collision": "wariCityBlockers / chancaCityBlockers in src/model/defs/wariChancaCity.ts",
+  "confidence": "documented",
+  "sources": [
+    "docs/design/wari-chanca-sites.md",
+    "docs/historia/arquitectura.md",
+    "docs/design/wari-sacred-site.md",
+    "docs/design/chanca-site.md",
+    "docs/historia/campanas/wari_tiahuanaco.md",
+    "docs/historia/campanas/yahuar_pampa.md"
+  ],
+  "license": "project-owned procedural geometry (no third-party asset)",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 60,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_WariCutstone",
+        "MAT-Arch_WariPlasterRed",
+        "MAT-Arch_WariPlasterWhite"
+      ],
+      "bounds": {
+        "min": [
+          -5.1,
+          -0.35,
+          0.0
+        ],
+        "max": [
+          5.1,
+          0.35,
+          2.58
+        ],
+        "size": [
+          10.2,
+          0.7,
+          2.58
+        ]
+      },
+      "file": "wari_mural_lod0.glb",
+      "bytes": 8508
+    },
+    "LOD1": {
+      "triangles": 60,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_WariCutstone",
+        "MAT-Arch_WariPlasterRed",
+        "MAT-Arch_WariPlasterWhite"
+      ],
+      "bounds": {
+        "min": [
+          -5.1,
+          -0.35,
+          0.0
+        ],
+        "max": [
+          5.1,
+          0.35,
+          2.58
+        ],
+        "size": [
+          10.2,
+          0.7,
+          2.58
+        ]
+      },
+      "file": "wari_mural_lod1.glb",
+      "bytes": 8508
+    }
+  }
+}

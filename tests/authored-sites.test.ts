@@ -67,7 +67,7 @@ describe('authored campaign sites', () => {
     const ridge = sampleAuthoredGround(site.heightField!, 12, 20)!;
     expect(ridge[3], 'the Andean ridges are painted rock').toBeGreaterThan(0.35);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['chanca_pucara']);
-    expect(site.heritageProxies[0]?.w).toBeCloseTo(17.6, 3);
+    expect(site.heritageProxies[0]?.w).toBeCloseTo(22, 3);
     expect(site.walkableCorridor?.width).toBeCloseTo(12.8, 3);
     const mission = MISSIONS.find((m) => m.id === 'm5_yahuar_pampa')!;
     expect(mission.layout?.site?.id).toBe('chanca_site');
@@ -275,15 +275,15 @@ describe('authored campaign sites', () => {
     const wari = getAuthoredSite('wari_site')!;
     expect(wari.scale).toBeCloseTo(0.25 * WARI_COMPOSITION_SCALE, 3);
     expect(wari.anchor.x).toBeCloseTo(107.5 * WARI_COMPOSITION_SCALE, 3);
-    expect(wari.anchor.z).toBeCloseTo(102 * WARI_COMPOSITION_SCALE, 3);
+    expect(wari.anchor.z).toBeCloseTo(97.5 * WARI_COMPOSITION_SCALE, 3);
     expect(wari.heritageProxies.map((p) => p.id)).toEqual([
       'wari_templo_d',
       'wari_plaza',
       'wari_galeria',
       'wari_mural',
     ]);
-    expect(wari.heritageProxies[0]?.w).toBeCloseTo(20, 3);
-    expect(wari.blockers.length).toBe(2);
+    expect(wari.heritageProxies[0]?.w).toBeCloseTo(18, 3);
+    expect(wari.blockers.length).toBeGreaterThanOrEqual(8);
     expect(wari.walkableCorridor?.width).toBeCloseTo(10.667, 3);
     const painted = sampleAuthoredGround(wari.heightField!, wari.anchor.x, wari.anchor.z)!;
     expect(painted.reduce((sum, w) => sum + w, 0)).toBeCloseTo(1, 2);

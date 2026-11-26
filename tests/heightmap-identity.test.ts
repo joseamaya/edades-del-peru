@@ -26,7 +26,7 @@ const EXPECTED: Record<string, string> = {
   lima: 'beeb821b5c170a3a3526d2b81817d7a8ed1751365b3a99b7909a206473d26e74',
   moche: '9ea8fbadeb3b356faec3e068128b85e2e528b756a6b6df85c2902b4d1bd8f6e3',
   tambotoco: 'c445e4a92f3d59b21a072b4e765883722ade14c508271aae142d0f7a511576ee',
-  wari: 'd67479dacc21e86ac8db369f40b051b95d7a5c092682d1b7aa2077be67d07408',
+  wari: '35ca5939afa2c3e02c600fe32a5b0ea7e54addffc7afaeebd6b91daaa492d301',
 };
 
 const FIELDS: Record<string, Float32Array> = {

@@ -122,12 +122,13 @@ representative reconstruction, not a survey. See `docs/design/moche-sacred-site.
 
 ## Wari site source
 
-`m4_wari` uses a project-owned synthesis of the Wari monumental core. The
-editable master and LODs live in `art-src/blender/wari/` (Git LFS); runtime GLBs
-are `src/assets/sites/wari/wari_site_lod0.glb` / `wari_site_lod1.glb`. The
-builder/exporter is `scripts/blender/build_wari_site.py`; the briefing render is
-`art-src/blender/wari/renders/wari_hero.png`. It is a representative
-reconstruction, not a survey. See `docs/design/wari-sacred-site.md`.
+`m4_wari` draws the Wari complex from the shared Wari architecture kit
+([`wari-chanca-sites.md`](./wari-chanca-sites.md)): `src/assets/architecture/wari/`, built by
+`scripts/blender/build_wari_architecture_kit.py` on `scripts/blender/arch_kit.py`, with the kit scene in
+`art-src/blender/scenes/wari_architecture_kit.blend` (Git LFS). The pre-kit master and its briefing render
+stay in `art-src/blender/wari/`; the retired `wari_site` GLB is no longer drawn. `m5_yahuar_pampa` draws
+its pucará from the same kit. They are representative reconstructions, not surveys. See
+`docs/design/{wari-sacred-site,chanca-site}.md`.
 
 ## Mission decor GLBs (m5–m9)
 
@@ -138,7 +139,7 @@ builder is `scripts/blender/build_mission_decor.py`. Runtime GLBs are in
 
 | Mission          | Model                 | Historical reference                  | Status                                  |
 | ---------------- | --------------------- | ------------------------------------- | --------------------------------------- |
-| m5 Yahuar Pampa  | `chanca_fortress`     | Chanca pucará / highland fortress     | authored site (heightfield + collision) |
+| m5 Yahuar Pampa  | Wari kit              | Chanca pucará / highland fortress     | Blender kit; the bundled `chanca_fortress` GLB stays hidden |
 | m6 Chimú–Inca    | Moche kit             | Chimú adobe compound and audiencia    | Blender kit; the bundled `chimu_compound` GLB stays hidden |
 | m6b Guerra Civil | Cusco kit             | Inca ushnu, plaza and walled precinct | Blender kit; the bundled `cusco_inca` GLB stays hidden |
 | m7 Túpac Amaru   | Colonial kit          | colonial church and plaza             | Blender kit; the bundled `colonial_church` GLB stays hidden |
