@@ -436,6 +436,17 @@ export interface TutorialDef {
   steps: TutorialStepDef[];
 }
 
+/**
+ * A fire lit by a mission objective. The flames are presentation derived from the objective state, so a
+ * save restores them without a new save field: the objective is already saved.
+ */
+export interface MissionFire {
+  objectiveId: string;
+  pos: MissionPoint;
+  /** Tongues per emission; a large roof can ask for more. */
+  count?: number;
+}
+
 export interface MissionDef {
   id: string;
   title: string;
@@ -493,6 +504,8 @@ export interface MissionDef {
   atmosphere?: MissionAtmosphere;
   /** Authored base/setpiece/terrain layout (campaign scenarios). */
   layout?: MissionLayout;
+  /** Fires that light when their objective completes (Cusco 1536, Vilcabamba). */
+  fires?: MissionFire[];
   /** Scenario-level map profile tweaks (terrain, climate, vegetation, resources). */
   mapOverrides?: MapOverrides;
   /**

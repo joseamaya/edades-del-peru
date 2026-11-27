@@ -44,6 +44,7 @@ Optional: cut the city's supplies. The mission never stages the later «Santiago
   Sacsayhuamán and the sortie that contests the siege carry the pressure, so the mission is a siege of the
   city, not a skirmish beside it. The sortie enters from the city outskirts, clear
   of both the siege ring and its own spawn spread.
+- The city roofs burn from `a1_sacsay` through `MissionDef.fires` (ADR 0011); the fire is presentation only.
 - Manco Inca is a protected commander card; no invented likeness.
 
 ## Opening and closing

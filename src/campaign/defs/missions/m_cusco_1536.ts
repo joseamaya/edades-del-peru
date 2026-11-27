@@ -218,6 +218,12 @@ export const mCusco1536: MissionDef = {
     [BuildingKind.ARSENAL]: 'Casa de armas',
   },
   unitNames: { [UnitKind.SOLDIER]: 'Milicia inca' },
+  // The documented fire: once Sacsayhuamán falls, the city roofs burn while the siege closes.
+  fires: [
+    { objectiveId: 'a1_sacsay', pos: { dx: CUSCO_SITE_POINT.x - 10, dz: CUSCO_SITE_POINT.z + 6 }, count: 2 },
+    { objectiveId: 'a1_sacsay', pos: { dx: CUSCO_SITE_POINT.x + 8, dz: CUSCO_SITE_POINT.z - 5 }, count: 2 },
+    { objectiveId: 'a1_sacsay', pos: { dx: CUSCO_SITE_POINT.x + 2, dz: CUSCO_SITE_POINT.z + 14 }, count: 1 },
+  ],
   objectives: [
     {
       id: 'a1_sacsay',
