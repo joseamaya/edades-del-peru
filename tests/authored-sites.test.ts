@@ -188,7 +188,7 @@ describe('authored campaign sites', () => {
     expect(site.heightField?.size).toBe(257);
     expect(site.heightField?.ground?.size).toBe(128);
     expect(site.heightField?.river?.halfWidth).toBe(4.5);
-    expect(site.heritageProxies.map((p) => p.id)).toEqual(['colonial_church']);
+    expect(site.heritageProxies.map((p) => p.id)).toEqual(['colonial_church', 'cusco_cabildo_1814']);
     expect(site.walkableCorridor?.width).toBe(8);
     expect(site.style).toBe('colonial');
     const mission = MISSIONS.find((m) => m.id === 'm_junta_cusco')!;

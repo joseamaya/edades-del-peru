@@ -266,8 +266,8 @@ export const mLima1821: MissionDef = {
       id: 'a2_san_martin',
       kind: 'protect',
       entityTag: 'san_martin',
-      hidden: true,
-      requires: 'a1_lima',
+      // The protector is on the field from the opening; hiding him until Act II made the goal appear
+      // only after the danger had already started.
       title: 'Mantén con vida a José de San Martín',
     },
     {
@@ -320,7 +320,6 @@ export const mLima1821: MissionDef = {
           text: 'Lima se ha quedado sin virrey. San Martín entra en la ciudad y convoca a sus vecinos: la independencia se proclama en la Plaza Mayor, no en un campo de batalla.',
         },
         { type: 'objective', objectiveId: 'a2_plaza', state: 'activate', announce: true },
-        { type: 'objective', objectiveId: 'a2_san_martin', state: 'activate' },
       ],
     },
     {
@@ -339,9 +338,9 @@ export const mLima1821: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [
-            { kind: UnitKind.SOLDIER, count: 4 },
-            { kind: UnitKind.REALISTA_DRAGON, count: 2 },
-            { kind: UnitKind.RIFLEMAN, count: 1 },
+            { kind: UnitKind.SOLDIER, count: 6 },
+            { kind: UnitKind.REALISTA_DRAGON, count: 3 },
+            { kind: UnitKind.RIFLEMAN, count: 2 },
           ],
           pos: { dx: LIMA_1821_CARABAYLLO.x, dz: LIMA_1821_CARABAYLLO.z },
           radius: 12,

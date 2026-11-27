@@ -1336,6 +1336,7 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
   test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
+  await installHeritageClick(page);
   await page.goto('/?mission=m_junta_cusco&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
@@ -1366,16 +1367,19 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
         },
         false,
       );
+    const clickHeritage = (id: HeritageBuildingId, labelSource: string) =>
+      (window as unknown as HeritageClickWindow).__heritageClick(id, labelSource);
 
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker') as any;
-    move([worker.id], 72, 58);
+    // The cabildo sits south of the plaza, where the colonial kit draws it.
+    move([worker.id], 72, 76.5);
     for (let i = 0; i < Math.ceil(90 / dt) && !m.ended; i++) {
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
-      if (Math.hypot(worker.pos.x - 72, worker.pos.z - 58) <= 15) break;
+      if (Math.hypot(worker.pos.x - 72, worker.pos.z - 76.5) <= 15) break;
     }
-    g.visitHeritage('colonial_church');
+    clickHeritage('cusco_cabildo_1814', 'Visitar');
     run(2);
     const cabildo = m.getObjectiveState('a1_cabildo') as string;
 

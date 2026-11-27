@@ -347,7 +347,19 @@ export const mCusco1536: MissionDef = {
           // A sally, not a general wave: suppress the generic wave toast and announce it as a sortie.
           objective: 'position',
         },
-        { type: 'dialogue', text: '—La plaza intenta romper el cerro. ¡Sostened la línea!' },
+        { type: 'dialogue', text: '—La plaza intenta romper el cerco. ¡Sostened la línea!' },
+      ],
+    },
+    {
+      // The optional supply raid pays in food and silver: an optional goal without a reward was dead weight.
+      id: 't_suministros',
+      condition: { type: 'objective', objectiveId: 'a2_suministros', state: 'completed' },
+      effects: [
+        { type: 'resources', player: 0, amount: { food: 200, silver: 100 } },
+        {
+          type: 'dialogue',
+          text: 'Los almacenes de la ciudad quedan abiertos: comida y plata para sostener el cerco.',
+        },
       ],
     },
     {

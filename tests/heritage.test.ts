@@ -32,6 +32,7 @@ describe('campaign heritage buildings', () => {
       'chimu_compound',
       'chimu_canal',
       'colonial_church',
+      'cusco_cabildo_1814',
       'independence_chapel',
       'arica_battery',
       'cusco_ushnu',
