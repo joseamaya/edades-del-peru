@@ -310,6 +310,18 @@ export const mMiraflores: MissionDef = {
           radius: 14,
           target: { dx: MIRAFLORES_REDOUBT_2.x, dz: MIRAFLORES_REDOUBT_2.z },
         },
+        // A second Chilean column probes the flank while the centre is pinned.
+        {
+          type: 'wave',
+          owner: 1,
+          units: [
+            { kind: UnitKind.CHILE_INFANTE, count: 5 },
+            { kind: UnitKind.RIFLEMAN, count: 2 },
+          ],
+          pos: { dx: MIRAFLORES_ENEMY.x, dz: MIRAFLORES_ENEMY.z },
+          radius: 14,
+          target: { dx: MIRAFLORES_REDOUBT_1.x, dz: MIRAFLORES_REDOUBT_1.z },
+        },
       ],
     },
     {
@@ -324,6 +336,16 @@ export const mMiraflores: MissionDef = {
           text: 'La línea resiste, pero Lima está perdida. Cáceres organiza la retirada a la sierra: la guerra continúa lejos de la capital.',
         },
         { type: 'objective', objectiveId: 'a3_retirada', state: 'activate', announce: true },
+        // The Chilean horse follows the withdrawal instead of letting Cáceres walk away unopposed.
+        {
+          type: 'wave',
+          owner: 1,
+          units: [{ kind: UnitKind.CAVALRY, count: 4 }],
+          pos: { dx: MIRAFLORES_ENEMY.x, dz: MIRAFLORES_ENEMY.z },
+          radius: 12,
+          target: { dx: MIRAFLORES_RETREAT.x, dz: MIRAFLORES_RETREAT.z },
+        },
+        { type: 'dialogue', text: 'La caballería chilena persigue la retirada hacia la sierra.' },
       ],
     },
     {

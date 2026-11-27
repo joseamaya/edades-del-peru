@@ -84,10 +84,60 @@ export class UnitView {
     const commander = commanderById(this.unit.tag);
     if (!hasFieldMarker(commander)) return;
     this.identityDressed = true;
-    this.view.group.scale.multiplyScalar(commander.hero ? 1.16 * (commander.bulk ?? 1) : 1.08);
-    if (!commander.hero) return;
+    this.view.group.scale.multiplyScalar(commander.hero ? 1.16 * (commander.bulk ?? 1) : 1.12);
+    if (!commander.hero) {
+      if (commander.uniform === 'military') this.dressFieldCommander(commander);
+      return;
+    }
     this.dressHero(commander);
     // The hero's mantle and band are attached after the rig was built; re-pick the shadow silhouette.
+    if (this.rig) limitShadowCasters(this.rig.root);
+  }
+
+  /**
+   * Post-colonial field commander: the ordinary uniform body stays (a modern officer must not wear the
+   * Ayar attire), but the accent marks the rank and the firearm becomes a sabre. Presentation only.
+   */
+  private dressFieldCommander(commander: CommanderDef): void {
+    const root = this.rig?.root;
+    if (!root) return;
+    const tools = createRigAttireTools(root);
+    this.heroAttire = tools;
+    tools.show('attire_post_weapon', false);
+    const accent = new THREE.Color(commanderAccent(commander));
+    const steel = new THREE.Color(0xc8ccd0);
+    const leather = new THREE.Color(0x2a1e16);
+    const vertexMaterial = (metalness: number): THREE.MeshStandardMaterial => {
+      const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness });
+      tools.ownedMaterials.push(material);
+      return material;
+    };
+    const hand = tools.bonePosition('hand_r');
+    if (hand) {
+      const saber = mergeColoredGeometry([
+        [new THREE.CylinderGeometry(0.018, 0.024, 0.78, 6).translate(0, -0.42, 0), steel],
+        [new THREE.TorusGeometry(0.055, 0.01, 4, 10).rotateX(Math.PI / 2).translate(0, -0.02, 0), accent],
+        [new THREE.CylinderGeometry(0.022, 0.022, 0.16, 6).translate(0, 0.08, 0), leather],
+      ]);
+      if (saber) {
+        const mesh = new THREE.Mesh(tools.track(saber), vertexMaterial(0.35));
+        mesh.name = 'attire_field_sabre';
+        mesh.rotation.z = 0.25;
+        tools.enableShadows(mesh);
+        tools.attach('hand_r', mesh, hand.clone());
+      }
+    }
+    for (const side of ['l', 'r'] as const) {
+      const shoulder = tools.bonePosition(`upperarm_${side}`);
+      if (!shoulder) continue;
+      const chevron = mergeColoredGeometry([[new THREE.BoxGeometry(0.06, 0.02, 0.12), accent]]);
+      if (!chevron) continue;
+      const mesh = new THREE.Mesh(tools.track(chevron), vertexMaterial(0.1));
+      mesh.name = `attire_field_chevron_${side}`;
+      tools.enableShadows(mesh);
+      tools.attach(`upperarm_${side}`, mesh, shoulder.clone());
+    }
+    this.rig?.setClipOverride('attack', 'Sword_Regular_A');
     if (this.rig) limitShadowCasters(this.rig.root);
   }
 

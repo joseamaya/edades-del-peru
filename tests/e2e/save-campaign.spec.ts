@@ -978,6 +978,52 @@ test('saves and loads m8 mid-Ayacucho', async ({ page }) => {
   expect(after).toEqual(before);
 });
 
+test('saves and loads the Real Felipe siege', async ({ page }) => {
+  await page.goto('/?mission=m_real_felipe&seed=777&fog=0&low=1&intro=0');
+  await startMission(page);
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    // Open the sortie act through its prerequisites; the triggers fire on the next updates.
+    m.objState.set('a1_baterias', 'completed');
+    m.objState.set('a2_bloqueo', 'completed');
+    for (let i = 0; i < 180; i++) g.update(1 / 60, i / 60);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    g.saveMatch();
+    return {
+      food: g.players[0].resources.food,
+      salidas: m.getObjectiveState('a3_salidas'),
+      hold: m.getObjectiveProgress('a3_salidas'),
+      royalists: [...g.units.values()].filter((u: any) => u.owner === 1 && !u.dead).length,
+    };
+  });
+  expect(before.salidas).toBe('activo');
+
+  await page.goto('/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const m = g.mission;
+    return {
+      food: g.players[0].resources.food,
+      salidas: m.getObjectiveState('a3_salidas'),
+      hold: m.getObjectiveProgress('a3_salidas'),
+      royalists: [...g.units.values()].filter((u: any) => u.owner === 1 && !u.dead).length,
+    };
+  });
+  expect(after).toEqual(before);
+});
+
 test('saves and loads the later campaign missions', async ({ context }) => {
   test.setTimeout(180_000);
   for (const id of [

@@ -355,6 +355,11 @@ export type TriggerEffect =
       radius?: number;
       objective?: 'base' | 'position';
     }
+  /**
+   * Retire a side's units: those within `radius` of `from` (all of them when `from` is omitted) march
+   * to `pos`. A charge that breaks off, a sortie recalled behind the walls.
+   */
+  | { type: 'withdraw'; owner: 0 | 1; pos: MissionPoint; from?: MissionPoint; radius?: number }
   | { type: 'dialogue'; text: string; duration?: number; speaker?: string }
   /** Chapter card between acts of one mission (pauses the mission clock while open). */
   | { type: 'act'; kicker: string; title: string; text: string; image?: string }

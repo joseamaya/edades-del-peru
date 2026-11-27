@@ -867,6 +867,40 @@ describe('mission camera beats', () => {
   });
 });
 
+describe('withdraw effect', () => {
+  it('marches the owner units inside the radius back to the retreat point', () => {
+    const issueOrder = vi.fn();
+    const unit = { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.CAVALRY, pos: { x: 0, z: 0 }, issueOrder };
+    const game = stubGame(unit) as any;
+    const missionDef: MissionDef = {
+      ...def,
+      objectives: [
+        {
+          id: 'gate',
+          kind: 'hold',
+          hidden: true,
+          pos: { dx: 0, dz: 0 },
+          radius: 2,
+          time: 60,
+          minUnits: 1,
+          title: 'gate',
+        },
+      ],
+      triggers: [
+        {
+          id: 't_withdraw',
+          condition: { type: 'time', seconds: 0 },
+          effects: [{ type: 'withdraw', owner: 0, pos: { dx: 10, dz: 0 }, from: { dx: 0, dz: 0 }, radius: 5 }],
+        },
+      ],
+    };
+    const mission = new Mission(game, missionDef, () => {});
+    mission.start();
+    mission.update(1, 0);
+    expect(issueOrder).toHaveBeenCalledWith({ kind: 'move', target: { x: 10, z: 0 } });
+  });
+});
+
 describe('trigger conditions', () => {
   it('fires an activation trigger only once the hidden goal is active, never while pending', () => {
     const unit = { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } };

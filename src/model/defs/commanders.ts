@@ -222,6 +222,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     status: 'documented',
     source: 'docs/historia/campanas/brena.md',
     fieldCommander: true,
+    accent: '#c8a040',
     headwear: 'hat',
     beard: true,
     uniform: 'military',
@@ -288,6 +289,8 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     headwear: 'helmet',
     beard: true,
     uniform: 'military',
+    fieldCommander: true,
+    accent: '#c23a32',
   },
   atahualpa: {
     gender: 'male',

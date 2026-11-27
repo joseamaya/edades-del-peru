@@ -87,7 +87,8 @@ export const mRealFelipe: MissionDef = {
   startingEra: Era.REPUBLIC,
   // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
   unitSpeedScale: 0.75,
-  startingResources: { food: 1400, wood: 1000, silver: 1000, stone: 900 },
+  // The siege is a hunger test: 800 food at 5/s under the capitulation hold leaves no idle margin.
+  startingResources: { food: 800, wood: 1000, silver: 1000, stone: 900 },
   start: {
     enemyOpeningUnits: false,
     buildings: [{ kind: BuildingKind.FORTRESS, dx: 6, dz: 8, tag: 'campamento_sitiador' }],
@@ -263,7 +264,7 @@ export const mRealFelipe: MissionDef = {
       radius: 20,
       time: 90,
       minUnits: 8,
-      consume: { resource: 'food', perSecond: 1 },
+      consume: { resource: 'food', perSecond: 5 },
       hidden: true,
       requires: 'a3_salidas',
       title: 'Fuerza la capitulación del Real Felipe',
@@ -313,6 +314,16 @@ export const mRealFelipe: MissionDef = {
           text: 'El bloqueo cierra el puerto. Dentro del Real Felipe se refugian miles de civiles; Rodil intenta salidas para romper el cerco y buscar víveres. La guerra se vuelve una prueba de resistencia.',
         },
         { type: 'objective', objectiveId: 'a3_salidas', state: 'activate', announce: true },
+      ],
+    },
+    {
+      // Two sorties while the camp holds: the first leaves when the act opens, the second 30 s later.
+      id: 't_salidas_oleadas',
+      condition: { type: 'objective', objectiveId: 'a3_salidas', state: 'activate' },
+      repeat: true,
+      cooldown: 30,
+      maxFires: 2,
+      effects: [
         {
           type: 'wave',
           owner: 1,
@@ -325,6 +336,7 @@ export const mRealFelipe: MissionDef = {
           radius: 10,
           target: { dx: REAL_FELIPE_CAMP.x * 256, dz: REAL_FELIPE_CAMP.z * 256 },
         },
+        { type: 'dialogue', text: 'Otra salida de Rodil baja de la fortaleza en busca de víveres.' },
       ],
     },
     {
