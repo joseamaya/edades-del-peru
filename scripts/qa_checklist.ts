@@ -4,24 +4,27 @@ import { MISSIONS } from '../src/campaign/defs/campaign';
 import { buildChecklist, checklistProblems } from './qa_checklist_lib';
 
 /**
- * Print the human playtest checklist for the released campaign, generated from the missions themselves so a
- * new objective, optional goal, fire or prepared strike shows up in the checklist without anyone editing it.
+ * Print the human playtest worksheet for the released campaign, generated from the missions themselves so a new
+ * objective, optional goal, fire, prepared strike or withdrawal shows up without anyone editing a document.
  *
- * The automated tiers already prove the missions are completable and deterministic (`yarn test:e2e:slow`,
- * `yarn sim --matrix --assert-balance`); this list is what only a person can judge: readability, pacing,
- * whether the art matches the card, and whether the fun holds for the whole act.
+ * The automated tiers prove the missions are playable and deterministic (`yarn verify:fast`,
+ * `yarn test:e2e:slow`); this list is what only a person can judge: readability, pacing, art-to-beat match, audio,
+ * the three HUD viewports and whether the act is fun. The sign-off lives in `docs/design/human-playtest.md`.
  *
  * Usage: yarn qa:checklist [--mission=ID] [--out=review/qa-checklist.md] [--no-copy]
+ *   `--out=` (empty) prints without writing a file.
  */
-const arg = (name: string, fallback = ''): string => {
+const arg = (name: string, fallback: string | undefined = ''): string => {
   const hit = process.argv.find((value) => value.startsWith(`--${name}=`));
-  return hit ? hit.slice(name.length + 3) : fallback;
+  return hit ? hit.slice(name.length + 3) : (fallback ?? '');
 };
 
 const only = arg('mission');
-const outFile = arg('out', 'review/qa-checklist.md');
+const outFile = process.argv.includes('--out=') ? '' : arg('out', 'review/qa-checklist.md');
 const withCopy = !process.argv.includes('--no-copy');
 
+const selected = MISSIONS.filter((mission) => !only || mission.id === only);
+const problems = checklistProblems(selected);
 const text = buildChecklist(MISSIONS, { only });
 if (withCopy) console.log(text);
 if (outFile) {
@@ -31,7 +34,6 @@ if (outFile) {
   console.error(`wrote ${outFile}`);
 }
 
-const problems = checklistProblems(MISSIONS);
 if (problems.length) {
   console.error(`checklist problems:\n  ${problems.join('\n  ')}`);
   process.exitCode = 1;
