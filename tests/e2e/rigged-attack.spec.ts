@@ -77,7 +77,9 @@ test('rigged firearm soldiers play the firearm clip and line infantry the stock 
     const base = g.playerCenter(0);
     const c = g.findLandNear(base.x + 18, base.z + 18, 24);
     const target = g.spawnScriptedBuilding('house', 1, c.x + 1.4, c.z);
-    const find = (kind: string) => [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead && u.kind === kind);
+    // A tagged field commander dresses a sabre and overrides the attack clip on purpose.
+    const find = (kind: string) =>
+      [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead && u.kind === kind && !u.tag);
     const rifleman = find('rifleman');
     const soldier = find('soldier');
     if (!rifleman || !soldier) throw new Error('missing rifleman/soldier');
@@ -98,10 +100,24 @@ test('rigged firearm soldiers play the firearm clip and line infantry the stock 
         time += 1 / 60;
         g.loop.onUpdate(1 / 60, time);
       }
+      // The project clip must bind to the merged skeleton: sample the firing arm across the recoil.
+      const action = unit.rig?.actions?.get('attack');
+      const arm = unit.rig?.root?.getObjectByName('upperarm_r');
+      let recoil = 0;
+      if (action && arm) {
+        action.paused = true;
+        action.time = 0;
+        unit.rig.mixer.update(0);
+        const rest = arm.quaternion.clone();
+        action.time = 3 / 24;
+        unit.rig.mixer.update(0);
+        recoil = rest.angleTo(arm.quaternion);
+      }
       return {
         variant: unit.rig?.variantId ?? null,
         state: unit.rig?.currentState ?? null,
         clip: unit.rig?.currentClipName ?? null,
+        recoil,
       };
     };
 
@@ -110,7 +126,8 @@ test('rigged firearm soldiers play the firearm clip and line infantry the stock 
 
   expect(result.rifleman.variant).toMatch(/^republica_ranged_[fm]$/);
   expect(result.rifleman.state).toBe('attack');
-  expect(result.rifleman.clip).toBe('Pistol_Shoot');
+  expect(result.rifleman.clip).toBe('Rifle_Shoot');
+  expect(result.rifleman.recoil, 'the rifle clip binds and kicks').toBeGreaterThan(0.02);
   expect(result.soldier.variant).toMatch(/^republica_soldier_[fm]$/);
   expect(result.soldier.state).toBe('attack');
   expect(result.soldier.clip).toBe('Sword_Regular_A');

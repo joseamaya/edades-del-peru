@@ -162,8 +162,8 @@ by running that script with `--out=review/character-standard`, then `git checkou
 src/rendering/workerAttire.ts src/rendering/uniformAttire.ts` and the same command with
 `--out=review/character-standard-before`, then restoring the branch files. At the default height 54 the unit
 reads as a small silhouette and colour block; the equipment is a close/cinematic read.
-The attack column uses the shared `Sword_Regular_A`/`Pistol_Shoot`/`OverhandThrow` clips and the death
-column uses `Death01`; the firearm attack is the shared one-handed pistol clip, not a two-handed musket aim.
+The attack column uses the shared `Sword_Regular_A`/`Rifle_Shoot`/`OverhandThrow` clips and the death
+column uses `Death01`; `Rifle_Shoot` is the project clip built from the CC0 `Pistol_Shoot` with a recoil impulse.
 `run` and the hit reaction landed later, in §9.
 
 ## 7. Tests and performance
@@ -317,9 +317,9 @@ the silhouette change alone.
 2. **Bind-matrix-safe GLB export.** Re-exporting the finished worker GLB remains blocked by the shared-skeleton
    problem in §2. A future body replacement should start from the original Quaternius sources (the
    `tambotoco_hero.glb` path) or prove that its export preserves the inverse bind matrices and tracks.
-3. **Two-handed firearm aim.** §9 added `run` and the hit reaction. The firearm attack is still the shared
-   one-handed `Pistol_Shoot`, not a two-handed musket/rifle aim; UAL1 has `Pistol_Aim_*` poses, but wiring a
-   two-handed aim/recoil state is a separate animation change.
+3. **Two-handed firearm aim.** §9 added `run` and the hit reaction, and the attack now uses the project
+   `Rifle_Shoot` (`scripts/blender/build_rifle_clip.py`): the shared support pose plus a recoil impulse,
+   merged at build time. A fully authored musket aim (stock to the shoulder, cheek weld) is still open.
 4. **Rigid cloth at joints.** Sleeves and breeches are rigid bone attachments; deep poses can show a crease
    at the elbow/knee. At the RTS camera it is not visible; a skinned garment needs the bind-safe path.
 5. **Shared dressers.** `dressUniform` serves every post-colonial variant and `dressCaralWorker` every Andean
