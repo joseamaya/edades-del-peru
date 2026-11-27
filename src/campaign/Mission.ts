@@ -595,6 +595,17 @@ export class Mission {
       return;
     }
     switch (fx.type) {
+      case 'withdraw': {
+        const to = this.resolvePoint(fx.pos);
+        const from = fx.from ? this.resolvePoint(fx.from) : null;
+        const radius = fx.radius ?? Infinity;
+        for (const unit of this.game.units.values()) {
+          if (unit.owner !== fx.owner || unit.dead) continue;
+          if (from && distance2D(unit.pos.x, unit.pos.z, from.x, from.z) > radius) continue;
+          unit.issueOrder({ kind: OrderKind.MOVE, target: { x: to.x, z: to.z } });
+        }
+        break;
+      }
       case 'dialogue':
         this.triggerDialogue(fx.text, fx.duration ?? 5, fx.speaker);
         break;

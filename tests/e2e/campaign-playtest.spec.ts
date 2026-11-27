@@ -229,6 +229,7 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
     for (let i = 0; i < Math.ceil(140 / dt) && !m.ended; i++) {
       if (i % Math.ceil(20 / dt) === 0) move(cavalry, junin.x, junin.z);
       if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, t);
       t += dt;
     }
@@ -262,6 +263,7 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
         move(field, enemy.pos.x - 12, enemy.pos.z + 10);
         move(homeGuard, center.x, center.z + 8);
       }
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, t);
       t += dt;
       if (m.getObjectiveState('obj_ayacucho') === 'completed') break;

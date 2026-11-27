@@ -691,9 +691,7 @@ describe('campaign educational content', () => {
     expect(ayacucho!.pos?.ref, 'Ayacucho is the royalist field').toBe('enemy');
     expect(marcha.pos!.ref).toBe('enemy');
     // The royalist charge must defend the Junín hold it is named after, not a point of its own.
-    const juninWave = m8.triggers
-      .flatMap((t) => t.effects)
-      .find((e) => e.type === 'wave' && e.units.some((u) => u.kind === UnitKind.REALISTA_DRAGON && u.count === 1));
+    const juninWave = m8.triggers.find((t) => t.id === 't_wave_1')!.effects.find((e) => e.type === 'wave');
     expect(juninWave?.type).toBe('wave');
     if (juninWave?.type === 'wave') expect(juninWave.pos).toEqual(junin!.pos);
     expect(ayacucho?.requires).toBe('obj_marcha');

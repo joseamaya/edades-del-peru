@@ -46,7 +46,13 @@ export const m8Independencia: MissionDef = {
   unitSpeedScale: 0.75,
   layout: {
     labels: [
-      { text: 'Junín', x: INDEPENDENCE_CAMP.x, z: INDEPENDENCE_CAMP.z, kind: 'settlement' },
+      // The label marks the pampa the cavalry must hold, not the camp behind it.
+      {
+        text: 'Junín',
+        x: MAP_JUNIN.x / INDEPENDENCE_MAP_SIZE,
+        z: MAP_JUNIN.z / INDEPENDENCE_MAP_SIZE,
+        kind: 'settlement',
+      },
       { text: 'Ayacucho', x: 0.702, z: 0.37, kind: 'settlement' },
       { text: 'Pampa de Quinua', x: 0.65, z: 0.37, kind: 'region' },
     ],
@@ -300,8 +306,8 @@ export const m8Independencia: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [
-            { kind: UnitKind.CAVALRY, count: 1 },
-            { kind: UnitKind.REALISTA_DRAGON, count: 1 },
+            { kind: UnitKind.REALISTA_DRAGON, count: 4 },
+            { kind: UnitKind.CAVALRY, count: 2 },
           ],
           spawn: INDEPENDENCE_JUNIN_ENTRY,
           // The charge defends the Junín hold: sharing its constant is what keeps the two in step.
@@ -328,6 +334,15 @@ export const m8Independencia: MissionDef = {
           text: '—Junín resiste. Ahora, a Ayacucho: la decisión final está allí.',
         },
         { type: 'objective', objectiveId: 'obj_marcha', state: 'activate' },
+        // The charge breaks off when Junín holds: the surviving royalist horse retires to its camp.
+        {
+          type: 'withdraw',
+          owner: 1,
+          pos: INDEPENDENCE_JUNIN_ENTRY,
+          from: INDEPENDENCE_JUNIN,
+          radius: independenceLength(32),
+        },
+        { type: 'dialogue', text: 'La carga realista se retira y Junín queda en manos patriotas.' },
         // Junín was cavalry-only. The infantry, the montoneras and the artillery join the army for Ayacucho.
         {
           type: 'reinforce',
