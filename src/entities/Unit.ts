@@ -167,10 +167,15 @@ const SEPARATION = 1.4;
  */
 const SEPARATION_RELAX = 0.8;
 /**
- * Share of the spacing an idle foot soldier keeps. A foot line stands shoulder to shoulder at the full 1.4 m,
- * so this only opens units that ended a move on the same point, never a formed line.
+ * Share of the spacing an idle foot soldier keeps out of combat. A foot line stands shoulder to shoulder at
+ * the full 1.4 m, so this only opens units that ended a move on the same point, never a formed line.
  */
 const SEPARATION_IDLE_FOOT = 0.6;
+/**
+ * No idle opening with an enemy this close: a line packed between waves is the battle's shape, and opening
+ * it (even to one body) lost the m6b hold at Quipaipan and let the Tambotoco wave reach the workers.
+ */
+const IDLE_SEPARATION_ENEMY_RADIUS = 20;
 /**
  * Share of the spacing two enemy riders keep in a melee: under the 0.9 m reach plus the target's body, so
  * they still strike, but the horses no longer run through each other.
@@ -1200,7 +1205,14 @@ export class Unit {
     const mounted = unitClassFor(this.kind) === 'cavalry';
     const chasing = this.targetEntityId !== null;
     if (mounted && (!walking || chasing)) this.relaxSeparation(nearby, !walking || chasing, SEPARATION_RELAX);
-    else if (!mounted && !walking && !chasing && this.orderQueue.length === 0)
+    else if (
+      !mounted &&
+      !walking &&
+      !chasing &&
+      this.orderQueue.length === 0 &&
+      nearby.length > 1 &&
+      this.ctx.enemiesNear(this.pos.x, this.pos.z, IDLE_SEPARATION_ENEMY_RADIUS, this.owner).length === 0
+    )
       this.relaxSeparation(nearby, false, SEPARATION_IDLE_FOOT);
   }
 
