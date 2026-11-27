@@ -340,7 +340,7 @@ export class WorldViewDecor {
       spawnKitCity(
         'colonial_city',
         'colonial',
-        colonialLayoutAt(def.anchor, since),
+        colonialLayoutAt(def.anchor, since, { omit: site.kitOmit }),
         def.phases ?? COLONIAL_PHASE_PLAN,
         (city) => {
           this.game.colonialCity = city;
@@ -353,7 +353,8 @@ export class WorldViewDecor {
           group,
           (x, z) => this.game.terrain.getHeight(x, z),
           site.y ?? 0,
-          layout,
+          // The reserved plots belong to this mission, not to every mission that reuses the layout.
+          site.reservedPlots ? layout : { ...layout, reserved: undefined },
           def.phases,
           false,
         );

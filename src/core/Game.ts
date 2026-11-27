@@ -321,6 +321,7 @@ export class Game {
   ais: AI[] = [];
   alertTimer = 0;
   lastBaseAlert = 0;
+  private lastReservedToast = 0;
   lastUnitAlert = 0;
   alerted = false;
   idleCursor = -1;
@@ -428,6 +429,14 @@ export class Game {
     const authoredSite = getAuthoredSite(this.missionLayout?.site?.id);
     const heightField = this.missionLayout?.site?.heightField;
     this.siteDef = authoredSite && heightField ? { ...authoredSite, heightField } : authoredSite;
+    if (this.siteDef && this.missionLayout?.site?.kitOmit?.includes('cabildo')) {
+      // The cabildo's footprint is not a blocker when the player has to build it on that plot.
+      const cabildoZ = this.siteDef.anchor.z + 18.5;
+      this.siteDef = {
+        ...this.siteDef,
+        blockers: this.siteDef.blockers.filter((blocker) => Math.abs(blocker.z - cabildoZ) > 1),
+      };
+    }
     this.sitePhase = this.siteDef?.phases?.initial ?? 'in_use';
     this.enemyActive = !mis || mis.enemy.active;
     this.rng = new RNG((this.settings.mapSeed * 2654435761) >>> 0);
@@ -2431,6 +2440,15 @@ export class Game {
   canPlace(x: number, z: number, foot: number): boolean {
     const r = foot / 2;
     if (this.terrain.isWater(x, z) || !this.terrain.isBuildable(x, z)) return false;
+    for (const plot of this.missionLayout?.site?.reservedPlots ?? []) {
+      if (Math.abs(x - plot.x) > plot.w / 2 + r || Math.abs(z - plot.z) > plot.d / 2 + r) continue;
+      const now = performance.now();
+      if (now - this.lastReservedToast > 3000) {
+        this.lastReservedToast = now;
+        this.hud?.showToast(plot.label, 'info');
+      }
+      return false;
+    }
     // keep placement on ground units can reach (same slope limit as the nav mesh)
     if (this.terrain.getSlope(x, z) > MAX_WALKABLE_SLOPE) return false;
     if (this.canalPath) {

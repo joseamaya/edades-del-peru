@@ -23,6 +23,8 @@ export interface ColonialLayout {
   readonly houses: readonly ColonialHouse[];
   readonly stalls: readonly ColonialStall[];
   readonly well: { x: number; z: number };
+  /** Plots the player must build on: the kit leaves them empty and the traza marks them. */
+  readonly reserved?: readonly { x: number; z: number; w: number; d: number }[];
 }
 
 export const LIMA_COLONIAL: ColonialLayout = {
@@ -52,6 +54,8 @@ export const LIMA_COLONIAL: ColonialLayout = {
     { x: 98, z: 156, ry: 0.15 },
   ],
   well: { x: 90, z: 159 },
+  // The cabildo plot south of the plaza: the kit omits its cabildo for the Lima mission.
+  reserved: [{ x: 90, z: 168.5, w: 16, d: 9 }],
 };
 
 export const CUSCO_COLONIAL: ColonialLayout = {

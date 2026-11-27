@@ -40,9 +40,13 @@ const RING_X = 18.5;
  * The plaza composition around `anchor`. `since` delays every building to a construction phase (Lima 1535
  * opens on the traced plaza and the city rises in Act II); the plaza floor always stands.
  */
-export function colonialLayoutAt(anchor: { x: number; z: number }, since?: string): readonly ArchPlacement[] {
+export function colonialLayoutAt(
+  anchor: { x: number; z: number },
+  since?: string,
+  options: { omit?: readonly string[] } = {},
+): readonly ArchPlacement[] {
   const building = (placement: ArchPlacement): ArchPlacement => (since ? { ...placement, since } : placement);
-  return [
+  const placements = [
     // In a founding phase the plaza itself is still being laid out: the packed-earth traza and its cords
     // are drawn by `ColonialLife`, so the paving and the fountain carry the city's `since` too.
     building({ asset: 'plaza', ...at(anchor, 0, 0), rotY: 0, scale: ONE, lift: 0.04 }),
@@ -68,9 +72,15 @@ export function colonialLayoutAt(anchor: { x: number; z: number }, since?: strin
     // A patio wall closes the cathedral's atrium.
     building({ asset: 'patio_wall', ...at(anchor, 0, -PLAZA_HALF_Z - 15.4), rotY: 0, scale: ONE }),
   ];
+  const omit = options.omit;
+  return omit?.length ? placements.filter((placement) => !omit.includes(placement.asset)) : placements;
 }
 
 /** Every building of the composition blocks, from the same placements the renderer bakes. */
-export function colonialCityBlockers(anchor: { x: number; z: number }, since?: string) {
-  return layoutBlockers(colonialLayoutAt(anchor, since), COLONIAL_KIT_FOOTPRINTS);
+export function colonialCityBlockers(
+  anchor: { x: number; z: number },
+  since?: string,
+  options: { omit?: readonly string[] } = {},
+) {
+  return layoutBlockers(colonialLayoutAt(anchor, since, options), COLONIAL_KIT_FOOTPRINTS);
 }

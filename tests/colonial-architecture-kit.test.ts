@@ -4,6 +4,9 @@ import path from 'node:path';
 import * as THREE from 'three';
 import { ARCH_SURFACES } from '../src/rendering/architectureKit';
 import { applyFow, createFowUniforms } from '../src/rendering/FowMaterial';
+import { colonialCityBlockers, colonialLayoutAt } from '../src/model/defs/colonialCity';
+import { getAuthoredSite, LIMA_SITE_ORIGIN } from '../src/model/defs/sites';
+import { MISSIONS } from '../src/campaign/defs/campaign';
 
 interface LodStats {
   triangles: number;
@@ -120,5 +123,34 @@ describe('fog material program keys', () => {
     material.customProgramCacheKey = () => 'arch-saturation-0.55';
     applyFow(material, createFowUniforms());
     expect(material.customProgramCacheKey()).toBe('arch-saturation-0.55|fow-v2');
+  });
+});
+
+describe('Lima cabildo plot', () => {
+  it('leaves the cabildo out of the kit and its blockers for Lima', () => {
+    const anchor = { x: 0, z: 0 };
+    expect(colonialLayoutAt(anchor).some((p) => p.asset === 'cabildo')).toBe(true);
+    expect(colonialLayoutAt(anchor, undefined, { omit: ['cabildo'] }).some((p) => p.asset === 'cabildo')).toBe(false);
+    const mission = MISSIONS.find((m) => m.id === 'm_lima')!;
+    expect(mission.layout?.site?.kitOmit).toEqual(['cabildo']);
+    // The shared site keeps the cabildo for Lima 1821; only the founding mission omits it.
+    expect(getAuthoredSite('lima_site')!.blockers.some((b) => Math.abs(b.z - (LIMA_SITE_ORIGIN.z + 18.5)) < 0.1)).toBe(
+      true,
+    );
+    expect(colonialCityBlockers(anchor, 'ciudad', { omit: ['cabildo'] })).not.toEqual(
+      colonialCityBlockers(anchor, 'ciudad'),
+    );
+  });
+
+  it('reserves the plot and points the cabildo objective at it', () => {
+    const mission = MISSIONS.find((m) => m.id === 'm_lima')!;
+    expect(mission.layout?.site?.reservedPlots?.[0]).toMatchObject({
+      x: LIMA_SITE_ORIGIN.x,
+      z: LIMA_SITE_ORIGIN.z + 18.5,
+      w: 16,
+      d: 9,
+    });
+    const objective = mission.objectives.find((o) => o.id === 'a1_cabildo')!;
+    expect(objective.pos).toEqual({ dx: LIMA_SITE_ORIGIN.x, dz: LIMA_SITE_ORIGIN.z + 18.5 });
   });
 });

@@ -131,6 +131,10 @@ export interface MissionSite {
    * terrain geometry differs, so a reused site model does not reuse another mission's landscape.
    */
   heightField?: AuthoredHeightField;
+  /** Kit pieces this mission leaves for the player to build (Lima 1535: the cabildo). */
+  kitOmit?: readonly string[];
+  /** Plots reserved for a player-built building; the traza marks them and placement explains them. */
+  reservedPlots?: readonly { x: number; z: number; w: number; d: number; label: string }[];
 }
 
 /** Source-backed geography named on the map and minimap (toponyms are proper nouns, never translated). */
