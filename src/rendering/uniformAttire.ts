@@ -376,9 +376,21 @@ export function dressUniform(
       if (isRifle) {
         parts.push([new THREE.BoxGeometry(0.012, 0.012, 0.3).translate(0, 0.05, -0.95), 0x9aa2aa]);
       }
+    } else if (weaponKind === 'pike') {
+      // The 1780 rebels' pike: an ash shaft, an iron point and a rawhide binding, held a third of the way up.
+      // In the melee hand (no aim correction) local −Y is up, so the shaft is built on that axis.
+      parts.push([new THREE.CylinderGeometry(0.016, 0.02, 2.05, 8).translate(0, -0.52, 0), 0x6b4a2f]);
+      parts.push([new THREE.ConeGeometry(0.026, 0.24, 8).translate(0, -1.63, 0), 0x9aa2aa]);
+      parts.push([new THREE.CylinderGeometry(0.024, 0.024, 0.05, 8).translate(0, -1.45, 0), 0x8a6a3a]);
+      parts.push([new THREE.CylinderGeometry(0.024, 0.024, 0.05, 8).translate(0, -0.42, 0), 0x8a6a3a]);
     } else {
-      parts.push([new THREE.BoxGeometry(0.025, 0.72, 0.035).translate(0, -0.25, 0), 0x9aa2aa]);
-      parts.push([new THREE.TorusGeometry(0.06, 0.01, 4, 10).rotateX(Math.PI / 2), spec.trim]);
+      // Sabre (and the 1879 «bayoneta sable»): a straight blade, a brass guard and a wrapped grip, carried
+      // at rest and leaning a little forward.
+      const lean = (g: THREE.BufferGeometry) => g.rotateX(0.12);
+      parts.push([lean(new THREE.BoxGeometry(0.02, 0.62, 0.042).translate(0, -0.44, 0)), 0xb9c0c6]);
+      parts.push([lean(new THREE.BoxGeometry(0.012, 0.62, 0.014).translate(0, -0.44, 0.028)), 0x8f979e]);
+      parts.push([new THREE.TorusGeometry(0.055, 0.011, 4, 10).rotateX(Math.PI / 2), spec.trim]);
+      parts.push([new THREE.CylinderGeometry(0.018, 0.02, 0.13, 8).translate(0, 0.09, 0), 0x2a1e16]);
     }
     const weapon = mergeGear(parts, 'hand_r', hand.clone(), 'attire_post_weapon');
     if (weapon) weapon.rotation.set(-0.2, 0, 0);

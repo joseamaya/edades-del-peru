@@ -49,9 +49,9 @@ describe('objective-bound campaign waves', () => {
   });
 
   it('gives the rebel line a melee weapon and keeps the musket for the ranged role', () => {
-    expect(postColonialWeaponFor('soldier', REBELDE_SPEC.weapon, true)).toBe('none');
+    expect(postColonialWeaponFor('soldier', REBELDE_SPEC.weapon, true)).toBe('pike');
     expect(postColonialWeaponFor('ranged', REBELDE_SPEC.weapon, true)).toBe('musket');
-    // The other cultures keep their spec until their own melee kit lands.
-    expect(postColonialWeaponFor('soldier', 'musket', false)).toBe('musket');
+    // The line of every post-colonial culture carries a blade too; the firearm stays with `ranged`.
+    expect(postColonialWeaponFor('soldier', 'musket', false)).toBe('sabre');
   });
 });

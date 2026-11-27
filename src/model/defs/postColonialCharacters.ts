@@ -12,6 +12,9 @@ export type PostColonialRigVariant =
   | `${PostColonialCulture}_${PostColonialRole}_${'f' | 'm'}`
   | `realistas_${RealistaHat}_${PostColonialRole}_${'f' | 'm'}`;
 
+/** What the shared dresser puts in the right hand. */
+export type PostColonialWeapon = 'musket' | 'rifle' | 'sabre' | 'pike';
+
 export interface PostColonialSpec {
   civ: CivId;
   coat: number;
@@ -19,21 +22,23 @@ export interface PostColonialSpec {
   trousers: number;
   hat: 'morion' | 'bicorn' | 'kepi' | 'none';
   hatColor: number;
-  weapon: 'musket' | 'rifle' | 'none';
+  weapon: PostColonialWeapon;
   sidearm: 'sword' | 'none';
 }
 
 /**
- * The weapon the shared dresser puts in the hand. The 1780 rebel line fought with the pike or sling it
- * could make, so its `soldier` carries the melee prop while the `ranged` keeps the firearm. Other
- * cultures keep the spec's weapon until their own melee kit is authored.
+ * The weapon the shared dresser puts in the hand. Melee line infantry carries a blade, not a firearm: the
+ * sabre for the royalist and patriot line (the 1879 armies' «bayoneta sable» reads the same at RTS scale),
+ * and the pike the 1780 rebels could make. The firearm stays with the `ranged` role, which is the volley the
+ * clips animate (`docs/historia/atuendos.md` §6: «fusil/arcabuz + sable/lanza»).
  */
 export function postColonialWeaponFor(
   role: PostColonialRole,
-  weapon: PostColonialSpec['weapon'],
+  weapon: PostColonialWeapon,
   rebelde: boolean,
-): PostColonialSpec['weapon'] {
-  return rebelde && role === 'soldier' ? 'none' : weapon;
+): PostColonialWeapon {
+  if (role === 'soldier') return rebelde ? 'pike' : 'sabre';
+  return weapon;
 }
 
 /** Bicorn colour shared with the patriotas; the late realistas are the same dark felt. */
