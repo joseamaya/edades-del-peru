@@ -869,6 +869,15 @@ Definition of Done and the building audit see
   rendering (`shots_evidence.mjs`, `shots_reference_views.mjs`). The standalone demos (`?city=`, `?scenery=`,
   `?rig=`) build their own renderer and are unaffected. `yarn visual:check` covers the single-pass software path
   only, so the two-pass frame is guarded by the draw-call budgets (#455).
+- **Particles have two layers, and blending is the look**: smoke and dust stay on the normal-blended layer;
+  fire, sparks, explosions and flares go to the additive one, because a glow adds light but cannot darken.
+  That cuts both ways: an *additive* flame over a sunlit roof desaturates to a white blob, so the mission fires
+  (`src/campaign/Mission.ts`) emit a normal-blended flame body (`emissive: false`) and keep only the embers
+  additive. A fire emitted with `plume` is born across `spread` and climbs (a negative `gravity` beats the
+  per-frame drag); without both, any `count` piles into a single round candle. `plume` is opt-in so the
+  torches, hearths and burning buildings keep their sprite. Particle randomness is cosmetic (`Particles` owns
+  its own RNG), so none of this touches save/replay determinism. See ADR
+  [0011](./DECISIONS/0011-mission-fires.md).
 - **Unit yaw is a movement angle, not a Three.js rotation**: `angleTo` returns the angle from +X, and models are
   built facing +Z. `EntityView.setFacing(yaw)` applies `facingRotation(yaw) = atan2(cos yaw, sin yaw)`; keep
   `setRotationY` for buildings/objects with a raw rotation. Turrets and the muzzle offset use the same helper

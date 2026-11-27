@@ -214,9 +214,10 @@ export const mVilcabamba: MissionDef = {
   },
   unitNames: { [UnitKind.SOLDIER]: 'Milicia inca' },
   // The refuge burns while the court evacuates: the fire follows `a2_evacua`, not a clock.
+  // The town is player-built, so the flames sit a little over the ground instead of on an authored roof.
   fires: [
-    { objectiveId: 'a2_evacua', pos: { dx: VILCABAMBA_TOWN.x - 8, dz: VILCABAMBA_TOWN.z + 4 }, count: 2 },
-    { objectiveId: 'a2_evacua', pos: { dx: VILCABAMBA_TOWN.x + 7, dz: VILCABAMBA_TOWN.z - 3 }, count: 2 },
+    { objectiveId: 'a2_evacua', pos: { dx: VILCABAMBA_TOWN.x - 8, dz: VILCABAMBA_TOWN.z + 4 }, count: 2, height: 2 },
+    { objectiveId: 'a2_evacua', pos: { dx: VILCABAMBA_TOWN.x + 7, dz: VILCABAMBA_TOWN.z - 3 }, count: 2, height: 2 },
   ],
   objectives: [
     {

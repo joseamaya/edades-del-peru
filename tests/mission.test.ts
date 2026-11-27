@@ -942,7 +942,7 @@ describe('mission fires', () => {
   it('lights a fire only while its objective is completed', () => {
     const unit = { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } };
     const game = stubGame(unit) as any;
-    game.terrain = { getHeight: () => 0 };
+    game.terrain = { getHeight: () => 2 };
     game.particles = { emit: vi.fn() };
     const missionDef: MissionDef = {
       ...def,
@@ -950,7 +950,7 @@ describe('mission fires', () => {
         { id: 'fire_gate', kind: 'reach', pos: { dx: 0, dz: 0 }, radius: 2, title: 'fire' },
         ...def.objectives,
       ],
-      fires: [{ objectiveId: 'fire_gate', pos: { dx: 0, dz: 0 }, count: 2 }],
+      fires: [{ objectiveId: 'fire_gate', pos: { dx: 0, dz: 0 }, count: 2, height: 4.5 }],
       triggers: [],
     };
     const mission = new Mission(game, missionDef, () => {});
@@ -959,8 +959,36 @@ describe('mission fires', () => {
     expect(game.particles.emit).not.toHaveBeenCalled();
     mission.objState.set('fire_gate', 'completed');
     mission.update(0.2, 0);
-    expect(game.particles.emit).toHaveBeenCalledWith(expect.objectContaining({ kind: 'fire', count: 2 }));
+    expect(game.particles.emit).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'fire', count: 2, y: 2 + 4.5, emissive: false }),
+    );
     expect(game.particles.emit).toHaveBeenCalledWith(expect.objectContaining({ kind: 'smoke' }));
+  });
+
+  it('keeps the embers periodic and leaves unlit points alone', () => {
+    const unit = { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 60, z: 60 } };
+    const game = stubGame(unit) as any;
+    game.terrain = { getHeight: () => 0 };
+    game.particles = { emit: vi.fn() };
+    const missionDef: MissionDef = {
+      ...def,
+      objectives: [
+        { id: 'fire_gate', kind: 'reach', pos: { dx: 0, dz: 0 }, radius: 2, title: 'fire' },
+        { id: 'req', kind: 'gather', resource: 'food', count: 99, title: 'required' },
+      ],
+      fires: [{ objectiveId: 'fire_gate', pos: { dx: 0, dz: 0 } }],
+      triggers: [],
+    };
+    const mission = new Mission(game, missionDef, () => {});
+    mission.start();
+    mission.update(0.2, 0);
+    const sparks = () =>
+      (game.particles.emit as ReturnType<typeof vi.fn>).mock.calls.filter(([o]) => o.kind === 'spark').length;
+    expect(sparks()).toBe(0);
+    mission.objState.set('fire_gate', 'completed');
+    for (let i = 0; i < 6; i++) mission.update(0.15, 0);
+    expect(game.particles.emit).toHaveBeenCalledWith(expect.objectContaining({ kind: 'fire', count: 1 }));
+    expect(game.particles.emit).toHaveBeenCalledWith(expect.objectContaining({ kind: 'spark', count: 2 }));
   });
 });
 

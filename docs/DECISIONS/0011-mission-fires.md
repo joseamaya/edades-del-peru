@@ -8,12 +8,20 @@
 
 ## Decision
 
-`MissionDef.fires` lists fires as `{ objectiveId, pos, count? }`. `Mission.updateFires` emits fire and
-smoke every 0.15 s at each point whose objective is `completed`. The flames are presentation only: they
+`MissionDef.fires` lists fires as `{ objectiveId, pos, count?, height? }`. `Mission.updateFires` emits fire and
+smoke every 0.12 s at each point whose objective is `completed`. `height` lifts the flames over the terrain, so
+a fire can sit on a roof (Cusco) or burn over the ground of a settlement the player builds (Vilcabamba);
+without it the flames pool on the paving. The flames are presentation only: they
 deal no damage and do not alter pathing, victory or defeat.
 
 The state lives in the objective, so `MissionSave` needs no new field: a load restores the objective and
 the fire comes back on the next tick.
+
+The flame *body* is normal-blended: an additive flame desaturates to a white blob over a sunlit roof, which is
+how the first pass read as a lamp. The embers keep the glow on the additive layer. Each body sprite is a
+tapered, leaning silhouette drawn in the particle fragment shader, and a plume's particles are born across its
+footprint and climb (`plume`, negative gravity): a shared spawn point and no rise turn any count into a single
+round candle. `plume` is opt-in, so torches, hearths and burning buildings keep their existing look.
 
 ## Alternatives rejected
 
@@ -27,8 +35,13 @@ the fire comes back on the next tick.
 
 - Fires stop when the mission ends, like every other mission presentation tick.
 - The same mechanism can light a fire for any objective, but each point is authored: no procedural spread.
+  Cusco's points are read from the kit's layout (`CUSCO_CITY_FIRES`), so moving a house moves its fire.
 - A future damage-bearing fire should be a new effect with its own save and replay decision, not a change
   to this one.
+- `node scripts/capture_mission_fires.mjs --out=docs/media/cusco-fires` regenerates the evidence pair:
+
+  ![Cusco before the fire](../media/cusco-fires-before.webp)
+  ![Cusco with the roofs burning](../media/cusco-fires-after.webp)
 
 ## Revisit
 

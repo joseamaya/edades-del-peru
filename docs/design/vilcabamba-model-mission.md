@@ -48,6 +48,8 @@ The Inca's capture and execution are narrated in the epilogue; no counterfactual
   original counts wiped the real-order army before the escape. As a `retirada` mission, the camp can fall
   without ending it; the court's objectives decide.
 - The refuge burns during `a2_evacua` through `MissionDef.fires` (ADR 0011); the fire is presentation only.
+  `docs/media/vilcabamba-fires-after.webp` is the capture:
+  `node scripts/capture_mission_fires.mjs --mission=m_vilcabamba --zoom=42 --out=docs/media/vilcabamba-fires`.
 - Túpac Amaru I is a briefing card and narrator; his capture is not a player-controlled survival objective.
 
 ## Opening and closing
