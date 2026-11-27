@@ -963,3 +963,36 @@ describe('mission fires', () => {
     expect(game.particles.emit).toHaveBeenCalledWith(expect.objectContaining({ kind: 'smoke' }));
   });
 });
+
+describe('strike effect', () => {
+  it('damages only the targeted owner inside the radius', () => {
+    const inside = vi.fn();
+    const outside = vi.fn();
+    const friendly = vi.fn();
+    const game = stubGame({ id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER }) as any;
+    game.particles = { emit: vi.fn() };
+    game.units = new Map([
+      [1, { id: 1, owner: 1, dead: false, pos: { x: 0, z: 0 }, takeDamage: inside }],
+      [2, { id: 2, owner: 1, dead: false, pos: { x: 20, z: 0 }, takeDamage: outside }],
+      [3, { id: 3, owner: 0, dead: false, pos: { x: 1, z: 0 }, takeDamage: friendly }],
+    ]);
+    const missionDef: MissionDef = {
+      ...def,
+      objectives: [{ id: 'req', kind: 'gather', resource: 'food', count: 1, title: 'required' }],
+      triggers: [
+        {
+          id: 't_strike',
+          condition: { type: 'time', seconds: 0 },
+          effects: [{ type: 'strike', pos: { dx: 0, dz: 0 }, radius: 5, damage: 60 }],
+        },
+      ],
+    };
+    const mission = new Mission(game, missionDef, () => {});
+    mission.start();
+    mission.update(1, 0);
+    expect(inside).toHaveBeenCalledWith(60, -1);
+    expect(outside).not.toHaveBeenCalled();
+    expect(friendly).not.toHaveBeenCalled();
+    expect(game.particles.emit).toHaveBeenCalledWith(expect.objectContaining({ kind: 'explosion' }));
+  });
+});

@@ -292,6 +292,15 @@ export const mBrena: MissionDef = {
     },
   ],
   triggers: [
+    // The galgas are a prepared rockfall, not a 45 s wait: the first Chilean unit in the pass takes the hit.
+    {
+      id: 't_galgas',
+      condition: { type: 'enemy_in_area', pos: { dx: BRENA_PASS.x * 256, dz: BRENA_PASS.z * 256 }, radius: 20 },
+      effects: [
+        { type: 'strike', pos: { dx: BRENA_PASS.x * 256, dz: BRENA_PASS.z * 256 }, radius: 20, damage: 60 },
+        { type: 'dialogue', text: 'Las galgas caen sobre la columna chilena en el paso.' },
+      ],
+    },
     {
       id: 't_intro',
       condition: { type: 'time', seconds: 6 },

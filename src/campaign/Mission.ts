@@ -601,6 +601,15 @@ export class Mission {
         const tp = this.resolvePoint(c.pos);
         return this.byTag(c.entityTag).some((e) => !e.dead && distance2D(e.pos.x, e.pos.z, tp.x, tp.z) < c.radius);
       }
+      case 'enemy_in_area': {
+        const tp = this.resolvePoint(c.pos);
+        const owner = c.owner ?? 1;
+        for (const unit of this.game.units.values()) {
+          if (unit.owner !== owner || unit.dead) continue;
+          if (distance2D(unit.pos.x, unit.pos.z, tp.x, tp.z) <= c.radius) return true;
+        }
+        return false;
+      }
       default:
         return false;
     }
@@ -636,6 +645,39 @@ export class Mission {
       return;
     }
     switch (fx.type) {
+      case 'strike': {
+        const p = this.resolvePoint(fx.pos);
+        const owner = fx.owner ?? 1;
+        for (const unit of this.game.units.values()) {
+          if (unit.owner !== owner || unit.dead) continue;
+          if (distance2D(unit.pos.x, unit.pos.z, p.x, p.z) > fx.radius) continue;
+          unit.takeDamage(fx.damage, -1);
+          this.game.particles?.emit({
+            x: unit.pos.x,
+            y: unit.pos.y + 0.6,
+            z: unit.pos.z,
+            count: 12,
+            color: 0xffaa55,
+            kind: 'explosion',
+            speed: 3,
+            life: 0.35,
+            size: 1.4,
+            spread: 2.2,
+          });
+          this.game.particles?.emit({
+            x: unit.pos.x,
+            y: unit.pos.y + 0.8,
+            z: unit.pos.z,
+            count: 6,
+            color: 0x6a6258,
+            kind: 'smoke',
+            speed: 1.4,
+            life: 1.6,
+            size: 1.4,
+          });
+        }
+        break;
+      }
       case 'withdraw': {
         const to = this.resolvePoint(fx.pos);
         const from = fx.from ? this.resolvePoint(fx.from) : null;
