@@ -52,6 +52,7 @@ export class Mission {
   /** Activations a one-shot trigger requested before their `requires` prerequisite completed. */
   private deferredActivations = new Map<string, boolean>();
   private delivered = new Map<string, number>();
+  private fireTimer = 0;
   private onEnd: (win: boolean) => void;
 
   constructor(game: Game, def: MissionDef, onEnd: (win: boolean) => void) {
@@ -233,9 +234,49 @@ export class Mission {
     if (this.game.isCinematicActive()) return;
     this.timer += dt;
     this.updateHoldTimers(dt);
+    this.updateFires(dt);
     this.evalObjectives();
     if (this.ended) return;
     this.evalTriggers();
+  }
+
+  /** Presentation fires, keyed to the objective that lights them; no save field is needed. */
+  private updateFires(dt: number): void {
+    const fires = this.def.fires;
+    if (!fires?.length) return;
+    this.fireTimer += dt;
+    if (this.fireTimer < 0.15) return;
+    this.fireTimer = 0;
+    for (const fire of fires) {
+      if (this.objState.get(fire.objectiveId) !== 'completed') continue;
+      const p = this.resolvePoint(fire.pos);
+      const count = fire.count ?? 1;
+      this.game.particles?.emit({
+        x: p.x,
+        y: this.game.terrain?.getHeight(p.x, p.z) ?? 0,
+        z: p.z,
+        count,
+        color: 0xff7a1c,
+        kind: 'fire',
+        speed: 1.2,
+        life: 0.9,
+        size: 1.1,
+        grow: 0,
+        spread: 1.2,
+      });
+      this.game.particles?.emit({
+        x: p.x,
+        y: (this.game.terrain?.getHeight(p.x, p.z) ?? 0) + 0.6,
+        z: p.z,
+        count: 1,
+        color: 0x6a6258,
+        kind: 'smoke',
+        speed: 1.1,
+        life: 3,
+        size: 1.2,
+        grow: 1.4,
+      });
+    }
   }
 
   private updateHoldTimers(dt: number): void {

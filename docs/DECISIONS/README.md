@@ -20,6 +20,7 @@ and mark the old one `Superseded by NNNN`.
 | 0008 | [A 28 MB `dist/` budget for the cinema intros](./0008-dist-budget-28mb.md) | Accepted |
 | 0009 | [A 40 MB `dist/` budget for the site kits](./0009-dist-budget-40mb.md) | Accepted |
 | 0010 | [Layer-31 merge sources stay in the shadow-coverage count](./0010-shadow-coverage-sources.md) | Proposed |
+| 0011 | [Mission fires derive from objective state](./0011-mission-fires.md) | Proposed |
 
 ## Writing a new record
 

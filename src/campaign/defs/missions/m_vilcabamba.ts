@@ -213,6 +213,11 @@ export const mVilcabamba: MissionDef = {
     [BuildingKind.ARSENAL]: 'Casa de armas',
   },
   unitNames: { [UnitKind.SOLDIER]: 'Milicia inca' },
+  // The refuge burns while the court evacuates: the fire follows `a2_evacua`, not a clock.
+  fires: [
+    { objectiveId: 'a2_evacua', pos: { dx: VILCABAMBA_TOWN.x - 8, dz: VILCABAMBA_TOWN.z + 4 }, count: 2 },
+    { objectiveId: 'a2_evacua', pos: { dx: VILCABAMBA_TOWN.x + 7, dz: VILCABAMBA_TOWN.z - 3 }, count: 2 },
+  ],
   objectives: [
     {
       id: 'a1_huayna',

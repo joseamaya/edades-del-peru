@@ -47,6 +47,7 @@ The Inca's capture and execution are narrated in the epilogue; no counterfactual
   soldiers, two cavalry and one arcabucero, and the escape-road column four soldiers and one cavalry: the
   original counts wiped the real-order army before the escape. As a `retirada` mission, the camp can fall
   without ending it; the court's objectives decide.
+- The refuge burns during `a2_evacua` through `MissionDef.fires` (ADR 0011); the fire is presentation only.
 - Túpac Amaru I is a briefing card and narrator; his capture is not a player-controlled survival objective.
 
 ## Opening and closing

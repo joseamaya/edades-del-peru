@@ -937,3 +937,29 @@ describe('trigger conditions', () => {
     expect(game.players[0].resources.food).toBe(5);
   });
 });
+
+describe('mission fires', () => {
+  it('lights a fire only while its objective is completed', () => {
+    const unit = { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } };
+    const game = stubGame(unit) as any;
+    game.terrain = { getHeight: () => 0 };
+    game.particles = { emit: vi.fn() };
+    const missionDef: MissionDef = {
+      ...def,
+      objectives: [
+        { id: 'fire_gate', kind: 'reach', pos: { dx: 0, dz: 0 }, radius: 2, title: 'fire' },
+        ...def.objectives,
+      ],
+      fires: [{ objectiveId: 'fire_gate', pos: { dx: 0, dz: 0 }, count: 2 }],
+      triggers: [],
+    };
+    const mission = new Mission(game, missionDef, () => {});
+    mission.start();
+    mission.update(0.2, 0);
+    expect(game.particles.emit).not.toHaveBeenCalled();
+    mission.objState.set('fire_gate', 'completed');
+    mission.update(0.2, 0);
+    expect(game.particles.emit).toHaveBeenCalledWith(expect.objectContaining({ kind: 'fire', count: 2 }));
+    expect(game.particles.emit).toHaveBeenCalledWith(expect.objectContaining({ kind: 'smoke' }));
+  });
+});
