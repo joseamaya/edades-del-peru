@@ -26,8 +26,20 @@ const named = (dressing: SettlementDressing, suffix: string): THREE.Mesh[] =>
   dressing.group.children.filter((c) => c.name.endsWith(suffix)) as THREE.Mesh[];
 
 describe('settlement dressing kit', () => {
+  it('multiplies the culture tint over the cloned kit materials', () => {
+    const dressing = new SettlementDressing(PLACEMENTS, () => 0, 0xffe4c2);
+    expect(dressing.attachKit(kit())).toBe(true);
+    const tint = new THREE.Color(0xffe4c2);
+    for (const mesh of named(dressing, 'lod0')) {
+      const material = mesh.material as THREE.MeshStandardMaterial;
+      // The kit material starts white, so the clone carries exactly the tint.
+      expect(material.color.getHex()).toBe(tint.getHex());
+    }
+    dressing.dispose();
+  });
+
   it('replaces the procedural props with one mesh per material and LOD', () => {
-    const dressing = new SettlementDressing(PLACEMENTS, () => 0);
+    const dressing = new SettlementDressing(PLACEMENTS, () => 0, 0xffffff);
     expect(dressing.group.children[0]?.name).toBe('dressing');
     expect(dressing.attachKit(kit())).toBe(true);
     const names = dressing.group.children.map((c) => c.name);
@@ -46,7 +58,7 @@ describe('settlement dressing kit', () => {
   });
 
   it('starts on LOD0, switches with the camera focus and refuses a second attach', () => {
-    const dressing = new SettlementDressing(PLACEMENTS, () => 0);
+    const dressing = new SettlementDressing(PLACEMENTS, () => 0, 0xffffff);
     expect(dressing.attachKit(kit())).toBe(true);
     expect(dressing.attachKit(kit())).toBe(false);
     dressing.update({ x: 3.5, z: 0 });
@@ -59,7 +71,7 @@ describe('settlement dressing kit', () => {
   });
 
   it('keeps the near LOD when the kit has no far LOD', () => {
-    const dressing = new SettlementDressing(PLACEMENTS, () => 0);
+    const dressing = new SettlementDressing(PLACEMENTS, () => 0, 0xffffff);
     const cane = new THREE.MeshStandardMaterial({ name: 'MAT-Arch_CaneMat' });
     const nearOnly = new Map<DressingKind, PropsKitModel>([
       ['hearth', model('hearth', cane, 0)],
@@ -73,7 +85,7 @@ describe('settlement dressing kit', () => {
   });
 
   it('bakes the placement transform (yaw, scale and terrain height)', () => {
-    const dressing = new SettlementDressing([{ kind: 'hearth', x: 10, z: 4, yaw: 0, scale: 2 }], () => 5);
+    const dressing = new SettlementDressing([{ kind: 'hearth', x: 10, z: 4, yaw: 0, scale: 2 }], () => 5, 0xffffff);
     const stone = new THREE.MeshStandardMaterial({ name: 'MAT-Arch_Stone' });
     dressing.attachKit(new Map<DressingKind, PropsKitModel>([['hearth', model('hearth', stone)]]));
     const mesh = named(dressing, 'lod0')[0]!;
@@ -90,8 +102,8 @@ describe('settlement dressing kit', () => {
 
   it('clones the shared kit materials so each base can carry its own fog', () => {
     const source = new THREE.MeshStandardMaterial({ name: 'MAT-Arch_Stone' });
-    const a = new SettlementDressing(PLACEMENTS, () => 0);
-    const b = new SettlementDressing(PLACEMENTS, () => 0);
+    const a = new SettlementDressing(PLACEMENTS, () => 0, 0xffffff);
+    const b = new SettlementDressing(PLACEMENTS, () => 0, 0xffffff);
     a.attachKit(kit(source));
     b.attachKit(kit(source));
     const matA = (a.group.getObjectByName('props_kit_dressing_stone_lod0') as THREE.Mesh).material;
@@ -106,18 +118,18 @@ describe('settlement dressing kit', () => {
     const partial = new Map<DressingKind, PropsKitModel>([
       ['hearth', model('hearth', new THREE.MeshStandardMaterial())],
     ]);
-    const incomplete = new SettlementDressing([{ kind: 'stela', x: 0, z: 0, yaw: 0, scale: 1 }], () => 0);
+    const incomplete = new SettlementDressing([{ kind: 'stela', x: 0, z: 0, yaw: 0, scale: 1 }], () => 0, 0xffffff);
     expect(incomplete.attachKit(partial)).toBe(false);
     expect(incomplete.group.children[0]?.name).toBe('dressing');
     incomplete.dispose();
 
-    const dressing = new SettlementDressing(PLACEMENTS, () => 0);
+    const dressing = new SettlementDressing(PLACEMENTS, () => 0, 0xffffff);
     dressing.dispose();
     expect(dressing.attachKit(kit())).toBe(false);
   });
 
   it('removes both LOD sets and leaves the scene on dispose', () => {
-    const dressing = new SettlementDressing(PLACEMENTS, () => 0);
+    const dressing = new SettlementDressing(PLACEMENTS, () => 0, 0xffffff);
     dressing.attachKit(kit());
     const group = dressing.group;
     dressing.dispose();

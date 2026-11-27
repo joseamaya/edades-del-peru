@@ -48,7 +48,7 @@ export class StartBaseBuilder {
     this.game.world.addSettlementOverlay(caralGround ? { ...plan, fields: [] } : plan);
     // Every documented pre-contact culture with its own household set dresses its base; the rest keep no props.
     const state = this.game.players[player];
-    const profile = dressingProfileFor(state.civ, state.era);
+    const profile = dressingProfileFor(state.civ, this.game.mission?.def.id);
     if (profile) this.game.world.addSettlementDressing(plan, player, profile);
   }
 

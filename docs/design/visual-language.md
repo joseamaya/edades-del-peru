@@ -403,17 +403,19 @@ cotton, benches, a windbreak), **Wari** (state workshops) and the **Inca** (qoll
 drying rack in favour of baskets, cotton and benches. Each set multiplies a material tint over the shared kit
 pieces — warm ochre on the coast, cool stone grey in the highlands, deeper ochre for the Inca — so the same
 baskets read as different cultures without a second prop kit. Caral and Chavín keep their reviewed colour (white).
-The loom (`telar`) that P2-4 also lists remains a gap: there is no loom prop yet, so no set places one. Bases of
-cultures without an authored set (Chimú, Chanca, Killke, the colonial and later armies) stay bare; the sets are
-pre-contact households, so `dressingProfileFor` returns none once a match is locked in the Viceroyalty or later —
-1780's rebels are `INCA` but get no Incan household. Sources:
+The loom (`telar`) that P2-4 also lists remains a gap: there is no loom prop yet, so no set places one. The sets
+cover Caral, Chavín, Moche, Wari and the Inca, including the Inca households of Cusco 1536 and Vilcabamba 1572.
+Every other base stays bare: Chimú, Chanca, Paracas, Recuay and Tiahuanaco (the AI enemies of m2–m4 among them)
+have no authored set, the colonial and republican armies have none either, and 1780's rebellion is `INCA` but a
+colonial camp, so `dressingProfileFor` returns none for `m7_tupac_amaru`. Sources:
 [`moche.md`](../historia/civilizaciones/moche.md) (irrigation agriculture, fishing, pottery),
 [`wari.md`](../historia/civilizaciones/wari.md) (planned centres, state workshops, textiles) and
 [`inca.md`](../historia/civilizaciones/inca.md) (mita, qollqa, textiles). The fish rack and every other prop come
 from the audit's remedy for P2-4 (reuse the Caral set), not from a Moche household inventory: the mix is a
 presentation abstraction, not an excavated assemblage.
 
-Evidence (same `m3_moche_recuay`, seed 777, 1600x900, UI hidden), reproduced with
+Evidence (same `m3_moche_recuay`, seed 777, captured at 1600x900 and shipped at 1000x562, UI hidden),
+reproduced with
 `node scripts/screenshot.mjs dressing-moche --url="/?mission=m3_moche_recuay&intro=0&fog=0&seed=777" --click
 --target=76.8,169 --height=16 --no-hud`:
 [`moche-dressing-before.webp`](../media/moche-dressing-before.webp) /

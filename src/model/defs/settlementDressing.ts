@@ -1,4 +1,4 @@
-import { CivId, Era } from '../../core/types';
+import { CivId } from '../../core/types';
 import { RNG } from '../../util/rng';
 import type { SettlementPlan } from './settlementPlan';
 import type { TerrainQuery } from './terrainQuery';
@@ -118,13 +118,17 @@ export const DRESSING_SETS: Record<SettlementDressingProfile, DressingSet> = {
   },
 };
 
+/** The campaigns whose `INCA` side is a colonial-era rebellion, not an Inca household. */
+const COLONIAL_REBEL_MISSIONS = new Set(['m7_tupac_amaru']);
+
 /**
- * The household set that dresses a base. The sets are pre-contact Andean households, so a match locked in the
- * Viceroyalty or later (m7's 1780 rebels are `INCA`, m8/m9 the patriot armies) gets none: keying on the civ
- * alone would dress a colonial camp with an Incan household.
+ * The household set that dresses a base. Keying on the civ alone would dress the 1780 rebellion — `INCA` in the
+ * Viceroyalty — with an Incan household, so that campaign is the exception; Cusco 1536 and Vilcabamba 1572 keep
+ * theirs, because those are Inca households still. A mission without a set (m8/m9 patriot armies, or a culture
+ * with no authored props) stays bare rather than borrowing one.
  */
-export function dressingProfileFor(civ: CivId, era: Era): SettlementDressingProfile | null {
-  if (era >= Era.VICEROYALTY) return null;
+export function dressingProfileFor(civ: CivId, missionId = ''): SettlementDressingProfile | null {
+  if (civ === CivId.INCA && COLONIAL_REBEL_MISSIONS.has(missionId)) return null;
   switch (civ) {
     case CivId.CARAL:
       return 'caral';
@@ -140,19 +144,6 @@ export function dressingProfileFor(civ: CivId, era: Era): SettlementDressingProf
       return null;
   }
 }
-
-/**
- * Material tint per household set, multiplied over the kit's own colours: the same baskets and hearths read
- * warm ochre on the coast (Moche pottery and adobe), cool grey in the Wari highlands and red-ochre for the
- * Inca. Presentation only, and subtle on purpose: the shapes stay the shared household kit.
- */
-export const DRESSING_TINT: Record<SettlementDressingProfile, number> = {
-  caral: 0xffffff,
-  chavin: 0xf4f2ec,
-  moche: 0xfff0dc,
-  wari: 0xf0f0f4,
-  inca: 0xffeede,
-};
 
 const MAX_SLOPE = 0.42;
 /**

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { CivId, Era } from '../src/core/types';
+import { CivId } from '../src/core/types';
 import { SettlementDressing } from '../src/rendering/SettlementDressing';
 import {
   CENTER_CLEARANCE,
@@ -107,7 +107,9 @@ describe('settlement dressing', () => {
     expect(new Set(tints.slice(2)).size).toBe(3);
     // Caral and Chavín share the neutral white, so four distinct tints over five sets.
     expect(new Set(tints).size).toBe(4);
-    for (const tint of tints) expect(tint).toBeLessThanOrEqual(0xffffff);
+    // Caral and Chavín keep the reviewed neutral colour; only the new sets are tinted.
+    expect(DRESSING_SETS.caral.tint).toBe(0xffffff);
+    expect(DRESSING_SETS.chavin.tint).toBe(0xffffff);
     const [caral, , moche, wari, inca] = PROFILES.map((profile) => new THREE.Color(DRESSING_SETS[profile].tint));
     expect(moche.r - moche.b).toBeGreaterThan(0.1);
     expect(wari.b - wari.r).toBeGreaterThan(0.02);
@@ -240,17 +242,22 @@ describe('Chavín settlement dressing', () => {
 });
 
 describe('dressing profiles', () => {
-  it('maps each pre-contact culture to its set and nothing after the conquest', () => {
-    expect(dressingProfileFor(CivId.CARAL, Era.FORMATIVE)).toBe('caral');
-    expect(dressingProfileFor(CivId.CHAVIN, Era.FORMATIVE)).toBe('chavin');
-    expect(dressingProfileFor(CivId.MOCHE, Era.REGIONAL_STATES)).toBe('moche');
-    expect(dressingProfileFor(CivId.WARI, Era.TAHUANTINSUYO)).toBe('wari');
-    expect(dressingProfileFor(CivId.INCA, Era.TAHUANTINSUYO)).toBe('inca');
-    // m7's 1780 rebels are `INCA`; an Incan household would be anachronistic there.
-    expect(dressingProfileFor(CivId.INCA, Era.VICEROYALTY)).toBeNull();
-    expect(dressingProfileFor(CivId.PATRIOTAS, Era.REPUBLIC)).toBeNull();
-    // A culture with no authored set stays bare rather than borrowing one.
-    expect(dressingProfileFor(CivId.CHIMU, Era.TAHUANTINSUYO)).toBeNull();
+  it('maps each culture with an authored set and leaves the rest bare', () => {
+    expect(dressingProfileFor(CivId.CARAL)).toBe('caral');
+    expect(dressingProfileFor(CivId.CHAVIN)).toBe('chavin');
+    expect(dressingProfileFor(CivId.MOCHE)).toBe('moche');
+    expect(dressingProfileFor(CivId.WARI)).toBe('wari');
+    expect(dressingProfileFor(CivId.INCA)).toBe('inca');
+    // Cusco 1536 and Vilcabamba 1572 are still Inca households.
+    expect(dressingProfileFor(CivId.INCA, 'm_cusco_1536')).toBe('inca');
+    expect(dressingProfileFor(CivId.INCA, 'm_vilcabamba')).toBe('inca');
+    // The 1780 rebellion is `INCA` but a colonial camp: no Incan household there.
+    expect(dressingProfileFor(CivId.INCA, 'm7_tupac_amaru')).toBeNull();
+    // Cultures without an authored set stay bare rather than borrowing one.
+    for (const civ of [CivId.CHIMU, CivId.CHANCA, CivId.PARACAS, CivId.RECUAY, CivId.TIAHUANACO]) {
+      expect(dressingProfileFor(civ), CivId[civ]).toBeNull();
+    }
+    expect(dressingProfileFor(CivId.PATRIOTAS)).toBeNull();
   });
 
   it('tints the procedural props with the culture colour', () => {
