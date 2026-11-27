@@ -30,8 +30,8 @@ export class SettlementDressing {
   constructor(
     private readonly placements: DressingPlacement[],
     private readonly heightAt: (x: number, z: number) => number,
-    /** Culture tint, multiplied over the props' own colours (see `DRESSING_TINT`). */
-    private readonly tint = 0xffffff,
+    /** Culture tint, multiplied over the props' own colours (see `DRESSING_SETS`). */
+    private readonly tint: number,
   ) {
     this.group.name = 'settlement-dressing';
     let sx = 0;

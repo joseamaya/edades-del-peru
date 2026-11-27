@@ -3,7 +3,7 @@ import { MAX_WALKABLE_SLOPE } from '../game/Pathfinding';
 import { Unit } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import { ResourceNode } from '../entities/ResourceNode';
-import { CivId, UnitKind, OrderKind } from '../core/types';
+import { UnitKind, OrderKind } from '../core/types';
 import { distance2D } from '../util/math';
 import {
   placeStartBuildings,
@@ -12,17 +12,8 @@ import {
   planStartingUnitSpots,
 } from '../sim/WorldBuilder';
 import type { SettlementPlan } from '../model/defs/settlementPlan';
-import type { SettlementDressingProfile } from '../model/defs/settlementDressing';
+import { dressingProfileFor } from '../model/defs/settlementDressing';
 import type { BuildContext } from '../model/ProceduralModel';
-
-/** Which household set dresses a culture's starting base (visual only). */
-const DRESSING_PROFILE_FOR_CIV: Partial<Record<CivId, SettlementDressingProfile>> = {
-  [CivId.CARAL]: 'caral',
-  [CivId.CHAVIN]: 'chavin',
-  [CivId.MOCHE]: 'moche',
-  [CivId.WARI]: 'wari',
-  [CivId.INCA]: 'inca',
-};
 
 /** Opening base, starting units, resources and initial worker assignment. */
 export class StartBaseBuilder {
@@ -55,8 +46,9 @@ export class StartBaseBuilder {
     // the player's chacras are the only fields (flat overlays read as stickers on the terrain).
     const caralGround = this.game.siteDef?.environs?.valley === 'caral';
     this.game.world.addSettlementOverlay(caralGround ? { ...plan, fields: [] } : plan);
-    // Every documented culture with its own household set dresses its base; the rest keep no props.
-    const profile = DRESSING_PROFILE_FOR_CIV[this.game.players[player].civ];
+    // Every documented pre-contact culture with its own household set dresses its base; the rest keep no props.
+    const state = this.game.players[player];
+    const profile = dressingProfileFor(state.civ, state.era);
     if (profile) this.game.world.addSettlementDressing(plan, player, profile);
   }
 

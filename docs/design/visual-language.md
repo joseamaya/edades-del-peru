@@ -397,19 +397,25 @@ project-authored cotton garments (a documented abstraction); the fauna rigs rema
 
 ### Culture household sets
 
-The dressing planner now carries a household set per culture (`SettlementDressingProfile`), built from the
-same prop kinds so no new geometry is needed: **Moche** keeps the coastal mix (fish drying racks, gourds,
-baskets, cotton, benches, a windbreak), while **Wari** and **Inca** are state households (state workshops,
-**qollqa** stores) and drop the drying rack in favour of baskets, cotton and benches. Each set multiplies a
-material tint over the shared kit pieces — warm ochre on the coast, cool stone grey in the highlands, red-ochre
-for the Inca — so the same baskets read as three cultures without a second prop kit. Bases of other cultures
-still carry no props. Sources:
+The dressing planner carries a household set per culture (`SettlementDressingProfile`), built from the same
+prop kinds so no new geometry is needed: **Moche** keeps the coastal mix (fish drying racks, gourds, baskets,
+cotton, benches, a windbreak), **Wari** (state workshops) and the **Inca** (qollqa stores, textiles) drop the
+drying rack in favour of baskets, cotton and benches. Each set multiplies a material tint over the shared kit
+pieces — warm ochre on the coast, cool stone grey in the highlands, deeper ochre for the Inca — so the same
+baskets read as different cultures without a second prop kit. Caral and Chavín keep their reviewed colour (white).
+The loom (`telar`) that P2-4 also lists remains a gap: there is no loom prop yet, so no set places one. Bases of
+cultures without an authored set (Chimú, Chanca, Killke, the colonial and later armies) stay bare; the sets are
+pre-contact households, so `dressingProfileFor` returns none once a match is locked in the Viceroyalty or later —
+1780's rebels are `INCA` but get no Incan household. Sources:
 [`moche.md`](../historia/civilizaciones/moche.md) (irrigation agriculture, fishing, pottery),
 [`wari.md`](../historia/civilizaciones/wari.md) (planned centres, state workshops, textiles) and
-[`inca.md`](../historia/civilizaciones/inca.md) (mita, qollqa, textiles); the exact mix is a presentation
-abstraction, not an excavated assemblage.
+[`inca.md`](../historia/civilizaciones/inca.md) (mita, qollqa, textiles). The fish rack and every other prop come
+from the audit's remedy for P2-4 (reuse the Caral set), not from a Moche household inventory: the mix is a
+presentation abstraction, not an excavated assemblage.
 
-Evidence (same `m3_moche_recuay`, seed 777, 1600x900, UI hidden):
+Evidence (same `m3_moche_recuay`, seed 777, 1600x900, UI hidden), reproduced with
+`node scripts/screenshot.mjs dressing-moche --url="/?mission=m3_moche_recuay&intro=0&fog=0&seed=777" --click
+--target=76.8,169 --height=16 --no-hud`:
 [`moche-dressing-before.webp`](../media/moche-dressing-before.webp) /
 [`moche-dressing-after.webp`](../media/moche-dressing-after.webp).
 

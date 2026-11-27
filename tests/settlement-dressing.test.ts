@@ -1,9 +1,11 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
+import { CivId, Era } from '../src/core/types';
+import { SettlementDressing } from '../src/rendering/SettlementDressing';
 import {
   CENTER_CLEARANCE,
-  DRESSING_TINT,
-  dressingSequence,
+  DRESSING_SETS,
+  dressingProfileFor,
   planSettlementDressing,
   propClearance,
   propSeparation,
@@ -33,8 +35,16 @@ const anchors = [{ ...plan.center, center: true }, ...plan.dwellings.map((d) => 
 
 /** Every household set the game can place. */
 const PROFILES = ['caral', 'chavin', 'moche', 'wari', 'inca'] as const;
+/** Pinned prop budget per set: a sequence that grows has to say so here. */
+const PROP_BUDGET: Record<(typeof PROFILES)[number], number> = {
+  caral: 14,
+  chavin: 10,
+  moche: 12,
+  wari: 9,
+  inca: 9,
+};
 
-describe('Caral settlement dressing', () => {
+describe('settlement dressing', () => {
   it('is deterministic for the same plan and seed', () => {
     expect(planSettlementDressing(plan, 7, flat)).toEqual(planSettlementDressing(plan, 7, flat));
   });
@@ -90,11 +100,19 @@ describe('Caral settlement dressing', () => {
     // Only Chavin keeps the ritual set.
     expect(kinds.chavin).toContain('stela');
     expect(kinds.inca).not.toContain('stela');
-    // Every profile has a tint, and none brightens the props past their own colour.
-    for (const profile of PROFILES) {
-      const tint = new THREE.Color(DRESSING_TINT[profile]);
-      expect(Math.max(tint.r, tint.g, tint.b), profile).toBeLessThanOrEqual(1);
-    }
+    // Every profile keeps its pinned budget, so a set cannot quietly grow.
+    for (const profile of PROFILES) expect(DRESSING_SETS[profile].sequence.length, profile).toBe(PROP_BUDGET[profile]);
+    // The three new sets are tinted apart from each other; Caral and Chavín keep their reviewed colour.
+    const tints = PROFILES.map((profile) => DRESSING_SETS[profile].tint);
+    expect(new Set(tints.slice(2)).size).toBe(3);
+    // Caral and Chavín share the neutral white, so four distinct tints over five sets.
+    expect(new Set(tints).size).toBe(4);
+    for (const tint of tints) expect(tint).toBeLessThanOrEqual(0xffffff);
+    const [caral, , moche, wari, inca] = PROFILES.map((profile) => new THREE.Color(DRESSING_SETS[profile].tint));
+    expect(moche.r - moche.b).toBeGreaterThan(0.1);
+    expect(wari.b - wari.r).toBeGreaterThan(0.02);
+    expect(inca.r - inca.b).toBeGreaterThan(moche.r - moche.b);
+    expect(caral.getHex()).toBe(0xffffff);
   });
 
   it('produces a different layout for a different seed', () => {
@@ -110,7 +128,7 @@ describe('Caral settlement dressing', () => {
   it('never overlaps a wall or another prop across 1,000 seeds', () => {
     let violation = '';
     for (const profile of PROFILES) {
-      const expected = dressingSequence(profile).length;
+      const expected = PROP_BUDGET[profile];
       for (let seed = 1; seed <= 1000; seed++) {
         const out = planSettlementDressing(plan, seed, flat, profile);
         if (out.length !== expected) {
@@ -218,5 +236,33 @@ describe('Chavín settlement dressing', () => {
         );
       }
     }
+  });
+});
+
+describe('dressing profiles', () => {
+  it('maps each pre-contact culture to its set and nothing after the conquest', () => {
+    expect(dressingProfileFor(CivId.CARAL, Era.FORMATIVE)).toBe('caral');
+    expect(dressingProfileFor(CivId.CHAVIN, Era.FORMATIVE)).toBe('chavin');
+    expect(dressingProfileFor(CivId.MOCHE, Era.REGIONAL_STATES)).toBe('moche');
+    expect(dressingProfileFor(CivId.WARI, Era.TAHUANTINSUYO)).toBe('wari');
+    expect(dressingProfileFor(CivId.INCA, Era.TAHUANTINSUYO)).toBe('inca');
+    // m7's 1780 rebels are `INCA`; an Incan household would be anachronistic there.
+    expect(dressingProfileFor(CivId.INCA, Era.VICEROYALTY)).toBeNull();
+    expect(dressingProfileFor(CivId.PATRIOTAS, Era.REPUBLIC)).toBeNull();
+    // A culture with no authored set stays bare rather than borrowing one.
+    expect(dressingProfileFor(CivId.CHIMU, Era.TAHUANTINSUYO)).toBeNull();
+  });
+
+  it('tints the procedural props with the culture colour', () => {
+    const dressing = new SettlementDressing(
+      [{ kind: 'hearth', x: 0, z: 0, yaw: 0, scale: 1 }],
+      () => 0,
+      DRESSING_SETS.moche.tint,
+    );
+    const mesh = dressing.group.getObjectByName('dressing') as THREE.Mesh;
+    expect(mesh).toBeTruthy();
+    const material = mesh.material as THREE.MeshStandardMaterial;
+    expect(material.color.getHex()).toBe(DRESSING_SETS.moche.tint);
+    dressing.dispose();
   });
 });

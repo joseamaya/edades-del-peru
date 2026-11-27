@@ -61,7 +61,7 @@ import { type CaralCityPlan } from '../model/defs/setpieces';
 import { SettlementOverlay } from '../rendering/SettlementOverlay';
 import { SettlementDressing } from '../rendering/SettlementDressing';
 import {
-  DRESSING_TINT,
+  DRESSING_SETS,
   planSettlementDressing,
   type SettlementDressingProfile,
 } from '../model/defs/settlementDressing';
@@ -1568,7 +1568,7 @@ export class WorldViewDecor {
     const dressing = new SettlementDressing(
       placements,
       (x, z) => this.game.terrain.getHeight(x, z),
-      DRESSING_TINT[profile],
+      DRESSING_SETS[profile].tint,
     );
     applyFowToObject(dressing.group, this.game.fowUniforms);
     this.game.scene.add(dressing.group);
