@@ -548,11 +548,9 @@ export class Mission {
         return this.timer >= c.seconds;
       case 'objective': {
         const st = this.objState.get(c.objectiveId);
-        return c.state === 'completed'
-          ? st === 'completed'
-          : c.state === 'failed'
-            ? st === 'failed'
-            : st === 'activo' || st === 'pendiente';
+        // `activo` means active, not pending: a hidden goal that waits for an act card must not fire
+        // its waves at the opening bell.
+        return c.state === 'completed' ? st === 'completed' : c.state === 'failed' ? st === 'failed' : st === 'activo';
       }
       case 'entity_dead':
         if (!c.entityTag) return false;

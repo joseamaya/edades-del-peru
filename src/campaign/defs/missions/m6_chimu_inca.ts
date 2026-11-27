@@ -255,6 +255,24 @@ export const m6ChimuInca: MissionDef = {
       ],
     },
     {
+      // Paramonga is a defended strongpoint, not a label: the advance has to clear it before the canal.
+      id: 't_paramonga_guarnicion',
+      condition: { type: 'time', seconds: 0.5 },
+      effects: [
+        {
+          type: 'reinforce',
+          owner: 1,
+          units: [
+            { kind: UnitKind.SOLDIER, count: 4 },
+            { kind: UnitKind.MUSKETEER, count: 2 },
+          ],
+          pos: CHIMU_PARAMONGA_WORLD,
+          radius: chimuLength(4),
+          objective: 'position',
+        },
+      ],
+    },
+    {
       id: 't_acto_i',
       condition: { type: 'time', seconds: 12 },
       effects: [
@@ -283,8 +301,10 @@ export const m6ChimuInca: MissionDef = {
       effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }],
     },
     {
+      // The counteroffensive answers the cut canal, not a clock the player may never reach; firing on
+      // activation made the wave reach the unguarded camp while the player was still closing the gate.
       id: 't_wave_1',
-      condition: { type: 'time', seconds: 260 },
+      condition: { type: 'objective', objectiveId: 'obj_canal', state: 'completed' },
       effects: [
         {
           type: 'wave',

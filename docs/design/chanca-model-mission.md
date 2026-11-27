@@ -36,7 +36,9 @@ sampling the former **160 m** composition 1.6× larger:
 - **Andean ridges and the dry quebrada** frame the pampa.
 
 Painted ground uses `CHANCA_GROUND` (pampa grass, terrace dirt, quebrada sand, ridge rock) sampled at
-128 × 128 over 256 m. The worker crosses in ≈2:22 (`unitSpeedScale: 0.75`), inside the model-mission band.
+128 × 128 over 256 m. Vegetation uses the `andes` kit (molle, riverbank willow, ichu ×1.6, density 0.08)
+instead of the generic broadleaf/conifer mix, so the pampa reads as high puna. The worker crosses in ≈2:22
+(`unitSpeedScale: 0.75`), inside the model-mission band.
 The horizontal composition scales 1.6 (start offsets, wave centres and radii, pucará proxies and corridor
 included). The heightfield keeps the 160 m vertical amplitude, so slopes read gentler. The kit pieces are
 placed in world metres on the flat pucará terrace. Both are presentation trade-offs, not a survey.

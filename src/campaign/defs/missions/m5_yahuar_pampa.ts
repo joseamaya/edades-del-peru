@@ -126,7 +126,18 @@ export const m5YahuarPampa: MissionDef = {
       ],
     },
   },
-  mapOverrides: { culturalLandscape: null },
+  mapOverrides: {
+    culturalLandscape: null,
+    // The Cusco pampa is high puna: the andes kit replaces the generic broadleaf/conifer mix with molle,
+    // riverbank willow and an ichu ground cover. Density stays low so the battle line reads.
+    vegetationKit: 'andes',
+    vegetation: {
+      density: 0.08,
+      groundCover: 0.08,
+      groundCoverWeights: { grass: 0, ichu: 1.6, pebble: 0, gravel: 0 },
+      variants: { molle: 0.6, sauce: 0.4, broad: 0, needle: 0 },
+    },
+  },
   atmosphere: { fogDensity: 0.0012, sunWarmth: 0.94, skyTint: '#c9cdd2' },
   timeOfDay: 'dusk',
   startingEra: Era.TAHUANTINSUYO,

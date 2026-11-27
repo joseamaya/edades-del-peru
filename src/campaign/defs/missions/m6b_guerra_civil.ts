@@ -268,7 +268,7 @@ export const m6bGuerraCivil: MissionDef = {
           kicker: 'Acto II · Quipaipan',
           title: 'La pampa',
           image: 'media/cusco-inca/intro-quipaipan.webp',
-          text: 'Huáscar ha reunido su ejército en Quipaipan. Sostén la pampa con la línea de guerreros y no dejes caer a Quizquiz.',
+          text: 'Huáscar ha reunido su ejército en Quipaipan. Sostén la pampa con la línea de guerreros y no dejes caer a Quizquiz. La pampa se representa con la arquitectura del valle del Cusco como síntesis: no es el trazado de la ciudad.',
         },
         {
           type: 'dialogue',
@@ -315,8 +315,10 @@ export const m6bGuerraCivil: MissionDef = {
       ],
     },
     {
+      // The relief column cuts the Quito road when the battle for Quipaipan opens, not on a clock that
+      // can outlast the mission.
       id: 't_wave_1',
-      condition: { type: 'time', seconds: 240 },
+      condition: { type: 'objective', objectiveId: 'obj_quipaipan', state: 'activate' },
       effects: [
         {
           type: 'wave',
