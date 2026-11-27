@@ -7,6 +7,9 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
  * Capture the Virreinato arc's own in-engine images: the 1536 Cusco siege and
  * the 1572 Vilcabamba withdrawal. Game captures, never historical photographs.
  *
+ * Every card ships at 960x540 WebP q58 with the world label layer hidden: the chapter card already names
+ * the place, and the smaller 640x360 cards the arcs started with went soft next to the rest of the set.
+ *
  * Usage: node scripts/capture_virreinato_arc.mjs [--mission=ID] [--only=ID]
  */
 const only = cliArg('only', '');
@@ -68,6 +71,9 @@ try {
         if (rings) rings.visible = false;
         const ui = document.getElementById('ui-root');
         if (ui) ui.style.display = 'none';
+        // The card already names the place: the world label layer would bake a second caption in.
+        const labels = document.getElementById('ed-world-labels');
+        if (labels) labels.style.display = 'none';
         if (g.getPaused()) g.togglePause();
         g.applyQualityPreset('high');
         g.trees.kitLod0Radius = 60;
@@ -116,7 +122,7 @@ try {
     await page.waitForTimeout(500);
     const png = await page.screenshot({ type: 'png' });
     const file = path.join(out, `intro-${shot.id}.webp`);
-    await sharp(png).resize(640, 360).webp({ quality: 28 }).toFile(file);
+    await sharp(png).resize(960, 540).webp({ quality: 58 }).toFile(file);
     console.log(`captured ${path.relative(process.cwd(), file)} (${fs.statSync(file).size} bytes)`);
     await page.close();
   }
