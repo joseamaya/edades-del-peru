@@ -300,7 +300,7 @@ export const mVilcabamba: MissionDef = {
           type: 'act',
           kicker: 'Acto II · Vilcabamba',
           title: 'La ciudad en llamas',
-          image: 'media/vilcabamba/intro-pucara.webp',
+          image: 'media/vilcabamba/cine-selva.webp',
           text: 'Huayna Pucará resiste el tiempo suficiente. La corte abandona Vilcabamba antes de que la expedición la ocupe; el camino al bajo Urubamba queda abierto.',
         },
         { type: 'objective', objectiveId: 'a2_evacua', state: 'activate', announce: true },
@@ -316,6 +316,17 @@ export const mVilcabamba: MissionDef = {
           pos: { dx: VILCABAMBA_ENEMY.x, dz: VILCABAMBA_ENEMY.z },
           radius: 12,
           target: { dx: VILCABAMBA_FORT.x, dz: VILCABAMBA_FORT.z },
+        },
+      ],
+    },
+    {
+      id: 't_senderos',
+      condition: { type: 'objective', objectiveId: 'a2_senderos', state: 'completed' },
+      effects: [
+        { type: 'resources', player: 0, amount: { wood: 150, food: 100 } },
+        {
+          type: 'dialogue',
+          text: 'Quedan abiertos los senderos de la selva, con víveres y madera para la retirada.',
         },
       ],
     },

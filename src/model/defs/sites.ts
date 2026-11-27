@@ -1077,6 +1077,15 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     pathCellSize: 1,
     heritageProxies: [
       { id: 'colonial_church', x: CUSCO_COLONIAL.center.x, z: CUSCO_COLONIAL.center.z, w: 25, d: 13.5, h: 15 },
+      // The cabildo south of the plaza, the same placement the colonial kit draws (`colonialCity.ts`).
+      {
+        id: 'cusco_cabildo_1814',
+        x: CUSCO_COLONIAL.center.x,
+        z: CUSCO_COLONIAL.center.z + 18.5,
+        w: 16,
+        d: 9,
+        h: 8,
+      },
     ],
     phases: { phases: ['ciudad'], initial: 'ciudad' },
     blockers: colonialCityBlockers(CUSCO_COLONIAL.center, 'ciudad'),

@@ -27,6 +27,7 @@ export type HeritageBuildingId =
   | 'chimu_compound'
   | 'chimu_canal'
   | 'colonial_church'
+  | 'cusco_cabildo_1814'
   | 'independence_chapel'
   | 'arica_battery'
   | 'cusco_ushnu'
@@ -362,6 +363,17 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     confidence: 'tipología documentada; planta y remates plausibles',
     citation: 'Dossier de Túpac Amaru II · arquitectura colonial',
     sources: ['docs/historia/campanas/tupac_amaru.md', 'docs/historia/arquitectura.md'],
+  },
+  cusco_cabildo_1814: {
+    id: 'cusco_cabildo_1814',
+    name: 'Cabildo del Cusco',
+    sector: 'Independencia',
+    role: 'Sede del cabildo y de la Junta de 1814',
+    summary:
+      'El cabildo cusqueño fue el marco institucional de la Junta de los hermanos Angulo. La reconstrucción usa la tipología del cabildo colonial de la plaza; no reproduce su planta histórica ni el interior de sus salas.',
+    confidence: 'tipología documentada; planta y fachada plausibles',
+    citation: 'Dossier de la Junta del Cusco · actas del cabildo',
+    sources: ['docs/historia/campanas/junta_cusco.md', 'docs/historia/arquitectura.md'],
   },
   independence_chapel: {
     id: 'independence_chapel',

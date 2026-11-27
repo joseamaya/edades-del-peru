@@ -48,7 +48,7 @@ export const mJuntaCusco: MissionDef = {
     base: { x: JUNTA_BASE.x / 256, z: JUNTA_BASE.z / 256 },
     opening: { x: 66 / 256, z: 80 / 256 },
     enemyBase: { x: JUNTA_ENEMY.x / 256, z: JUNTA_ENEMY.z / 256 },
-    discoveries: [{ heritageId: 'colonial_church', initial: true }],
+    discoveries: [{ heritageId: 'cusco_cabildo_1814', initial: true }],
     // The Junta's camp at La Apacheta gives the pass a visual anchor and a documented military presence.
     decor: { model: 'patriotas_camp', at: 'player', dx: 72, dz: 70, yaw: 0.6, scale: 0.9 },
     terrain: {
@@ -229,9 +229,10 @@ export const mJuntaCusco: MissionDef = {
     {
       id: 'a1_cabildo',
       kind: 'inspect',
-      heritageIds: ['colonial_church'],
+      heritageIds: ['cusco_cabildo_1814'],
       inspectRadius: 16,
-      pos: { dx: JUNTA_CUSCO.x, dz: JUNTA_CUSCO.z },
+      // The cabildo the colonial kit draws south of the plaza, not the cathedral proxy at the centre.
+      pos: { dx: JUNTA_CUSCO.x, dz: JUNTA_CUSCO.z + 18.5 },
       radius: 20,
       title: 'Reúne la Junta en el Cabildo del Cusco',
     },
@@ -399,9 +400,9 @@ export const mJuntaCusco: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [
-            { kind: UnitKind.SOLDIER, count: 4 },
-            { kind: UnitKind.RIFLEMAN, count: 1 },
-            { kind: UnitKind.REALISTA_DRAGON, count: 1 },
+            { kind: UnitKind.SOLDIER, count: 7 },
+            { kind: UnitKind.RIFLEMAN, count: 3 },
+            { kind: UnitKind.REALISTA_DRAGON, count: 2 },
           ],
           spawn: JUNTA_UMACHIRI_ENTRY,
           pos: { dx: JUNTA_UMACHIRI.x, dz: JUNTA_UMACHIRI.z },
