@@ -22,7 +22,7 @@ const SHOTS = [
     dir: 'tarapaca',
     id: 'quebrada',
     at: [96, 168],
-    height: 46,
+    height: 34,
     time: 0.55,
   },
   {
@@ -50,7 +50,7 @@ const SHOTS = [
     dir: 'miraflores',
     id: 'reductos',
     at: [112, 190],
-    height: 44,
+    height: 40,
     time: 0.55,
   },
   {
@@ -129,7 +129,8 @@ try {
         if (g.getPaused()) g.togglePause();
         g.applyQualityPreset('high');
         if (shot.mission === 'm_miraflores') {
-          for (const x of [72, 112, 152]) g.spawnScriptedBuilding('fortress', 0, x, 190);
+          // 20 m apart, so the three read as one line inside the card's frame.
+          for (const x of [92, 112, 132]) g.spawnScriptedBuilding('fortress', 0, x, 190);
         }
         if (shot.mission === 'm_brena' && shot.id === 'galgas') {
           // The card is the pass the column has to cross, so stage the column the ambush waits for.
