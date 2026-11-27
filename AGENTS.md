@@ -30,6 +30,7 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
 - `yarn record --mission=m_tambotoco --mode=clip` — simulated gameplay recording (MP4 + JSON in
   `review/`; `--mode=full` plays the whole mission with real orders and no cheats)
 - `yarn evidence` — list the captures a branch needs, as a PR-ready markdown block (warn-only)
+- `yarn qa:checklist [--mission=ID]` — generate the human playtest checklist from the mission defs into `review/`
 - `yarn audit:campaigns` — full m1–m9 briefing/tutorial/layout/victory audit into `review/audit/`
 - `yarn sim [--seeds=…] [--max=…] [--difficulty=…]` — headless AI-vs-AI match runner (AI regression baseline)
 - `yarn bench:check` — rig/fauna/mounted/siege/tank/vehicle/mixed structural budgets (`--assert`); SwiftShader is not a GPU benchmark
