@@ -133,6 +133,11 @@ uses a few near rings and a dark haze frame so the camera never sees the old cre
   are sub-metre). The procedural set remains the fallback when a GLB fails.
 - Player-built quincha houses keep the documented white/red palette; the phase paint belongs to the
   authored city (see _Open items_ 1).
+- The authored dwellings turn to **granodiorite** for the act IV drought: `house_late` and
+  `house_late_elite` repeat the quincha volumes with coursed stone walls (the coursing is inferred) and the
+  same cane-mat roof, and the `late` phase swaps them in without moving a house. Act III keeps the quincha.
+  Evidence: `docs/media/caral-late-houses-quincha.webp` and `-stone.webp`
+  (`node scripts/capture_caral_late_houses.mjs --out=docs/media/caral-late-houses`).
 
 ## Narration
 
@@ -170,7 +175,9 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   monuments appear with their phase (`CARAL_HERITAGE_SINCE`) and only block and answer clicks once built.
   The finished plaster is white; the in-use phase swaps the Mayor to the documented palette
   (white, ochre, red; the exact per-building colours are inferred) via `CARAL_MAYOR_PHASE_ASSET`, checked by
-  `tests/architecture-kit.test.ts`.
+  `tests/architecture-kit.test.ts`. The act IV drought adds the `late` phase: the Mayor stays finished and
+  the dwellings swap to granodiorite before the sealing. A save written before that phase existed migrates
+  forward on load (`sitePhaseMigrations` in `m1_caral.ts`) instead of keeping the quincha city.
 - **Act III camp**: from `foundation` until `in_use` the Mayor's west apron carries two cane ramadas, three
   shicra heaps and a dressed-stone yard (`CARAL_CAMP_LAYOUT`); their footprints block pathing while they
   stand. A six-rig `SiteCrew` carries bags from the heap to the retaining wall and shrinks to three at
@@ -291,11 +298,13 @@ bench runs without ground cover).
 2. ~~Seasonal flood, sand advance and green winter lomas are not simulated.~~ Done: the `wet_season` event
    raises the river and greens the valley; the lomas are a separate winter-fog cue tinted by the same event.
    The drought's dry phase is the documented sand advance.
-3. ~~Late-period details of Act IV (stone houses, a little maize) are not shown.~~ The little late maize
-   is done: from the Act IV drought, one ridge of the player's valley field sows maize instead of squash
-   (the dossier records maize only for the late period, in little quantity). The stone late dwellings are
-   not shown: swapping the kit wall material to stone reads as rubble at that wall scale, so they need
-   their own kit asset ([#436](https://github.com/joseamaya/edades-del-peru/issues/436)).
+3. ~~Late-period details of Act IV (stone houses, a little maize) are not shown.~~ Done: the little late
+   maize appears from the Act IV drought (one ridge of the player's valley field sows maize instead of
+   squash; the dossier records maize only for the late period, in little quantity), and the dwellings
+   swap to the granodiorite kit pieces `house_late` / `house_late_elite` in the same `late` phase
+   ([#436](https://github.com/joseamaya/edades-del-peru/issues/436)). The stone is documented; the plan
+   and coursing are inferred, so the manifests stay `confidence: inferred` with that note and
+   `reviewed: false` until the owner's art review.
 4. ~~The Act III fire offering is staged at the plaza, but the burial of one phase under the next is not
    shown on its own, and an empty storehouse does not pause construction.~~ Done: the `ritual` effect
    stages the burial between phases and the `hold.consume` work turns pause when the communal store is empty.

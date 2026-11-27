@@ -95,7 +95,7 @@ describe('campaign educational content', () => {
     const phases = caral.triggers.flatMap((t) =>
       t.effects.flatMap((fx) => (fx.type === 'site_phase' ? [fx.phase] : [])),
     );
-    expect(phases).toEqual(['fill', 'finished', 'in_use', 'sealed']);
+    expect(phases).toEqual(['fill', 'finished', 'in_use', 'late', 'sealed']);
     const deliveries = caral.objectives.filter((o) => o.kind === 'deliver');
     for (const o of deliveries) expect(o.heritageId, o.id).toBe('caral_pyramid_mayor');
 

@@ -17,7 +17,7 @@ import {
   CARAL_PHASE_PLAN,
   type CaralArchAssetId,
 } from '../src/model/defs/caralCity';
-import { standsIn } from '../src/model/defs/sitePhases';
+import { phaseWithin, standsIn } from '../src/model/defs/sitePhases';
 import {
   CARAL_HERITAGE_BLOCK_SINCE,
   CARAL_HERITAGE_PROXIES,
@@ -37,6 +37,8 @@ const IDS: CaralArchAssetId[] = [
   'circular_plaza',
   'house_common',
   'house_elite',
+  'house_late',
+  'house_late_elite',
   'house_aspero',
   'fair_tent',
   'camp_shelter',
@@ -131,6 +133,38 @@ describe('Caral architecture kit', () => {
     // No red paint in the sealed look: bare plaster, like the finished phase.
     const sealed = manifest('pyramid_mayor_phase3').lods.LOD0.materials;
     expect(sealed).not.toContain('MAT-Arch_PlasterRed');
+  });
+
+  it('turns the dwellings to granodiorite in the late phase, and only then', () => {
+    // Between the city in use and the sealed monument (issue #436): act III stays quincha.
+    const late = CARAL_PHASE_PLAN.phases.indexOf('late');
+    expect(late).toBeGreaterThan(CARAL_PHASE_PLAN.phases.indexOf('in_use'));
+    expect(late).toBeLessThan(CARAL_PHASE_PLAN.phases.indexOf('sealed'));
+    expect(CARAL_MAYOR_PHASE_ASSET.late).toBe('pyramid_mayor');
+
+    const houses = CARAL_CITY_LAYOUT.filter((p) => p.asset === 'house_common' || p.asset === 'house_elite');
+    expect(houses.length).toBeGreaterThan(0);
+    for (const house of houses) {
+      const stone = house.asset === 'house_elite' ? 'house_late_elite' : 'house_late';
+      expect(house.phaseAssets?.late, `${house.x},${house.z}`).toBe(stone);
+    }
+
+    for (const id of ['house_late', 'house_late_elite'] as const) {
+      const m = manifest(id);
+      // The distinguishing material is the wall: stone, not the plaster of the quincha houses.
+      expect(m.lods.LOD0.materials).not.toContain('MAT-Arch_PlasterWhite');
+      expect(m.confidence).toBe('inferred');
+    }
+    // The quincha houses keep their plaster, so the two phases read as different materials.
+    expect(manifest('house_common').lods.LOD0.materials).toContain('MAT-Arch_PlasterWhite');
+  });
+
+  it('keeps the sacred fire through the drought and puts it out with the sealing', () => {
+    // `firePhase: 'in_use'`, `quietPhase: 'sealed'`: a window, not an equality test.
+    expect(phaseWithin(CARAL_PHASE_PLAN, 'finished', 'in_use', 'sealed')).toBe(false);
+    expect(phaseWithin(CARAL_PHASE_PLAN, 'in_use', 'in_use', 'sealed')).toBe(true);
+    expect(phaseWithin(CARAL_PHASE_PLAN, 'late', 'in_use', 'sealed')).toBe(true);
+    expect(phaseWithin(CARAL_PHASE_PLAN, 'sealed', 'in_use', 'sealed')).toBe(false);
   });
 
   it('keeps world-scale UVs in every game GLB for the runtime tileable textures', () => {

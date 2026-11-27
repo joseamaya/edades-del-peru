@@ -15,6 +15,9 @@ Pieces and their evidence (docs/historia/campanas/caral.md, docs/historia/civili
 - Quincha houses. Documented: walls of posts woven with caña brava, plastered with mud and painted;
   the upper-half residence larger than the lower-half one; refuse and cooking pits beside dwellings.
   Assumed: plan sizes, doorway, the partial cane-mat roof, the elite house's low stone platform.
+- Late stone houses. Documented: the late-period dwellings were built of granodiorite blocks, not
+  quincha (docs/historia/campanas/caral.md). Assumed: the plan, which repeats the quincha volumes, the
+  coursing and the cane-mat roof; issue #436 asks for the same volumes with stone walls.
 - Áspero house. Documented: cotton nets and gourd floats. Assumed: the drying rack and its place.
 - Fair tent. Documented: postholes of temporary tents in the open plazas. Assumed: the frame and the
   reed-mat cover (the covering material is not documented).
@@ -60,8 +63,9 @@ LOD1_BUDGET = 1500
 # Pyramid Mayor: footprint of the game's heritage volume (43.4 x 39.8), height ~7.6 people.
 MAYOR_W, MAYOR_D = 43.0, 39.0
 MAYOR_LEVELS = 6
-# Quincha wall heights (art-direction §3: 1.3-1.5 people); recorded in the manifests.
-WALL_H = {'common': 2.5, 'elite': 2.7, 'aspero': 2.4}
+# Quincha wall heights (art-direction §3: 1.3-1.5 people); recorded in the manifests. The late stone
+# houses repeat the common and elite volumes, so they share their heights.
+WALL_H = {'common': 2.5, 'elite': 2.7, 'aspero': 2.4, 'late': 2.5, 'late_elite': 2.7}
 MAYOR_LEVEL_H = 2.7
 # Heights of the floors and terraces of the piece being built, for the grime band in tint().
 LEDGES = [0.0]
@@ -528,11 +532,33 @@ def circular_plaza(mats, lod):
     return bm, [mats[k] for k in order]
 
 
+HOUSE_PLAN = {'elite': (7.4, 5.8), 'aspero': (4.2, 3.4), 'common': (4.8, 3.8)}
+
+
+def house_roof(bm, w, d, z0, h, lod):
+    """Cane-mat roof on wooden beams, shared by the quincha and the late stone houses."""
+    for bx in ((-w * 0.35, 0.0, w * 0.35) if lod == 0 else (0.0,)):
+        box(bm, (bx, 0.4, z0 + h + 0.36), (0.12, d + 0.6, 0.12), 1)
+    # The cover spans most of the plan (front strip open): the roofing is a plausible assumption, and a
+    # mostly covered room reads better from the RTS camera than a dark open box.
+    box(bm, (-w * 0.03, d * 0.1, z0 + h + 0.48), (w + 0.5, d * 0.85, 0.07), 2)
+
+
+def house_outdoor(bm, w, d, lod):
+    """Cooking pit with burnt stones behind, a refuse heap beside (documented for the dwellings)."""
+    hx, hy = w * 0.25, d / 2 + 1.2
+    blob(bm, (hx, hy, 0.02), (0.6, 0.5, 0.05), 8, 3, 0.1, 11, 3)
+    for k in range(6):
+        a = k / 6 * math.tau
+        blob(bm, (hx + math.cos(a) * 0.62, hy + math.sin(a) * 0.52, 0.1), (0.15, 0.13, 0.11), 5, 3, 0.25, 20 + k, 4)
+    blob(bm, (w / 2 + 1.3, d / 2 + 0.6, -0.08), (1.1, 0.9, 0.26), 8, 4, 0.25, 30, 3)
+
+
 def quincha_house(mats, lod, kind):
     """kind: 'common' | 'elite' | 'aspero'."""
     bm = bmesh.new()
     order = ['plaster_early', 'wood', 'cane', 'earth', 'stone', 'plaster_red']
-    w, d = {'elite': (7.4, 5.8), 'aspero': (4.2, 3.4), 'common': (4.8, 3.8)}[kind]
+    w, d = HOUSE_PLAN[kind]
     h = WALL_H[kind]
     t = 0.16
     z0 = 0.0
@@ -558,20 +584,9 @@ def quincha_house(mats, lod, kind):
         posts += [(0, d / 2), (-w / 2, 0), (w / 2, 0)]
     for k, (px, py) in enumerate(posts):
         box(bm, (px, py, z0 + (h + 0.3) / 2), (0.2, 0.2, h + 0.3), 1)
-    # Cane-mat roof on beams.
-    for bx in ((-w * 0.35, 0.0, w * 0.35) if lod == 0 else (0.0,)):
-        box(bm, (bx, 0.4, z0 + h + 0.36), (0.12, d + 0.6, 0.12), 1)
-    # The cover spans most of the plan (front strip open): the roofing is a plausible assumption, and a
-    # mostly covered room reads better from the RTS camera than a dark open box.
-    box(bm, (-w * 0.03, d * 0.1, z0 + h + 0.48), (w + 0.5, d * 0.85, 0.07), 2)
+    house_roof(bm, w, d, z0, h, lod)
     if lod == 0:
-        # Cooking pit with burnt stones behind, a refuse heap beside (documented).
-        hx, hy = w * 0.25, d / 2 + 1.2
-        blob(bm, (hx, hy, 0.02), (0.6, 0.5, 0.05), 8, 3, 0.1, 11, 3)
-        for k in range(6):
-            a = k / 6 * math.tau
-            blob(bm, (hx + math.cos(a) * 0.62, hy + math.sin(a) * 0.52, 0.1), (0.15, 0.13, 0.11), 5, 3, 0.25, 20 + k, 4)
-        blob(bm, (w / 2 + 1.3, d / 2 + 0.6, -0.08), (1.1, 0.9, 0.26), 8, 4, 0.25, 30, 3)
+        house_outdoor(bm, w, d, lod)
     if kind == 'aspero':
         # Net-drying rack: two posts, a pole and hanging cotton nets (nets documented; rack assumed).
         rx = -w / 2 - 1.6
@@ -583,6 +598,44 @@ def quincha_house(mats, lod, kind):
         if lod == 0:
             for k in range(4):  # gourd floats (mates) by the rack
                 blob(bm, (rx + 0.5, -1.2 + k * 0.4, 0.16), (0.16, 0.16, 0.15), 6, 4, 0.05, 40 + k, 3)
+    return bm, [mats[k] for k in order]
+
+
+def stone_house(mats, lod, kind):
+    """A late Caral dwelling: the same volumes as the quincha house with granodiorite walls.
+
+    The dossier documents stone (granodiorite blocks) for the late dwellings and no plan; the form is
+    therefore the quincha plan, repeated so the city changes material without changing its layout. The
+    walls are built as coursed blocks rather than a material swap: the dry-stone tile alone read as
+    rubble on the thin quincha walls at RTS distance (issue #436).
+    """
+    bm = bmesh.new()
+    order = ['stone', 'wood', 'cane', 'earth', 'plaster_red']
+    w, d = HOUSE_PLAN['elite' if kind == 'late_elite' else 'common']
+    h = WALL_H[kind]
+    t = 0.34
+    z0 = 0.0
+    if kind == 'late_elite':
+        rough_box(bm, (0, 0, 0.3), (w + 1.6, d + 1.6, 0.6), 0, 1 if lod == 0 else 0, 0.05, 9, batter=0.04)
+        z0 = 0.6
+    else:
+        box(bm, (0, 0, 0.0), (w + 0.6, d + 0.6, 0.24), 0)
+    door = (-0.55, 0.55)
+    # Front wall split by the doorway; the lintel closes the top of the opening.
+    stone_courses(bm, -w / 2, -d / 2, door[0], -d / 2, z0, h, t, 0, lod, 1, course_h=0.34)
+    stone_courses(bm, door[1], -d / 2, w / 2, -d / 2, z0, h, t, 0, lod, 2, course_h=0.34)
+    box(bm, (0, -d / 2, z0 + h - 0.25), (door[1] - door[0], t, 0.5), 0)
+    # Back and side walls, mitred into the front and back runs.
+    stone_courses(bm, -w / 2, d / 2, w / 2, d / 2, z0, h, t, 0, lod, 3, course_h=0.34)
+    stone_courses(bm, -w / 2, -d / 2 + t / 2, -w / 2, d / 2 - t / 2, z0, h, t, 0, lod, 4, course_h=0.34)
+    stone_courses(bm, w / 2, -d / 2 + t / 2, w / 2, d / 2 - t / 2, z0, h, t, 0, lod, 5, course_h=0.34)
+    if kind == 'late_elite':
+        # Two rooms and the red painted band of the elite residence (colour documented; placement assumed).
+        stone_courses(bm, w * 0.12, -d / 2 + t, w * 0.12, d / 2 - t, z0, h, t, 0, lod, 6, course_h=0.34)
+        box(bm, (0, -d / 2 - t / 2 - 0.03, z0 + 0.35), (w + 0.05, 0.06, 0.3), 4)
+    house_roof(bm, w, d, z0, h, lod)
+    if lod == 0:
+        house_outdoor(bm, w, d, lod)
     return bm, [mats[k] for k in order]
 
 
@@ -751,6 +804,8 @@ ASSETS = {
     'house_common': lambda mats, lod: quincha_house(mats, lod, 'common'),
     'house_elite': lambda mats, lod: quincha_house(mats, lod, 'elite'),
     'house_aspero': lambda mats, lod: quincha_house(mats, lod, 'aspero'),
+    'house_late': lambda mats, lod: stone_house(mats, lod, 'late'),
+    'house_late_elite': lambda mats, lod: stone_house(mats, lod, 'late_elite'),
     'fair_tent': fair_tent,
     'huaca_idolos': huaca_idolos,
     'camp_shelter': camp_shelter,
@@ -864,6 +919,9 @@ CONFIDENCE = {
     'house_common': 'inferred',
     'house_elite': 'inferred',
     'house_aspero': 'assumed',
+    # The stone itself is documented; the plan and coursing are inferred, so the whole asset is inferred.
+    'house_late': 'inferred',
+    'house_late_elite': 'inferred',
     'fair_tent': 'assumed',
     'huaca_idolos': 'inferred',
     'camp_shelter': 'assumed',
@@ -889,6 +947,8 @@ def main():
                     'budget': {'LOD0': LOD0_BUDGET, 'LOD1': LOD1_BUDGET}, 'reviewed': False, 'lods': {}}
         if asset.startswith('house_'):
             manifest['wall_height'] = WALL_H[asset.split('_', 1)[1]]
+        if asset.startswith('house_late'):
+            manifest['confidence_note'] = 'granodiorite walls documented; plan and coursing inferred'
         if asset == 'survey_stake':
             manifest['pivot'] = 'stake base at ground level; cord along +X'
         for lod in (0, 1):

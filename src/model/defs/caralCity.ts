@@ -21,6 +21,8 @@ export type CaralArchAssetId =
   | 'circular_plaza'
   | 'house_common'
   | 'house_elite'
+  | 'house_late'
+  | 'house_late_elite'
   | 'house_aspero'
   | 'fair_tent'
   | 'huaca_idolos'
@@ -36,6 +38,8 @@ export const CARAL_MAYOR_PHASE_ASSET: Record<CaralMayorPhase, CaralArchAssetId> 
   fill: 'pyramid_mayor_phase2',
   finished: 'pyramid_mayor_phase3',
   in_use: 'pyramid_mayor',
+  // The city's final built form during the drought: the Mayor is finished, the dwellings turn to stone.
+  late: 'pyramid_mayor',
   // Sealed under stone: the bare plaster reads as the buried monument; the fire, the smoke and the
   // fair go out with the phase.
   sealed: 'pyramid_mayor_phase3',
@@ -271,6 +275,7 @@ export const CARAL_CITY_LAYOUT: readonly CaralArchPlacement[] = [
   ...ELITE_HOUSES.map(([x, z, rotY]): CaralArchPlacement => ({
     asset: 'house_elite',
     since: 'finished',
+    phaseAssets: { late: 'house_late_elite' },
     x: x + CARAL_CITY_OFFSET_X,
     z,
     rotY,
@@ -279,6 +284,7 @@ export const CARAL_CITY_LAYOUT: readonly CaralArchPlacement[] = [
   ...COMMON_HOUSES.map(([x, z, rotY]): CaralArchPlacement => ({
     asset: 'house_common',
     since: 'fill',
+    phaseAssets: { late: 'house_late' },
     x: x + CARAL_CITY_OFFSET_X,
     z,
     rotY,

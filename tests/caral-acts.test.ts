@@ -140,9 +140,10 @@ describe('Caral model mission', () => {
     tick(25);
     expect(game.acts).toHaveLength(3);
 
-    // Act IV: the drought starts; seal the pyramid and gather on the beach.
+    // Act IV: the drought starts; the dwellings are already granodiorite and the pyramid is sealed.
     expect(game.drought).toBe(1);
     expect(game.environmentEvents).toContain('drought');
+    expect(game.sitePhase).toBe('late');
     deliverAll(mission, game);
     tick(1);
     expect(won).toBeNull();
@@ -363,7 +364,8 @@ describe('Caral model mission', () => {
     expect(mission.getObjectiveState('a3_obra_muros')).toBe('completed');
     expect(mission.toSave().fired).toEqual(expect.arrayContaining(['t_a3_obra_relleno', 't_a3_obra_muros']));
     mission.update(0.1, 0);
-    expect(game.sitePhase).toBe('in_use');
+    // The save carries the pre-`late` phase, but its fired act IV trigger moves it forward to the stone city.
+    expect(game.sitePhase).toBe('late');
     expect(game.rituals).toEqual([]);
   });
 
@@ -412,6 +414,18 @@ describe('Caral model mission', () => {
     const save = mission.toSave();
     mission.applySave({ ...save, fired: ['t_a3_obra_relleno', 't_a3_obra_muros'] });
     expect(game.sitePhase).toBe('finished');
+  });
+
+  it('catches a mid-act-IV save written before the late phase up to the stone city', () => {
+    const game = stubGame();
+    const mission = new Mission(game, CARAL, () => {});
+    mission.start();
+    // A v12 save: the drought act had opened, so the persisted phase is `in_use` and the snapshot marks it restored.
+    game.sitePhase = 'in_use';
+    game.sitePhaseRestored = true;
+    const save = mission.toSave();
+    mission.applySave({ ...save, fired: ['t_a3_fuego', 't_a4_acto'] });
+    expect(game.sitePhase).toBe('late');
   });
 
   it('credits a hand-over only to the objective it was made for', () => {

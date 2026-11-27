@@ -61,7 +61,11 @@ export const m1Caral: MissionDef = {
     { objectiveId: 'a3_shicras', phase: 'fill' },
     { objectiveId: 'a3_muros', phase: 'finished' },
     { objectiveId: 'a3_fuego', phase: 'in_use' },
+    // Saves written before the late phase existed: the drought act already had the prosperity beat.
+    { objectiveId: 'a3_prosperidad', phase: 'late' },
   ],
+  // A v12 save made during act IV stores `in_use`; its fired drought trigger upgrades it to the stone city.
+  sitePhaseMigrations: [{ fromPhase: 'in_use', triggerId: 't_a4_acto', toPhase: 'late' }],
   // In-engine recreations (scripts/capture_caral_intro.mjs), never historical photographs.
   epilogueImage: 'media/caral/intro-partida.webp',
   // Played as a letterboxed film (scripts/capture_cinema.mjs): Áspero at dawn, a map of the transect drawn
@@ -619,6 +623,8 @@ export const m1Caral: MissionDef = {
       condition: { type: 'objective', objectiveId: 'a3_prosperidad', state: 'completed' },
       effects: [
         { type: 'environment', event: 'drought' },
+        // The dwellings are already granodiorite in the drought act; act III kept them in quincha.
+        { type: 'site_phase', phase: 'late' },
         {
           type: 'act',
           kicker: 'Acto IV · c. 1800 a.C.',
