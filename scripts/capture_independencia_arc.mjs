@@ -29,8 +29,8 @@ const SHOTS = [
     mission: 'm_lima_1821',
     dir: 'lima-1821',
     id: 'callao',
-    at: [52, 120],
-    height: 44,
+    at: [58, 119],
+    height: 34,
     time: 0.55,
   },
   {
@@ -49,8 +49,8 @@ const SHOTS = [
     mission: 'm_real_felipe',
     dir: 'real-felipe',
     id: 'baterias',
-    at: [140.8, 122.9],
-    height: 44,
+    at: [129.3, 133.1],
+    height: 38,
     time: 0.55,
   },
   {
@@ -94,6 +94,12 @@ try {
         g.applyQualityPreset('high');
         g.trees.kitLod0Radius = 60;
         g.sky.setTimeOfDay(shot.time ?? 0.5);
+        if (shot.mission === 'm_real_felipe' && shot.id === 'baterias') {
+          // The two batteries are the player's objective, not a starting building: stage the line the card
+          // names, or the frame is empty sand.
+          g.spawnScriptedBuilding('fortress', 0, 0.46 * 256, 0.56 * 256);
+          g.spawnScriptedBuilding('fortress', 0, 0.55 * 256, 0.48 * 256);
+        }
         let t = 1;
         for (let i = 0; i < 30; i++) {
           g.update(0.05, t);

@@ -16,7 +16,7 @@ const only = cliArg('only', '');
 const onlyMission = cliArg('mission', '');
 
 const SHOTS = [
-  { mission: 'm_cusco_1536', dir: 'cusco-1536', id: 'ciudad', at: [166, 174], height: 42, time: 0.55 },
+  { mission: 'm_cusco_1536', dir: 'cusco-1536', id: 'ciudad', at: [166, 174], height: 30, time: 0.55 },
   { mission: 'm_cusco_1536', dir: 'cusco-1536', id: 'sacsay', at: [158, 141], height: 40, time: 0.5 },
   {
     mission: 'm_cusco_1536',
@@ -35,7 +35,7 @@ const SHOTS = [
     mission: 'm_vilcabamba',
     dir: 'vilcabamba',
     id: 'captura',
-    cinematic: { center: [180, 97], eye: [-30, 16, 34], look: [0, 3, 0], fov: 52, time: 0.3 },
+    cinematic: { center: [109, 175], eye: [-30, 16, 34], look: [0, 3, 0], fov: 52, time: 0.3 },
   },
   {
     mission: 'm_vilcabamba',
@@ -82,6 +82,17 @@ try {
         for (let i = 0; i < 30; i++) {
           g.update(0.05, t);
           t += 0.05;
+        }
+        if (shot.mission === 'm_cusco_1536' && shot.id === 'ciudad') {
+          // The card is the documented fire: light it through the objective the mission reads (ADR 0011).
+          // Completing it opens the "La ciudad en llamas" act card, which blocks the mission tick, so the
+          // card is cleared on every step until the roofs are burning.
+          g.mission.objState.set('a1_sacsay', 'completed');
+          for (let i = 0; i < 40; i++) {
+            document.querySelector('.ed-mission-card')?.remove();
+            g.update(0.05, t);
+            t += 0.05;
+          }
         }
         if (shot.cinematic) {
           const { eye, look, fov, time, center } = shot.cinematic;
