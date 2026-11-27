@@ -117,7 +117,7 @@ export class SelectionController {
     return this.handOver('construct', def.resource!, this.deliveryGate(id).amount, {
       at: this.deliveryAnchor(def),
       radius: def.radius ?? 18,
-      objectiveId: def.id,
+      heritageId: id,
     });
   }
 
@@ -172,6 +172,7 @@ export class SelectionController {
     return this.handOver(operation, def.operationResource ?? 'silver', def.operationAmount ?? 50, {
       at: this.game.siteAnchor ?? this.game.siteCenter,
       radius: 18,
+      heritageId: id,
     });
   }
 
@@ -180,7 +181,7 @@ export class SelectionController {
     operation: 'offer' | 'trade' | 'construct',
     resource: keyof Resources,
     amount: number,
-    where: { at: { x: number; z: number } | null; radius: number; objectiveId?: string },
+    where: { at: { x: number; z: number } | null; radius: number; objectiveId?: string; heritageId?: string },
   ): boolean {
     if (amount <= 0) return false;
     const toast = (kind: 'away' | 'short' | 'none' | 'done', level: 'info' | 'success' | 'warning' | 'error') =>
@@ -196,7 +197,7 @@ export class SelectionController {
       toast('short', 'warning');
       return false;
     }
-    const recorded = this.game.mission?.recordDelivery(resource, amount, where.objectiveId) ?? 0;
+    const recorded = this.game.mission?.recordDelivery(resource, amount, where.objectiveId, where.heritageId) ?? 0;
     if (recorded <= 0) {
       toast('none', 'info');
       return false;

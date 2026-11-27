@@ -164,7 +164,8 @@ export const m3MocheRecuay: MissionDef = {
   atmosphere: { fogDensity: 0.0018, sunWarmth: 1.05, skyTint: '#e2d8c6' },
   timeOfDay: 'dusk',
   startingEra: Era.REGIONAL_STATES,
-  startingResources: { food: 700, wood: 600, silver: 300, stone: 200 },
+  // 100 silver: the exchange is a goal to sustain, not a treasury the player can hand over untouched.
+  startingResources: { food: 700, wood: 600, silver: 100, stone: 200 },
   start: {
     enemyOpeningUnits: false,
     // `UnitKind.MUSKETEER` is the legacy id of the basic ranged slot: in this era it renders as a
@@ -212,6 +213,7 @@ export const m3MocheRecuay: MissionDef = {
     [BuildingKind.INSTITUTE]: 'Casa de los ancestros',
     [BuildingKind.ARSENAL]: 'Taller de armas',
     [BuildingKind.MARKET]: 'Plaza de intercambio',
+    [BuildingKind.MILL]: 'Depósito',
   },
   objectives: [
     {
@@ -243,12 +245,26 @@ export const m3MocheRecuay: MissionDef = {
     {
       id: 'bonus_intercambio',
       kind: 'deliver',
+      heritageId: 'moche_huaca_luna',
+      pos: MOCHE_LUNA,
       resource: 'silver',
       count: 400,
       optional: true,
       hidden: true,
       requires: 'obj_huacas',
       title: 'Intercambio de élite: completa 400 de plata',
+    },
+    {
+      // A closing beat after the required exchange: it gives the optional 400 a real window instead of
+      // ending the mission the instant the 250th silver arrives.
+      id: 'obj_cierre',
+      kind: 'hold',
+      pos: MOCHE_PLAZA,
+      radius: mocheLength(18),
+      time: 45,
+      hidden: true,
+      requires: 'obj_intercambio',
+      title: 'Cierra el intercambio y sostén la plaza',
     },
   ],
   triggers: [
@@ -342,12 +358,23 @@ export const m3MocheRecuay: MissionDef = {
       ],
     },
     {
-      id: 't_declive',
-      condition: { type: 'time', seconds: 480 },
+      id: 't_intercambio',
+      condition: { type: 'objective', objectiveId: 'obj_intercambio', state: 'completed' },
       effects: [
         {
           type: 'dialogue',
-          text: 'Hacia el 800 d.C. el poder moche se fragmenta. Sus valles y huacas quedan como memoria de un Intermedio Temprano excepcional.',
+          text: 'El intercambio de élite se ha cerrado. La plaza entre las huacas debe quedar asegurada antes de dar el valle por sostenido.',
+        },
+        { type: 'objective', objectiveId: 'obj_cierre', state: 'activate', announce: true },
+      ],
+    },
+    {
+      id: 't_cierre',
+      condition: { type: 'objective', objectiveId: 'obj_cierre', state: 'completed' },
+      effects: [
+        {
+          type: 'dialogue',
+          text: 'La plaza y el intercambio quedan en pie. Los valles moche sostienen su orden frente a la sierra.',
         },
       ],
     },

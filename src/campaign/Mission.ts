@@ -722,30 +722,50 @@ export class Mission {
   }
 
   /**
-   * Record a resource handed over at a site. Required goals fill first, then
-   * optional ones, so a single delivery is never charged to two objectives.
+   * Record a resource handed over at a site. A hand-over scoped to a heritage (`deliverToHeritage`)
+   * credits every active goal of that resource at that monument, so the required goal and a concurrent
+   * optional one both track the same load and the player pays it once. Without a scope, the legacy
+   * behaviour fills the required goals first and then the optional ones.
    */
-  recordDelivery(resource: keyof Resources, amount: number, objectiveId?: string): number {
-    let remaining = amount;
+  recordDelivery(resource: keyof Resources, amount: number, objectiveId?: string, heritageId?: string): number {
     const ordered = objectiveId
       ? this.def.objectives.filter((objective) => objective.id === objectiveId)
-      : [
-          ...this.def.objectives.filter((objective) => !objective.optional),
-          ...this.def.objectives.filter((objective) => objective.optional),
-        ];
+      : heritageId
+        ? this.def.objectives.filter((objective) => objective.heritageId === heritageId)
+        : [
+            ...this.def.objectives.filter((objective) => !objective.optional),
+            ...this.def.objectives.filter((objective) => objective.optional),
+          ];
+    if (!objectiveId && !heritageId) {
+      let remaining = amount;
+      for (const objective of ordered) {
+        if (remaining <= 0) break;
+        if (objective.kind !== 'deliver' || objective.resource !== resource) continue;
+        if (this.objState.get(objective.id) !== 'activo') continue;
+        const target = objective.count ?? 0;
+        const current = this.delivered.get(objective.id) ?? 0;
+        if (current >= target) continue;
+        const delta = Math.min(remaining, target - current);
+        this.delivered.set(objective.id, current + delta);
+        remaining -= delta;
+        if (current + delta >= target) this.complete(objective.id);
+      }
+      const recorded = amount - remaining;
+      if (recorded > 0) this.checkAllComplete();
+      return recorded;
+    }
+    let recorded = 0;
     for (const objective of ordered) {
-      if (remaining <= 0) break;
       if (objective.kind !== 'deliver' || objective.resource !== resource) continue;
       if (this.objState.get(objective.id) !== 'activo') continue;
       const target = objective.count ?? 0;
       const current = this.delivered.get(objective.id) ?? 0;
       if (current >= target) continue;
-      const delta = Math.min(remaining, target - current);
+      const delta = Math.min(amount, target - current);
       this.delivered.set(objective.id, current + delta);
-      remaining -= delta;
+      recorded = Math.max(recorded, delta);
       if (current + delta >= target) this.complete(objective.id);
     }
-    const recorded = amount - remaining;
     if (recorded > 0) this.checkAllComplete();
     return recorded;
   }

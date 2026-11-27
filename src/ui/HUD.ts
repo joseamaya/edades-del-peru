@@ -1786,7 +1786,10 @@ export class HUD {
       const open = this.game.isCanalOpen();
       this.addCommand(open ? t('hud.heritage.closeGate') : t('hud.heritage.openGate'), () => this.game.toggleCanal());
     }
-    if (heritage.operation === 'offer') {
+    // When the mission has an active hand-over at this monument, that button is the action: the
+    // generic offer/trade button would repeat the same material with a different label.
+    const delivery = this.game.mission?.activeDeliveryFor(heritage.id);
+    if (heritage.operation === 'offer' && !delivery) {
       const amount = heritage.operationAmount ?? 50;
       const resource = heritage.operationResource ?? 'silver';
       this.addCommand(
@@ -1794,14 +1797,13 @@ export class HUD {
         () => this.game.makeOffering(heritage.id),
       );
     }
-    if (heritage.operation === 'trade') {
+    if (heritage.operation === 'trade' && !delivery) {
       const amount = heritage.operationAmount ?? 50;
       const resource = heritage.operationResource ?? 'silver';
       this.addCommand(t('hud.heritage.trade', { amount, resource: RESOURCE_INFO[resource].name.toLowerCase() }), () =>
         this.game.makeTrade(heritage.id),
       );
     }
-    const delivery = this.game.mission?.activeDeliveryFor(heritage.id);
     if (delivery?.def.resource) {
       const resource = delivery.def.resource;
       const gate = this.game.deliveryGate(heritage.id);

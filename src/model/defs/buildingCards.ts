@@ -48,10 +48,10 @@ const MISSION_ECONOMY_CARDS: BuildingCardDef[] = [
   {
     building: BuildingKind.MILL,
     missionId: 'm2_chavin',
-    name: 'Troje · depósito de ofrendas',
+    name: 'Depósito · ofrendas del templo',
     role: 'Almacenamiento',
     summary:
-      'El Troje representa el depósito donde se guardan alimentos y bienes del templo. No es un término atestiguado en Chavín: es una abstracción del almacenamiento necesario para sostener peregrinaciones y ceremonias.',
+      'El depósito guarda alimentos y bienes del templo. No es un término atestiguado en Chavín: es una abstracción del almacenamiento necesario para sostener peregrinaciones y ceremonias.',
     confidence: 'abstracción jugable',
     citation: 'Dossier de Chavín · UNESCO 330',
     sources: ['docs/historia/campanas/chavin.md', 'docs/historia/civilizaciones/chavin.md'],
@@ -81,10 +81,10 @@ const MISSION_ECONOMY_CARDS: BuildingCardDef[] = [
   {
     building: BuildingKind.MILL,
     missionId: 'm3_moche_recuay',
-    name: 'Troje · depósito de valle',
+    name: 'Depósito · excedente del valle',
     role: 'Almacenamiento de excedentes',
     summary:
-      'El Troje representa el almacenamiento del excedente agrícola que sostiene a la elite y a los especialistas. No es un término atestiguado en Moche: es una abstracción jugable.',
+      'El depósito guarda el excedente agrícola que sostiene a la elite y a los especialistas. No es un término atestiguado en Moche: es una abstracción jugable.',
     confidence: 'abstracción jugable',
     citation: 'Dossier de Moche · Cultura moche',
     sources: ['docs/historia/campanas/moche_recuay.md', 'docs/historia/civilizaciones/moche.md'],
@@ -103,10 +103,10 @@ const MISSION_ECONOMY_CARDS: BuildingCardDef[] = [
   {
     building: BuildingKind.MILL,
     missionId: 'm4_wari',
-    name: 'Troje · almacén provincial',
+    name: 'Depósito · almacén provincial',
     role: 'Almacenamiento y redistribución',
     summary:
-      'El Troje representa los almacenes que articulaban la producción y la administración wari. No es un término atestiguado en Wari: es una abstracción jugable.',
+      'El depósito representa los almacenes que articulaban la producción y la administración wari. No es un término atestiguado en Wari: es una abstracción jugable.',
     confidence: 'abstracción jugable',
     citation: 'Dossier de Wari · Isbell / Ministerio de Cultura',
     sources: ['docs/historia/campanas/wari_tiahuanaco.md', 'docs/historia/civilizaciones/wari.md'],

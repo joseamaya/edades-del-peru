@@ -49,7 +49,7 @@ Classification of the 15 `BuildingKind`s (`types.ts:94`, defs in
 |---|---|---|---|---|
 | `center` | Plaza Mayor (Caral: Recinto comunal) | economy | generic; mission override | per-era `eraModel` names are legacy (`center_steam/imperial/atomic/information/modern`); identity comes from the architecture profile |
 | `house` | Vivienda | economy | generic but acceptable | same legacy naming |
-| `mill` | Troje (Caral: Depósito comunal) | economy | generic; mission override | food storehouse; «troje» is not attested in Caral |
+| `mill` | Troje (Caral, Chavín, Moche and Wari: Depósito) | economy | generic; mission override | food storehouse; «troje» is not attested in Caral, Chavín, Moche or Wari |
 | `sawmill` | Aserradero | economy | generic but acceptable | modern name for the wood drop-off; modelled with the era's architecture |
 | `smelter` | Platería | economy | historically appropriate | silver working (Andean metallurgy) |
 | `refinery` | Cantera | economy | historically appropriate | stone quarry, `minEra TAHUANTINSUYO` |

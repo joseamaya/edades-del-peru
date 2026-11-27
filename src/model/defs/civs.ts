@@ -158,13 +158,13 @@ export const CIVS: CivDef[] = [
     periods: [HistoricalPeriod.MIDDLE_HORIZON],
     geography: 'andes',
     bonuses: [
-      'Primer imperio andino: más población',
+      'Primer estado expansivo: más población',
       'Red vial: unidades más veloces',
       'Andenes: granjas más productivas',
     ],
     effects: { population: 10, speed: 0.1, gathering: { food: 0.1 } },
     description:
-      'El primer imperio andino, desde Ayacucho. Planificó ciudades, caminos y una religión estatal del dios de los báculos.',
+      'El primer estado expansivo andino, desde Ayacucho. Planificó ciudades, caminos y una religión estatal del dios de los báculos.',
   },
   {
     id: CivId.TIAHUANACO,
