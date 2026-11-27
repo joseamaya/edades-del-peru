@@ -395,6 +395,24 @@ single cached model. Remaining work before applying the style to other campaigns
 vegetation and a shared palette pass over the other eight dossiers. The worker's CC0 body now carries
 project-authored cotton garments (a documented abstraction); the fauna rigs remain CC0 stand-ins.
 
+### Culture household sets
+
+The dressing planner now carries a household set per culture (`SettlementDressingProfile`), built from the
+same prop kinds so no new geometry is needed: **Moche** keeps the coastal mix (fish drying racks, gourds,
+baskets, cotton, benches, a windbreak), while **Wari** and **Inca** are state households (state workshops,
+**qollqa** stores) and drop the drying rack in favour of baskets, cotton and benches. Each set multiplies a
+material tint over the shared kit pieces — warm ochre on the coast, cool stone grey in the highlands, red-ochre
+for the Inca — so the same baskets read as three cultures without a second prop kit. Bases of other cultures
+still carry no props. Sources:
+[`moche.md`](../historia/civilizaciones/moche.md) (irrigation agriculture, fishing, pottery),
+[`wari.md`](../historia/civilizaciones/wari.md) (planned centres, state workshops, textiles) and
+[`inca.md`](../historia/civilizaciones/inca.md) (mita, qollqa, textiles); the exact mix is a presentation
+abstraction, not an excavated assemblage.
+
+Evidence (same `m3_moche_recuay`, seed 777, 1600x900, UI hidden):
+[`moche-dressing-before.webp`](../media/moche-dressing-before.webp) /
+[`moche-dressing-after.webp`](../media/moche-dressing-after.webp).
+
 ## Chavín visual pilot
 
 Issue #119 tests the standard on a second campaign before extending it to the rest. **`m2_chavin`** (Early

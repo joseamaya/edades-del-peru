@@ -12,7 +12,17 @@ import {
   planStartingUnitSpots,
 } from '../sim/WorldBuilder';
 import type { SettlementPlan } from '../model/defs/settlementPlan';
+import type { SettlementDressingProfile } from '../model/defs/settlementDressing';
 import type { BuildContext } from '../model/ProceduralModel';
+
+/** Which household set dresses a culture's starting base (visual only). */
+const DRESSING_PROFILE_FOR_CIV: Partial<Record<CivId, SettlementDressingProfile>> = {
+  [CivId.CARAL]: 'caral',
+  [CivId.CHAVIN]: 'chavin',
+  [CivId.MOCHE]: 'moche',
+  [CivId.WARI]: 'wari',
+  [CivId.INCA]: 'inca',
+};
 
 /** Opening base, starting units, resources and initial worker assignment. */
 export class StartBaseBuilder {
@@ -45,10 +55,9 @@ export class StartBaseBuilder {
     // the player's chacras are the only fields (flat overlays read as stickers on the terrain).
     const caralGround = this.game.siteDef?.environs?.valley === 'caral';
     this.game.world.addSettlementOverlay(caralGround ? { ...plan, fields: [] } : plan);
-    const civ = this.game.players[player].civ;
-    if (civ === CivId.CARAL || civ === CivId.CHAVIN) {
-      this.game.world.addSettlementDressing(plan, player, civ === CivId.CHAVIN ? 'chavin' : 'caral');
-    }
+    // Every documented culture with its own household set dresses its base; the rest keep no props.
+    const profile = DRESSING_PROFILE_FOR_CIV[this.game.players[player].civ];
+    if (profile) this.game.world.addSettlementDressing(plan, player, profile);
   }
 
   private spawnStartUnits(player: number, x: number, z: number, ctx: BuildContext): void {

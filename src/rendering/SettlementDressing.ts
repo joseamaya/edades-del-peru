@@ -30,6 +30,8 @@ export class SettlementDressing {
   constructor(
     private readonly placements: DressingPlacement[],
     private readonly heightAt: (x: number, z: number) => number,
+    /** Culture tint, multiplied over the props' own colours (see `DRESSING_TINT`). */
+    private readonly tint = 0xffffff,
   ) {
     this.group.name = 'settlement-dressing';
     let sx = 0;
@@ -51,6 +53,7 @@ export class SettlementDressing {
       roughness: 0.94,
       metalness: 0,
     });
+    this.material.color.setHex(this.tint);
     const mesh = new THREE.Mesh(merged, this.material);
     mesh.name = 'dressing';
     mesh.castShadow = true;
@@ -144,6 +147,7 @@ export class SettlementDressing {
         }
         // Clone per base: fog-of-war patches the material shader, and the kit materials are shared.
         material = source.clone();
+        material.color.multiply(new THREE.Color(this.tint));
         this.kitMaterials.set(name, material);
       }
       const mesh = new THREE.Mesh(geometry, material);

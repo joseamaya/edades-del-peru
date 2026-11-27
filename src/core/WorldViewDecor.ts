@@ -60,7 +60,11 @@ import type { SettlementPlan } from '../model/defs/settlementPlan';
 import { type CaralCityPlan } from '../model/defs/setpieces';
 import { SettlementOverlay } from '../rendering/SettlementOverlay';
 import { SettlementDressing } from '../rendering/SettlementDressing';
-import { planSettlementDressing } from '../model/defs/settlementDressing';
+import {
+  DRESSING_TINT,
+  planSettlementDressing,
+  type SettlementDressingProfile,
+} from '../model/defs/settlementDressing';
 import { loadDressingKit } from '../rendering/propsKit';
 import {
   CARAL_VALLEY_PATH_WIDTH,
@@ -1553,7 +1557,7 @@ export class WorldViewDecor {
   }
 
   /** Household/ritual props around a base (visual only, deterministic, no obstacles). */
-  addSettlementDressing(plan: SettlementPlan, player: number, profile: 'caral' | 'chavin'): void {
+  addSettlementDressing(plan: SettlementPlan, player: number, profile: SettlementDressingProfile): void {
     if (this.game.headless) return;
     const placements = planSettlementDressing(
       plan,
@@ -1561,13 +1565,17 @@ export class WorldViewDecor {
       this.game.terrain,
       profile,
     );
-    const dressing = new SettlementDressing(placements, (x, z) => this.game.terrain.getHeight(x, z));
+    const dressing = new SettlementDressing(
+      placements,
+      (x, z) => this.game.terrain.getHeight(x, z),
+      DRESSING_TINT[profile],
+    );
     applyFowToObject(dressing.group, this.game.fowUniforms);
     this.game.scene.add(dressing.group);
     this.game.settlementDressing.push(dressing);
-    // Chavín's ritual set has no kit yet; the Caral household pieces replace the primitives when the
-    // batch arrives (one GLB per piece, cached for the match).
-    if (profile === 'caral') {
+    // Chavín's ritual set has no kit yet; every household set (Caral and the three culture variants) uses the
+    // Caral household pieces, tinted per culture, when the batch arrives (one GLB per piece, cached per match).
+    if (profile !== 'chavin') {
       void loadDressingKit()
         .then((kit) => {
           if (dressing.attachKit(kit)) applyFowToObject(dressing.group, this.game.fowUniforms);

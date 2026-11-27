@@ -27,7 +27,7 @@ export type DressingKind =
   | 'stone_head'
   | 'megalith';
 
-export type SettlementDressingProfile = 'caral' | 'chavin';
+export type SettlementDressingProfile = 'caral' | 'chavin' | 'moche' | 'wari' | 'inca';
 
 export interface DressingPlacement {
   kind: DressingKind;
@@ -41,6 +41,12 @@ export interface DressingQuery extends TerrainQuery {
   getHeight(x: number, z: number): number;
 }
 
+/**
+ * The household set of each culture, built from the same prop kinds: what changes is the mix, not the
+ * geometry. Moche keeps the fish racks and gourds of a coastal irrigation valley; Wari and Inca are state
+ * households (state workshops, qollqa stores), so their sets lean on baskets, cotton and benches and drop the
+ * drying rack. Sources: `docs/historia/civilizaciones/{moche,wari,inca}.md`.
+ */
 const SEQUENCES: Record<SettlementDressingProfile, DressingKind[]> = {
   caral: [
     'hearth',
@@ -70,6 +76,40 @@ const SEQUENCES: Record<SettlementDressingProfile, DressingKind[]> = {
     'bench',
     'basket',
   ],
+  moche: [
+    'hearth',
+    'drying_rack',
+    'basket',
+    'gourd',
+    'cotton',
+    'bench',
+    'drying_rack',
+    'basket',
+    'gourd',
+    'bench',
+    'cotton',
+    'windbreak',
+  ],
+  wari: ['hearth', 'basket', 'cotton', 'bench', 'basket', 'windbreak', 'gourd', 'cotton', 'bench'],
+  inca: ['hearth', 'basket', 'basket', 'cotton', 'bench', 'gourd', 'cotton', 'bench', 'windbreak'],
+};
+
+/** The household set a profile places, in order. */
+export function dressingSequence(profile: SettlementDressingProfile): readonly DressingKind[] {
+  return SEQUENCES[profile];
+}
+
+/**
+ * Material tint per household set, multiplied over the kit's own colours: the same baskets and hearths read
+ * warm ochre on the coast (Moche pottery and adobe), cool grey in the Wari highlands and red-ochre for the
+ * Inca. Presentation only, and subtle on purpose: the shapes stay the shared household kit.
+ */
+export const DRESSING_TINT: Record<SettlementDressingProfile, number> = {
+  caral: 0xffffff,
+  chavin: 0xf4f2ec,
+  moche: 0xfff0dc,
+  wari: 0xf0f0f4,
+  inca: 0xffeede,
 };
 
 const MAX_SLOPE = 0.42;

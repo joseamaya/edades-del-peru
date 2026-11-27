@@ -1,6 +1,9 @@
+import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import {
   CENTER_CLEARANCE,
+  DRESSING_TINT,
+  dressingSequence,
   planSettlementDressing,
   propClearance,
   propSeparation,
@@ -27,6 +30,9 @@ const flat: DressingQuery = {
 };
 
 const anchors = [{ ...plan.center, center: true }, ...plan.dwellings.map((d) => ({ ...d, center: false }))];
+
+/** Every household set the game can place. */
+const PROFILES = ['caral', 'chavin', 'moche', 'wari', 'inca'] as const;
 
 describe('Caral settlement dressing', () => {
   it('is deterministic for the same plan and seed', () => {
@@ -70,6 +76,27 @@ describe('Caral settlement dressing', () => {
     }
   });
 
+  it('gives each culture its own household mix, all inside the shared kit', () => {
+    const kinds = Object.fromEntries(
+      PROFILES.map((profile) => [profile, planSettlementDressing(plan, 7, flat, profile).map((p) => p.kind)]),
+    );
+    // The coastal household keeps the fish racks; the highland state households drop them.
+    expect(kinds.moche).toContain('drying_rack');
+    expect(kinds.wari).not.toContain('drying_rack');
+    expect(kinds.inca).not.toContain('drying_rack');
+    // Incan and Wari bases are storage-and-textile households, not ritual ones.
+    expect(kinds.inca.filter((kind) => kind === 'basket').length).toBeGreaterThanOrEqual(2);
+    expect(kinds.wari).toContain('cotton');
+    // Only Chavin keeps the ritual set.
+    expect(kinds.chavin).toContain('stela');
+    expect(kinds.inca).not.toContain('stela');
+    // Every profile has a tint, and none brightens the props past their own colour.
+    for (const profile of PROFILES) {
+      const tint = new THREE.Color(DRESSING_TINT[profile]);
+      expect(Math.max(tint.r, tint.g, tint.b), profile).toBeLessThanOrEqual(1);
+    }
+  });
+
   it('produces a different layout for a different seed', () => {
     expect(planSettlementDressing(plan, 7, flat)).not.toEqual(planSettlementDressing(plan, 8, flat));
   });
@@ -82,8 +109,8 @@ describe('Caral settlement dressing', () => {
 
   it('never overlaps a wall or another prop across 1,000 seeds', () => {
     let violation = '';
-    for (const profile of ['caral', 'chavin'] as const) {
-      const expected = profile === 'caral' ? 14 : 10;
+    for (const profile of PROFILES) {
+      const expected = dressingSequence(profile).length;
       for (let seed = 1; seed <= 1000; seed++) {
         const out = planSettlementDressing(plan, seed, flat, profile);
         if (out.length !== expected) {
