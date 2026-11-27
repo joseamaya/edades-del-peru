@@ -7,9 +7,9 @@ import type { BuildingKind, CombatStance, Order, OrderTarget, UnitKind } from '.
  * open with no enemy within 20 m; 58: the Moche exchange credits the required and optional hand-over in
  * parallel; 59: objective-bound relief waves and the puna vegetation; 60: the Junta cabildo and the
  * independence optionals; 61: the republic field commanders and the tightened late sieges; 62: the Arica
- * minefield and the Breña galgas).
+ * minefield and the Breña galgas; 63: the Lima cabildo plot and its reserved stakes).
  */
-export const REPLAY_VERSION = 62;
+export const REPLAY_VERSION = 63;
 
 /** Stable localStorage key (see AGENTS: keep storage keys stable). */
 const STORAGE_KEY = 'peru-replay';
