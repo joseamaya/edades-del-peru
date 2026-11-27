@@ -291,6 +291,30 @@ export const m9GuerraPacifico: MissionDef = {
     },
   ],
   triggers: [
+    // The sappers' minefield is a real trap now: each charge fires once when a Chilean unit steps on it.
+    {
+      id: 't_mina_1',
+      condition: { type: 'enemy_in_area', pos: { dx: ARICA_MINES_WORLD.dx - 8, dz: ARICA_MINES_WORLD.dz }, radius: 14 },
+      effects: [
+        { type: 'strike', pos: { dx: ARICA_MINES_WORLD.dx - 8, dz: ARICA_MINES_WORLD.dz }, radius: 14, damage: 60 },
+        { type: 'dialogue', text: 'Una mina de los zapadores estalla bajo la columna chilena.' },
+      ],
+    },
+    {
+      id: 't_mina_2',
+      condition: { type: 'enemy_in_area', pos: { dx: ARICA_MINES_WORLD.dx + 8, dz: ARICA_MINES_WORLD.dz }, radius: 14 },
+      effects: [
+        { type: 'strike', pos: { dx: ARICA_MINES_WORLD.dx + 8, dz: ARICA_MINES_WORLD.dz }, radius: 14, damage: 60 },
+        { type: 'dialogue', text: 'Otra carga oculta rompe la formación en el campo minado.' },
+      ],
+    },
+    {
+      id: 't_mina_3',
+      condition: { type: 'enemy_in_area', pos: { dx: ARICA_MINES_WORLD.dx, dz: ARICA_MINES_WORLD.dz - 8 }, radius: 14 },
+      effects: [
+        { type: 'strike', pos: { dx: ARICA_MINES_WORLD.dx, dz: ARICA_MINES_WORLD.dz - 8 }, radius: 14, damage: 60 },
+      ],
+    },
     {
       id: 't_intro',
       condition: { type: 'time', seconds: 6 },

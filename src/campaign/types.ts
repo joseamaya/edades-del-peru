@@ -331,7 +331,9 @@ export type TriggerCond =
   | { type: 'time'; seconds: number }
   | { type: 'objective'; objectiveId: string; state: 'activate' | 'completed' | 'failed' }
   | { type: 'entity_dead'; entityTag: string }
-  | { type: 'unit_near'; entityTag: string; pos: MissionPoint; radius: number };
+  | { type: 'unit_near'; entityTag: string; pos: MissionPoint; radius: number }
+  /** Any living unit of `owner` (default 1) inside the circle: a mine, a rockfall, a prepared ambush. */
+  | { type: 'enemy_in_area'; pos: MissionPoint; radius: number; owner?: 0 | 1 };
 
 export type TriggerEffect =
   | {
@@ -360,6 +362,8 @@ export type TriggerEffect =
    * to `pos`. A charge that breaks off, a sortie recalled behind the walls.
    */
   | { type: 'withdraw'; owner: 0 | 1; pos: MissionPoint; from?: MissionPoint; radius?: number }
+  /** A one-shot area strike: damage every living unit of `owner` (default 1) inside the radius. */
+  | { type: 'strike'; pos: MissionPoint; radius: number; damage: number; owner?: 0 | 1 }
   | { type: 'dialogue'; text: string; duration?: number; speaker?: string }
   /** Chapter card between acts of one mission (pauses the mission clock while open). */
   | { type: 'act'; kicker: string; title: string; text: string; image?: string }
