@@ -14,6 +14,7 @@ The map is deliberately a router, not a summary. Detailed rules live in the docu
 | See what is being built now | [`plan/ROADMAP.md`](./plan/ROADMAP.md) and [`plan/backlog.md`](./plan/backlog.md) |
 | Design or rebuild a campaign mission | [`design/model-mission-pattern.md`](./design/model-mission-pattern.md), then [`design/campaign-quality-bar.md`](./design/campaign-quality-bar.md) |
 | Check the live mission status | [`design/campaign-quality-bar.md`](./design/campaign-quality-bar.md) |
+| Playtest a mission by hand | [`design/human-playtest.md`](./design/human-playtest.md), then `yarn qa:checklist` |
 | Decide whether the build is ready to publish | [`plan/ROADMAP.md`](./plan/ROADMAP.md) §D6 and [`release/0.2.0-readiness-audit.md`](./release/0.2.0-readiness-audit.md) |
 | Check a historical fact, name or date | [`historia/README.md`](./historia/README.md) and the matching dossier |
 | Model something in Blender or retouch in GIMP | [`design/asset-pipeline.md`](./design/asset-pipeline.md), then [`design/authoring-tools.md`](./design/authoring-tools.md) and [`design/blender-art.md`](./design/blender-art.md) |
@@ -92,6 +93,7 @@ and new records change.
 | --- | --- | --- |
 | [`design/model-mission-pattern.md`](./design/model-mission-pattern.md) | How to rebuild a mission to the Caral standard (acts, map, site, cast, tests) | Living |
 | [`design/campaign-quality-bar.md`](./design/campaign-quality-bar.md) | The gates a finished mission must pass, plus the live audit of all 20 missions | Living |
+| [`design/human-playtest.md`](./design/human-playtest.md) | The human tier: the generated worksheet, the tracked sign-off and what the generator cannot see | Living |
 | [`design/campaign-experiences.md`](./design/campaign-experiences.md) | What each campaign must teach and how the player learns it | Living |
 | [`design/characters.md`](./design/characters.md) | Cast, likeness certainty, hero treatment and animation minimums | Living |
 | [`art/character-visual-pilot.md`](./art/character-visual-pilot.md) | Character pilot: audit, three units, runtime equipment, before/after, cost and the decision to extend | Living |

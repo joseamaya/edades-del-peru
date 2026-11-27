@@ -1371,7 +1371,12 @@ deterministic AI-vs-AI runner. With `--metrics=1` it records first soldier/first
 workers/military/buildings created, gathered resources, losses, pathfinding requests/failures, AI percentiles
 and a sampled timeline (idle/blocked workers, stuck units, army, resources) without changing behaviour.
 
-`node scripts/bench_scene.mjs --mission=<id> --gpu --frames` measures the **frame the player actually sees** in a
+`yarn qa:checklist [--mission=<id>]` generates the human playtest checklist from the mission defs (objectives,
+optionals, fires, prepared strikes, withdrawals) into `review/qa-checklist.md`; it is the manual tier described in
+[`design/human-playtest.md`](design/human-playtest.md). It fails when a mission has no required objective or is
+listed twice.
+
+`node scripts/bench_scene.mjs --mission=<id> --gpu --frames` measures **the frame the player actually sees** in a
 mission (loop running, post-processing on, `QualityGovernor` pinned, 2 s of rAF samples) at the pinned framing,
 next to the structural draw-call/triangle counts; `--direct` removes post-processing and water refraction and
 `--no-refraction` removes only the water pass, which is how the per-pass cost is attributed
