@@ -1556,17 +1556,12 @@ export class Unit {
         y: 0.9,
         z: -0.28 * Math.sin(angle) + 0.62 * Math.cos(angle),
       };
-      this.ctx.particles?.emit({
-        x: this.pos.x + muzzle.x,
-        y: this.pos.y + muzzle.y,
-        z: this.pos.z + muzzle.z,
-        count: 4,
-        color: 0xffcc66,
-        kind: 'explosion',
-        speed: 1.2,
-        life: 0.12,
-        size: 1.4,
-      });
+      this.ctx.particles?.emitGunFlash(
+        this.pos.x + muzzle.x,
+        this.pos.y + muzzle.y,
+        this.pos.z + muzzle.z,
+        pKind === 'howitzer_shell',
+      );
     }
     void time;
   }
