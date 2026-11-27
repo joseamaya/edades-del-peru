@@ -215,7 +215,6 @@ const SHOTS = {
     mission: 'm_real_felipe',
     time: 0.3,
     warmup: 3.5,
-    muzzle: true,
     rows: [
       { kind: 'artillery', owner: 1, count: 3, at: [176, 101], to: [150, 100], order: 'hold' },
       { kind: 'mortar', owner: 1, count: 2, at: [183, 92], to: [150, 100], order: 'hold' },
@@ -382,56 +381,6 @@ async function prepare(page, shot) {
           for (const id of immortal) {
             const u = g.units.get(id);
             if (u && !u.dead) u.hp = u.maxHp;
-          }
-          // Guns fire with a flash the game draws too faintly to read on video. A shot resets the cooldown
-          // upward: that is the frame the gun fires.
-          if (shot.muzzle) {
-            for (const u of g.units.values()) {
-              if (u.dead || (u.kind !== 'artillery' && u.kind !== 'mortar')) continue;
-              const cd = u.attackCooldown ?? 0;
-              if (cd > (u.__cd ?? 0) + 0.05) {
-                const y = g.terrain.getHeight(u.pos.x, u.pos.z) + 1.3;
-                g.particles.emit({
-                  x: u.pos.x,
-                  y,
-                  z: u.pos.z,
-                  count: 14,
-                  color: 0xffc060,
-                  kind: 'explosion',
-                  speed: 4,
-                  life: 0.4,
-                  size: 2.2,
-                  spread: 1,
-                  emissive: true,
-                });
-                g.particles.emit({
-                  x: u.pos.x,
-                  y: y + 0.3,
-                  z: u.pos.z,
-                  count: 10,
-                  color: 0xffe0a0,
-                  kind: 'spark',
-                  speed: 6,
-                  life: 0.5,
-                  size: 0.5,
-                  spread: 1.5,
-                  emissive: true,
-                });
-                g.particles.emit({
-                  x: u.pos.x,
-                  y: y + 0.4,
-                  z: u.pos.z,
-                  count: 6,
-                  color: 0xcfc8bc,
-                  kind: 'dust',
-                  speed: 1.4,
-                  life: 1.8,
-                  size: 1.6,
-                  spread: 1.4,
-                });
-              }
-              u.__cd = cd;
-            }
           }
           // Burning roofs: fire at the ridge, smoke rising from it.
           if (fires.length && ++emit % 3 === 0) {
