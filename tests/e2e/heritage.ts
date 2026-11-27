@@ -114,12 +114,19 @@ export async function installHeritageClick(page: Page): Promise<void> {
               const sy = minY + ((iy + 0.5) / GRID) * (maxY - minY);
               ndc.set((sx / window.innerWidth) * 2 - 1, -(sy / window.innerHeight) * 2 + 1);
               raycaster.setFromCamera(ndc, cam);
-              const hitsOwn = raycaster.intersectObjects(roots, true).some((h: any) => {
+              // `pickHeritage` takes the nearest hit that names a monument, so a point that merely
+              // grazes the target behind another building selects the building in front. Keep only
+              // points whose nearest named hit is the target.
+              let picked: string | null = null;
+              for (const h of raycaster.intersectObjects(roots, true)) {
                 let o: any = h.object;
-                while (o && o.userData?.heritageId !== id) o = o.parent;
-                return !!o;
-              });
-              if (!hitsOwn) continue;
+                while (o && !o.userData?.heritageId) o = o.parent;
+                if (o) {
+                  picked = o.userData.heritageId as string;
+                  break;
+                }
+              }
+              if (picked !== id) continue;
               sampled++;
               let clearance = Infinity;
               for (const u of units) clearance = Math.min(clearance, Math.hypot(u.x - sx, u.y - sy));

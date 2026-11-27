@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { TAMBOTOCO_HOLD, TAMBOTOCO_OUTLET } from '../../src/campaign/defs/missions/m_tambotoco';
 import type { HeritageBuildingId } from '../../src/model/defs/heritage';
 import { installHeritageClick, type HeritageClickWindow } from './heritage';
+import { installCampaignBot, type CampaignBotWindow } from './campaignBot';
 
 /** Caral's Act III and IV objective ids, used by the real-command playtest. */
 const CARAL_ACTS_III_IV = [
@@ -868,10 +869,12 @@ test('plays m1 Caral with real construction and gathering, without objective che
 });
 
 test('plays m2 Chavín through the four acts with real construction and offerings', async ({ page }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(480_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
 
+  await installCampaignBot(page);
+  await installHeritageClick(page);
   await page.goto('/?mission=m2_chavin&seed=900&fog=0&low=1&noloop=1&intro=0');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game?.mission !== undefined, null, {
     timeout: 30_000,
@@ -882,62 +885,121 @@ test('plays m2 Chavín through the four acts with real construction and offering
 
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
+    const bot = (window as unknown as CampaignBotWindow).__campaignBot;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     const m = g.mission;
-    const workers = [...g.units.values()].filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any[];
+    const own = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead) as any[];
+    const workers = own.filter((u) => u.kind === 'worker');
     const anchor = g.siteAnchor as { x: number; z: number };
-    if (workers.length < 2 || !anchor) return { setup: false };
+    if (workers.length < 4 || !anchor) return { setup: false, workers: workers.length };
 
+    // The whole party walks to the terrace: Act I's arrival is a real move, not a teleport.
+    bot.move(
+      own.map((u) => u.id),
+      anchor.x,
+      anchor.z,
+    );
+    let walked = 0;
+    while (bot.state('a1_llegada') !== 'completed' && walked < 90 && !bot.ended()) {
+      bot.run(5);
+      walked += 5;
+    }
+    const arrived = bot.state('a1_llegada') === 'completed';
+
+    const [builder, carrier, ...quarry] = workers;
+    bot.move([carrier.id], anchor.x, anchor.z);
+    bot.run(2);
+
+    // Materials leave the stock through the site card, in 50-unit loads. Retry until the objective that
+    // owns the hand-over is active and the carrier is on site, the way the HUD keeps the button disabled.
+    const deliverUntil = (id: string, objectiveId: string, cap = 40): number => {
+      let handed = 0;
+      for (let i = 0; i < cap && bot.state(objectiveId) !== 'completed' && !bot.ended(); i++) {
+        if (bot.deliver(id)) handed++;
+        bot.run(2);
+      }
+      return handed;
+    };
+
+    // Act I: the offering travels through the field card (silver is already in the treasury).
+    while (bot.state('a1_ofrenda') === 'pendiente' && !bot.ended()) bot.run(2);
+    const offers = deliverUntil('chavin_edificio_b', 'a1_ofrenda');
+
+    // Act II: raise the fair beside the temple while the quarry opens the stone for the Old Temple.
     const spot = g.findFreeSpot(anchor.x, anchor.z + 34, 5);
-    if (!spot || !g.executeCommand({ kind: 'place', building: 'market', x: spot.x, z: spot.z })) {
+    if (!spot || !g.executeCommand({ kind: 'place', building: 'market', x: spot.x, z: spot.z }, false)) {
       return { setup: false, reason: 'market placement' };
     }
     const market = [...g.buildings.values()].find(
       (b: any) => b.owner === 0 && b.kind === 'market' && !b.dead && b.pos.x === spot.x && b.pos.z === spot.z,
     ) as any;
     if (!market) return { setup: false, reason: 'market missing' };
-    g.executeCommand(
-      { kind: 'order', unitIds: [workers[0].id], order: { kind: 'build', entityId: market.id }, clear: true },
-      false,
+    bot.build([builder.id], market.id);
+    bot.gather(
+      quarry.map((u) => u.id),
+      'stone',
+      anchor,
     );
-    const holder = workers[1];
-    g.executeCommand(
-      {
-        kind: 'order',
-        unitIds: [holder.id],
-        order: { kind: 'move', target: { x: anchor.x, z: anchor.z } },
-        clear: true,
-      },
-      false,
-    );
-    const dt = 1 / 60;
-    let t = 0;
-    let reached = false;
-    const tick = (seconds: number) => {
-      for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
-        document.querySelector<HTMLElement>('.ed-mission-card')?.click();
-        if (!reached && Math.hypot(holder.pos.x - anchor.x, holder.pos.z - anchor.z) < 8) reached = true;
-        holder.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
-        g.update(dt, t);
-        t += dt;
-      }
+
+    let quarried = 0;
+    while (bot.resources().stone < 120 && quarried < 180 && !bot.ended()) {
+      bot.run(5);
+      bot.gather(
+        quarry.map((u) => u.id),
+        'stone',
+        anchor,
+      );
+      quarried += 5;
+    }
+
+    const oldTemple = deliverUntil('chavin_edificio_b', 'a2_templo');
+    // The pilgrims hold the plaza for 60 s while the quarry keeps working and the fair rises.
+    for (let i = 0; i < 14; i++) {
+      bot.run(5);
+      bot.gather(
+        quarry.map((u) => u.id),
+        'stone',
+        anchor,
+      );
+    }
+    // Once the fair is finished its builder joins the quarry: the New Temple needs 200 more stone.
+    if (market.constructionComplete) quarry.push(builder);
+
+    // Research is queued at the centre, like the HUD's tech button; it runs while the quarry works.
+    const researched = bot.research('chavin_pilgrimage');
+    let extra = 0;
+    while (bot.resources().stone < 200 && extra < 600 && !bot.ended()) {
+      bot.run(5);
+      bot.gather(
+        quarry.map((u) => u.id),
+        'stone',
+        anchor,
+      );
+      extra += 5;
+    }
+    bot.run(55);
+    const newTemple = deliverUntil('chavin_edificio_a', 'a3_templo');
+    bot.run(95);
+
+    const progress = {
+      setup: true,
+      arrived,
+      walked,
+      offers,
+      oldTemple,
+      newTemple,
+      researched,
+      marketComplete: market.constructionComplete,
+      stone: bot.resources().stone,
+      time: bot.time(),
+      ended: m.ended,
+      won: m.won,
+      phases: g.sitePhase,
+      states: Object.fromEntries(m.def.objectives.map((o: any) => [o.id, m.getObjectiveState(o.id)])),
     };
-    tick(8);
-    // Act I: the offering hand-over (the worker is on site).
-    const offers = [g.makeOffering('chavin_edificio_b'), g.makeOffering('chavin_edificio_b')];
-    tick(2);
-    // Act II: Old Temple, fair and pilgrimage.
-    for (let i = 0; i < 3; i++) m.recordDelivery('stone', 50);
-    tick(2);
-    tick(61);
-    // Act III: New Temple, research and great pilgrimage.
-    for (let i = 0; i < 4; i++) m.recordDelivery('stone', 50);
-    tick(2);
-    g.players[0].techs.add('chavin_pilgrimage');
-    tick(2);
-    tick(91);
-    // Act IV: walk the ceremonial centre's record.
+    if (bot.state('a3_templo') !== 'completed') return { ...progress, aborted: 'new temple' };
+    // Act IV: select each monument on the map and press «Visitar».
     for (const id of [
       'chavin_plaza_circular',
       'chavin_edificio_b',
@@ -945,24 +1007,25 @@ test('plays m2 Chavín through the four acts with real construction and offering
       'chavin_portada',
       'chavin_galeria',
     ]) {
-      g.visitHeritage(id);
+      bot.visit(id);
     }
-    tick(2);
+    bot.run(3);
     return {
-      setup: true,
-      reached,
-      offers,
-      marketComplete: market.constructionComplete,
+      ...progress,
+      states: Object.fromEntries(m.def.objectives.map((o: any) => [o.id, m.getObjectiveState(o.id)])),
+      phases: g.sitePhase,
       won: m.won,
       ended: m.ended,
-      phases: g.sitePhase,
-      states: Object.fromEntries(m.def.objectives.map((o: any) => [o.id, m.getObjectiveState(o.id)])),
     };
   });
 
   expect(out.setup, JSON.stringify(out)).toBe(true);
-  expect(out.reached, JSON.stringify(out)).toBe(true);
-  expect(out.offers, JSON.stringify(out)).toEqual([true, true]);
+  expect(out.aborted, JSON.stringify(out)).toBeUndefined();
+  expect(out.arrived, JSON.stringify(out)).toBe(true);
+  expect(out.offers, JSON.stringify(out)).toBe(2);
+  expect(out.oldTemple, JSON.stringify(out)).toBe(3);
+  expect(out.newTemple, JSON.stringify(out)).toBe(4);
+  expect(out.researched, JSON.stringify(out)).toBe(true);
   expect(out.marketComplete, JSON.stringify(out)).toBe(true);
   expect(out.states.a1_ofrenda).toBe('completed');
   expect(out.states.a2_templo).toBe('completed');
