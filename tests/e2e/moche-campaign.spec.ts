@@ -133,12 +133,14 @@ test('m3 canal and exchange field-card buttons work', { tag: '@smoke' }, async (
       g.update(dt, t);
       t += dt;
     }
+    // The mission's hand-over is the card's action: the generic trade button is not duplicated.
+    g.players[0].resources.silver = 300;
     g.selectedHeritage = 'moche_huaca_luna';
     g.hud.update(0.2, 0);
   });
-  await expect(bottom).toContainText('Intercambiar');
+  await expect(bottom).toContainText('Entregar materiales');
   for (let i = 0; i < 5; i++) {
-    await page.getByRole('button', { name: /Intercambiar/ }).click();
+    await page.getByRole('button', { name: /Entregar materiales/ }).click();
     await page.evaluate(() => (window as unknown as { game: any }).game.hud.update(0.2, 0));
   }
   await expect
@@ -174,8 +176,11 @@ test('m3 canal, huaca hold and elite exchange complete the mission', async ({ pa
     worker.pos.set(g.siteAnchor.x, g.terrain.getHeight(g.siteAnchor.x, g.siteAnchor.z), g.siteAnchor.z);
     step(92);
     const hold = m.getObjectiveState('obj_huacas');
+    g.players[0].resources.silver = 300;
     for (let i = 0; i < 5; i++) g.makeTrade('moche_huaca_luna');
     step(0.2);
+    // The closing plaza hold replaced the instant victory; the worker is already in the plaza.
+    step(46);
     return {
       canal,
       hold,

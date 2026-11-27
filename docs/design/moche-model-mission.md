@@ -105,8 +105,11 @@ Huaca de la Luna. The historical context stays in the briefing, the chapter card
 
 ## Pacing
 
-The real-command bot reaches the documented ending in about 5 min of simulated time; a human playtest is
-still needed to measure the 20–30 min path. The model pattern's 30–40 min band is not claimed.
+The real-command bot reaches the documented ending in about 6 min of simulated time. The player starts with
+100 silver (not 300), so the 250-unit exchange needs real gathering; the required hand-over and the optional
+400 advance in parallel, and a closing 45 s plaza hold replaces the old instant victory and gives the optional
+a window. A human playtest is still needed to measure the 20–30 min path. The model pattern's 30–40 min band
+is not claimed.
 
 ## Open items
 

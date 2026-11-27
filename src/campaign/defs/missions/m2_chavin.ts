@@ -152,7 +152,7 @@ export const m2Chavin: MissionDef = {
   // Andean engineering, and none of the loom/metallurgy techs that need an institute or a smelter.
   allowedTechs: ['irrigation_canal', 'chavin_pilgrimage'],
   // The fair is the mission's own institution, not a generic market.
-  buildingNames: { [BuildingKind.MARKET]: 'Feria de peregrinos' },
+  buildingNames: { [BuildingKind.MARKET]: 'Feria de peregrinos', [BuildingKind.MILL]: 'Depósito' },
   startingResources: { food: 300, wood: 450, silver: 300, stone: 100 },
   start: {},
   enemy: { active: false, difficulty: 'easy', aggression: 0 },

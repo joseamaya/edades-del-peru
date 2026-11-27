@@ -99,9 +99,10 @@ historical context stays in the briefing, the chapter cards and the Codex.
 
 ## Pacing
 
-The real-command bot reaches the documented ending in about 12 s of simulated time in the E2E (the harness
-builds the network instantly); a human playtest is still needed to measure the 20–30 min path. The model
-pattern's 30–40 min band is not claimed, and the eight-minute survival is optional rather than a gate.
+The real-command bot builds both farms and the two provincial centres with ordinary gather/build orders and
+reaches the documented ending inside the E2E's 620 s simulation cap. The harness no longer builds the network
+instantly; a human playtest is still needed to measure the 20–30 min path. The model pattern's 30–40 min band
+is not claimed, and the eight-minute survival is optional rather than a gate.
 
 ## Open items
 

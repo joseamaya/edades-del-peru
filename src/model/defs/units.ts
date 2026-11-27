@@ -127,7 +127,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   },
   caravan: {
     id: UnitKind.CARAVAN,
-    name: 'Caravana de llamas',
+    name: 'Caravana de camélidos',
     description: 'Transporta bienes entre mercados. Genera plata según la distancia de la ruta.',
     category: 'econ',
     eraStats: {
@@ -1375,7 +1375,7 @@ export const UNIT_INFO: Record<UnitKind, { name: string; icon: string; category:
   cavalry: { name: 'Caballería de Choque', icon: '🐎', category: 'Caballería' },
   tank: { name: 'Ariete Blindado', icon: '🛡️', category: 'Caballería' },
   scout: { name: 'Explorador', icon: '🏃', category: 'Reconocimiento' },
-  caravan: { name: 'Caravana de llamas', icon: '🦙', category: 'Economía' },
+  caravan: { name: 'Caravana de camélidos', icon: '🦙', category: 'Economía' },
   anti_air: { name: 'Artillero Antiaéreo', icon: '🎯', category: 'Distancia' },
   artillery: { name: 'Artillería', icon: '💣', category: 'Asedio' },
   mortar: { name: 'Mortero', icon: '💥', category: 'Asedio' },

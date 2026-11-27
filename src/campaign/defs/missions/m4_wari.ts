@@ -167,6 +167,7 @@ export const m4Wari: MissionDef = {
     [BuildingKind.MARKET]: 'Centro administrativo wari',
     [BuildingKind.INSTITUTE]: 'Talleres estatales',
     [BuildingKind.SMELTER]: 'Taller de orfebrería',
+    [BuildingKind.MILL]: 'Depósito',
   },
   objectives: [
     {
@@ -309,16 +310,6 @@ export const m4Wari: MissionDef = {
       id: 't_bonus',
       condition: { type: 'objective', objectiveId: 'bonus_red', state: 'completed' },
       effects: [{ type: 'objective', objectiveId: 'obj_sostener', state: 'activate', announce: true }],
-    },
-    {
-      id: 't_declive',
-      condition: { type: 'time', seconds: 500 },
-      effects: [
-        {
-          type: 'dialogue',
-          text: 'Hacia 1000–1100 d.C. Wari y Tiahuanaco colapsan. El Horizonte Medio deja paso al Intermedio Tardío.',
-        },
-      ],
     },
   ],
 };

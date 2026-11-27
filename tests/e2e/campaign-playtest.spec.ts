@@ -1041,10 +1041,11 @@ test('plays m2 Chavín through the four acts with real construction and offering
 });
 
 test('plays m3 Moche with real movement, the canal and the exchange', async ({ page }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
 
+  await installCampaignBot(page);
   await page.goto('/?mission=m3_moche_recuay&seed=400&fog=0&low=1&noloop=1&intro=0');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game?.mission !== undefined, null, {
     timeout: 30_000,
@@ -1055,50 +1056,101 @@ test('plays m3 Moche with real movement, the canal and the exchange', async ({ p
 
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
+    const bot = (window as unknown as CampaignBotWindow).__campaignBot;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
+    const m = g.mission;
     const anchor = g.siteAnchor as { x: number; z: number };
     const own = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead) as any[];
     const workers = own.filter((u) => u.kind === 'worker');
     const fighters = own.filter((u) => u.kind !== 'worker');
-    if (!anchor || workers.length < 1 || fighters.length < 2) return { setup: false };
+    if (!anchor || workers.length < 3 || fighters.length < 2) return { setup: false };
 
+    const [carrier, ...quarry] = workers;
+    const quarryIds = quarry.map((u) => u.id);
+    // The starting ring around the camp is the short, reachable silver run; the army holds the plaza.
+    const base = g.playerCenter(0) as { x: number; z: number };
     g.toggleCanal();
-    g.executeCommand(
-      {
-        kind: 'order',
-        unitIds: [...fighters, workers[0]].map((u) => u.id),
-        order: { kind: 'move', target: { x: anchor.x, z: anchor.z } },
-        clear: true,
-      },
-      false,
+    bot.move(
+      [...fighters, carrier].map((u) => u.id),
+      anchor.x,
+      anchor.z,
     );
+    bot.gather(quarryIds, 'silver', base);
 
-    const dt = 1 / 60;
-    let t = 0;
-    let reached = false;
-    // The kit's huacas and plaza push the march to ~60 s; the hold needs 90 s on top.
-    for (let i = 0; i < Math.ceil(165 / dt) && !g.mission.ended; i++) {
-      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
-      if (!reached && Math.hypot(workers[0].pos.x - anchor.x, workers[0].pos.z - anchor.z) < 12) reached = true;
-      g.update(dt, t);
-      t += dt;
+    // The plaza hold needs 90 s; the quarry works the silver mines in parallel.
+    let waited = 0;
+    while (bot.state('obj_huacas') !== 'completed' && waited < 220 && !bot.ended()) {
+      bot.run(5);
+      bot.gather(quarryIds, 'silver', base);
+      waited += 5;
     }
-    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
-    const held = g.mission.getObjectiveState('obj_huacas') as string;
-    let traded = 0;
-    for (let i = 0; i < 6; i++) if (g.makeTrade('moche_huaca_luna')) traded++;
-    g.update(dt, t);
+    const held = bot.state('obj_huacas');
+    const reached = Math.hypot(carrier.pos.x - anchor.x, carrier.pos.z - anchor.z) < 14;
+
+    // Stand the army between the plaza and the Huaca de la Luna: the hand-over anchor is the huaca, but
+    // its 18 m radius reaches this point, so the carrier is not alone in front of the next wave.
+    const trade = m.def.objectives.find((o: any) => o.id === 'obj_intercambio');
+    const luna = g.resolveMissionPoint(trade.pos);
+    const safe = { x: (luna.x + anchor.x) / 2, z: (luna.z + anchor.z) / 2 };
+    bot.move(
+      [...fighters, carrier].map((u) => u.id),
+      safe.x,
+      safe.z,
+    );
+    bot.run(18);
+    const deliverUntil = (objectiveId: string, cap = 60): number => {
+      let handed = 0;
+      let extra = 0;
+      while (bot.state(objectiveId) !== 'completed' && extra < cap && !bot.ended()) {
+        // The hand-over is instant: do not wait between loads if the silver is already in the treasury.
+        if (bot.deliver('moche_huaca_luna')) handed++;
+        bot.run(0.25);
+        if (handed % 4 === 0) bot.gather(quarryIds, 'silver', base);
+        extra += 0.25;
+      }
+      return handed;
+    };
+    // One burst charges the required 250; the optional 400 is credited in parallel and stays open
+    // until the player chooses to close the act (the unit test proves the 400 itself is reachable).
+    const handed = deliverUntil('obj_intercambio', 600);
+    const required = m.getObjectiveState('obj_intercambio');
+    const optional = m.getObjectiveState('bonus_intercambio');
+    const optionalProgress = new Map(m.toSave().delivered ?? []).get('bonus_intercambio') ?? 0;
+    const closing = m.def.objectives.find((o: any) => o.id === 'obj_cierre');
+
+    // Back to the plaza: the closing beat gives the optional 400 its window before victory.
+    bot.move(
+      [...fighters, carrier].map((u) => u.id),
+      anchor.x,
+      anchor.z,
+    );
+    let heldClose = 0;
+    while (bot.state('obj_cierre') !== 'completed' && heldClose < 120 && !bot.ended()) {
+      bot.run(5);
+      heldClose += 5;
+    }
+    m.update(1 / 60, bot.time());
     return {
       setup: true,
       reached,
       held,
-      traded,
+      handed,
+      required,
+      optional,
+      optionalProgress,
+      closeTitle: closing?.title,
+      close: bot.state('obj_cierre'),
       mapSize: g.settings.mapSize,
       site: g.siteDef?.id,
-      canal: g.mission.getObjectiveState('obj_canal') as string,
-      trade: g.mission.getObjectiveState('obj_intercambio') as string,
-      won: g.mission.won as boolean | null,
+      canal: bot.state('obj_canal'),
+      silver: bot.resources().silver,
+      workersAlive: workers.filter((w) => !w.dead).length,
+
+      workerOrders: workers.map((w) => w.orderQueue[0]?.kind ?? 'idle'),
+      silverNodes: [...g.resourceNodes.values()].filter((n: any) => !n.dead && !n.depleted && n.resource === 'silver')
+        .length,
+      won: m.won as boolean | null,
     };
   });
 
@@ -1108,8 +1160,11 @@ test('plays m3 Moche with real movement, the canal and the exchange', async ({ p
   expect(out.site).toBe('moche_site');
   expect(out.canal).toBe('completed');
   expect(out.held).toBe('completed');
-  expect(out.traded).toBeGreaterThanOrEqual(1);
-  expect(out.trade).toBe('completed');
+  expect(out.handed, JSON.stringify(out)).toBeGreaterThanOrEqual(5);
+  expect(out.required).toBe('completed');
+  expect(out.optional, 'the 400 optional stays open for the player').toBe('activo');
+  expect(out.optionalProgress, 'the required and optional hand-over advance together').toBe(250);
+  expect(out.close).toBe('completed');
   expect(out.won, JSON.stringify(out)).toBe(true);
   expect(errors).toEqual([]);
 });
