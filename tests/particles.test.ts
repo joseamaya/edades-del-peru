@@ -58,9 +58,9 @@ describe('particle layers', () => {
     particles.dispose();
   });
 
-  it('spreads flames over a footprint and makes them climb', () => {
+  it('spreads a plume over a footprint and makes it climb', () => {
     const particles = new Particles(new THREE.Scene(), 64);
-    particles.emit({ x: 0, y: 1, z: 0, kind: 'fire', count: 8, spread: 2 });
+    particles.emit({ x: 0, y: 1, z: 0, kind: 'fire', count: 8, spread: 2, plume: true });
     const pool = (particles as unknown as Inspectable & { additive: { pool: FlameParticle[] } }).additive.pool;
     const flames = pool.filter((p) => p.active);
     expect(new Set(flames.map((p) => p.pos.x.toFixed(2))).size).toBeGreaterThan(1);

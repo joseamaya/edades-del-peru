@@ -59,3 +59,14 @@ export const CUSCO_KIT_FOOTPRINTS: Partial<Record<string, ArchFootprint>> = {
 
 /** Every building of the composition blocks movement; the gateways between the walls stay open. */
 export const CUSCO_CITY_BLOCKERS = layoutBlockers(CUSCO_CITY_LAYOUT, CUSCO_KIT_FOOTPRINTS);
+
+/**
+ * The roofs the 1536 fire lights (`MissionDef.fires`): the west and east houses and the great hall, at the
+ * ridge lines the kit builds (a `wasi` ridge sits at ~4.75 m, the `kallanka`'s at ~5.85 m). Kept next to the
+ * placements so moving a house moves its fire.
+ */
+export const CUSCO_CITY_FIRES = [
+  { pos: { dx: PLAZA.x - 15, dz: PLAZA.z - 4 }, count: 2, height: 4.6 },
+  { pos: { dx: PLAZA.x + 15, dz: PLAZA.z - 3 }, count: 2, height: 4.6 },
+  { pos: { dx: PLAZA.x, dz: PLAZA.z - 12.5 }, count: 3, height: 5.6 },
+] as const;

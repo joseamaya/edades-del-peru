@@ -9,17 +9,18 @@ import { cliArg, launchChromium, reviewDir, withViteServer } from './lib.mjs';
  * state so the fire follows the real code path; the chapter card it opens is dismissed so the fire tick keeps
  * running while the shots are taken.
  *
- * Usage: node scripts/capture_mission_fires.mjs [--mission=m_cusco_1536] [--height=45]
- *          [--out-dir=review]
+ * Usage: node scripts/capture_mission_fires.mjs [--mission=m_cusco_1536] [--zoom=45] [--out=review/fire-cusco_1536]
+ *   --zoom is the camera height (the mission's `MissionFire.height` is a different number: metres of flame).
+ *   --out is a path prefix; the pair is written as `<out>-before.webp` and `<out>-after.webp`, so
+ *   `--out=docs/media/cusco-fires` regenerates the pair the ADR ships.
  */
 const mission = cliArg('mission', 'm_cusco_1536');
-const height = Number.parseFloat(cliArg('height', '45'));
-const outDir = path.resolve(cliArg('out-dir', reviewDir()));
-fs.mkdirSync(outDir, { recursive: true });
+const zoom = Number.parseFloat(cliArg('zoom', '45'));
+const out = path.resolve(cliArg('out', path.join(reviewDir(), `fire-${mission.replace(/^m_/, '')}`)));
+fs.mkdirSync(path.dirname(out), { recursive: true });
 
-const stem = mission.replace(/^m_/, '');
-const beforePath = path.join(outDir, `fire-${stem}-before.png`);
-const afterPath = path.join(outDir, `fire-${stem}-after.png`);
+const beforePath = `${out}-before.webp`;
+const afterPath = `${out}-after.webp`;
 
 const { base, close } = await withViteServer();
 const browser = await launchChromium();
@@ -51,7 +52,7 @@ try {
     if (g.heroMarkers) g.heroMarkers.group.visible = false;
     g.camera.flyTo(x, z, zoom, 1.2, false);
     return { x, z, objectives: [...new Set(fires.map((f) => f.objectiveId))], count: points.length };
-  }, height);
+  }, zoom);
   if (!staged.count) throw new Error(`${mission} declares no fires`);
   // Mission camera beats (and the base reframe) can move the framing after the first flight: snap again
   // right before each shot so both halves of the pair are the same view.
@@ -63,7 +64,7 @@ try {
         g.camera.moveTo(x, z, true);
         g.camera.setHeight(zoom);
       },
-      [staged.x, staged.z, height],
+      [staged.x, staged.z, zoom],
     );
     await page.waitForTimeout(600);
   };
@@ -71,7 +72,7 @@ try {
   await frame();
   await sharp(await page.screenshot({ type: 'png' }))
     .resize(960, 540)
-    .png()
+    .webp({ quality: 72 })
     .toFile(beforePath);
   await page.evaluate((ids) => {
     for (const id of ids) window.game.mission.objState.set(id, 'completed');
@@ -82,7 +83,7 @@ try {
   await frame();
   await sharp(await page.screenshot({ type: 'png' }))
     .resize(960, 540)
-    .png()
+    .webp({ quality: 72 })
     .toFile(afterPath);
   console.log(
     `captured ${path.relative(process.cwd(), beforePath)} and ${path.relative(process.cwd(), afterPath)} ` +

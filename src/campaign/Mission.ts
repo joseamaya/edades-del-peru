@@ -267,6 +267,7 @@ export class Mission {
         kind: 'fire',
         // Normal-blended: an additive flame washes out over sunlit roofs. The embers keep the glow.
         emissive: false,
+        plume: true,
         speed: 1.2,
         life: 0.7,
         size: 3.4,
@@ -280,11 +281,11 @@ export class Mission {
         y: y + 1.4,
         z: p.z,
         count: 1,
-        color: 0x6f695f,
+        color: 0x8c857a,
         kind: 'smoke',
         speed: 1.3,
         life: 3.6,
-        size: 2.4,
+        size: 2.8,
         grow: 1.8,
       });
       // Embers every sixth tick, so the plume is not a constant sparkle.
@@ -300,6 +301,7 @@ export class Mission {
           size: 0.7,
           spread: 1.4,
           gravity: 1.4,
+          plume: true,
         });
       }
     }

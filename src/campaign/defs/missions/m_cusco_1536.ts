@@ -2,6 +2,7 @@ import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../c
 import { highValleyVegetation } from '../../../model/defs/profiles';
 import { CUSCO1536_HEIGHTFIELD } from '../../../model/defs/cusco1536Heightmap';
 import { CUSCO_SITE_POINT, CUSCO_SITE_SACSAY } from '../cuscoSite';
+import { CUSCO_CITY_FIRES } from '../../../model/defs/cuscoCity';
 import type { MissionDef } from '../../types';
 
 // Cusco 1536: the Inca camp, Sacsayhuamán, the city and the withdrawal road. Ollantaytambo lies
@@ -218,23 +219,9 @@ export const mCusco1536: MissionDef = {
     [BuildingKind.ARSENAL]: 'Casa de armas',
   },
   unitNames: { [UnitKind.SOLDIER]: 'Milicia inca' },
-  // The documented fire: once Sacsayhuamán falls, the city roofs burn while the siege closes.
-  // Heights follow the kit's ridges (`wasi` 6.5 m, `kallanka` 7.8 m), so the flames lick the ichu.
-  fires: [
-    {
-      objectiveId: 'a1_sacsay',
-      pos: { dx: CUSCO_SITE_POINT.x - 15, dz: CUSCO_SITE_POINT.z - 4 },
-      count: 3,
-      height: 4.6,
-    },
-    {
-      objectiveId: 'a1_sacsay',
-      pos: { dx: CUSCO_SITE_POINT.x + 15, dz: CUSCO_SITE_POINT.z - 3 },
-      count: 3,
-      height: 4.6,
-    },
-    { objectiveId: 'a1_sacsay', pos: { dx: CUSCO_SITE_POINT.x, dz: CUSCO_SITE_POINT.z - 12.5 }, count: 3, height: 5.6 },
-  ],
+  // The documented fire: once Sacsayhuamán falls, the city roofs burn while the siege closes. The points
+  // come from the kit (`CUSCO_CITY_FIRES`), so a moved house takes its fire with it.
+  fires: CUSCO_CITY_FIRES.map((fire) => ({ objectiveId: 'a1_sacsay', ...fire })),
   objectives: [
     {
       id: 'a1_sacsay',
