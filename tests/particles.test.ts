@@ -7,6 +7,8 @@ type Inspectable = {
   normal: { pool: { active: boolean; emissive: boolean }[] };
 };
 
+type FlameParticle = { active: boolean; pos: { x: number; z: number }; vel: { y: number } };
+
 const active = (pool: { active: boolean }[]) => pool.filter((p) => p.active).length;
 
 describe('particle layers', () => {
@@ -44,6 +46,25 @@ describe('particle layers', () => {
     const layers = particles as unknown as Inspectable;
     expect(active(layers.additive.pool)).toBe(0);
     expect(active(layers.normal.pool)).toBe(0);
+    particles.dispose();
+  });
+
+  it('keeps a non-emissive flame body on the normal layer', () => {
+    const particles = new Particles(new THREE.Scene(), 64);
+    particles.emit({ x: 0, y: 1, z: 0, kind: 'fire', emissive: false, count: 3 });
+    const layers = particles as unknown as Inspectable;
+    expect(active(layers.normal.pool)).toBe(3);
+    expect(active(layers.additive.pool)).toBe(0);
+    particles.dispose();
+  });
+
+  it('spreads flames over a footprint and makes them climb', () => {
+    const particles = new Particles(new THREE.Scene(), 64);
+    particles.emit({ x: 0, y: 1, z: 0, kind: 'fire', count: 8, spread: 2 });
+    const pool = (particles as unknown as Inspectable & { additive: { pool: FlameParticle[] } }).additive.pool;
+    const flames = pool.filter((p) => p.active);
+    expect(new Set(flames.map((p) => p.pos.x.toFixed(2))).size).toBeGreaterThan(1);
+    expect(flames.every((p) => p.vel.y > 0)).toBe(true);
     particles.dispose();
   });
 });

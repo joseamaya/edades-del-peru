@@ -58,7 +58,8 @@ Optional: cut the city's supplies. The mission never stages the later «Santiago
   dusk captures: Cusco's grass and forest are noisy and a brighter hour exceeds the 160 KB budget.
   Regenerate with `node scripts/capture_cinema.mjs --mission=m_cusco_1536 [--only=cine-fortaleza]`.
 - Briefing art `media/cusco-1536/intro-ciudad.webp`; act cards `intro-sacsay` and `intro-retirada`;
-  epilogue `intro-epilogo`.
+  epilogue `intro-epilogo`. The burning roofs are `media/cusco-fires-before.webp` /
+  `media/cusco-fires-after.webp`, captured with `node scripts/capture_mission_fires.mjs`.
 
 ## Tests and evidence
 

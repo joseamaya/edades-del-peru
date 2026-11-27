@@ -453,6 +453,8 @@ export interface MissionFire {
   pos: MissionPoint;
   /** Tongues per emission; a large roof can ask for more. */
   count?: number;
+  /** Height of the flames over the terrain, in metres, so a fire sits on a roof instead of the paving. */
+  height?: number;
 }
 
 export interface MissionDef {

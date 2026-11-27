@@ -25,6 +25,9 @@ import { phaseOrder } from '../model/defs/sitePhases';
 import type { MissionSave } from '../game/saveTypes';
 import { CAMERA_PITCH } from '../core/cameraMath';
 
+/** Seconds between fire emissions. A shared tick keeps a burning skyline cheap and evenly paced. */
+const FIRE_TICK = 0.12;
+
 /**
  * Mission controller: evaluates objectives and triggers every frame,
  * spawns waves/reinforcements and declares victory or narrative defeat.
@@ -53,6 +56,8 @@ export class Mission {
   private deferredActivations = new Map<string, boolean>();
   private delivered = new Map<string, number>();
   private fireTimer = 0;
+  /** Fire ticks elapsed, so embers can be periodic without a second timer. */
+  private fireTicks = 0;
   private onEnd: (win: boolean) => void;
 
   constructor(game: Game, def: MissionDef, onEnd: (win: boolean) => void) {
@@ -245,37 +250,58 @@ export class Mission {
     const fires = this.def.fires;
     if (!fires?.length) return;
     this.fireTimer += dt;
-    if (this.fireTimer < 0.15) return;
+    if (this.fireTimer < FIRE_TICK) return;
     this.fireTimer = 0;
+    this.fireTicks += 1;
     for (const fire of fires) {
       if (this.objState.get(fire.objectiveId) !== 'completed') continue;
       const p = this.resolvePoint(fire.pos);
+      const y = (this.game.terrain?.getHeight(p.x, p.z) ?? 0) + (fire.height ?? 0);
       const count = fire.count ?? 1;
       this.game.particles?.emit({
         x: p.x,
-        y: this.game.terrain?.getHeight(p.x, p.z) ?? 0,
+        y,
         z: p.z,
         count,
-        color: 0xff7a1c,
+        color: 0xff6a1e,
         kind: 'fire',
+        // Normal-blended: an additive flame washes out over sunlit roofs. The embers keep the glow.
+        emissive: false,
         speed: 1.2,
-        life: 0.9,
-        size: 1.1,
-        grow: 0,
-        spread: 1.2,
+        life: 0.7,
+        size: 3.4,
+        grow: 0.4,
+        spread: 2,
+        // Negative gravity keeps the tongues climbing against the per-frame drag, so they read as a plume.
+        gravity: -14,
       });
       this.game.particles?.emit({
         x: p.x,
-        y: (this.game.terrain?.getHeight(p.x, p.z) ?? 0) + 0.6,
+        y: y + 1.4,
         z: p.z,
         count: 1,
-        color: 0x6a6258,
+        color: 0x6f695f,
         kind: 'smoke',
-        speed: 1.1,
-        life: 3,
-        size: 1.2,
-        grow: 1.4,
+        speed: 1.3,
+        life: 3.6,
+        size: 2.4,
+        grow: 1.8,
       });
+      // Embers every sixth tick, so the plume is not a constant sparkle.
+      if (this.fireTicks % 6 === 0) {
+        this.game.particles?.emit({
+          x: p.x,
+          y: y + 0.9,
+          z: p.z,
+          count: 2,
+          color: 0xffb15a,
+          kind: 'spark',
+          life: 1.2,
+          size: 0.7,
+          spread: 1.4,
+          gravity: 1.4,
+        });
+      }
     }
   }
 

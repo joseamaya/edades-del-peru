@@ -8,12 +8,26 @@
 
 ## Decision
 
-`MissionDef.fires` lists fires as `{ objectiveId, pos, count? }`. `Mission.updateFires` emits fire and
-smoke every 0.15 s at each point whose objective is `completed`. The flames are presentation only: they
+`MissionDef.fires` lists fires as `{ objectiveId, pos, count?, height? }`. `Mission.updateFires` emits fire and
+smoke every 0.12 s at each point whose objective is `completed`. `height` lifts the flames over the terrain so
+a fire can sit on a roof; without it the flames pool on the paving. The flames are presentation only: they
 deal no damage and do not alter pathing, victory or defeat.
 
 The state lives in the objective, so `MissionSave` needs no new field: a load restores the objective and
 the fire comes back on the next tick.
+
+## The look
+
+The flame body is normal-blended (an additive flame desaturates to a white blob over a sunlit roof), while
+the glow and the embers stay additive. Each body sprite is a tapered, leaning silhouette drawn in the
+particle fragment shader; flames are born across the fire's footprint and climb with a negative gravity,
+because a shared spawn point turns any count into a single candle.
+
+![Cusco before the fire](../media/cusco-fires-before.webp)
+![Cusco with the roofs burning](../media/cusco-fires-after.webp)
+
+Captured with `node scripts/capture_mission_fires.mjs` (Cusco 1536, `a1_sacsay` set through the mission's own
+objective state, HUD hidden).
 
 ## Alternatives rejected
 

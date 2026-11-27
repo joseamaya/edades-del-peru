@@ -219,10 +219,21 @@ export const mCusco1536: MissionDef = {
   },
   unitNames: { [UnitKind.SOLDIER]: 'Milicia inca' },
   // The documented fire: once Sacsayhuamán falls, the city roofs burn while the siege closes.
+  // Heights follow the kit's ridges (`wasi` 6.5 m, `kallanka` 7.8 m), so the flames lick the ichu.
   fires: [
-    { objectiveId: 'a1_sacsay', pos: { dx: CUSCO_SITE_POINT.x - 10, dz: CUSCO_SITE_POINT.z + 6 }, count: 2 },
-    { objectiveId: 'a1_sacsay', pos: { dx: CUSCO_SITE_POINT.x + 8, dz: CUSCO_SITE_POINT.z - 5 }, count: 2 },
-    { objectiveId: 'a1_sacsay', pos: { dx: CUSCO_SITE_POINT.x + 2, dz: CUSCO_SITE_POINT.z + 14 }, count: 1 },
+    {
+      objectiveId: 'a1_sacsay',
+      pos: { dx: CUSCO_SITE_POINT.x - 15, dz: CUSCO_SITE_POINT.z - 4 },
+      count: 3,
+      height: 4.6,
+    },
+    {
+      objectiveId: 'a1_sacsay',
+      pos: { dx: CUSCO_SITE_POINT.x + 15, dz: CUSCO_SITE_POINT.z - 3 },
+      count: 3,
+      height: 4.6,
+    },
+    { objectiveId: 'a1_sacsay', pos: { dx: CUSCO_SITE_POINT.x, dz: CUSCO_SITE_POINT.z - 12.5 }, count: 3, height: 5.6 },
   ],
   objectives: [
     {

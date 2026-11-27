@@ -36,6 +36,7 @@ const VERTEX_SHADER = /* glsl */ `
   varying float vAlpha;
   varying float vEmissive;
   varying float vKind;
+  varying float vSeed;
   uniform float time;
   void main() {
     float t = aData.x;
@@ -43,19 +44,23 @@ const VERTEX_SHADER = /* glsl */ `
     float seed = aData.z;
     vEmissive = aData.w;
     vKind = kind;
+    vSeed = seed;
     vColor = aColor;
-    // Fire runs from #fff2b0 to #ff8a2a to #a02a10 as it ages.
+    // Fire runs from amber to orange to ember as it ages; a paler ramp clips to white under the additive
+    // blend, which is how a lit roof ended up looking like a lamp.
     if (kind > 0.5 && kind < 1.5) {
-      vec3 hot = vec3(1.0, 0.949, 0.690);
-      vec3 mid = vec3(1.0, 0.541, 0.165);
-      vec3 cold = vec3(0.627, 0.165, 0.063);
+      vec3 hot = vec3(1.0, 0.62, 0.18);
+      vec3 mid = vec3(0.95, 0.33, 0.06);
+      vec3 cold = vec3(0.4, 0.08, 0.03);
       vColor = t < 0.5 ? mix(hot, mid, t * 2.0) : mix(mid, cold, (t - 0.5) * 2.0);
     }
     float alpha;
     if (kind < 0.5) { // smoke: rises, grows, soft fade
       alpha = (1.0 - t) * (0.45 + 0.2 * sin(seed * 40.0));
     } else if (kind < 1.5) { // fire
-      alpha = sin(t * 3.14159) * 0.95;
+      // An additive flame is a glow, so it stays faint over bright ground; the normal-blended body carries
+      // the colour and can be much more opaque.
+      alpha = sin(t * 3.14159) * (vEmissive > 0.5 ? 0.3 : 0.95);
       // Per-particle flicker, not a shared pulse.
       alpha *= 0.82 + 0.18 * sin(seed * 61.0 + time * 13.0);
     } else if (kind < 2.5) { // spark
@@ -81,15 +86,25 @@ const FRAGMENT_SHADER = /* glsl */ `
   varying float vAlpha;
   varying float vEmissive;
   varying float vKind;
+  varying float vSeed;
   void main() {
     vec2 uv = gl_PointCoord - 0.5;
-    // The fire sprite is a teardrop: the tail stretches away from the hot core.
-    if (vKind > 0.5 && vKind < 1.5) uv.y = (uv.y - 0.08) * 1.45;
     float d = length(uv);
     float soft = smoothstep(0.5, 0.05, d);
+    if (vKind > 0.5 && vKind < 1.5 && vEmissive < 0.5) {
+      // A flame silhouette, not a round puff: wide at the base, tapering to a tip that leans with its seed.
+      float h = clamp(0.5 - uv.y, 0.0, 1.0); // 0 at the base, 1 at the tip (gl_PointCoord is top-down)
+      float w = 0.38 * pow(1.0 - h, 0.55) + 0.02;
+      float sway = 0.16 * h * h * sin(h * 7.0 + vSeed * 23.0);
+      float body = smoothstep(w, w * 0.62, abs(uv.x - sway));
+      body *= smoothstep(0.0, 0.12, h) * smoothstep(1.0, 0.72, h);
+      vec3 col = mix(vec3(1.0, 0.72, 0.28), vec3(0.95, 0.2, 0.02), pow(h, 0.4));
+      gl_FragColor = vec4(col, body * vAlpha);
+      return;
+    }
     if (vEmissive > 0.5) {
       float core = smoothstep(0.18, 0.02, d);
-      vec3 col = vColor + vec3(1.0, 0.95, 0.8) * core * 0.8;
+      vec3 col = vColor + vec3(1.0, 0.9, 0.65) * core * 0.15;
       gl_FragColor = vec4(col, soft * vAlpha);
     } else {
       float rim = smoothstep(0.5, 0.2, d);
@@ -201,6 +216,13 @@ export class Particles {
       p.emissive = emissive;
       p.pos.set(opts.x, opts.y, opts.z);
       const spread = opts.spread ?? 1;
+      // Flames are born across a footprint, not from one point: a shared origin piles every tongue into a
+      // single candle whatever the count.
+      if (kind === 'fire') {
+        p.pos.x += (this.rng.float() - 0.5) * spread;
+        p.pos.z += (this.rng.float() - 0.5) * spread;
+        p.pos.y += this.rng.float() * 0.8;
+      }
       p.vel.set(
         (this.rng.float() - 0.5) * spread,
         opts.kind === 'smoke' ? (opts.speed ?? 1.2) : (this.rng.float() - 0.5) * spread,
@@ -210,6 +232,9 @@ export class Particles {
         p.vel.y = (opts.speed ?? 1.4) * (0.7 + this.rng.float() * 0.6);
         p.vel.x *= 0.3;
         p.vel.z *= 0.3;
+      } else if (kind === 'fire' || kind === 'spark') {
+        // Flames and embers rise: without the bias they hang around the ground and read as confetti.
+        p.vel.y = Math.abs(p.vel.y) * 0.8 + (kind === 'spark' ? 2.2 : 1.5);
       }
       p.maxLife = p.life = (opts.life ?? 1) * (0.75 + this.rng.float() * 0.5);
       p.size = (opts.size ?? 3) * (0.8 + this.rng.float() * 0.5);
