@@ -38,8 +38,14 @@ try {
       ({ shot }) => {
         const g = window.game;
         document.querySelector('.ed-mission-card')?.remove();
+        const rings = g.scene.getObjectByName('mission-rings');
+        if (rings) rings.visible = false;
+        if (g.heroMarkers) g.heroMarkers.group.visible = false;
         const ui = document.getElementById('ui-root');
         if (ui) ui.style.display = 'none';
+        // The card already names the temple: the world label layer would bake a second caption in.
+        const labels = document.getElementById('ed-world-labels');
+        if (labels) labels.style.display = 'none';
         if (g.getPaused()) g.togglePause();
         g.applyQualityPreset('high');
         g.trees.kitLod0Radius = 70;
@@ -61,8 +67,8 @@ try {
     const png = path.join(OUT, `${shot.id}.png`);
     await page.screenshot({ path: png });
     await sharp(png)
-      .resize(800, 450, { fit: 'cover' })
-      .webp({ quality: 35 })
+      .resize(960, 540, { fit: 'cover' })
+      .webp({ quality: 58 })
       .toFile(path.join(OUT, `${shot.id}.webp`));
     fs.unlinkSync(png);
     console.log(`captured ${shot.id}`);

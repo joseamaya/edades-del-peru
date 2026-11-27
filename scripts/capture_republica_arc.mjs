@@ -8,6 +8,9 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
  * Tarapacá (quebrada, heights, retreat), Miraflores (Lima, redoubts, withdrawal)
  * and La Breña (Mantaro, ambush pass, Huamachuco). Game captures, never photographs.
  *
+ * Every card ships at 960x540 WebP q58 with the world label layer hidden: the chapter card already names
+ * the place, and the smaller 640x360 cards the arcs started with went soft next to the rest of the set.
+ *
  * Usage: node scripts/capture_republica_arc.mjs [--only=ID]
  */
 const only = cliArg('only', '');
@@ -19,7 +22,7 @@ const SHOTS = [
     dir: 'tarapaca',
     id: 'quebrada',
     at: [96, 168],
-    height: 46,
+    height: 34,
     time: 0.55,
   },
   {
@@ -47,7 +50,7 @@ const SHOTS = [
     dir: 'miraflores',
     id: 'reductos',
     at: [112, 190],
-    height: 44,
+    height: 40,
     time: 0.55,
   },
   {
@@ -120,10 +123,19 @@ try {
         if (rings) rings.visible = false;
         const ui = document.getElementById('ui-root');
         if (ui) ui.style.display = 'none';
+        // The card already names the place: the world label layer would bake a second caption in.
+        const labels = document.getElementById('ed-world-labels');
+        if (labels) labels.style.display = 'none';
         if (g.getPaused()) g.togglePause();
         g.applyQualityPreset('high');
         if (shot.mission === 'm_miraflores') {
-          for (const x of [72, 112, 152]) g.spawnScriptedBuilding('fortress', 0, x, 190);
+          // 20 m apart, so the three read as one line inside the card's frame.
+          for (const x of [92, 112, 132]) g.spawnScriptedBuilding('fortress', 0, x, 190);
+        }
+        if (shot.mission === 'm_brena' && shot.id === 'galgas') {
+          // The card is the pass the column has to cross, so stage the column the ambush waits for.
+          const [x, z] = shot.at;
+          for (let i = 0; i < 6; i++) g.spawnScriptedUnit('chile_infante', 1, x - 6 + i * 2.4, z + 12 + i * 0.6);
         }
         g.trees.kitLod0Radius = 60;
         g.sky.setTimeOfDay(shot.time ?? 0.5);
@@ -171,7 +183,7 @@ try {
     await page.waitForTimeout(500);
     const png = await page.screenshot({ type: 'png' });
     const file = path.join(out, `intro-${shot.id}.webp`);
-    await sharp(png).resize(640, 360).webp({ quality: 28 }).toFile(file);
+    await sharp(png).resize(960, 540).webp({ quality: 58 }).toFile(file);
     console.log(`captured ${path.relative(process.cwd(), file)} (${fs.statSync(file).size} bytes)`);
     await page.close();
   }

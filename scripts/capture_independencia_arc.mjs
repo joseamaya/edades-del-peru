@@ -9,6 +9,9 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
  * the batteries and the siege camp for m_real_felipe. These are game captures, never
  * historical photographs.
  *
+ * Every card ships at 960x540 WebP q58 with the world label layer hidden: the chapter card already names
+ * the place, and the smaller 640x360 cards the arcs started with went soft next to the rest of the set.
+ *
  * Usage: node scripts/capture_independencia_arc.mjs [--only=ID]
  */
 const only = cliArg('only', '');
@@ -26,8 +29,8 @@ const SHOTS = [
     mission: 'm_lima_1821',
     dir: 'lima-1821',
     id: 'callao',
-    at: [52, 120],
-    height: 44,
+    at: [58, 119],
+    height: 34,
     time: 0.55,
   },
   {
@@ -46,8 +49,8 @@ const SHOTS = [
     mission: 'm_real_felipe',
     dir: 'real-felipe',
     id: 'baterias',
-    at: [140.8, 122.9],
-    height: 44,
+    at: [129.3, 133.1],
+    height: 38,
     time: 0.55,
   },
   {
@@ -84,10 +87,19 @@ try {
         if (rings) rings.visible = false;
         const ui = document.getElementById('ui-root');
         if (ui) ui.style.display = 'none';
+        // The card already names the place: the world label layer would bake a second caption in.
+        const labels = document.getElementById('ed-world-labels');
+        if (labels) labels.style.display = 'none';
         if (g.getPaused()) g.togglePause();
         g.applyQualityPreset('high');
         g.trees.kitLod0Radius = 60;
         g.sky.setTimeOfDay(shot.time ?? 0.5);
+        if (shot.mission === 'm_real_felipe' && shot.id === 'baterias') {
+          // The two batteries are the player's objective, not a starting building: stage the line the card
+          // names, or the frame is empty sand.
+          g.spawnScriptedBuilding('fortress', 0, 0.46 * 256, 0.56 * 256);
+          g.spawnScriptedBuilding('fortress', 0, 0.55 * 256, 0.48 * 256);
+        }
         let t = 1;
         for (let i = 0; i < 30; i++) {
           g.update(0.05, t);
@@ -132,7 +144,7 @@ try {
     await page.waitForTimeout(500);
     const png = await page.screenshot({ type: 'png' });
     const file = path.join(out, `intro-${shot.id}.webp`);
-    await sharp(png).resize(640, 360).webp({ quality: 28 }).toFile(file);
+    await sharp(png).resize(960, 540).webp({ quality: 58 }).toFile(file);
     console.log(`captured ${path.relative(process.cwd(), file)} (${fs.statSync(file).size} bytes)`);
     await page.close();
   }

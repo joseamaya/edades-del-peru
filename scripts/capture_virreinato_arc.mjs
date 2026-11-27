@@ -7,13 +7,16 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
  * Capture the Virreinato arc's own in-engine images: the 1536 Cusco siege and
  * the 1572 Vilcabamba withdrawal. Game captures, never historical photographs.
  *
+ * Every card ships at 960x540 WebP q58 with the world label layer hidden: the chapter card already names
+ * the place, and the smaller 640x360 cards the arcs started with went soft next to the rest of the set.
+ *
  * Usage: node scripts/capture_virreinato_arc.mjs [--mission=ID] [--only=ID]
  */
 const only = cliArg('only', '');
 const onlyMission = cliArg('mission', '');
 
 const SHOTS = [
-  { mission: 'm_cusco_1536', dir: 'cusco-1536', id: 'ciudad', at: [166, 174], height: 42, time: 0.55 },
+  { mission: 'm_cusco_1536', dir: 'cusco-1536', id: 'ciudad', at: [166, 174], height: 30, time: 0.55 },
   { mission: 'm_cusco_1536', dir: 'cusco-1536', id: 'sacsay', at: [158, 141], height: 40, time: 0.5 },
   {
     mission: 'm_cusco_1536',
@@ -32,7 +35,7 @@ const SHOTS = [
     mission: 'm_vilcabamba',
     dir: 'vilcabamba',
     id: 'captura',
-    cinematic: { center: [180, 97], eye: [-30, 16, 34], look: [0, 3, 0], fov: 52, time: 0.3 },
+    cinematic: { center: [109, 175], eye: [-30, 16, 34], look: [0, 3, 0], fov: 52, time: 0.3 },
   },
   {
     mission: 'm_vilcabamba',
@@ -68,6 +71,9 @@ try {
         if (rings) rings.visible = false;
         const ui = document.getElementById('ui-root');
         if (ui) ui.style.display = 'none';
+        // The card already names the place: the world label layer would bake a second caption in.
+        const labels = document.getElementById('ed-world-labels');
+        if (labels) labels.style.display = 'none';
         if (g.getPaused()) g.togglePause();
         g.applyQualityPreset('high');
         g.trees.kitLod0Radius = 60;
@@ -76,6 +82,17 @@ try {
         for (let i = 0; i < 30; i++) {
           g.update(0.05, t);
           t += 0.05;
+        }
+        if (shot.mission === 'm_cusco_1536' && shot.id === 'ciudad') {
+          // The card is the documented fire: light it through the objective the mission reads (ADR 0011).
+          // Completing it opens the "La ciudad en llamas" act card, which blocks the mission tick, so the
+          // card is cleared on every step until the roofs are burning.
+          g.mission.objState.set('a1_sacsay', 'completed');
+          for (let i = 0; i < 40; i++) {
+            document.querySelector('.ed-mission-card')?.remove();
+            g.update(0.05, t);
+            t += 0.05;
+          }
         }
         if (shot.cinematic) {
           const { eye, look, fov, time, center } = shot.cinematic;
@@ -116,7 +133,7 @@ try {
     await page.waitForTimeout(500);
     const png = await page.screenshot({ type: 'png' });
     const file = path.join(out, `intro-${shot.id}.webp`);
-    await sharp(png).resize(640, 360).webp({ quality: 28 }).toFile(file);
+    await sharp(png).resize(960, 540).webp({ quality: 58 }).toFile(file);
     console.log(`captured ${path.relative(process.cwd(), file)} (${fs.statSync(file).size} bytes)`);
     await page.close();
   }
