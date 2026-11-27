@@ -12,21 +12,20 @@ describe('post-colonial weapons', () => {
       const spec = POST_COLONIAL_SPECS[culture];
       const role = postColonialRoleForVariant(`${culture}_soldier_m`);
       expect(role, culture).toBe('soldier');
-      expect(postColonialWeaponFor(role!, spec.weapon, false), culture).toBe('sabre');
+      expect(postColonialWeaponFor(role!, spec.weapon, false), culture).toBe('sword');
       expect(postColonialWeaponFor('ranged', spec.weapon, false), culture).toBe(spec.weapon);
     }
   });
 
-  it('leaves the 1780 rebels the pike and keeps their firearm for the ranged role', () => {
-    expect(postColonialWeaponFor('soldier', 'musket', true)).toBe('pike');
+  it('leaves the 1780 rebels the spear and keeps their firearm for the ranged role', () => {
+    expect(postColonialWeaponFor('soldier', 'musket', true)).toBe('spear');
     expect(postColonialWeaponFor('ranged', 'musket', true)).toBe('musket');
   });
 
-  it('never hands a civilian a weapon', () => {
-    const armed = new Set(['soldier', 'ranged']);
+  it('resolves every culture role from its variant, so the dresser never falls back by accident', () => {
     for (const culture of POST_COLONIAL_CULTURES) {
-      for (const role of ['worker', 'scout', 'missionary'] as const) {
-        expect(armed.has(role), `${culture}_${role}`).toBe(false);
+      for (const role of ['soldier', 'ranged', 'worker', 'scout', 'missionary'] as const) {
+        expect(postColonialRoleForVariant(`${culture}_${role}_f`), `${culture}_${role}`).toBe(role);
       }
     }
   });

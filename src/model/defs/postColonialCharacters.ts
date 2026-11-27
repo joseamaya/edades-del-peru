@@ -12,8 +12,11 @@ export type PostColonialRigVariant =
   | `${PostColonialCulture}_${PostColonialRole}_${'f' | 'm'}`
   | `realistas_${RealistaHat}_${PostColonialRole}_${'f' | 'm'}`;
 
+/** Every firearm an outfit owns; a spec never carries a blade (`postColonialWeaponFor` decides those). */
+export type PostColonialFirearm = 'musket' | 'rifle';
+
 /** What the shared dresser puts in the right hand. */
-export type PostColonialWeapon = 'musket' | 'rifle' | 'sabre' | 'pike';
+export type PostColonialWeapon = PostColonialFirearm | 'sword' | 'spear';
 
 export interface PostColonialSpec {
   civ: CivId;
@@ -22,22 +25,26 @@ export interface PostColonialSpec {
   trousers: number;
   hat: 'morion' | 'bicorn' | 'kepi' | 'none';
   hatColor: number;
-  weapon: PostColonialWeapon;
+  weapon: PostColonialFirearm;
   sidearm: 'sword' | 'none';
 }
 
 /**
- * The weapon the shared dresser puts in the hand. Melee line infantry carries a blade, not a firearm: the
- * sabre for the royalist and patriot line (the 1879 armies' «bayoneta sable» reads the same at RTS scale),
- * and the pike the 1780 rebels could make. The firearm stays with the `ranged` role, which is the volley the
- * clips animate (`docs/historia/atuendos.md` §6: «fusil/arcabuz + sable/lanza»).
+ * The weapon the shared dresser puts in the hand. Melee line infantry carries a blade rather than the firearm
+ * the volley clips animate, so the `ranged` role keeps the spec's gun:
+ *
+ * - `sword`: the royalist and patriot line (`docs/historia/atuendos.md` §3 «espada y arcabuz de mecha» for
+ *   1535–1572, §6 «fusil/arcabuz + sable/lanza» for the 18th century; Chile's 1878 decree adds the «bayoneta
+ *   sable»). One straight blade is a presentation abstraction of all three.
+ * - `spear`: the 1780 rebels' line. The campaign dossier only records that their firearms were few and
+ *   captured, so the spear is a presentation abstraction, not a documented rebel weapon.
  */
 export function postColonialWeaponFor(
   role: PostColonialRole,
-  weapon: PostColonialWeapon,
+  weapon: PostColonialFirearm,
   rebelde: boolean,
 ): PostColonialWeapon {
-  if (role === 'soldier') return rebelde ? 'pike' : 'sabre';
+  if (role === 'soldier') return rebelde ? 'spear' : 'sword';
   return weapon;
 }
 
