@@ -141,6 +141,24 @@ function well(parts: Parts, x: number, y: number, z: number): void {
   box(parts, WOOD, x, y + 0.9, z, 2.2, 0.12, 0.12);
 }
 
+/** A reserved plot: four stakes and a cord rectangle, so the apron is not read as empty ground. */
+function reservedPlot(parts: Parts, plot: { x: number; z: number; w: number; d: number }, y: number): void {
+  const hw = plot.w / 2;
+  const hd = plot.d / 2;
+  for (const [ox, oz] of [
+    [-hw, -hd],
+    [hw, -hd],
+    [-hw, hd],
+    [hw, hd],
+  ]) {
+    box(parts, WOOD, plot.x + ox, y, plot.z + oz, 0.16, 1.2, 0.16);
+  }
+  box(parts, CLOTH, plot.x, y + 1.1, plot.z - hd, plot.w, 0.05, 0.08);
+  box(parts, CLOTH, plot.x, y + 1.1, plot.z + hd, plot.w, 0.05, 0.08);
+  box(parts, CLOTH, plot.x - hw, y + 1.1, plot.z, 0.08, 0.05, plot.d);
+  box(parts, CLOTH, plot.x + hw, y + 1.1, plot.z, 0.08, 0.05, plot.d);
+}
+
 /** The traced plaza of a founding: cord lines, stakes and packed earth before the city is built. */
 function traza(parts: Parts, layout: ColonialLayout, y: number): void {
   const { x, z } = layout.center;
@@ -239,6 +257,12 @@ export class ColonialLife {
     });
     this.addPhase(PHASE_CIUDAD, ciudad);
 
+    if (layout.reserved?.length) {
+      const reserved: Parts = [];
+      for (const plot of layout.reserved) reservedPlot(reserved, plot, ground(plot.x, plot.z));
+      this.addPersistent('reserved', reserved);
+    }
+
     this.setPhase(this.plan.initial);
   }
 
@@ -256,6 +280,20 @@ export class ColonialLife {
     this.group.add(group);
     this.geometries.push(merged);
     this.phases.push({ phase, group });
+  }
+
+  /** A mesh that does not follow the phase: the reserved plots stay marked while the city rises. */
+  private addPersistent(name: string, parts: Parts): void {
+    if (!parts.length) return;
+    const merged = mergeGeometries(parts, false);
+    parts.forEach((g) => g.dispose());
+    if (!merged) return;
+    const mesh = new THREE.Mesh(merged, this.material);
+    mesh.name = `colonial:${name}`;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    this.group.add(mesh);
+    this.geometries.push(merged);
   }
 
   /** Show the phase the mission reached; the plan owns the order. */

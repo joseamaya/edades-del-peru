@@ -61,6 +61,17 @@ export const mLima: MissionDef = {
       focus: { x: LIMA_CITY.x / 256, z: LIMA_CITY.z / 256 },
       keepout: [{ x: LIMA_CITY.x / 256, z: LIMA_CITY.z / 256, rx: 0.1, rz: 0.11 }],
       buildKeepout: [{ x: LIMA_CITY.x / 256, z: LIMA_CITY.z / 256, rx: 0.04, rz: 0.04 }],
+      // The player raises the cabildo: the kit leaves the plot empty and the traza marks it.
+      kitOmit: ['cabildo'],
+      reservedPlots: [
+        {
+          x: LIMA_CITY.x,
+          z: LIMA_CITY.z + 18.5,
+          w: 16,
+          d: 9,
+          label: 'Solar reservado para el cabildo',
+        },
+      ],
     },
     roads: [
       { from: { dx: LIMA_BASE.x, dz: LIMA_BASE.z }, to: { dx: LIMA_CITY.x, dz: LIMA_CITY.z }, width: 3 },
@@ -217,7 +228,8 @@ export const mLima: MissionDef = {
       id: 'a1_cabildo',
       kind: 'build',
       buildingKind: BuildingKind.MARKET,
-      pos: { dx: LIMA_CITY.x, dz: LIMA_CITY.z },
+      // The reserved plot south of the plaza, where the colonial kit leaves the cabildo empty.
+      pos: { dx: LIMA_CITY.x, dz: LIMA_CITY.z + 18.5 },
       radius: 24,
       hidden: true,
       title: 'Levanta el cabildo y la plaza',
