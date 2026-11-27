@@ -409,7 +409,9 @@ slot is absent (offline / without assets).
 
 ### Lima 1821 intro and epilogue images (in-engine recreations)
 
-- **Location**: `public/media/lima-1821/intro-{plaza,callao,epilogo}.webp` (640×360, WebP q28).
+- **Location**: `public/media/lima-1821/intro-{plaza,callao,epilogo}.webp` (960×540, WebP q58, 15–60 KB each, world labels
+  hidden). The cards were 640×360 WebP q28 until #680: the chapter card already names the place, and the half-size
+  cards read soft next to the rest of the set (+0.47 MB of `dist/`, ADR 0009).
 - **Source**: captured from the game itself by `scripts/capture_independencia_arc.mjs` on the 1821 Lima
   coast transect: the Lurín road and patriot camp, the Plaza Mayor, the Callao beach and a low epilogue.
   Rendered without the HUD at 1600×900 and resized with `sharp`. Regenerate with
@@ -424,7 +426,9 @@ slot is absent (offline / without assets).
 
 ### Real Felipe intro and epilogue images (in-engine recreations)
 
-- **Location**: `public/media/real-felipe/intro-{bastion,baterias,epilogo}.webp` (640×360, WebP q28).
+- **Location**: `public/media/real-felipe/intro-{bastion,baterias,epilogo}.webp` (960×540, WebP q58, 15–60 KB each, world labels
+  hidden). The cards were 640×360 WebP q28 until #680: the chapter card already names the place, and the half-size
+  cards read soft next to the rest of the set (+0.47 MB of `dist/`, ADR 0009).
 - **Source**: captured from the game itself by `scripts/capture_independencia_arc.mjs` on the Callao
   terrace: the bastion from the sea side, the battery line, the siege camp and a low epilogue. Rendered
   without the HUD at 1600×900 and resized with `sharp`. Regenerate with
@@ -788,7 +792,9 @@ slot is absent (offline / without assets).
 
 ### Tarapacá, Miraflores and La Breña intro/epilogue images (in-engine recreations)
 
-- **Location**: `public/media/{tarapaca,miraflores,brena}/intro-*.webp` (640×360, WebP q28).
+- **Location**: `public/media/{tarapaca,miraflores,brena}/intro-*.webp` (960×540, WebP q58, 15–60 KB each, world labels
+  hidden). The cards were 640×360 WebP q28 until #680: the chapter card already names the place, and the half-size
+  cards read soft next to the rest of the set (+0.47 MB of `dist/`, ADR 0009).
 - **Source**: captured from the game itself by `scripts/capture_republica_arc.mjs` on the Republic
   missions: the Tarapacá quebrada, the Miraflores redoubt line, the Mantaro valley and the Huamachuco
   heights. Rendered without the HUD at 1600×900 and resized with `sharp`. Regenerate with
@@ -818,7 +824,9 @@ slot is absent (offline / without assets).
 
 ### Cusco 1536 and Vilcabamba intro/epilogue images (in-engine recreations)
 
-- **Location**: `public/media/{cusco-1536,vilcabamba}/intro-*.webp` (640×360, WebP q28).
+- **Location**: `public/media/{cusco-1536,vilcabamba}/intro-*.webp` (960×540, WebP q58, 15–60 KB each, world labels
+  hidden). The cards were 640×360 WebP q28 until #680: the chapter card already names the place, and the half-size
+  cards read soft next to the rest of the set (+0.47 MB of `dist/`, ADR 0009).
 - **Source**: captured from the game itself by `scripts/capture_virreinato_arc.mjs` on the 1536 Cusco
   and 1572 Vilcabamba transects: the Inca plaza and Sacsayhuamán, the cloud-forest fort and the escape
   road. Rendered without the HUD at 1600×900 and resized with `sharp`. Regenerate with
@@ -1189,7 +1197,8 @@ slot is absent (offline / without assets).
 - **Review state**: every piece and capture starts `reviewed: false`; a human review must record
   `reviewer` and `reviewedAt` in the manifests before the Art gate is Met.
 - **Captures**: `public/media/chavin/intro-{templo,nuevo,declive}.webp`, generated from
-  the running game by `scripts/capture_chavin_intro.mjs` (1600×900, resized to 800×450 WebP). They are
+  the running game by `scripts/capture_chavin_intro.mjs` (1600×900, resized to 960×540 WebP q58 with the world
+  labels hidden; 800×450 q35 until #680). They are
   in-engine recreations, **never historical photographs**; they are used by the narrated intro, the
   chapter cards and the epilogue.
 - **Historical caveat**: representative centre, not a survey. Roofs, heights, the exact construction

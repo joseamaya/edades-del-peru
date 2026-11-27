@@ -38,8 +38,14 @@ try {
       ({ shot }) => {
         const g = window.game;
         document.querySelector('.ed-mission-card')?.remove();
+        const rings = g.scene.getObjectByName('mission-rings');
+        if (rings) rings.visible = false;
+        if (g.heroMarkers) g.heroMarkers.group.visible = false;
         const ui = document.getElementById('ui-root');
         if (ui) ui.style.display = 'none';
+        // The card already names the temple: the world label layer would bake a second caption in.
+        const labels = document.getElementById('ed-world-labels');
+        if (labels) labels.style.display = 'none';
         if (g.getPaused()) g.togglePause();
         g.applyQualityPreset('high');
         g.trees.kitLod0Radius = 70;
