@@ -39,7 +39,7 @@ try {
   const staged = await page.evaluate((zoom) => {
     const g = window.game;
     const fires = g.mission.def.fires ?? [];
-    const points = fires.map((f) => g.mission.resolvePoint(f.pos));
+    const points = fires.map((f) => g.resolveMissionPoint(f.pos));
     const x = points.reduce((sum, p) => sum + p.x, 0) / Math.max(1, points.length);
     const z = points.reduce((sum, p) => sum + p.z, 0) / Math.max(1, points.length);
     document.querySelector('.ed-mission-card')?.remove();

@@ -86,9 +86,8 @@ const FRAGMENT_SHADER = /* glsl */ `
   varying float vSeed;
   void main() {
     vec2 uv = gl_PointCoord - 0.5;
-    // The additive glow is a soft round puff stretched upward: squashing uv.y lengthens it, the old
-    // multiplication by 1.45 flattened every tongue.
-    if (vKind > 0.5 && vKind < 1.5 && vEmissive > 0.5) uv.y *= 0.78;
+    // The additive glow keeps its existing sprite; the flame silhouette below builds its own shape.
+    if (vKind > 0.5 && vKind < 1.5 && vEmissive > 0.5) uv.y = (uv.y - 0.08) * 1.45;
     float d = length(uv);
     float soft = smoothstep(0.5, 0.05, d);
     if (vKind > 0.5 && vKind < 1.5 && vEmissive < 0.5) {

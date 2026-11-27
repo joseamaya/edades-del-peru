@@ -12,6 +12,12 @@ const PLAZA = CUSCO_CITY_PLAZA;
 const SACSAY = CUSCO_CITY_SACSAY;
 
 const at = (anchor: { x: number; z: number }, dx: number, dz: number) => ({ x: anchor.x + dx, z: anchor.z + dz });
+/** The footprint centre of the `nth` placement of `asset`, as a mission point. */
+const roofOf = (asset: string, nth: number) => {
+  const placement = CUSCO_CITY_LAYOUT.filter((p) => p.asset === asset)[nth];
+  if (!placement) throw new Error(`cusco kit: no ${asset} at index ${nth}`);
+  return { pos: { dx: placement.x, dz: placement.z } };
+};
 const ONE: [number, number, number] = [1, 1, 1];
 
 /**
@@ -61,12 +67,12 @@ export const CUSCO_KIT_FOOTPRINTS: Partial<Record<string, ArchFootprint>> = {
 export const CUSCO_CITY_BLOCKERS = layoutBlockers(CUSCO_CITY_LAYOUT, CUSCO_KIT_FOOTPRINTS);
 
 /**
- * The roofs the 1536 fire lights (`MissionDef.fires`): the west and east houses and the great hall, at the
- * ridge lines the kit builds (a `wasi` ridge sits at ~4.75 m, the `kallanka`'s at ~5.85 m). Kept next to the
- * placements so moving a house moves its fire.
+ * The roofs the 1536 fire lights (`MissionDef.fires`): the great hall and the two houses that face the plaza
+ * from the north. Heights sit mid-roof against the ridges the kit builds (a `wasi` apex is ~4.75 m, the
+ * `kallanka`'s ~5.85 m); the positions are read from the layout so a moved building takes its fire with it.
  */
 export const CUSCO_CITY_FIRES = [
-  { pos: { dx: PLAZA.x - 15, dz: PLAZA.z - 4 }, count: 2, height: 4.6 },
-  { pos: { dx: PLAZA.x + 15, dz: PLAZA.z - 3 }, count: 2, height: 4.6 },
-  { pos: { dx: PLAZA.x, dz: PLAZA.z - 12.5 }, count: 3, height: 5.6 },
+  { ...roofOf('kallanka', 0), count: 3, height: 5.6 },
+  { ...roofOf('wasi', 0), count: 2, height: 4.6 },
+  { ...roofOf('wasi', 1), count: 2, height: 4.6 },
 ] as const;

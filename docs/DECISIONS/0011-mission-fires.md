@@ -35,7 +35,7 @@ round candle. `plume` is opt-in, so torches, hearths and burning buildings keep 
 
 - Fires stop when the mission ends, like every other mission presentation tick.
 - The same mechanism can light a fire for any objective, but each point is authored: no procedural spread.
-  Cusco's points live with the kit (`CUSCO_CITY_FIRES`), so moving a house moves its fire.
+  Cusco's points are read from the kit's layout (`CUSCO_CITY_FIRES`), so moving a house moves its fire.
 - A future damage-bearing fire should be a new effect with its own save and replay decision, not a change
   to this one.
 - `node scripts/capture_mission_fires.mjs --out=docs/media/cusco-fires` regenerates the evidence pair:

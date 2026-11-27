@@ -873,8 +873,9 @@ Definition of Done and the building audit see
   fire, sparks, explosions and flares go to the additive one, because a glow adds light but cannot darken.
   That cuts both ways: an *additive* flame over a sunlit roof desaturates to a white blob, so the mission fires
   (`src/campaign/Mission.ts`) emit a normal-blended flame body (`emissive: false`) and keep only the embers
-  additive. Fire particles are born across `spread` and climb (a negative `gravity` beats the per-frame drag);
-  without both, any `count` piles into a single round candle. Particle randomness is cosmetic (`Particles` owns
+  additive. A fire emitted with `plume` is born across `spread` and climbs (a negative `gravity` beats the
+  per-frame drag); without both, any `count` piles into a single round candle. `plume` is opt-in so the
+  torches, hearths and burning buildings keep their sprite. Particle randomness is cosmetic (`Particles` owns
   its own RNG), so none of this touches save/replay determinism. See ADR
   [0011](./DECISIONS/0011-mission-fires.md).
 - **Unit yaw is a movement angle, not a Three.js rotation**: `angleTo` returns the angle from +X, and models are
