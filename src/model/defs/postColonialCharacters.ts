@@ -23,6 +23,19 @@ export interface PostColonialSpec {
   sidearm: 'sword' | 'none';
 }
 
+/**
+ * The weapon the shared dresser puts in the hand. The 1780 rebel line fought with the pike or sling it
+ * could make, so its `soldier` carries the melee prop while the `ranged` keeps the firearm. Other
+ * cultures keep the spec's weapon until their own melee kit is authored.
+ */
+export function postColonialWeaponFor(
+  role: PostColonialRole,
+  weapon: PostColonialSpec['weapon'],
+  rebelde: boolean,
+): PostColonialSpec['weapon'] {
+  return rebelde && role === 'soldier' ? 'none' : weapon;
+}
+
 /** Bicorn colour shared with the patriotas; the late realistas are the same dark felt. */
 export const REALISTA_BICORN_HAT_COLOR = 0x2b2f36;
 

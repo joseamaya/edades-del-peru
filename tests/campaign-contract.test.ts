@@ -244,17 +244,6 @@ describe('campaign mission contract', () => {
     expect(leaked).toEqual([]);
   });
 
-  it('does not gate a trigger on an objective "activation"', () => {
-    // `state: 'activate'` is also true for a pending goal, so such a trigger fires at the mission start:
-    // the Cusco counterattack used it and arrived in the first second.
-    const early = MISSIONS.flatMap((mission) =>
-      mission.triggers
-        .filter((trigger) => trigger.condition.type === 'objective' && trigger.condition.state === 'activate')
-        .map((trigger) => `${mission.id}:${trigger.id}`),
-    );
-    expect(early).toEqual([]);
-  });
-
   it('holds Caral’s assembly on the Plaza Central, not on the site focus', () => {
     const mission = MISSIONS.find((m) => m.id === 'm1_caral')!;
     const game = headlessMission('m1_caral');

@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
-import type { PostColonialRole, PostColonialSpec } from '../model/defs/postColonialCharacters';
+import {
+  postColonialWeaponFor,
+  type PostColonialRole,
+  type PostColonialSpec,
+} from '../model/defs/postColonialCharacters';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
 import {
@@ -41,6 +45,9 @@ export function dressUniform(
   const male = variant.endsWith('_m');
   // 1532–1572 is a field kit (buff wool, leather, steel), not the 18th-century Bourbon blue.
   const earlySpanish = spec.hat === 'morion';
+  // The 1780 rebels' line infantry fought with the pike/sling it could make, not with the royal musket:
+  // the firearm is reserved for the ranged role.
+  const weaponKind = postColonialWeaponFor(role, spec.weapon, variant.startsWith('rebelde_'));
   const coatColor = earlySpanish ? EARLY_SPANISH_COAT : spec.coat;
   const trouserColor = earlySpanish ? 0x5a4632 : spec.trousers;
   const tools = createRigAttireTools(root);
@@ -308,7 +315,7 @@ export function dressUniform(
     ];
     // The 16th-century arquebusier carries a powder bandolier; the 1879 rifleman carries the
     // cartridge belt and pouches instead, so the flasks stay out of the later uniform.
-    if (spec.weapon === 'musket') {
+    if (weaponKind === 'musket') {
       const strapAngle = 0.62;
       const strapCenter = { x: 0.02, y: -0.05 };
       torsoParts.push([
@@ -353,8 +360,8 @@ export function dressUniform(
   let firearm: FirearmGrip | null = null;
   if (hand && armed) {
     const parts: [THREE.BufferGeometry, number][] = [];
-    const isRifle = spec.weapon === 'rifle';
-    if (spec.weapon === 'musket' || isRifle) {
+    const isRifle = weaponKind === 'rifle';
+    if (weaponKind === 'musket' || isRifle) {
       parts.push([
         new THREE.CylinderGeometry(0.02, 0.023, 0.95, 8).rotateX(Math.PI / 2).translate(0, 0.05, -0.25),
         0x9aa2aa,
@@ -375,7 +382,7 @@ export function dressUniform(
     }
     const weapon = mergeGear(parts, 'hand_r', hand.clone(), 'attire_post_weapon');
     if (weapon) weapon.rotation.set(-0.2, 0, 0);
-    if (weapon && (spec.weapon === 'musket' || isRifle)) firearm = firearmGrip(rig, weapon, role === 'ranged');
+    if (weapon && (weaponKind === 'musket' || isRifle)) firearm = firearmGrip(rig, weapon, role === 'ranged');
   }
 
   let carry: THREE.Group | null = null;

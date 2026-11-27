@@ -256,7 +256,7 @@ export const m7TupacAmaru: MissionDef = {
       // player doing anything. The crew has to reach the camp's stores and hold them.
       pos: { ref: 'player', dx: colonialLength(24), dz: 0 },
       radius: colonialLength(18),
-      time: 20,
+      time: 30,
       minUnits: 3,
       unitKind: UnitKind.WORKER,
       consume: { resource: 'food', perSecond: 1 },
@@ -284,7 +284,7 @@ export const m7TupacAmaru: MissionDef = {
       kind: 'hold',
       pos: TUPAC_SANGARARA,
       radius: colonialLength(18),
-      time: 45,
+      time: 60,
       minUnits: 4,
       hidden: true,
       title: 'Acto II · Sostén Sangarará y que la columna no rompa el cerco',
@@ -303,7 +303,7 @@ export const m7TupacAmaru: MissionDef = {
       kind: 'hold',
       pos: TUPAC_SIEGE,
       radius: colonialLength(24),
-      time: 45,
+      time: 60,
       minUnits: 3,
       hidden: true,
       title: 'Acto III · Sostén el cerco del Cusco',
@@ -451,6 +451,26 @@ export const m7TupacAmaru: MissionDef = {
           pos: TUPAC_CUSCO_SORTIE,
           radius: colonialLength(8),
           target: TUPAC_SIEGE,
+        },
+        // A second column leaves by the north gate while the first pins the line: the siege has to be
+        // held against more than one sortie.
+        {
+          type: 'wave',
+          owner: 1,
+          units: [
+            { kind: UnitKind.SOLDIER, count: 3 },
+            { kind: UnitKind.RIFLEMAN, count: 1 },
+          ],
+          spawn: { dx: colonialLength(162), dz: colonialLength(102) },
+          pos: TUPAC_SIEGE,
+          radius: colonialLength(8),
+          target: TUPAC_SIEGE,
+        },
+        {
+          type: 'dialogue',
+          speaker: 'Túpac Amaru II',
+          duration: 7,
+          text: '—Una segunda columna sale por el norte. ¡Que la línea aguante!',
         },
       ],
     },

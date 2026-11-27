@@ -866,3 +866,40 @@ describe('mission camera beats', () => {
     expect(flyTo).toHaveBeenLastCalledWith(5 - lift, 6, 30, 1, false);
   });
 });
+
+describe('trigger conditions', () => {
+  it('fires an activation trigger only once the hidden goal is active, never while pending', () => {
+    const unit = { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } };
+    const game = stubGame(unit) as any;
+    const missionDef: MissionDef = {
+      ...def,
+      objectives: [
+        {
+          id: 'gate',
+          kind: 'hold',
+          hidden: true,
+          pos: { dx: 0, dz: 0 },
+          radius: 2,
+          time: 60,
+          minUnits: 1,
+          title: 'gate',
+        },
+        ...def.objectives,
+      ],
+      triggers: [
+        {
+          id: 't_gate',
+          condition: { type: 'objective', objectiveId: 'gate', state: 'activate' },
+          effects: [{ type: 'resources', player: 0, amount: { food: 5 } }],
+        },
+      ],
+    };
+    const mission = new Mission(game, missionDef, () => {});
+    mission.start();
+    mission.update(1, 0);
+    expect(game.players[0].resources.food, 'a pending goal is not an active one').toBe(0);
+    mission.activateObjective('gate');
+    mission.update(1, 0);
+    expect(game.players[0].resources.food).toBe(5);
+  });
+});
