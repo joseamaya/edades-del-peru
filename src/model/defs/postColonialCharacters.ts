@@ -12,6 +12,12 @@ export type PostColonialRigVariant =
   | `${PostColonialCulture}_${PostColonialRole}_${'f' | 'm'}`
   | `realistas_${RealistaHat}_${PostColonialRole}_${'f' | 'm'}`;
 
+/** Every firearm an outfit owns; a spec never carries a blade (`postColonialWeaponFor` decides those). */
+export type PostColonialFirearm = 'musket' | 'rifle';
+
+/** What the shared dresser puts in the right hand. */
+export type PostColonialWeapon = PostColonialFirearm | 'sword' | 'spear';
+
 export interface PostColonialSpec {
   civ: CivId;
   coat: number;
@@ -19,21 +25,27 @@ export interface PostColonialSpec {
   trousers: number;
   hat: 'morion' | 'bicorn' | 'kepi' | 'none';
   hatColor: number;
-  weapon: 'musket' | 'rifle' | 'none';
+  weapon: PostColonialFirearm;
   sidearm: 'sword' | 'none';
 }
 
 /**
- * The weapon the shared dresser puts in the hand. The 1780 rebel line fought with the pike or sling it
- * could make, so its `soldier` carries the melee prop while the `ranged` keeps the firearm. Other
- * cultures keep the spec's weapon until their own melee kit is authored.
+ * The weapon the shared dresser puts in the hand. Melee line infantry carries a blade rather than the firearm
+ * the volley clips animate, so the `ranged` role keeps the spec's gun:
+ *
+ * - `sword`: the royalist and patriot line (`docs/historia/atuendos.md` §3 «espada y arcabuz de mecha» for
+ *   1535–1572, §6 «fusil/arcabuz + sable/lanza» for the 18th century; Chile's 1878 decree adds the «bayoneta
+ *   sable»). One straight blade is a presentation abstraction of all three.
+ * - `spear`: the 1780 rebels' line. The campaign dossier only records that their firearms were few and
+ *   captured, so the spear is a presentation abstraction, not a documented rebel weapon.
  */
 export function postColonialWeaponFor(
   role: PostColonialRole,
-  weapon: PostColonialSpec['weapon'],
+  weapon: PostColonialFirearm,
   rebelde: boolean,
-): PostColonialSpec['weapon'] {
-  return rebelde && role === 'soldier' ? 'none' : weapon;
+): PostColonialWeapon {
+  if (role === 'soldier') return rebelde ? 'spear' : 'sword';
+  return weapon;
 }
 
 /** Bicorn colour shared with the patriotas; the late realistas are the same dark felt. */

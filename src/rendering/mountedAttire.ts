@@ -165,6 +165,10 @@ function seatRider(mount: RigInstance, riderVariant: RigVariant): SeatedRider | 
   if (!seat || !body || !head) return null;
   const rider = riderFactory?.(riderVariant) ?? null;
   if (!rider) return null;
+  // The rider's body is the infantry uniform, which now carries the line's blade. A mounted trooper holds
+  // the reins, not the pike or the sabre (`atuendos.md` documents sabre and firearm for the dragoon, not a
+  // two-handed weapon in the rein hand), so the seat leaves the weapon at the saddle: the scabbard stays.
+  rider.root.getObjectByName('attire_post_weapon')?.removeFromParent();
 
   // Place the rider in the mount's space with its pelvis on the seat, facing the horse's head, then hand it
   // to the seat bone so the trot and gallop carry it.
