@@ -24,6 +24,12 @@ export function standsAt(since: string | undefined, phase: string, plan?: SitePh
   return phaseOrder(plan, phase) >= phaseOrder(plan, since);
 }
 
+/** Whether `phase` is at or after `since` and (if given) before `until`; used for the fire and smoke windows. */
+export function phaseWithin(plan: SitePhasePlan | undefined, phase: string, since: string, until?: string): boolean {
+  const order = phaseOrder(plan, phase);
+  return order >= phaseOrder(plan, since) && (!until || order < phaseOrder(plan, until));
+}
+
 /** Whether a piece that stands from `since` is still there in `phase` (it may leave at `until`). */
 export function standsIn(
   since: string | undefined,

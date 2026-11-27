@@ -134,9 +134,10 @@ uses a few near rings and a dark haze frame so the camera never sees the old cre
 - Player-built quincha houses keep the documented white/red palette; the phase paint belongs to the
   authored city (see _Open items_ 1).
 - The authored dwellings turn to **granodiorite** for the act IV drought: `house_late` and
-  `house_late_elite` repeat the quincha volumes with coursed stone walls and the same cane-mat roof, and
-  the `late` phase swaps them in without moving a house. Act III keeps the quincha. Evidence:
-  `docs/media/caral-late-houses-quincha.webp` and `-stone.webp` (`node scripts/capture_caral_late_houses.mjs`).
+  `house_late_elite` repeat the quincha volumes with coursed stone walls (the coursing is inferred) and the
+  same cane-mat roof, and the `late` phase swaps them in without moving a house. Act III keeps the quincha.
+  Evidence: `docs/media/caral-late-houses-quincha.webp` and `-stone.webp`
+  (`node scripts/capture_caral_late_houses.mjs --out=docs/media/caral-late-houses`).
 
 ## Narration
 
@@ -175,7 +176,8 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   The finished plaster is white; the in-use phase swaps the Mayor to the documented palette
   (white, ochre, red; the exact per-building colours are inferred) via `CARAL_MAYOR_PHASE_ASSET`, checked by
   `tests/architecture-kit.test.ts`. The act IV drought adds the `late` phase: the Mayor stays finished and
-  the dwellings swap to granodiorite before the sealing.
+  the dwellings swap to granodiorite before the sealing. A save written before that phase existed migrates
+  forward on load (`sitePhaseMigrations` in `m1_caral.ts`) instead of keeping the quincha city.
 - **Act III camp**: from `foundation` until `in_use` the Mayor's west apron carries two cane ramadas, three
   shicra heaps and a dressed-stone yard (`CARAL_CAMP_LAYOUT`); their footprints block pathing while they
   stand. A six-rig `SiteCrew` carries bags from the heap to the retaining wall and shrinks to three at
@@ -301,7 +303,8 @@ bench runs without ground cover).
    squash; the dossier records maize only for the late period, in little quantity), and the dwellings
    swap to the granodiorite kit pieces `house_late` / `house_late_elite` in the same `late` phase
    ([#436](https://github.com/joseamaya/edades-del-peru/issues/436)). The stone is documented; the plan
-   and coursing are inferred, and the manifests carry `confidence: documented` with that note.
+   and coursing are inferred, so the manifests stay `confidence: inferred` with that note and
+   `reviewed: false` until the owner's art review.
 4. ~~The Act III fire offering is staged at the plaza, but the burial of one phase under the next is not
    shown on its own, and an empty storehouse does not pause construction.~~ Done: the `ritual` effect
    stages the burial between phases and the `hold.consume` work turns pause when the communal store is empty.

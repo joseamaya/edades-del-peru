@@ -482,6 +482,11 @@ export interface MissionDef {
    * this list restores the authored phase.
    */
   legacyPhases?: { objectiveId: string; phase: string }[];
+  /**
+   * Forward-only phase upgrades for saves written before a phase existed: when the stored phase is still
+   * `fromPhase` and `triggerId` already fired, the save moves to `toPhase` instead of staying behind.
+   */
+  sitePhaseMigrations?: { fromPhase: string; triggerId: string; toPhase: string }[];
   /** Narrated intro played before the briefing (skipped with ?intro=0). */
   intro?: CinematicBeat[];
   /**

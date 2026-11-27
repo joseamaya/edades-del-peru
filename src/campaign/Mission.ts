@@ -903,7 +903,15 @@ export class Mission {
 
   /** Re-apply the latest monument phase set by an already fired trigger (after a load). */
   private restoreSitePhase(): void {
-    if (this.game.sitePhaseRestored) return;
+    if (this.game.sitePhaseRestored) {
+      // A save's phase is authoritative and triggers are not replayed, but a phase added later leaves older
+      // saves behind: an explicit migration moves only that one transition forward.
+      for (const rule of this.def.sitePhaseMigrations ?? []) {
+        if (this.game.sitePhase !== rule.fromPhase || !this.fired.has(rule.triggerId)) continue;
+        this.game.setSitePhase(rule.toPhase);
+      }
+      return;
+    }
     let phase: Extract<TriggerEffect, { type: 'site_phase' }>['phase'] | null = null;
     let at = -Infinity;
     for (const tr of this.def.triggers) {

@@ -2050,20 +2050,21 @@ test('the act IV drought swaps the quincha dwellings for granodiorite', async ({
     };
     g.setSitePhase('in_use');
     const quincha = vertices();
-    const assets: string[] = city.assets();
+    // `models` only holds the pieces whose GLB parsed, so it proves the stone kit actually loaded.
+    const models: string[] = [...(city.models?.keys?.() ?? [])];
     const housesBefore = city.standingHouses().length;
     g.setSitePhase('late');
     return {
       phase: g.sitePhase,
       quincha,
       stone: vertices(),
-      assets,
+      models,
       housesBefore,
       housesAfter: city.standingHouses().length,
     };
   });
   expect(out.phase).toBe('late');
-  expect(out.assets).toEqual(expect.arrayContaining(['house_common', 'house_late']));
+  expect(out.models).toEqual(expect.arrayContaining(['house_late', 'house_late_elite']));
   expect(out.housesAfter, 'the late phase keeps every dwelling').toBe(out.housesBefore);
   expect(out.housesAfter).toBeGreaterThanOrEqual(
     CARAL_CITY_LAYOUT.filter((p) => p.asset === 'house_common' || p.asset === 'house_elite').length,

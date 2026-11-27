@@ -83,7 +83,7 @@ export class SiteCrew {
   update(dt: number, focus?: { x: number; z: number }): void {
     if (this.disposed || !this.loaded) return;
     const far = focus ? Math.hypot(this.center.x - focus.x, this.center.y - focus.z) > VISIBLE_DISTANCE : false;
-    this.group.visible = this.phase !== 'in_use' && this.phase !== 'sealed' && !far && this.actors.length > 0;
+    this.group.visible = crewCountForPhase(this.phase) > 0 && !far && this.actors.length > 0;
     if (!this.group.visible) return;
     const step = Math.min(Math.max(0, dt), MAX_DT);
     for (const actor of this.actors) {

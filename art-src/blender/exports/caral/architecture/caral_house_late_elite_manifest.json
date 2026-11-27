@@ -6,7 +6,7 @@
   "up": "Y",
   "front": "+Z",
   "pivot": "footprint centre at ground level",
-  "confidence": "documented",
+  "confidence": "inferred",
   "sources": [
     "docs/historia/campanas/caral.md",
     "docs/historia/civilizaciones/caral.md"

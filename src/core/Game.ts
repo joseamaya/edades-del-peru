@@ -5,7 +5,7 @@ import { PostFX } from '../rendering/PostFX';
 import { SHADOW_MAP_SIZE } from '../rendering/shadowFrame';
 import { Sky } from '../rendering/Sky';
 import type { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
-import { isKnownPhase, standsAt, SINGLE_PHASE } from '../model/defs/sitePhases';
+import { isKnownPhase, phaseWithin, standsAt, SINGLE_PHASE } from '../model/defs/sitePhases';
 import { ENVIRONMENT_EVENTS, waterLevelOffset, type EnvironmentEventId } from './environment';
 import { t } from '../i18n';
 import { Terrain } from '../rendering/Terrain';
@@ -1422,7 +1422,7 @@ export class Game {
     if (!city) return;
     const quietPhase = this.siteDef?.life?.quietPhase;
     const near =
-      quietPhase && this.sitePhase === quietPhase
+      quietPhase && phaseWithin(this.sitePhasePlan, this.sitePhase, quietPhase)
         ? []
         : city
             .standingHouses()
@@ -1448,7 +1448,10 @@ export class Game {
     const offeringObjective = this.siteDef?.life?.offeringObjective;
     const offering = offeringObjective ? this.mission?.getObjectiveState(offeringObjective) === 'activo' : false;
     const firePhase = this.siteDef?.life?.firePhase ?? 'in_use';
-    if (this.sitePhase === firePhase || offering) {
+    // The fire burns from `firePhase` until the site goes quiet, not only in that exact phase: Caral keeps it
+    // through `late` (the act IV drought) and lets it die with `sealed`.
+    const fireLit = phaseWithin(this.sitePhasePlan, this.sitePhase, firePhase, quietPhase);
+    if (fireLit || offering) {
       const fireHeight = this.siteDef?.life?.fireHeight ?? 16.6;
       const top = offering
         ? { x: mayor.x, y: this.terrain.getHeight(mayor.x, mayor.z + 32) + 0.4, z: mayor.z + 32 }

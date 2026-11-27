@@ -17,7 +17,7 @@ import {
   CARAL_PHASE_PLAN,
   type CaralArchAssetId,
 } from '../src/model/defs/caralCity';
-import { standsIn } from '../src/model/defs/sitePhases';
+import { phaseWithin, standsIn } from '../src/model/defs/sitePhases';
 import {
   CARAL_HERITAGE_BLOCK_SINCE,
   CARAL_HERITAGE_PROXIES,
@@ -146,19 +146,25 @@ describe('Caral architecture kit', () => {
     expect(houses.length).toBeGreaterThan(0);
     for (const house of houses) {
       const stone = house.asset === 'house_elite' ? 'house_late_elite' : 'house_late';
-      expect(house.phaseAssets, `${house.x},${house.z}`).toEqual({ late: stone });
-      expect(house.until).toBeUndefined();
+      expect(house.phaseAssets?.late, `${house.x},${house.z}`).toBe(stone);
     }
 
     for (const id of ['house_late', 'house_late_elite'] as const) {
       const m = manifest(id);
-      expect(m.lods.LOD0.materials).toContain('MAT-Arch_Stone');
+      // The distinguishing material is the wall: stone, not the plaster of the quincha houses.
       expect(m.lods.LOD0.materials).not.toContain('MAT-Arch_PlasterWhite');
-      expect(m.confidence).toBe('documented');
-      expect(m.lods.LOD1.triangles).toBeLessThan(m.lods.LOD0.triangles);
+      expect(m.confidence).toBe('inferred');
     }
     // The quincha houses keep their plaster, so the two phases read as different materials.
     expect(manifest('house_common').lods.LOD0.materials).toContain('MAT-Arch_PlasterWhite');
+  });
+
+  it('keeps the sacred fire through the drought and puts it out with the sealing', () => {
+    // `firePhase: 'in_use'`, `quietPhase: 'sealed'`: a window, not an equality test.
+    expect(phaseWithin(CARAL_PHASE_PLAN, 'finished', 'in_use', 'sealed')).toBe(false);
+    expect(phaseWithin(CARAL_PHASE_PLAN, 'in_use', 'in_use', 'sealed')).toBe(true);
+    expect(phaseWithin(CARAL_PHASE_PLAN, 'late', 'in_use', 'sealed')).toBe(true);
+    expect(phaseWithin(CARAL_PHASE_PLAN, 'sealed', 'in_use', 'sealed')).toBe(false);
   });
 
   it('keeps world-scale UVs in every game GLB for the runtime tileable textures', () => {

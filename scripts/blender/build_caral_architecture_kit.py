@@ -532,11 +532,33 @@ def circular_plaza(mats, lod):
     return bm, [mats[k] for k in order]
 
 
+HOUSE_PLAN = {'elite': (7.4, 5.8), 'aspero': (4.2, 3.4), 'common': (4.8, 3.8)}
+
+
+def house_roof(bm, w, d, z0, h, lod):
+    """Cane-mat roof on wooden beams, shared by the quincha and the late stone houses."""
+    for bx in ((-w * 0.35, 0.0, w * 0.35) if lod == 0 else (0.0,)):
+        box(bm, (bx, 0.4, z0 + h + 0.36), (0.12, d + 0.6, 0.12), 1)
+    # The cover spans most of the plan (front strip open): the roofing is a plausible assumption, and a
+    # mostly covered room reads better from the RTS camera than a dark open box.
+    box(bm, (-w * 0.03, d * 0.1, z0 + h + 0.48), (w + 0.5, d * 0.85, 0.07), 2)
+
+
+def house_outdoor(bm, w, d, lod):
+    """Cooking pit with burnt stones behind, a refuse heap beside (documented for the dwellings)."""
+    hx, hy = w * 0.25, d / 2 + 1.2
+    blob(bm, (hx, hy, 0.02), (0.6, 0.5, 0.05), 8, 3, 0.1, 11, 3)
+    for k in range(6):
+        a = k / 6 * math.tau
+        blob(bm, (hx + math.cos(a) * 0.62, hy + math.sin(a) * 0.52, 0.1), (0.15, 0.13, 0.11), 5, 3, 0.25, 20 + k, 4)
+    blob(bm, (w / 2 + 1.3, d / 2 + 0.6, -0.08), (1.1, 0.9, 0.26), 8, 4, 0.25, 30, 3)
+
+
 def quincha_house(mats, lod, kind):
     """kind: 'common' | 'elite' | 'aspero'."""
     bm = bmesh.new()
     order = ['plaster_early', 'wood', 'cane', 'earth', 'stone', 'plaster_red']
-    w, d = {'elite': (7.4, 5.8), 'aspero': (4.2, 3.4), 'common': (4.8, 3.8)}[kind]
+    w, d = HOUSE_PLAN[kind]
     h = WALL_H[kind]
     t = 0.16
     z0 = 0.0
@@ -562,20 +584,9 @@ def quincha_house(mats, lod, kind):
         posts += [(0, d / 2), (-w / 2, 0), (w / 2, 0)]
     for k, (px, py) in enumerate(posts):
         box(bm, (px, py, z0 + (h + 0.3) / 2), (0.2, 0.2, h + 0.3), 1)
-    # Cane-mat roof on beams.
-    for bx in ((-w * 0.35, 0.0, w * 0.35) if lod == 0 else (0.0,)):
-        box(bm, (bx, 0.4, z0 + h + 0.36), (0.12, d + 0.6, 0.12), 1)
-    # The cover spans most of the plan (front strip open): the roofing is a plausible assumption, and a
-    # mostly covered room reads better from the RTS camera than a dark open box.
-    box(bm, (-w * 0.03, d * 0.1, z0 + h + 0.48), (w + 0.5, d * 0.85, 0.07), 2)
+    house_roof(bm, w, d, z0, h, lod)
     if lod == 0:
-        # Cooking pit with burnt stones behind, a refuse heap beside (documented).
-        hx, hy = w * 0.25, d / 2 + 1.2
-        blob(bm, (hx, hy, 0.02), (0.6, 0.5, 0.05), 8, 3, 0.1, 11, 3)
-        for k in range(6):
-            a = k / 6 * math.tau
-            blob(bm, (hx + math.cos(a) * 0.62, hy + math.sin(a) * 0.52, 0.1), (0.15, 0.13, 0.11), 5, 3, 0.25, 20 + k, 4)
-        blob(bm, (w / 2 + 1.3, d / 2 + 0.6, -0.08), (1.1, 0.9, 0.26), 8, 4, 0.25, 30, 3)
+        house_outdoor(bm, w, d, lod)
     if kind == 'aspero':
         # Net-drying rack: two posts, a pole and hanging cotton nets (nets documented; rack assumed).
         rx = -w / 2 - 1.6
@@ -600,7 +611,7 @@ def stone_house(mats, lod, kind):
     """
     bm = bmesh.new()
     order = ['stone', 'wood', 'cane', 'earth', 'plaster_red']
-    w, d = {'late_elite': (7.4, 5.8), 'late': (4.8, 3.8)}[kind]
+    w, d = HOUSE_PLAN['elite' if kind == 'late_elite' else 'common']
     h = WALL_H[kind]
     t = 0.34
     z0 = 0.0
@@ -622,19 +633,9 @@ def stone_house(mats, lod, kind):
         # Two rooms and the red painted band of the elite residence (colour documented; placement assumed).
         stone_courses(bm, w * 0.12, -d / 2 + t, w * 0.12, d / 2 - t, z0, h, t, 0, lod, 6, course_h=0.34)
         box(bm, (0, -d / 2 - t / 2 - 0.03, z0 + 0.35), (w + 0.05, 0.06, 0.3), 4)
-    # Cane-mat roof on wooden beams, as the quincha houses (the covering material is unchanged).
-    for bx in ((-w * 0.35, 0.0, w * 0.35) if lod == 0 else (0.0,)):
-        box(bm, (bx, 0.4, z0 + h + 0.36), (0.12, d + 0.6, 0.12), 1)
-    box(bm, (-w * 0.03, d * 0.1, z0 + h + 0.48), (w + 0.5, d * 0.85, 0.07), 2)
+    house_roof(bm, w, d, z0, h, lod)
     if lod == 0:
-        # Cooking pit with burnt stones behind, a refuse heap beside (documented for the dwellings).
-        hx, hy = w * 0.25, d / 2 + 1.2
-        blob(bm, (hx, hy, 0.02), (0.6, 0.5, 0.05), 8, 3, 0.1, 11, 3)
-        for k in range(6):
-            a = k / 6 * math.tau
-            blob(bm, (hx + math.cos(a) * 0.62, hy + math.sin(a) * 0.52, 0.1), (0.15, 0.13, 0.11), 5, 3, 0.25,
-                 20 + k, 4)
-        blob(bm, (w / 2 + 1.3, d / 2 + 0.6, -0.08), (1.1, 0.9, 0.26), 8, 4, 0.25, 30, 3)
+        house_outdoor(bm, w, d, lod)
     return bm, [mats[k] for k in order]
 
 
@@ -918,9 +919,9 @@ CONFIDENCE = {
     'house_common': 'inferred',
     'house_elite': 'inferred',
     'house_aspero': 'assumed',
-    # The stone is documented for the late dwellings; only the plan and coursing are inferred.
-    'house_late': 'documented',
-    'house_late_elite': 'documented',
+    # The stone itself is documented; the plan and coursing are inferred, so the whole asset is inferred.
+    'house_late': 'inferred',
+    'house_late_elite': 'inferred',
     'fair_tent': 'assumed',
     'huaca_idolos': 'inferred',
     'camp_shelter': 'assumed',
