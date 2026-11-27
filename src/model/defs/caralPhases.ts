@@ -1,10 +1,14 @@
 import { standsAt as genericStandsAt, type SitePhasePlan } from './sitePhases';
 
 /** Construction states of the Caral Pyramid Mayor (act III of docs/design/caral-model-mission.md). */
-export type CaralMayorPhase = 'foundation' | 'fill' | 'finished' | 'in_use' | 'sealed';
+export type CaralMayorPhase = 'foundation' | 'fill' | 'finished' | 'in_use' | 'late' | 'sealed';
 
+/**
+ * Act III builds the city and shows it in use; `late` is the city's final built form during the act IV
+ * drought, when the dwellings are already granodiorite (docs/historia/campanas/caral.md, issue #436).
+ */
 export const CARAL_PHASE_PLAN: SitePhasePlan = {
-  phases: ['foundation', 'fill', 'finished', 'in_use', 'sealed'],
+  phases: ['foundation', 'fill', 'finished', 'in_use', 'late', 'sealed'],
   initial: 'in_use',
 };
 

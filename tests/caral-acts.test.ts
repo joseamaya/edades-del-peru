@@ -140,9 +140,10 @@ describe('Caral model mission', () => {
     tick(25);
     expect(game.acts).toHaveLength(3);
 
-    // Act IV: the drought starts; seal the pyramid and gather on the beach.
+    // Act IV: the drought starts; the dwellings are already granodiorite and the pyramid is sealed.
     expect(game.drought).toBe(1);
     expect(game.environmentEvents).toContain('drought');
+    expect(game.sitePhase).toBe('late');
     deliverAll(mission, game);
     tick(1);
     expect(won).toBeNull();

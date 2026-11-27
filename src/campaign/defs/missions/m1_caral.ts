@@ -619,6 +619,8 @@ export const m1Caral: MissionDef = {
       condition: { type: 'objective', objectiveId: 'a3_prosperidad', state: 'completed' },
       effects: [
         { type: 'environment', event: 'drought' },
+        // The dwellings are already granodiorite in the drought act; act III kept them in quincha.
+        { type: 'site_phase', phase: 'late' },
         {
           type: 'act',
           kicker: 'Acto IV · c. 1800 a.C.',

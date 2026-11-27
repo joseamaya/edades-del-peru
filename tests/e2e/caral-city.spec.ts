@@ -2032,3 +2032,41 @@ test('the authored Caral geometry is deterministic for the same mission seed', a
   const second = await read();
   expect(first).toEqual(second);
 });
+
+test('the act IV drought swaps the quincha dwellings for granodiorite', async ({ page }) => {
+  await boot(page);
+  const out = await page.evaluate(async () => {
+    const g = (window as unknown as { game: any }).game;
+    const deadline = Date.now() + 20_000;
+    while (!g.caralCity && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 50));
+    const city = g.caralCity;
+    if (!city) throw new Error('the authored Caral city did not load');
+    const vertices = (): number => {
+      let count = 0;
+      city.group.traverse((object: any) => {
+        if (object.isMesh && object.geometry?.attributes?.position) count += object.geometry.attributes.position.count;
+      });
+      return count;
+    };
+    g.setSitePhase('in_use');
+    const quincha = vertices();
+    const assets: string[] = city.assets();
+    const housesBefore = city.standingHouses().length;
+    g.setSitePhase('late');
+    return {
+      phase: g.sitePhase,
+      quincha,
+      stone: vertices(),
+      assets,
+      housesBefore,
+      housesAfter: city.standingHouses().length,
+    };
+  });
+  expect(out.phase).toBe('late');
+  expect(out.assets).toEqual(expect.arrayContaining(['house_common', 'house_late']));
+  expect(out.housesAfter, 'the late phase keeps every dwelling').toBe(out.housesBefore);
+  expect(out.housesAfter).toBeGreaterThanOrEqual(
+    CARAL_CITY_LAYOUT.filter((p) => p.asset === 'house_common' || p.asset === 'house_elite').length,
+  );
+  expect(out.stone, 'the phase change re-bakes the dwellings').not.toBe(out.quincha);
+});
