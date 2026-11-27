@@ -72,6 +72,67 @@ jobs:
             test-results/
           retention-days: 7
 
+  # PRs: the campaign playtests are the acceptance gate for every mission. They used to run only in
+  # the nightly workflow, so a PR could merge with a mission that no longer completed. Sharded in four
+  # because each test plays a whole mission.
+  campaign:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect whether the PR only changes documentation
+        id: changes
+        run: |
+          if ! git fetch --no-tags --depth=1 origin "${{ github.event.pull_request.base.sha }}"; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! names=$(git diff --name-only FETCH_HEAD HEAD); then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$names" ]; then
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          elif printf '%s\n' "$names" | grep -qvE '\.md$' || printf '%s\n' "$names" | grep -qE '^docs/historia/'; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.changes.outputs.code == 'true'
+        with:
+          node-version: 22
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+        if: steps.changes.outputs.code == 'true'
+      - name: Cache Playwright browsers
+        if: steps.changes.outputs.code == 'true'
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+      - name: Install Playwright chromium
+        if: steps.changes.outputs.code == 'true' && steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Campaign playtests (shard ${{ matrix.shard }}/4)
+        if: steps.changes.outputs.code == 'true'
+        run: yarn test:e2e:slow tests/e2e/campaign-playtest.spec.ts --shard=${{ matrix.shard }}/4
+      - name: Upload Playwright report
+        if: ${{ steps.changes.outputs.code == 'true' && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-campaign-${{ matrix.shard }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
   # main / manual: the fast project, sharded in four. The heavy specs
   # (ai/campaign-completable/settlement/save) run in the nightly workflow.
   full:
