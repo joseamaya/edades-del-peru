@@ -1064,9 +1064,10 @@ export class InputController {
 }
 
 function buildModelForGhost(kind: BuildingKind, ctx: BuildContext): THREE.Group {
-  const def = BUILDING_DEFS[kind];
-  const modelType = Object.values(def.eraModel)[0];
-  const g = buildModel({ type: modelType?.type ?? 'center_steam' }, ctx);
+  // Keep the long-standing first-era silhouette for ordinary ghosts; only a mission override swaps it.
+  const override = ctx.buildingModels?.[kind];
+  const modelType = Object.values(BUILDING_DEFS[kind].eraModel)[0];
+  const g = buildModel(override ?? { type: modelType?.type ?? 'center_steam' }, ctx);
   g.traverse((o) => {
     const mesh = o as THREE.Mesh;
     if (!mesh.isMesh) return;

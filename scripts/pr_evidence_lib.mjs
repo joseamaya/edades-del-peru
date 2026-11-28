@@ -70,6 +70,7 @@ export const SURFACES = [
     prefixes: ['src/model/', 'src/assets/'],
     captures: [
       'yarn shots:civs',
+      'yarn capture:miraflores',
       'node scripts/shots_evidence.mjs --scene=<scene> --out=review/evidence/<name>',
       'yarn capture:fauna',
       'yarn bench --scenario=<scenario> --assert',

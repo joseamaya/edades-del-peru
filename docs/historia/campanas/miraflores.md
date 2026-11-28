@@ -21,7 +21,8 @@
 - **Mapa**: `coast`, con un transecto comprimido Lima → Miraflores → San Juan → camino a la sierra.
 - **En el juego**: tres actos. El jugador levanta tres reductos, sostiene la línea con reservistas y retira
   a Cáceres hacia la sierra. La victoria es la retirada, no la defensa de Lima. El saqueo de Chorrillos y
-  la ocupación se narran en el epílogo, sin escenificarlos. Los reductos tienen taller de artillería para
+  la ocupación se narran en el epílogo, sin escenificarlos. Los reductos se dibujan como obra de tierra y
+  fajina —terraplén escalonado, sacos, gabiones y dos piezas de campaña— y tienen taller de artillería para
   reponer sus piezas; la artillería chilena del asalto se mantiene fuera del combate por abstracción.
 
 ## Tabla de certeza
@@ -36,7 +37,8 @@
 | Cifras de tropas y bajas | Aproximado | Perú 20 000–22 000; Chile unos 23 129; bajas dispares. No se muestran como dato duro. |
 | Saqueo de Chorrillos y ocupación de Lima | Documentado | Se narra con sobriedad; no se escenifica. |
 | Quién rompió el armisticio | Debatido | Cada bando culpa al otro; el juego no lo resuelve. |
-| Reductos y plaza de Lima | Abstracción | El `miraflores_site` usa el kit colonial de Blender en fase `ciudad`; los reductos son fuertes del juego. |
+| Reductos de tierra y fajina | Documentado | Obra de campaña de 1881; el modelo dibuja terraplén, fajina, sacos y artillería de campaña. Basadre, Sater; auditoría de activos P1-2. |
+| Reductos y plaza de Lima | Abstracción | El `miraflores_site` usa el kit colonial de Blender en fase `ciudad`; la cámara y la etiqueta encuadran la línea de Miraflores, no la Plaza Mayor. |
 
 ## Fuentes
 

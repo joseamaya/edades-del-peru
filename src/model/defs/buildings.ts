@@ -584,7 +584,14 @@ export function getBuildingStats(kind: BuildingKind, era: Era): BuildingStats {
   return clone;
 }
 
-export function getBuildingModel(kind: BuildingKind, era: Era): ModelSpec {
+/** Final model of a building; a mission may override a kind (e.g. Miraflores' earthwork redoubt). */
+export function getBuildingModel(
+  kind: BuildingKind,
+  era: Era,
+  overrides?: Partial<Record<BuildingKind, ModelSpec>>,
+): ModelSpec {
+  const override = overrides?.[kind];
+  if (override) return override;
   const m = BUILDING_DEFS[kind].eraModel[era];
   if (m) return m;
   const anyEra = BUILDING_DEFS[kind].eraModel;

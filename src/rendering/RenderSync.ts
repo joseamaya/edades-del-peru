@@ -10,7 +10,7 @@ import type { ResourceNode } from '../entities/ResourceNode';
 import type { MapType } from '../core/types';
 
 function makeView(building: Building, ctx: BuildContext): EntityView {
-  const model = buildModel(getBuildingModel(building.kind, building.era), ctx);
+  const model = buildModel(getBuildingModel(building.kind, building.era, ctx.buildingModels), ctx);
   return new EntityView(model, building.radius * 0.9, building);
 }
 
@@ -27,7 +27,7 @@ export function attachBuilding(scene: THREE.Scene, building: Building, ctx: Buil
 export function rebuildBuilding(building: Building, ctx: BuildContext): void {
   const old = building.view;
   if (!old) return;
-  const model = buildModel(getBuildingModel(building.kind, building.era), ctx);
+  const model = buildModel(getBuildingModel(building.kind, building.era, ctx.buildingModels), ctx);
   model.position.copy(old.group.position);
   model.rotation.copy(old.group.rotation);
   model.scale.copy(old.group.scale); // a building under construction keeps its partial height
