@@ -19,7 +19,8 @@ las épocas; separa la evidencia (ganadería, redes de intercambio y caminos) de
 ## Abstracción en el juego
 
 - La **Caravana de llamas** representa el transporte de bienes por rutas terrestres andinas. Usa el
-  modelo de camélido alpaca como sustituto visual documentado en `src/model/defs/wildlife.ts`.
+  modelo de llama del proyecto (`scripts/blender/build_llama.py`, cargado desde
+  `src/model/defs/wildlife.ts`).
 - El ingreso de plata crece con la distancia entre mercados para premiar rutas largas y expuestas; es
   una decisión de diseño, no una tarifa histórica.
 - El **Mercado** compra y vende recursos con precios que se mueven por oferta y demanda. Es una

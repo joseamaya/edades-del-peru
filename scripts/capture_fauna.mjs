@@ -52,7 +52,7 @@ async function main() {
           g.camera.follow(null);
           if (sceneName === 'caravan') {
             const c = g.playerCenter(0);
-            // Open ground away from the base trees and centre the alpaca.
+            // Open ground away from the base trees and centre the llama.
             const unit = g.spawnScriptedUnit('caravan', 0, c.x + 42, c.z + 4);
             g.camera.moveTo(unit.pos.x, unit.pos.z, true);
             g.camera.setHeight(28);

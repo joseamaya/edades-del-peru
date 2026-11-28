@@ -5,7 +5,7 @@ import { CARAL_WORKER_SHADOW_SKIP_MESHES, type ModelAssetId, type RigClipState }
  * (hashed in production) instead of inlining them into the JS chunk. The
  * list is explicit so the 1.9 MB demo mannequin stays out of the production bundle.
  */
-import alpacaUrl from '../assets/models/quaternius_alpaca.glb?url';
+import llamaUrl from '../assets/models/llama.glb?url';
 import caralWorkerUrl from '../assets/models/caral_worker.glb?url';
 import tambotocoHeroUrl from '../assets/models/tambotoco_hero.glb?url';
 import mountedHorseUrl from '../assets/models/quaternius_horse.glb?url';
@@ -40,7 +40,7 @@ export interface ModelAssetDefinition {
   readonly shadowSkipMeshes?: readonly string[];
 }
 
-const ALPACA_URL = alpacaUrl;
+const LLAMA_URL = llamaUrl;
 const CARAL_WORKER_URL = caralWorkerUrl;
 const MOUNTED_RIG_URL = mountedHorseUrl;
 const SIEGE_RIG_URL = siegeRigUrl;
@@ -173,13 +173,13 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     ...PLATFORM_RIG,
   },
   /**
-   * Quaternius Ultimate Animated Animal Pack alpaca (CC0). Used as the
-   * Andean camelid stand-in for the llama species; the raw model is ~5.43 m
-   * tall, so `scale` normalises it to the game's stylised ~1.6 m.
+   * Project llama (`scripts/blender/build_llama.py`): the camelid of the caravan and the Andean herds,
+   * replacing the CC0 alpaca stand-in. The raw model is ~4.6 m tall, so `scale` normalises it to ~1.75 m
+   * at the ears (real llamas are 1.7-1.8 m at the head).
    */
-  quaternius_alpaca: {
-    url: ALPACA_URL,
-    scale: 0.3,
+  llama: {
+    url: LLAMA_URL,
+    scale: 0.38,
     yawOffset: 0,
     ground: true,
     groundClearance: 0.02,

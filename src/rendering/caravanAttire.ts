@@ -4,8 +4,8 @@ import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
 
 /**
- * Presentation-only cargo for the llama caravan. The CC0 alpaca is the documented
- * llama stand-in; the pack turns a bare camelid into the trade unit the panel names.
+ * Presentation-only cargo for the llama caravan. The pack turns the project llama into the trade unit
+ * the panel names.
  * The geometry is attached to the `Back` bone so it follows the walk/eat clips.
  */
 export function dressCaravan(rig: RigInstance): RigVariantHandle | null {

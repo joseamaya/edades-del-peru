@@ -21,11 +21,11 @@ export type WildlifeSpawn = AmbientPlacement<SpeciesId>;
 
 /**
  * Rigged fauna for a species, or `null` to keep the procedural model.
- * The llama is the #109 pilot and uses a CC0 alpaca as an Andean camelid stand-in;
+ * The llama is the #109 pilot and uses the project llama model (`scripts/blender/build_llama.py`);
  * the vicuña, condor and pelican stay procedural for now.
  */
 export function wildlifeModelChoice(id: SpeciesId): RigModelChoice | null {
-  return id === 'llama' ? { asset: 'quaternius_alpaca' } : null;
+  return id === 'llama' ? { asset: 'llama' } : null;
 }
 
 export type HuntSpecies = Extract<SpeciesId, 'vicuna' | 'deer'>;

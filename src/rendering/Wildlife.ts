@@ -98,7 +98,7 @@ export interface WildlifeDebugEntry {
 
 /**
  * Ambient fauna (visual only): llamas/vicuñas graze, condors/pelicans soar.
- * The llama pilot uses a rigged CC0 camelid with idle/walk/eat clips; other
+ * The llama pilot uses the project llama model with idle/walk/eat clips; other
  * species and any asset-load failure keep the procedural body/legs/wings.
  * Motion is a deterministic orbit of the spawn point.
  */

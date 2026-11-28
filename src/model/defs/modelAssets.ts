@@ -34,13 +34,7 @@ import { SIEGE_VARIANTS, siegeVariantFor, type SiegeRigVariant } from './siegeCh
 
 /** Registered rigged models. Add the id here and to the rendering registry. */
 export type ModelAssetId =
-  | 'ual_mannequin'
-  | 'quaternius_alpaca'
-  | 'caral_worker'
-  | 'tambotoco_hero'
-  | 'mounted_rig'
-  | 'siege_rig'
-  | 'vehicle_rig';
+  'ual_mannequin' | 'llama' | 'caral_worker' | 'tambotoco_hero' | 'mounted_rig' | 'siege_rig' | 'vehicle_rig';
 
 /** CC0 Quaternius mannequin: pipeline fixture kept for the model tests, not shipped in `dist`. */
 export const MANNEQUIN_ASSET_ID: ModelAssetId = 'ual_mannequin';
@@ -342,7 +336,7 @@ export function unitModelAsset(
   }
   const andeanCulture = andeanCultureForEra(civ, era);
   if (kind === UnitKind.CARAVAN) {
-    return { asset: 'quaternius_alpaca', variant: 'caravan' };
+    return { asset: 'llama', variant: 'caravan' };
   }
   if ((kind === UnitKind.HUSSAR || kind === UnitKind.CAVALRY) && (era === Era.VICEROYALTY || era === Era.REPUBLIC)) {
     const variant = mountedVariantForCiv(civ, realistaHat ?? 'morion');
@@ -420,6 +414,6 @@ export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly C
     }
   }
   if (civs.includes(CivId.INCA_KILLKE)) ids.add(TAMBOTOCO_HERO_ASSET_ID);
-  ids.add('quaternius_alpaca');
+  ids.add('llama');
   return [...ids];
 }

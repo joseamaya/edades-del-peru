@@ -203,27 +203,27 @@ the instance manager.
 visual-only: `src/model/defs/props.ts` scatters cacti, totora, rock clusters and
 shrubs by region suitability (aridity, moisture, slope, beach), and
 `src/model/defs/wildlife.ts` places llamas and vicuñas on the puna, condors above
-the Andes and pelicans on the shore. The **llama pilot** uses a rigged CC0 Andean
-camelid (Quaternius alpaca as a llama stand-in) with `Idle`, `Walk` and `Eating`
-clips: it walks its deterministic orbit and stops to graze, grounded on the terrain.
+the Andes and pelicans on the shore. The **llama pilot** uses the project llama
+(`scripts/blender/build_llama.py`) with `Idle`, `Walk` and `Eating` clips: it walks
+its deterministic orbit and stops to graze, grounded on the terrain.
 Vicuñas, condors and pelicans keep the procedural bodies
 (`src/rendering/faunaModels.ts`) built from rounded shapes with vertex-colour AO and
 **articulated legs/wings** (shared geometry and material), rather than flat boxes;
 an asset-load failure also falls back to that path. Both are pure planners over
-`region + seed` and regenerate deterministically on load. The alpaca's seven flat
-primitives are consolidated at load into one vertex-coloured skinned mesh (**14 → 2
-draw calls per animal**, main + shadow, same triangles); `yarn bench:check` guards
-that budget. The documented 16-animal cap is now applied correctly (the old loop
+`region + seed` and regenerate deterministically on load. The llama's four flat
+materials are consolidated at load into one vertex-coloured skinned mesh (2,400
+triangles, **2 draw calls per animal**, main + shadow); `yarn bench:check` guards
+that budget. Evidence: [`llama-clips.webp`](../media/llama-clips.webp) and
+[`llama-caravan.webp`](../media/llama-caravan.webp). The documented 16-animal cap is now applied correctly (the old loop
 stopped at 8 when starting from an empty herd).
 
-Fauna evidence (same `map=altiplano`, seed 777, 1600x900):
-[`fauna-llama-before-after.webp`](../media/fauna-llama-before-after.webp) (procedural → rigged close-up) and
-[`fauna-llama-rts-before-after.webp`](../media/fauna-llama-rts-before-after.webp) (default RTS view). The
-seven-primitive → one-mesh consolidation has its own visual-parity evidence in
-[`fauna-rig-perf-before-after.webp`](../media/fauna-rig-perf-before-after.webp) and
-[`fauna-rig-perf-rts-before-after.webp`](../media/fauna-rig-perf-rts-before-after.webp). The model is an
-abstraction of the existing llama species, not a new spawn rule; a bespoke llama/vicuña mesh remains future
-work.
+Fauna evidence: [`llama-clips.webp`](../media/llama-clips.webp) (idle / walk / eat) and
+[`llama-caravan.webp`](../media/llama-caravan.webp) (the caravan in game). The earlier procedural → rigged
+pilot pairs ([`fauna-llama-before-after.webp`](../media/fauna-llama-before-after.webp),
+[`fauna-llama-rts-before-after.webp`](../media/fauna-llama-rts-before-after.webp),
+[`fauna-rig-perf-before-after.webp`](../media/fauna-rig-perf-before-after.webp)) used the retired CC0 alpaca
+stand-in and are kept as history. The model is an abstraction of the existing llama species, not a new spawn
+rule; a bespoke vicuña mesh remains future work.
 
 ## Colour
 
@@ -393,7 +393,8 @@ Each left half is before, the right half after. The dressing merges into one mes
 the crop rows into one more, so the pilot adds two draw calls per settlement; the landmark stays a
 single cached model. Remaining work before applying the style to other campaigns: denser regional
 vegetation and a shared palette pass over the other eight dossiers. The worker's CC0 body now carries
-project-authored cotton garments (a documented abstraction); the fauna rigs remain CC0 stand-ins.
+project-authored cotton garments (a documented abstraction); the llama is now project-authored too, while the
+other fauna keep the procedural bodies.
 
 ### Culture household sets
 
