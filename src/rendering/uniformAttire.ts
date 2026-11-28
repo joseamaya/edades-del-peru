@@ -497,8 +497,8 @@ interface FirearmGrip {
 /**
  * Hold the musket or rifle like a long arm, not like the pistol the shared clips were made for.
  *
- * Fixed to the hand bone, the gun followed the wrist: the one-handed `Pistol_Shoot` turned it muzzle-down and
- * the idle hang left it pointing at the ground behind. Each frame, after the clip, the gun is re-aimed in the
+ * Fixed to the hand bone, the gun followed the wrist: the pistol source clip turned it muzzle-down and the
+ * idle hang left it pointing at the ground behind. Each frame, after the clip, the gun is re-aimed in the
  * hand: upright at the side, muzzle up (order/support arms) at rest and on the march; along the forearm, the
  * way the arm points, when a ranged soldier fires. The grip stays at the hand; only the orientation changes.
  */

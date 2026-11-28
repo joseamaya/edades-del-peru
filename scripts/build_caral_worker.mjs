@@ -42,6 +42,11 @@ const SOURCES = {
     url: `${BASE}/animations/UAL2.glb`,
     sha256: '0815dd05531cae9bc313fc9c0ba81330bc72f8e19ec45f73738e74ddc5796a43',
   },
+  // Project-authored clip (`scripts/blender/build_rifle_clip.py`): the recoil `Pistol_Shoot` lacks.
+  project: {
+    url: '/art-src/blender/exports/clips/rifle_shoot.glb',
+    sha256: '6bd3f1a9555220cfac4a6c26ac8d761b38e14c363b20400a374e9b5b512e30b2',
+  },
 };
 const CLIPS = [
   ['ual1', 'Idle_Loop'],
@@ -53,6 +58,8 @@ const CLIPS = [
   ['ual1', 'Push_Loop'],
   ['ual1', 'Punch_Jab'],
   ['ual1', 'Pistol_Shoot'],
+  // The rifleman's kick, built from Pistol_Shoot on the same skeleton.
+  ['project', 'Rifle_Shoot'],
   // Combat and death states used by the ayllu/Ayar presentation; the generic UAL clips are CC0.
   ['ual2', 'Sword_Regular_A'],
   ['ual2', 'OverhandThrow'],
@@ -84,13 +91,14 @@ try {
         return new Promise((resolve, reject) => new GLTFLoader().parse(buffer, '', resolve, reject));
       };
 
-      const [baseGltf, maleGltf, hairGltf, maleHairGltf, ual1, ual2] = await Promise.all([
+      const [baseGltf, maleGltf, hairGltf, maleHairGltf, ual1, ual2, project] = await Promise.all([
         load(sources.base, 'base'),
         load(sources.male, 'male'),
         load(sources.hair, 'hair'),
         load(sources.maleHair, 'maleHair'),
         load(sources.ual1, 'ual1'),
         load(sources.ual2, 'ual2'),
+        load(sources.project, 'project'),
       ]);
 
       const skinned = (root) => {
@@ -932,10 +940,13 @@ try {
       );
       const byName = (gltf, name) => gltf.animations.find((clip) => clip.name === name);
       let animations = [];
+      const gltfBySource = { ual1, ual2, project };
       for (const [source, name] of clipsSpec) {
-        const gltf = source === 'ual1' ? ual1 : ual2;
-        const clip = byName(gltf, name);
+        const gltf = gltfBySource[source];
+        // A Blender export names its single action `Animation`; the pipeline owns the clip name.
+        const clip = source === 'project' ? gltf?.animations[0] : gltf ? byName(gltf, name) : undefined;
         if (!clip) throw new Error(`missing clip ${name} in ${source}`);
+        if (source === 'project') clip.name = name;
         animations.push(clip);
       }
 

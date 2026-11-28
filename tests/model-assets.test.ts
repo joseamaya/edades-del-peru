@@ -316,7 +316,7 @@ describe('rigged model assets', () => {
     });
     expect(unitModelAsset(UnitKind.COMMISSAR, Era.REPUBLIC, CivId.PATRIOTAS)).toBeNull();
     expect(RIG_VARIANT_CLIPS.realistas_soldier_m?.attack).toBe('Sword_Regular_A');
-    expect(RIG_VARIANT_CLIPS.republica_ranged_f?.attack).toBe('Pistol_Shoot');
+    expect(RIG_VARIANT_CLIPS.republica_ranged_f?.attack).toBe('Rifle_Shoot');
     expect(unitModelAsset(UnitKind.HUSSAR, Era.REPUBLIC, CivId.CHILE)).toEqual({
       asset: 'mounted_rig',
       variant: 'mounted_chile',
@@ -519,8 +519,8 @@ describe('rigged model assets', () => {
     }
     expect(RIG_VARIANT_CLIPS.contemporary_republica_worker_f?.gather).toBe('Farm_Harvest');
     expect(RIG_VARIANT_CLIPS.contemporary_republica_worker_m?.walk_carry).toBe('Walk_Carry_Loop');
-    expect(RIG_VARIANT_CLIPS.contemporary_republica_ranged_m?.attack).toBe('Pistol_Shoot');
-    expect(RIG_VARIANT_CLIPS.contemporary_republica_sniper_m?.attack).toBe('Pistol_Shoot');
+    expect(RIG_VARIANT_CLIPS.contemporary_republica_ranged_m?.attack).toBe('Rifle_Shoot');
+    expect(RIG_VARIANT_CLIPS.contemporary_republica_sniper_m?.attack).toBe('Rifle_Shoot');
     expect(RIG_VARIANT_CLIPS.contemporary_republica_missionary_f?.attack).toBeNull();
     expect(modelAssetIdsForMatch(HistoricalPeriod.CONTEMPORARY, [CivId.REPUBLIC])).toEqual(
       expect.arrayContaining(['caral_worker', 'vehicle_rig']),
@@ -562,7 +562,7 @@ describe('rigged model assets', () => {
       asset: 'caral_worker',
       variant: 'realistas_soldier_f',
     });
-    expect(RIG_VARIANT_CLIPS.rebelde_ranged_m?.attack).toBe('Pistol_Shoot');
+    expect(RIG_VARIANT_CLIPS.rebelde_ranged_m?.attack).toBe('Rifle_Shoot');
     expect(RIG_VARIANT_CLIPS.rebelde_worker_f?.gather).toBe('Farm_Harvest');
     expect(RIG_VARIANT_CLIPS.rebelde_missionary_m?.attack).toBeNull();
     expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.INCA])).toEqual(
@@ -1042,6 +1042,7 @@ describe('rigged model assets', () => {
         'Walk_Carry_Loop',
         'Punch_Jab',
         'Pistol_Shoot',
+        'Rifle_Shoot',
         'Sword_Regular_A',
         'OverhandThrow',
         'Death01',
@@ -1096,7 +1097,7 @@ describe('rigged model assets', () => {
       'contemporary_republica_ranged_m',
       'contemporary_republica_sniper_m',
     ] as const) {
-      expect(RIG_VARIANT_CLIPS[variant]?.attack, variant).toBe('Pistol_Shoot');
+      expect(RIG_VARIANT_CLIPS[variant]?.attack, variant).toBe('Rifle_Shoot');
     }
     for (const variant of [
       'realistas_soldier_m',

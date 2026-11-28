@@ -314,7 +314,7 @@ has **no belt**, Moche helmet, backflap, ear ornaments or shield. Paracas gets a
 two coetaneous cultures differ in silhouette, not only colour. Paracas reuses this Formativo abstraction in both
 periods; no separate Early Intermediate outfit is claimed. The soldier macana has a stone head; the sling is a
 prop (a generic Andean weapon abstraction—Métraux, _Weapons_, not a culture-specific attribution) and the ranged
-attack uses `OverhandThrow`. Post-1532 firearms use `Pistol_Shoot`, while line infantry uses `Sword_Regular_A`.
+attack uses `OverhandThrow`. Post-1532 firearms use `Rifle_Shoot` (one recoil clip standing in for the matchlock, musket, breechloader and modern rifle), while line infantry uses `Sword_Regular_A`.
 Evidence:
 [`early-horizon-units.webp`](../media/early-horizon-units.webp) (Chavín worker/soldier/ranged and a Paracas
 soldier; UI hidden).
