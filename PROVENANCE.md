@@ -1611,20 +1611,26 @@ slot is absent (offline / without assets).
   stand-in for the `llama` species and the caravan. The anatomy follows the documented Andean camelid
   (`docs/historia/civilizaciones/collas_lupaca.md`, `recuay.md`, `docs/historia/comercio.md`); the proportions are
   a stylised game abstraction, not a breed claim.
-  - SHA-256: `ef8ca976deb090bc2be8e448bc1058e62eea4503d1e7b7eaf4e3103d1c4083d2` (51,416 bytes, meshopt).
-  - Contents: one skinned mesh (2,400 triangles, 4 flat materials), a 15-bone armature, and `Idle`, `Walk` and
-    `Eating` clips. `Back` carries the presentation-only caravan cargo.
+  - SHA-256: `92e1f68b667cab6e16e2eb76d8d7f5d7090b0da2dd5c602dc9d7560e6a0c2e06` (51,508 bytes, meshopt).
+  - Contents: one skinned mesh (2,400 triangles, 4 flat materials), a 17-joint armature (15 animated bones plus
+    `root` and `Back`), and `Idle`, `Walk` and `Eating` clips. `Back` carries the presentation-only caravan cargo.
+  - Licence: project-owned procedural geometry (no third-party asset). The source is
+    `scripts/blender/build_llama.py` and the authoring scene is `art-src/blender/scenes/llama.blend` (Git LFS).
   - Fit: the llama planner still decides biome/altitude/seed; no new spawn rule is introduced. The model is
-    normalised to the game's stylised camelid scale (asset `scale` 0.3) and grounded at its bind-pose feet.
+    normalised with asset `scale` 0.38 to ~1.75 m at the ears (real llamas are 1.7-1.8 m at the head) and
+    grounded at its bind-pose feet.
   - Runtime uses: the ambient llama and the `CARAVAN` unit share the model; the caravan variant
     (`src/rendering/caravanAttire.ts`) attaches code-generated pack, sacks and ropes to the `Back` bone and adds
     no new model or texture.
-- **Retired stand-in**: `src/assets/models/quaternius_alpaca.glb` (Quaternius _Alpaca_, CC0 1.0, SHA-256
-  `de56fcb168469a65275a5bc10f449015b23ec849c4cda0827c6fc7278ed235b9`) was the llama pilot until the project
-  llama replaced it on 2026-11-27. The file is kept as the reference source and is no longer imported.
+- **Retired stand-in**: `src/assets/models/quaternius_alpaca.glb` (Quaternius _Alpaca_, CC0 1.0) was the llama
+  pilot until the project llama replaced it on 2026-11-27. The file is kept as the reference source and is no
+  longer imported, so it does not ship in `dist/`. The kept file is the meshopt derivative
+  (SHA-256 `e210568c734f994689917903d9b4b96ed4e32fc67303579360f8097f4a5e727b`, 304,776 bytes).
   - The retired source came from Quaternius' **Ultimate Animated Animal Pack**
     (<https://quaternius.com/packs/ultimateanimatedanimals.html>, CC0), model page
-    <https://poly.pizza/m/bCVFD48i2l>, downloaded 2026-10-21 (1,053,804 bytes, 1,998 triangles, 46 bones).
+    <https://poly.pizza/m/bCVFD48i2l>, downloaded 2026-10-21 (upstream SHA-256
+    `de56fcb168469a65275a5bc10f449015b23ec849c4cda0827c6fc7278ed235b9`, 1,053,804 bytes, 1,998 triangles,
+    46 bones).
 
 ## Fauna (procedural hunt herds)
 

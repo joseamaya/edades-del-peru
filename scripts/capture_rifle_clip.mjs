@@ -81,10 +81,7 @@ try {
   if (staged.clip !== 'Rifle_Shoot') throw new Error(`unit plays ${staged.clip}, not Rifle_Shoot`);
 
   const shots = [];
-  for (const [, time] of [
-    ['aim', 0],
-    ['recoil', 2 / 24],
-  ]) {
+  for (const time of [0, 2 / 24]) {
     await page.evaluate(
       ([time]) => {
         const g = window.game;

@@ -1252,15 +1252,15 @@ travel direction (the orbit tangent is `(-sin, cos)`, so the yaw is `-angle`).
 The llama is the project-authored camelid of the existing llama species, not a new species; vicuña/condor/pelican
 remain procedural. Rigged fauna uses the same shared cache/clone/refcount rules as the worker.
 
-Measured cost on the altiplano map at the **configured 12 animals** (8 llamas replaced in the mixed set,
-direct render, shadows included): procedural set **+60 draw calls / +17,200 triangles**; mixed set **+132 calls /
-+38,320 triangles**. Replacing 8 llamas therefore adds **+72 calls / +21,120 triangles**, about **+9 calls and
-+2,640 triangles per llama**. `Wildlife.update` cost measured in-browser: **0.058 ms/step** for the mixed set vs
-0.008 ms/step procedural (software renderer), well below the 16.6 ms budget. The cap remains 16; `tests/e2e/fauna.spec.ts`
+Measured cost on the altiplano map at the **configured 12 animals** (direct render, shadows included): the
+project llama consolidates to one mesh and **2 draw calls / 2,398 triangles per animal** (main + shadow); the
+procedural set it replaced added **+60 draw calls / +17,200 triangles** for the whole mixed set. `Wildlife.update`
+cost measured in-browser: **0.058 ms/step** (software renderer), well below the 16.6 ms budget. The cap remains
+16; `tests/e2e/fauna.spec.ts`
 covers spawn, clip states, terrain grounding, facing, procedural fallback and teardown, while
 `tests/e2e/ambient.spec.ts` still verifies the procedural limbs. Evidence:
-`docs/media/fauna-llama-before-after.webp` and `docs/media/fauna-llama-rts-before-after.webp`
-(`map=altiplano`, seed 777, 1600x900).
+`docs/media/llama-clips.webp`, `docs/media/llama-caravan.webp` and `docs/media/llama-herd.webp` (project llama);
+the older `fauna-llama-*` pairs used the retired CC0 alpaca stand-in.
 
 Next iteration for fauna: replace vicuña/condor/pelican, add flight-specific states and terrain-avoidance if a
 rigged bird is added, and evaluate per-species LOD/update throttling at the 16-animal cap.

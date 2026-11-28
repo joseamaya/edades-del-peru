@@ -59,6 +59,7 @@
     "capture:cavalry": "node scripts/capture_cavalry_melee.mjs",
     "art:pilot": "node scripts/capture_art_pilot.mjs",
     "capture:fauna": "node scripts/capture_fauna.mjs",
+    "capture:llama": "node scripts/capture_llama.mjs",
     "capture:sites": "node scripts/capture_site_review.mjs",
     "shot": "node scripts/screenshot.mjs",
     "record": "node scripts/record_mission.mjs",

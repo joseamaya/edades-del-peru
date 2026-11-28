@@ -95,7 +95,7 @@ if (
 const RIG_BUDGETS = {
   // Counts include the VSM shadow pass (main + shadow draw/triangle). The
   // worker baseline is the dressed mannequin; the animal baseline is the
-  // consolidated alpaca (2 draws: mesh + shadow).
+  // consolidated llama (2 draws: mesh + shadow).
   worker: { drawCalls: 40, triangles: 40000 },
   // The rider is the shared infantry body in its closed uniform (~11.4k) on the Quaternius horse with its
   // saddle (~3.3k). The mount merges into one draw at dress time, so its shadow covers the whole horse (a

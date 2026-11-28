@@ -174,12 +174,12 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
   },
   /**
    * Project llama (`scripts/blender/build_llama.py`): the camelid of the caravan and the Andean herds,
-   * replacing the CC0 alpaca stand-in. The raw model is ~4.8 m tall, so `scale` normalises it to the
-   * game's stylised ~1.44 m.
+   * replacing the CC0 alpaca stand-in. The raw model is ~4.6 m tall, so `scale` normalises it to ~1.75 m
+   * at the ears (real llamas are 1.7-1.8 m at the head).
    */
   llama: {
     url: LLAMA_URL,
-    scale: 0.3,
+    scale: 0.38,
     yawOffset: 0,
     ground: true,
     groundClearance: 0.02,

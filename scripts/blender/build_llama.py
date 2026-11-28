@@ -6,21 +6,23 @@ three clips the game asks for (`Idle`, `Walk`, `Eating`). The caravan cargo atta
 bone keeps that name.
 
 Game-safe output: Principled BSDF, flat colours, at most four materials, one skinned mesh, one armature. Units are
-game units at the alpaca's source scale (a person is 1.86; the llama is ~1.4 m at the head after the asset scale
-0.3). Blender Z-up, exported Y-up; the front faces -Y in Blender, i.e. +Z in the game. Origin between the hooves.
+game units (a person is 1.86; the llama is ~1.75 m at the ears after the asset scale 0.38, real llamas are
+1.7-1.8 m at the head). Blender Z-up, exported Y-up; the front faces -Y in Blender, i.e. +Z in the game. Origin
+between the hooves.
 
 Run from the repository root:
   blender --background --python scripts/blender/build_llama.py
+  yarn art:models --only=llama            # meshopt; the game copy must stay compressed
   blender --background --python scripts/blender/build_llama.py -- --stills=review/llama [--render-only]
 """
 
-import math
 import os
+import shutil
 import sys
 
 import bpy
 import bmesh
-from mathutils import Quaternion, Vector
+from mathutils import Vector
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'art-src', 'blender', 'exports', 'llama', 'llama.glb')
@@ -258,9 +260,9 @@ def build_actions(arm):
             (100, {'Neck1': (0.0, 0.0, 0.0), 'Head': (0.0, 0.0, 0.0), 'Tail': (0.0, 0.0, 0.1)}),
         ],
     )
-    # Walk: a four-beat gait; diagonal pairs alternate, the lower legs fold on the return swing.
+    # Walk: a two-beat diagonal gait; diagonal pairs alternate, the lower legs fold on the return swing.
     swing = 0.42
-    fold = 0.5
+    fold = 0.35
     make_action(
         arm,
         'Walk',
@@ -379,6 +381,11 @@ def main():
             render_stills(stills)
         return
 
+    # Keep the authoring scene next to the other Blender sources (`.blend` is Git LFS).
+    scene_path = os.path.join(ROOT, 'art-src', 'blender', 'scenes', 'llama.blend')
+    os.makedirs(os.path.dirname(scene_path), exist_ok=True)
+    bpy.ops.wm.save_as_mainfile(filepath=scene_path, compress=True)
+
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     bpy.ops.object.select_all(action='DESELECT')
     arm.select_set(True)
@@ -395,8 +402,6 @@ def main():
         export_yup=True,
     )
     os.makedirs(os.path.dirname(GAME), exist_ok=True)
-    import shutil
-
     shutil.copy2(OUT, GAME)
     tris = sum(len(p.vertices) - 2 for p in mesh.data.polygons)
     print('LLAMA', OUT, 'tris', tris, 'verts', len(mesh.data.vertices), 'materials', len(mesh.data.materials))
