@@ -34,7 +34,18 @@ const flat: DressingQuery = {
 const anchors = [{ ...plan.center, center: true }, ...plan.dwellings.map((d) => ({ ...d, center: false }))];
 
 /** Every household set the game can place. */
-const PROFILES = ['caral', 'chavin', 'moche', 'wari', 'inca'] as const;
+const PROFILES = [
+  'caral',
+  'chavin',
+  'moche',
+  'wari',
+  'inca',
+  'chimu',
+  'chanca',
+  'paracas',
+  'recuay',
+  'tiahuanaco',
+] as const;
 /** Pinned prop budget per set: a sequence that grows has to say so here. */
 const PROP_BUDGET: Record<(typeof PROFILES)[number], number> = {
   caral: 14,
@@ -42,6 +53,11 @@ const PROP_BUDGET: Record<(typeof PROFILES)[number], number> = {
   moche: 12,
   wari: 9,
   inca: 9,
+  chimu: 9,
+  chanca: 8,
+  paracas: 8,
+  recuay: 8,
+  tiahuanaco: 8,
 };
 
 describe('settlement dressing', () => {
@@ -90,31 +106,46 @@ describe('settlement dressing', () => {
     const kinds = Object.fromEntries(
       PROFILES.map((profile) => [profile, planSettlementDressing(plan, 7, flat, profile).map((p) => p.kind)]),
     );
-    // The coastal household keeps the fish racks; the highland state households drop them.
+    // The coastal households keep the fish racks; the highland ones drop them.
     expect(kinds.moche).toContain('drying_rack');
+    expect(kinds.chimu).toContain('drying_rack');
+    expect(kinds.paracas).toContain('drying_rack');
     expect(kinds.wari).not.toContain('drying_rack');
     expect(kinds.inca).not.toContain('drying_rack');
-    // Incan and Wari bases are storage-and-textile households, not ritual ones.
+    expect(kinds.chanca).not.toContain('drying_rack');
+    expect(kinds.recuay).not.toContain('drying_rack');
+    expect(kinds.tiahuanaco).not.toContain('drying_rack');
+    // Storage-and-textile households, not ritual ones.
     expect(kinds.inca.filter((kind) => kind === 'basket').length).toBeGreaterThanOrEqual(2);
     expect(kinds.wari).toContain('cotton');
+    expect(kinds.paracas).toContain('cotton');
+    // The household kit is limited to the props that exist; the dressed stone is architecture (Chavín/Tiahuanaco).
+    expect(kinds.tiahuanaco).not.toContain('megalith');
+    expect(kinds.chimu).not.toContain('megalith');
     // Only Chavin keeps the ritual set.
     expect(kinds.chavin).toContain('stela');
-    expect(kinds.inca).not.toContain('stela');
+    for (const profile of PROFILES) if (profile !== 'chavin') expect(kinds[profile], profile).not.toContain('stela');
     // Every profile keeps its pinned budget, so a set cannot quietly grow.
     for (const profile of PROFILES) expect(DRESSING_SETS[profile].sequence.length, profile).toBe(PROP_BUDGET[profile]);
-    // The three new sets are tinted apart from each other; Caral and Chavín keep their reviewed colour.
+    // Every set has its own tint except Caral/Chavín, which share the reviewed neutral white.
     const tints = PROFILES.map((profile) => DRESSING_SETS[profile].tint);
-    expect(new Set(tints.slice(2)).size).toBe(3);
-    // Caral and Chavín share the neutral white, so four distinct tints over five sets.
-    expect(new Set(tints).size).toBe(4);
-    // Caral and Chavín keep the reviewed neutral colour; only the new sets are tinted.
+    expect(new Set(tints).size).toBe(PROFILES.length - 1);
     expect(DRESSING_SETS.caral.tint).toBe(0xffffff);
     expect(DRESSING_SETS.chavin.tint).toBe(0xffffff);
-    const [caral, , moche, wari, inca] = PROFILES.map((profile) => new THREE.Color(DRESSING_SETS[profile].tint));
+    const [caral, chavin, moche, wari, inca, chimu, chanca, paracas, recuay, tiahuanaco] = PROFILES.map(
+      (profile) => new THREE.Color(DRESSING_SETS[profile].tint),
+    );
     expect(moche.r - moche.b).toBeGreaterThan(0.1);
     expect(wari.b - wari.r).toBeGreaterThan(0.02);
     expect(inca.r - inca.b).toBeGreaterThan(moche.r - moche.b);
+    // Warm coast, cool highlands; the altiplano leans violet.
+    expect(chimu.r - chimu.b).toBeGreaterThan(0.05);
+    expect(paracas.r - paracas.b).toBeGreaterThan(0.05);
+    expect(chanca.g - chanca.r).toBeGreaterThan(0.01);
+    expect(recuay.b - recuay.r).toBeGreaterThan(0.02);
+    expect(tiahuanaco.b - tiahuanaco.g).toBeGreaterThan(0.01);
     expect(caral.getHex()).toBe(0xffffff);
+    expect(chavin.getHex()).toBe(0xffffff);
   });
 
   it('produces a different layout for a different seed', () => {
@@ -248,13 +279,18 @@ describe('dressing profiles', () => {
     expect(dressingProfileFor(CivId.MOCHE)).toBe('moche');
     expect(dressingProfileFor(CivId.WARI)).toBe('wari');
     expect(dressingProfileFor(CivId.INCA)).toBe('inca');
+    expect(dressingProfileFor(CivId.CHIMU)).toBe('chimu');
+    expect(dressingProfileFor(CivId.CHANCA)).toBe('chanca');
+    expect(dressingProfileFor(CivId.PARACAS)).toBe('paracas');
+    expect(dressingProfileFor(CivId.RECUAY)).toBe('recuay');
+    expect(dressingProfileFor(CivId.TIAHUANACO)).toBe('tiahuanaco');
     // Cusco 1536 and Vilcabamba 1572 are still Inca households.
     expect(dressingProfileFor(CivId.INCA, 'm_cusco_1536')).toBe('inca');
     expect(dressingProfileFor(CivId.INCA, 'm_vilcabamba')).toBe('inca');
     // The 1780 rebellion is `INCA` but a colonial camp: no Incan household there.
     expect(dressingProfileFor(CivId.INCA, 'm7_tupac_amaru')).toBeNull();
     // Cultures without an authored set stay bare rather than borrowing one.
-    for (const civ of [CivId.CHIMU, CivId.CHANCA, CivId.PARACAS, CivId.RECUAY, CivId.TIAHUANACO]) {
+    for (const civ of [CivId.CUPISNIQUE, CivId.NAZCA, CivId.CHINCHA, CivId.COLLAS_LUPACA, CivId.HUANCA]) {
       expect(dressingProfileFor(civ), CivId[civ]).toBeNull();
     }
     expect(dressingProfileFor(CivId.PATRIOTAS)).toBeNull();
