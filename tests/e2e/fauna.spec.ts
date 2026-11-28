@@ -49,7 +49,7 @@ test('the llama pilot uses the rigged camelid and keeps the procedural fallback'
     };
   });
   expect(initial.region).toBe('altiplano');
-  expect(initial.assets.find((asset) => asset.id === 'quaternius_alpaca')?.state).toBe('ready');
+  expect(initial.assets.find((asset) => asset.id === 'llama')?.state).toBe('ready');
   expect(initial.fauna.length).toBeGreaterThan(0);
   expect(initial.fauna.length).toBeLessThanOrEqual(16);
 
@@ -97,7 +97,7 @@ test('the llama pilot uses the rigged camelid and keeps the procedural fallback'
   const afterDestroy = await page.evaluate(() =>
     (window as unknown as { __modelAssets: () => AssetStatus[] }).__modelAssets(),
   );
-  expect(afterDestroy.find((asset) => asset.id === 'quaternius_alpaca')?.state).toBe('idle');
+  expect(afterDestroy.find((asset) => asset.id === 'llama')?.state).toBe('idle');
 });
 
 test('hunt nodes start as a walking herd and become stylised carcasses', async ({ page }) => {

@@ -1605,23 +1605,26 @@ slot is absent (offline / without assets).
 
 ## Fauna (rigged)
 
-- **Location**: `src/assets/models/quaternius_alpaca.glb` (loaded by `src/rendering/Wildlife.ts` through the same
+- **Location**: `src/assets/models/llama.glb` (loaded by `src/rendering/Wildlife.ts` through the same
   `ModelAssets` cache).
-- **Asset**: _Alpaca_ from Quaternius' **Ultimate Animated Animal Pack** (CC0 1.0). Used as the **llama pilot**:
-  an Andean camelid stand-in for the existing `llama` species, not a new species. The vicuña, condor and pelican
-  remain procedural in this iteration.
-  - Author/pack: <https://quaternius.com/packs/ultimateanimatedanimals.html> (CC0).
-  - Model page: <https://poly.pizza/m/bCVFD48i2l> (Quaternius, Public Domain/CC0 1.0).
-  - Downloaded from the direct Poly Pizza file
-    <https://static.poly.pizza/444228bb-745d-49b2-89ef-cc12805deaa8.glb>, 2026-10-21.
-  - SHA-256: `de56fcb168469a65275a5bc10f449015b23ec849c4cda0827c6fc7278ed235b9` (1,053,804 bytes).
-  - Contents: skinned alpaca (1,998 triangles, 46 bones), materials Brown/White/Grey, 26 clips. The game maps
-    `Idle`, `Walk` and `Eating` to the `idle`, `walk` and `eat` rig states.
+- **Asset**: the **project llama**, authored by `scripts/blender/build_llama.py`. It replaces the CC0 alpaca
+  stand-in for the `llama` species and the caravan. The anatomy follows the documented Andean camelid
+  (`docs/historia/civilizaciones/collas_lupaca.md`, `recuay.md`, `docs/historia/comercio.md`); the proportions are
+  a stylised game abstraction, not a breed claim.
+  - SHA-256: `ef8ca976deb090bc2be8e448bc1058e62eea4503d1e7b7eaf4e3103d1c4083d2` (51,416 bytes, meshopt).
+  - Contents: one skinned mesh (2,400 triangles, 4 flat materials), a 15-bone armature, and `Idle`, `Walk` and
+    `Eating` clips. `Back` carries the presentation-only caravan cargo.
   - Fit: the llama planner still decides biome/altitude/seed; no new spawn rule is introduced. The model is
-    normalised to the game's stylised camelid scale and grounded at its bind-pose feet.
-  - Runtime uses: the ambient llama keeps the bare rig. The `CARAVAN` unit uses the presentation-only
-    `caravan` variant (`src/rendering/caravanAttire.ts`), which attaches code-generated pack, sacks and ropes
-    to the `Back` bone; it adds no new model or texture to this GLB.
+    normalised to the game's stylised camelid scale (asset `scale` 0.3) and grounded at its bind-pose feet.
+  - Runtime uses: the ambient llama and the `CARAVAN` unit share the model; the caravan variant
+    (`src/rendering/caravanAttire.ts`) attaches code-generated pack, sacks and ropes to the `Back` bone and adds
+    no new model or texture.
+- **Retired stand-in**: `src/assets/models/quaternius_alpaca.glb` (Quaternius _Alpaca_, CC0 1.0, SHA-256
+  `de56fcb168469a65275a5bc10f449015b23ec849c4cda0827c6fc7278ed235b9`) was the llama pilot until the project
+  llama replaced it on 2026-11-27. The file is kept as the reference source and is no longer imported.
+  - The retired source came from Quaternius' **Ultimate Animated Animal Pack**
+    (<https://quaternius.com/packs/ultimateanimatedanimals.html>, CC0), model page
+    <https://poly.pizza/m/bCVFD48i2l>, downloaded 2026-10-21 (1,053,804 bytes, 1,998 triangles, 46 bones).
 
 ## Fauna (procedural hunt herds)
 

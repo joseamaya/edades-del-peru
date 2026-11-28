@@ -189,7 +189,7 @@ Definition of Done and the building audit see
 - **Ambient life (visual only)**: `src/model/defs/props.ts` (cacti, totora, rocks, shrubs) and
   `src/model/defs/wildlife.ts` (llama, vicuña, condor, pelican) are **pure** planners over the region profile +
   seed. `src/rendering/Props.ts` instances the props; `src/rendering/Wildlife.ts` renders the fauna. The **llama
-  pilot** uses the rigged CC0 camelid (`quaternius_alpaca`) with idle/walk/eat clips; the other species and any
+  pilot** uses the project llama (`llama`, `scripts/blender/build_llama.py`) with idle/walk/eat clips; the other species and any
   asset-load failure keep the cached procedural templates (`src/rendering/faunaModels.ts`) built from
   rounded/capsule shapes with **vertex-colour AO** and **articulated legs/wings** (shared geometry + one shared
   material; diagonal gait and wing flap). No entities, obstacles or save; regenerated deterministically on load,
@@ -1206,7 +1206,7 @@ To add a model:
 4. Add the id to `modelAssetIdsForMatch(period, civs)` if it must be preloaded before entities are created.
    Pass every participating civilization (the Caral worker is preloaded for Arcaico matches with Caral).
 5. For fauna, return the id from `wildlifeModelChoice(species)` and list it in `wildlifeModelAssetIds(region)`;
-   the llama/alpaca pilot is the reference.
+   the llama pilot is the reference.
 
 The loader must be synchronous at entity construction: `acquireRig()` only returns an already-loaded asset;
 `boot()` preloads the list and failures keep the procedural fallback. Clips must be **in-place** (root motion
@@ -1229,16 +1229,16 @@ historical changes must update the period dossier, the build script and `PROVENA
 pelican only near water/beach; region counts are 12 (altiplano/high Andes), 10 (valley/coast) and 4 (Amazon),
 with a hard `MAX_ANIMALS = 16` cap. The region comes from `resolveMapProfile` (period + civ + map type + optional
 mission region); the **period does not add/remove fauna** — ambient life is a visual, period-agnostic layer. The
-llama/alpaca is documented from the Andean camelid herding dossiers (`docs/historia/civilizaciones/collas_lupaca.md`,
+llama is documented from the Andean camelid herding dossiers (`docs/historia/civilizaciones/collas_lupaca.md`,
 `recuay.md`); no new species or spawn rule is added.
 
-`wildlifeModelChoice('llama')` returns the `quaternius_alpaca` asset; `wildlifeModelAssetIds(region)` derives the
+`wildlifeModelChoice('llama')` returns the project `llama` asset; `wildlifeModelAssetIds(region)` derives the
 preload list from that same mapping and the region weights during `boot()` (main resolves the region with the
 same `resolveMapProfile` arguments as `Game`). `Wildlife.spawn` asks for a rig through `acquireRig`; if it is
-unavailable it builds the procedural animal exactly as before. The alpaca is an Andean camelid **stand-in** for
-the existing llama, not a new species; vicuña/condor/pelican stay procedural in this iteration.
+unavailable it builds the procedural animal exactly as before. The llama is a project-authored model, not a new
+species; vicuña/condor/pelican stay procedural in this iteration.
 
-The **caravan** reuses the same alpaca with a presentation-only `caravan` variant
+The **caravan** reuses the same llama with a presentation-only `caravan` variant
 (`src/rendering/caravanAttire.ts`): a cargo pack, side sacks and ropes attached to the `Back` bone, so the trade
 unit is no longer a bare animal. The ambient llama keeps the bare variant. Hunt herds select their species from
 the map type (`huntSpeciesFor`): vicuña in the highlands, deer on the coast and jungle. The procedural quadruped
@@ -1249,7 +1249,7 @@ The rig plays `walk` while it advances its deterministic orbit and stops to play
 sinusoidal cycle per animal; walk playback follows the orbit speed. The root sits at `Terrain.getHeight`, the model
 is grounded at its bind-pose feet with a 2 cm clearance, and both rig and procedural animals now face their actual
 travel direction (the orbit tangent is `(-sin, cos)`, so the yaw is `-angle`).
-The alpaca is an Andean camelid stand-in for the existing llama species, not a new species; vicuña/condor/pelican
+The llama is the project-authored camelid of the existing llama species, not a new species; vicuña/condor/pelican
 remain procedural. Rigged fauna uses the same shared cache/clone/refcount rules as the worker.
 
 Measured cost on the altiplano map at the **configured 12 animals** (8 llamas replaced in the mixed set,
@@ -1394,7 +1394,7 @@ FPS is not asserted because SwiftShader is not representative of a GPU, so FPS n
 The full audit with 50/100/200/400/800 results, 20 AI seeds and the prioritized issue list is in
 [`docs/development/performance-audit.md`](development/performance-audit.md). It records the baseline and the
 follow-up after #121 (component reachability cache, stuck-order give-up and the corrected `blockedWorkers`
-metric), plus the #118 rig/fauna budget (7→1 alpaca primitives, 14→2 draw calls per animal). Reference run from
+metric), plus the #118 rig/fauna budget (the llama's four materials consolidate to one mesh and 2 draw calls per animal). Reference run from
 the audit environment (i7-13700, `CHROME_PATH` SwiftShader, `?low=1`, seed 777):
 
 | units | spawn ms | sim ms/step | heap Δ/loop MB | A* ms/call | target µs/call | pick ms/call | frame ms (avg/p95) | draw calls | triangles | heap MB |

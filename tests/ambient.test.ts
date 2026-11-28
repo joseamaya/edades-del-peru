@@ -83,10 +83,10 @@ describe('ambient wildlife planning', () => {
   });
 
   it('maps only the llama pilot to the rigged asset', () => {
-    expect(wildlifeModelChoice('llama')).toEqual({ asset: 'quaternius_alpaca' });
+    expect(wildlifeModelChoice('llama')).toEqual({ asset: 'llama' });
     expect(wildlifeModelChoice('vicuna')).toBeNull();
     const highland = wildlifeModelAssetIds('high_andes');
-    expect(highland).toContain('quaternius_alpaca');
+    expect(highland).toContain('llama');
     expect(wildlifeModelAssetIds('amazon')).toEqual([]);
   });
 

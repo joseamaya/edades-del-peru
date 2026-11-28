@@ -81,7 +81,7 @@ try {
   if (staged.clip !== 'Rifle_Shoot') throw new Error(`unit plays ${staged.clip}, not Rifle_Shoot`);
 
   const shots = [];
-  for (const [name, time] of [
+  for (const [, time] of [
     ['aim', 0],
     ['recoil', 2 / 24],
   ]) {

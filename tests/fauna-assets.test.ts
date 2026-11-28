@@ -6,7 +6,7 @@ import { acquireRig, clearModelAssets, loadModelAssetFromData } from '../src/ren
 import { clearFaunaTemplates } from '../src/rendering/faunaModels';
 import { Wildlife } from '../src/rendering/Wildlife';
 
-const MODEL_URL = new URL('../src/assets/models/quaternius_alpaca.glb', import.meta.url);
+const MODEL_URL = new URL('../src/assets/models/llama.glb', import.meta.url);
 let glb: ArrayBuffer;
 
 beforeAll(() => {
@@ -21,16 +21,16 @@ afterEach(() => {
 });
 
 describe('rigged fauna assets', () => {
-  it('loads the alpaca with idle, walk and eat clips', async () => {
-    const asset = await loadModelAssetFromData('quaternius_alpaca', glb);
+  it('loads the llama with idle, walk and eat clips', async () => {
+    const asset = await loadModelAssetFromData('llama', glb);
     expect(asset.clipNames.has('Idle')).toBe(true);
     expect(asset.clipNames.has('Walk')).toBe(true);
     expect(asset.clipNames.has('Eating')).toBe(true);
     expect(asset.definition.scale).toBeGreaterThan(0);
   });
 
-  it('consolidates the alpaca primitives into one flat-colour skinned mesh', async () => {
-    const asset = await loadModelAssetFromData('quaternius_alpaca', glb);
+  it('consolidates the llama primitives into one flat-colour skinned mesh', async () => {
+    const asset = await loadModelAssetFromData('llama', glb);
     let meshes = 0;
     let skinned = 0;
     let triangles = 0;
@@ -75,9 +75,9 @@ describe('rigged fauna assets', () => {
     wildlife.dispose();
   });
 
-  it('dresses the caravan alpaca with a cargo pack on the Back bone', async () => {
-    await loadModelAssetFromData('quaternius_alpaca', glb);
-    const rig = acquireRig('quaternius_alpaca', 'caravan')!;
+  it('dresses the caravan llama with a cargo pack on the Back bone', async () => {
+    await loadModelAssetFromData('llama', glb);
+    const rig = acquireRig('llama', 'caravan')!;
     const pack = rig.root.getObjectByName('attire_caravan_pack');
     expect(pack).toBeDefined();
     expect(pack?.parent?.name).toBe('Back');
@@ -85,9 +85,9 @@ describe('rigged fauna assets', () => {
   });
 
   it('clones independent camelid skeletons and grounds the feet', async () => {
-    const asset = await loadModelAssetFromData('quaternius_alpaca', glb);
-    const a = acquireRig('quaternius_alpaca')!;
-    const b = acquireRig('quaternius_alpaca')!;
+    const asset = await loadModelAssetFromData('llama', glb);
+    const a = acquireRig('llama')!;
+    const b = acquireRig('llama')!;
     expect(a.root.getObjectByName('Head')).not.toBe(b.root.getObjectByName('Head'));
 
     a.play('idle', 0);
