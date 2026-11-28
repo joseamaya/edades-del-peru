@@ -37,7 +37,8 @@
 | Cifras de tropas y bajas | Aproximado | Perú 20 000–22 000; Chile unos 23 129; bajas dispares. No se muestran como dato duro. |
 | Saqueo de Chorrillos y ocupación de Lima | Documentado | Se narra con sobriedad; no se escenifica. |
 | Quién rompió el armisticio | Debatido | Cada bando culpa al otro; el juego no lo resuelve. |
-| Reductos de tierra y fajina | Documentado | Obra de campaña de 1881; el modelo dibuja terraplén, fajina, sacos y artillería de campaña. Basadre, Sater; auditoría de activos P1-2. |
+| Reductos de tierra y fajina | Documentado | Obra de campaña de 1881: la línea se levantó con tierra y fajina. Basadre, Sater; auditoría de activos P1-2. |
+| Terraplén, sacos, gabiones y dos piezas | Abstracción | Composición del modelo a partir del tipo de obra documentado; no es un inventario pieza por pieza de un reducto concreto. |
 | Reductos y plaza de Lima | Abstracción | El `miraflores_site` usa el kit colonial de Blender en fase `ciudad`; la cámara y la etiqueta encuadran la línea de Miraflores, no la Plaza Mayor. |
 
 ## Fuentes

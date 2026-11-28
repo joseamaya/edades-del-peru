@@ -25,13 +25,19 @@ The line was earth-and-fascine fieldwork, not masonry: the asset audit's P1-2 fo
 generic stone fortress. `m_miraflores` now declares
 `buildingModels: { fortress: { type: 'redoubt_1881', scale: 1.06 } }`, so only this mission resolves the
 `FORTRESS` to the procedural redoubt (stepped earth parapet with a straw fascine crest, sandbag revetment,
-gabions at the front corners and two field guns). The override is presentation-only: HP, armor, cost, footprint,
-garrison, defensive attack and the `a1_reductos` / `a1_cuarto` objectives are unchanged. Every other mission and
-every skirmish keep the stone `fortress_imperial`.
+gabions at the front corners and two field guns). The earthwork type is documented; the exact props and the two
+guns are the model's abstraction of a standard 1881 fieldwork, not an inventory of a specific redoubt. The
+override is presentation-only: HP, armor, cost, footprint, garrison, defensive attack and the `a1_reductos` /
+`a1_cuarto` objectives are unchanged. Every other mission and every skirmish keep the stone `fortress_imperial`.
 
-Evidence: [`miraflores-redoubts.webp`](../media/miraflores-redoubts.webp) (the three nodes and the centre redoubt),
-reproduced with `yarn capture:miraflores --out=docs/media/miraflores-redoubts` (seed 1881, UI hidden, redoubts
-spawned through `spawnScriptedBuilding`).
+This closes the **redoubt half** of P1-2. The site still draws the Lima heightfield and colonial kit as the city
+backdrop, which the dossier grades as a declared abstraction; it is not claimed as a surveyed Miraflores plan.
+
+Evidence: [`miraflores-redoubts.webp`](../media/miraflores-redoubts.webp) (the three nodes and the centre redoubt)
+and [`miraflores-redoubts-before-after.webp`](../media/miraflores-redoubts-before-after.webp) (the same line and
+camera with the stone control), reproduced with
+`yarn capture:miraflores --out=docs/media/miraflores-redoubts` (seed 1881, UI hidden, redoubts spawned through
+`spawnScriptedBuilding`).
 
 ## Map and site
 
