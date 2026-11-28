@@ -1573,7 +1573,7 @@ export class WorldViewDecor {
     applyFowToObject(dressing.group, this.game.fowUniforms);
     this.game.scene.add(dressing.group);
     this.game.settlementDressing.push(dressing);
-    // Chavín's ritual set has no kit yet; every household set (Caral and the three culture variants) uses the
+    // Chavín's ritual set has no kit yet; every household set (Caral and the nine culture variants) uses the
     // Caral household pieces, tinted per culture, when the batch arrives (one GLB per piece, cached per match).
     if (profile !== 'chavin') {
       void loadDressingKit()
