@@ -3,7 +3,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CivDef, ArchStyle, EmblemId } from './defs/civs';
 import { ModelSpec } from './defs/units';
-import { CivId, Era } from '../core/types';
+import { BuildingKind, CivId, Era } from '../core/types';
 import { ERA_DEFS } from './defs/eras';
 import { HUMAN_HAIR, HUMAN_SKIN, type PersonGender } from './defs/people';
 import {
@@ -66,6 +66,8 @@ export interface BuildContext {
   caralLate?: boolean;
   /** Mission id, used by the Inca 1536/1572 vs 1780 outfit choice. */
   missionId?: string;
+  /** Mission-scoped building visuals (e.g. Miraflores' earthwork redoubts instead of the stone fortress). */
+  buildingModels?: Partial<Record<BuildingKind, ModelSpec>>;
 }
 
 const sharedGeo: Record<string, THREE.BufferGeometry> = {};
@@ -275,6 +277,7 @@ class Builder {
     mesh.position.set(o.x ?? 0, o.y ?? 0, o.z ?? 0);
     if (o.ry) mesh.rotation.y = o.ry;
     if (o.rx) mesh.rotation.x = o.rx;
+    if (o.rz) mesh.rotation.z = o.rz;
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     mesh.name = 'part';
@@ -1297,6 +1300,10 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
       break;
     case 'fortress_modern':
       buildModern(b, 3.6, false);
+      break;
+    // Miraflores 1881: earth-and-fascine fieldworks, not a stone castle (asset audit P1-2).
+    case 'redoubt_1881':
+      buildRedoubt1881(b);
       break;
 
     case 'market_steam':
@@ -2475,6 +2482,114 @@ function buildFortress(b: Builder, size: number, matType: 'stone' | 'concrete'):
     emissive: b.pal.emissive,
     emissiveIntensity: 1.6,
   });
+}
+
+/**
+ * Miraflores 1881: a redoubt of earth and fascines, not a stone castle (asset audit P1-2). A stepped
+ * parapet with sandbag revetment, gabions at the corners, a fascine crest and two field guns; the
+ * earth tones keep both sides readable while the small banner marks the owner.
+ */
+function buildRedoubt1881(b: Builder): void {
+  const w = 3.5;
+  const half = w / 2;
+  const bank = 0.5;
+  const baseH = 0.5;
+  const capH = 0.32;
+  const edge = half - 0.1;
+  const outer = edge + bank / 2;
+  const earth = mixHex('#7d7259', b.pal.wood, 0.25);
+  const earthTop = mixHex(earth, '#a2967a', 0.45);
+  const ditch = mixHex(earth, '#2f2b22', 0.62);
+  const bag = mixHex('#c2b592', b.pal.wood, 0.2);
+  const gabion = mixHex('#9a8458', b.pal.wood, 0.25);
+  const straw = mixHex('#9c854c', b.pal.wood, 0.15);
+  const timber = mixHex(b.pal.darkWood, '#6f5230', 0.6);
+  const deck = mixHex(timber, '#a98a58', 0.4);
+  const wheel = mixHex('#3f2f1e', b.pal.darkWood, 0.2);
+  const iron = mixHex('#2e2c29', b.pal.darkMetal, 0.2);
+  const fill = mixHex(earth, '#3a3427', 0.5);
+
+  // Ditch: a shallow dark band outside the parapet, so the earthwork reads as a fieldwork.
+  const d = outer + 0.12;
+  for (const [x, z, bw, bd] of [
+    [0, d, w + 0.5, 0.24],
+    [0, -d, w + 0.5, 0.24],
+    [d, 0, 0.24, w + 0.5],
+    [-d, 0, 0.24, w + 0.5],
+  ] as const) {
+    b.box(bw, 0.08, bd, ditch, { x, y: 0.04, z });
+  }
+
+  // Stepped earth parapet: a wide base and a narrower cap, open in the middle.
+  const sides = [
+    { x: 0, z: edge, sx: w, sz: bank },
+    { x: 0, z: -edge, sx: w, sz: bank },
+    { x: edge, z: 0, sx: bank, sz: w },
+    { x: -edge, z: 0, sx: bank, sz: w },
+  ];
+  for (const side of sides) {
+    b.box(side.sx, baseH, side.sz, earth, { x: side.x, y: baseH / 2, z: side.z });
+    b.box(side.sx - 0.2, capH, side.sz - 0.2, earthTop, {
+      x: side.x,
+      y: baseH + capH / 2,
+      z: side.z,
+    });
+  }
+
+  // Fascine crest: short brush bundles laid end to end along the outer edge (the audit's «fajina»).
+  const crestY = baseH + capH + 0.05;
+  for (const at of [-1.2, -0.4, 0.4, 1.2]) {
+    b.box(0.68, 0.13, 0.15, straw, { x: at, y: crestY, z: outer - 0.12 });
+    b.box(0.68, 0.13, 0.15, straw, { x: at, y: crestY, z: -outer + 0.12 });
+    b.box(0.15, 0.13, 0.68, straw, { x: outer - 0.12, y: crestY, z: at });
+    b.box(0.15, 0.13, 0.68, straw, { x: -outer + 0.12, y: crestY, z: at });
+  }
+
+  // Sandbag revetment on the front face (the Chilean assault came from the south, +Z).
+  for (let row = 0; row < 2; row++) {
+    const count = row === 0 ? 6 : 5;
+    for (let i = 0; i < count; i++) {
+      b.box(0.34, 0.14, 0.16, bag, {
+        x: (i - (count - 1) / 2) * 0.42,
+        y: 0.1 + row * 0.14,
+        z: outer + 0.02,
+      });
+    }
+  }
+
+  // Gabions at the front corners: wicker baskets filled with earth, standing proud of the parapet.
+  for (const x of [-1.5, 1.5]) {
+    b.cyl(0.3, 0.33, 1.05, 12, gabion, { x, y: 0.525, z: 1.58 });
+    b.cyl(0.34, 0.34, 0.05, 12, timber, { x, y: 0.12, z: 1.58 });
+    b.cyl(0.34, 0.34, 0.05, 12, timber, { x, y: 0.54, z: 1.58 });
+    b.cyl(0.34, 0.34, 0.05, 12, timber, { x, y: 0.95, z: 1.58 });
+    b.cyl(0.24, 0.24, 0.04, 12, fill, { x, y: 1.06, z: 1.58 });
+  }
+
+  // Gun platform: a low earth platform with a timber deck inside the parapet.
+  b.box(2.2, 0.12, 1.4, earthTop, { y: 0.06, z: 0.15 });
+  b.box(2.0, 0.04, 1.1, deck, { y: 0.14, z: 0.15, tex: 'wood' });
+
+  // Two static field-gun emplacements (not the mobile cannon unit), aimed over the front parapet.
+  const fieldGun = (x: number): void => {
+    b.box(0.5, 0.16, 0.3, timber, { x, y: 0.36, z: 0.05, tex: 'wood' });
+    for (const side of [-1, 1]) {
+      b.cyl(0.3, 0.3, 0.07, 10, wheel, { x: x + side * 0.3, y: 0.34, z: 0.08, rz: Math.PI / 2 });
+      b.torus(0.29, 0.03, Math.PI * 2, iron, { x: x + side * 0.3, y: 0.34, z: 0.08, ry: Math.PI / 2 });
+      b.cyl(0.07, 0.07, 0.09, 8, iron, { x: x + side * 0.3, y: 0.34, z: 0.08, rz: Math.PI / 2 });
+    }
+    b.box(0.14, 0.1, 0.8, timber, { x, y: 0.32, z: -0.45 });
+    b.cyl(0.055, 0.085, 1.25, 10, iron, { x, y: 0.98, z: 0.95, rx: Math.PI / 2, metalness: 0.7 });
+    b.cyl(0.1, 0.1, 0.14, 10, iron, { x, y: 0.98, z: 0.45, rx: Math.PI / 2, metalness: 0.7 });
+    b.cyl(0.1, 0.1, 0.1, 10, iron, { x, y: 0.98, z: 1.55, rx: Math.PI / 2, metalness: 0.7 });
+  };
+  fieldGun(-0.62);
+  fieldGun(0.62);
+
+  // Ready ammunition and the owner's small banner.
+  b.box(0.36, 0.24, 0.28, timber, { x: -1.25, y: 0.26, z: -0.6, tex: 'wood' });
+  b.cyl(0.025, 0.03, 1.5, 6, timber, { x: -1.35, y: 0.75, z: -1.25 });
+  b.box(0.42, 0.24, 0.03, b.civPrimary, { x: -1.14, y: 1.34, z: -1.25 });
 }
 
 function buildMarket(b: Builder, size: number, wallType: 'wood' | 'brick'): void {

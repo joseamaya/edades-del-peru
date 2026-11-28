@@ -61,6 +61,7 @@
     "capture:fauna": "node scripts/capture_fauna.mjs",
     "capture:llama": "node scripts/capture_llama.mjs",
     "capture:dressing": "node scripts/capture_dressing_cultures.mjs",
+    "capture:miraflores": "node scripts/capture_miraflores_redoubts.mjs",
     "capture:sites": "node scripts/capture_site_review.mjs",
     "shot": "node scripts/screenshot.mjs",
     "record": "node scripts/record_mission.mjs",

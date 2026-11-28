@@ -1,7 +1,8 @@
 # Miraflores 1881 — model mission
 
 **Mission:** `m_miraflores` · **Campaign:** La República · **Period:** Republic (1881) ·
-**Status:** implemented and art-accepted (site view approved 2026-11-23); pending the human playtest.
+**Status:** implemented and art-accepted (site view approved 2026-11-23; earthwork redoubts added for audit
+P1-2); pending the human playtest.
 
 ## Historical problem
 
@@ -17,6 +18,26 @@ force to the sierra. Sources and certainty: [`docs/historia/campanas/miraflores.
 3. **Withdraw.** Reach the sierra road with Cáceres alive.
 
 The sack of Chorrillos and the occupation of Lima are stated in the epilogue, never staged.
+
+## Redoubts
+
+The line was earth-and-fascine fieldwork, not masonry: the asset audit's P1-2 found the three nodes drawn as the
+generic stone fortress. `m_miraflores` now declares
+`buildingModels: { fortress: { type: 'redoubt_1881', scale: 1.06 } }`, so only this mission resolves the
+`FORTRESS` to the procedural redoubt (stepped earth parapet with a straw fascine crest, sandbag revetment,
+gabions at the front corners and two field guns). The earthwork type is documented; the exact props and the two
+guns are the model's abstraction of a standard 1881 fieldwork, not an inventory of a specific redoubt. The
+override is presentation-only: HP, armor, cost, footprint, garrison, defensive attack and the `a1_reductos` /
+`a1_cuarto` objectives are unchanged. Every other mission and every skirmish keep the stone `fortress_imperial`.
+
+This closes the **redoubt half** of P1-2. The site still draws the Lima heightfield and colonial kit as the city
+backdrop, which the dossier grades as a declared abstraction; it is not claimed as a surveyed Miraflores plan.
+
+Evidence: [`miraflores-redoubts.webp`](../media/miraflores-redoubts.webp) (the three nodes and the centre redoubt)
+and [`miraflores-redoubts-before-after.webp`](../media/miraflores-redoubts-before-after.webp) (the same line and
+camera with the stone control), reproduced with
+`yarn capture:miraflores --out=docs/media/miraflores-redoubts` (seed 1881, UI hidden, redoubts spawned through
+`spawnScriptedBuilding`).
 
 ## Map and site
 
@@ -60,6 +81,8 @@ The sack of Chorrillos and the occupation of Lima are stated in the epilogue, ne
 ## Tests and evidence
 
 - Data: `tests/campaign.test.ts`, `tests/campaigns.test.ts`, scale/layout/profile guards.
+- Redoubt model: `tests/mission-building-models.test.ts` (the override resolves only for `m_miraflores`, and the
+  stone fortress stays elsewhere).
 - Completable: `tests/e2e/campaign-completable.spec.ts`.
 - Real commands: `tests/e2e/miraflores.spec.ts` builds the three redoubts with ordinary place/build orders.
 - Layout: `tests/e2e/hud-layout.spec.ts` and `campaign.spec.ts`.

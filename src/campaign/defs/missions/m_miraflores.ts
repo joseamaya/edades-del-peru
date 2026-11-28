@@ -218,6 +218,8 @@ export const mMiraflores: MissionDef = {
     [BuildingKind.FORTRESS]: 'Reducto',
     [BuildingKind.BARRACKS]: 'Cuartel',
   },
+  // The Miraflores line was earth-and-fascine fieldwork with guns, not a stone castle (asset audit P1-2).
+  buildingModels: { [BuildingKind.FORTRESS]: { type: 'redoubt_1881', scale: 1.06 } },
   // The Miraflores line was held by limeño reservists, not by the Arica garrison.
   unitNames: { [UnitKind.REPUBLICA_DEFENSOR]: 'Reservista de Miraflores' },
   objectives: [

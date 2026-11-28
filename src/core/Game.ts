@@ -1021,6 +1021,7 @@ export class Game {
       caralSetpiece: !!this.setpiecePlan || !!this.missionLayout?.site,
       caralLate: this.caralLate,
       missionId: this.mission?.def.id ?? this.settings.missionId,
+      buildingModels: this.mission?.def.buildingModels,
     };
   }
 

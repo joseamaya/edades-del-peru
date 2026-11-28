@@ -18,6 +18,7 @@ import type { AuthoredHeightField } from '../model/defs/authoredTerrain';
 import type { SetpieceId } from '../model/defs/setpieces';
 import type { HeritageBuildingId } from '../model/defs/heritage';
 import type { AuthoredSiteId, DecorModelId } from '../model/defs/sites';
+import type { ModelSpec } from '../model/defs/units';
 
 /** Normalized map point (0..1); resolved to world units from the mission map size. */
 export interface MissionAnchor {
@@ -612,6 +613,11 @@ export interface MissionDef {
   allowedBuildings?: BuildingKind[];
   /** Player-facing building labels for this scenario (e.g. Caral's «Depósito comunal»). */
   buildingNames?: Partial<Record<BuildingKind, string>>;
+  /**
+   * Mission-scoped building visuals. The redoubt line of Miraflores is earth-and-fascine fieldwork,
+   * not the generic stone fortress, so its FORTRESS resolves to `redoubt_1881`.
+   */
+  buildingModels?: Partial<Record<BuildingKind, ModelSpec>>;
   /** Player-facing unit labels for this scenario (e.g. Tarapacá's Republican unique). */
   unitNames?: Partial<Record<UnitKind, string>>;
   /**

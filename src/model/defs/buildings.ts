@@ -584,7 +584,25 @@ export function getBuildingStats(kind: BuildingKind, era: Era): BuildingStats {
   return clone;
 }
 
-export function getBuildingModel(kind: BuildingKind, era: Era): ModelSpec {
+/** Ghost silhouette: the first era model, unless the mission overrides the kind (e.g. the redoubt). */
+export function getBuildingGhostModel(
+  kind: BuildingKind,
+  overrides?: Partial<Record<BuildingKind, ModelSpec>>,
+): ModelSpec {
+  const override = overrides?.[kind];
+  if (override) return override;
+  const first = Object.values(BUILDING_DEFS[kind].eraModel)[0];
+  return first ?? { type: 'center_steam' };
+}
+
+/** Final model of a building; a mission may override a kind (e.g. Miraflores' earthwork redoubt). */
+export function getBuildingModel(
+  kind: BuildingKind,
+  era: Era,
+  overrides?: Partial<Record<BuildingKind, ModelSpec>>,
+): ModelSpec {
+  const override = overrides?.[kind];
+  if (override) return override;
   const m = BUILDING_DEFS[kind].eraModel[era];
   if (m) return m;
   const anyEra = BUILDING_DEFS[kind].eraModel;
