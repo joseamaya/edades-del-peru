@@ -162,8 +162,10 @@ by running that script with `--out=review/character-standard`, then `git checkou
 src/rendering/workerAttire.ts src/rendering/uniformAttire.ts` and the same command with
 `--out=review/character-standard-before`, then restoring the branch files. At the default height 54 the unit
 reads as a small silhouette and colour block; the equipment is a close/cinematic read.
-The attack column uses the shared `Sword_Regular_A`/`Rifle_Shoot`/`OverhandThrow` clips and the death
-column uses `Death01`; `Rifle_Shoot` is the project clip built from the CC0 `Pistol_Shoot` with a recoil impulse.
+The attack column uses the shared `Sword_Regular_A` and `OverhandThrow` clips plus the project `Rifle_Shoot`
+(built from the CC0 `Pistol_Shoot` with a recoil impulse), and the death column uses `Death01`. Evidence:
+[`rifle-shoot.webp`](../media/rifle-shoot.webp) (clip frames) and
+[`rifle-shoot-in-game.webp`](../media/rifle-shoot-in-game.webp) (the rifleman at aim and at the kick).
 `run` and the hit reaction landed later, in §9.
 
 ## 7. Tests and performance
@@ -478,7 +480,7 @@ other. Each one had its own cause.
   garment over it (coat, breeches, boots) by the vertex's strongest covered bone, so a bulge shows cloth.
 - **The Andean sash** was a 0.26 m ring on the pelvis at chest height and floated away from the torso in a
   run or a swing. It is now fitted to the measured waist of the tunic and rides `spine_02`.
-- **Grip.** Fixed to the hand, the musket followed the one-handed pistol clips: muzzle down in `Pistol_Shoot`,
+- **Grip.** Fixed to the hand, the musket followed the pistol source clip: muzzle down in `Pistol_Shoot`,
   pointing at the ground at rest. The long arm is now re-aimed in the hand after each clip update: upright,
   muzzle up, at rest and on the march; along the forearm, at the target, when a ranged soldier fires. The
   melee thrust keeps the clip's grip. A two-handed aim clip is still the real fix (§11.3).

@@ -14,7 +14,7 @@ async function boot(page: Page): Promise<string[]> {
 
 test('rigged Caral workers and scouts play an attack clip instead of falling back to idle', async ({ page }) => {
   const errors = await boot(page);
-  const result = await page.evaluate(() => {
+  const result = await page.evaluate(async () => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     const base = g.playerCenter(0);
@@ -71,7 +71,7 @@ test('rigged firearm soldiers play the firearm clip and line infantry the stock 
     .click({ timeout: 10_000 })
     .catch(() => {});
 
-  const result = await page.evaluate(() => {
+  const result = await page.evaluate(async () => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     const base = g.playerCenter(0);
@@ -100,18 +100,23 @@ test('rigged firearm soldiers play the firearm clip and line infantry the stock 
         time += 1 / 60;
         g.loop.onUpdate(1 / 60, time);
       }
-      // The project clip must bind to the merged skeleton: sample the firing arm across the recoil.
-      const action = unit.rig?.actions?.get('attack');
+      // The project clip must bind to the merged skeleton and differ from the CC0 source: sample the same
+      // firing-arm bone at the same instant under Rifle_Shoot and Pistol_Shoot. The source itself moves, so
+      // the clip-to-clip angle is the part the recoil owns.
       const arm = unit.rig?.root?.getObjectByName('upperarm_r');
+      const clips = unit.rig?.asset?.clipNames;
       let recoil = 0;
-      if (action && arm) {
-        action.paused = true;
-        action.time = 0;
-        unit.rig.mixer.update(0);
-        const rest = arm.quaternion.clone();
-        action.time = 3 / 24;
-        unit.rig.mixer.update(0);
-        recoil = rest.angleTo(arm.quaternion);
+      if (unit.rig && arm && clips?.has('Rifle_Shoot') && clips?.has('Pistol_Shoot')) {
+        const sample = (name: string) => {
+          const mixer = new (window as any).THREE.AnimationMixer(unit.rig.root);
+          const action = mixer.clipAction(clips.get(name));
+          action.play();
+          mixer.update(2 / 24);
+          const q = arm.quaternion.clone();
+          mixer.stopAllAction();
+          return q;
+        };
+        recoil = sample('Rifle_Shoot').angleTo(sample('Pistol_Shoot'));
       }
       return {
         variant: unit.rig?.variantId ?? null,
@@ -121,15 +126,26 @@ test('rigged firearm soldiers play the firearm clip and line infantry the stock 
       };
     };
 
-    return { rifleman: attack(rifleman), soldier: attack(soldier) };
+    // The tagged field commander keeps the sabre override; give the mission time for the tag to land.
+    const { commanderById } = await import('/src/model/defs/commanders.ts');
+    let time = 20;
+    for (let i = 0; i < 180; i++) {
+      time += 1 / 60;
+      g.loop.onUpdate(1 / 60, time);
+    }
+    const commander = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead && commanderById(u.tag) && u.rig);
+    const commanderClip = commander?.rig?.actions?.get('attack')?.getClip().name ?? null;
+
+    return { rifleman: attack(rifleman), soldier: attack(soldier), commander: commanderClip };
   });
 
   expect(result.rifleman.variant).toMatch(/^republica_ranged_[fm]$/);
   expect(result.rifleman.state).toBe('attack');
   expect(result.rifleman.clip).toBe('Rifle_Shoot');
-  expect(result.rifleman.recoil, 'the rifle clip binds and kicks').toBeGreaterThan(0.02);
+  expect(result.rifleman.recoil, 'the rifle clip binds and differs from Pistol_Shoot').toBeGreaterThan(0.05);
   expect(result.soldier.variant).toMatch(/^republica_soldier_[fm]$/);
   expect(result.soldier.state).toBe('attack');
   expect(result.soldier.clip).toBe('Sword_Regular_A');
+  expect(result.commander, 'a tagged field commander keeps the sabre override').toBe('Sword_Regular_A');
   expect(errors).toEqual([]);
 });

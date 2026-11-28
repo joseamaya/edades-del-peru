@@ -45,7 +45,7 @@ const SOURCES = {
   // Project-authored clip (`scripts/blender/build_rifle_clip.py`): the recoil `Pistol_Shoot` lacks.
   project: {
     url: '/art-src/blender/exports/clips/rifle_shoot.glb',
-    sha256: '0941f60f5006dc92703c32d7a18a902cf57be902087166960bb24d122b4b7e66',
+    sha256: '6bd3f1a9555220cfac4a6c26ac8d761b38e14c363b20400a374e9b5b512e30b2',
   },
 };
 const CLIPS = [
@@ -940,10 +940,11 @@ try {
       );
       const byName = (gltf, name) => gltf.animations.find((clip) => clip.name === name);
       let animations = [];
+      const gltfBySource = { ual1, ual2, project };
       for (const [source, name] of clipsSpec) {
-        const gltf = source === 'ual1' ? ual1 : source === 'ual2' ? ual2 : project;
+        const gltf = gltfBySource[source];
         // A Blender export names its single action `Animation`; the pipeline owns the clip name.
-        const clip = source === 'project' ? gltf.animations[0] : byName(gltf, name);
+        const clip = source === 'project' ? gltf?.animations[0] : gltf ? byName(gltf, name) : undefined;
         if (!clip) throw new Error(`missing clip ${name} in ${source}`);
         if (source === 'project') clip.name = name;
         animations.push(clip);
