@@ -13,12 +13,8 @@ import { cliArg, launchChromium, reviewDir, withViteServer } from './lib.mjs';
  * sheet compares the stone fortress with the redoubt instead of asserting the difference.
  *
  * Usage: node scripts/capture_miraflores_redoubts.mjs [--out=docs/media/miraflores-redoubts]
+ *   The default output is `review/miraflores-redoubts`; `--out=docs/media/…` is the committed pair.
  */
-const NODES = [
-  { x: 72, z: 190 },
-  { x: 112, z: 190 },
-  { x: 152, z: 190 },
-];
 const out = path.resolve(cliArg('out', path.join(reviewDir(), 'miraflores-redoubts')));
 fs.mkdirSync(path.dirname(out), { recursive: true });
 
@@ -53,7 +49,7 @@ try {
       await page.waitForTimeout(2500);
 
       const placed = await page.evaluate(
-        ({ nodes, disableOverride }) => {
+        ({ disableOverride }) => {
           const g = window.game;
           g.loop.stop();
           document.querySelector('.ed-mission-card')?.remove();
@@ -63,17 +59,19 @@ try {
           const rings = g.scene.getObjectByName('mission-rings');
           if (rings) rings.visible = false;
           if (g.heroMarkers) g.heroMarkers.group.visible = false;
+          const objective = g.mission.def.objectives.find((o) => o.id === 'a1_reductos');
+          if (!objective || objective.kind !== 'network') throw new Error('a1_reductos has no network nodes');
           // The control sheet: the same spawn path with the mission override removed.
           if (disableOverride) delete g.mission.def.buildingModels;
-          const buildings = nodes.map((node) => {
-            const b = g.spawnScriptedBuilding('fortress', 0, node.x, node.z);
+          const buildings = objective.nodes.map((node) => {
+            const b = g.spawnScriptedBuilding('fortress', 0, node.dx, node.dz);
             return { kind: b.kind, x: b.pos.x, y: b.pos.y, z: b.pos.z };
           });
           g.applyQualityPreset('high');
           g.sky.setTimeOfDay(0.55);
           return buildings;
         },
-        { nodes: NODES, disableOverride },
+        { disableOverride },
       );
       if (placed.length !== 3) throw new Error('the three redoubts were not spawned');
 

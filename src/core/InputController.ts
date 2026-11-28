@@ -5,7 +5,7 @@ import { Unit } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import { ResourceNode } from '../entities/ResourceNode';
 import { bus } from './EventBus';
-import { BUILDING_DEFS, getBuildingStats } from '../model/defs/buildings';
+import { getBuildingGhostModel, getBuildingStats } from '../model/defs/buildings';
 import { RESOURCE_INFO } from './Config';
 import { isConverter, unitDisplayDescription, unitDisplayIcon } from '../model/defs/units';
 import { getHeritageBuilding, type HeritageBuildingDef } from '../model/defs/heritage';
@@ -1064,10 +1064,7 @@ export class InputController {
 }
 
 function buildModelForGhost(kind: BuildingKind, ctx: BuildContext): THREE.Group {
-  // Keep the long-standing first-era silhouette for ordinary ghosts; only a mission override swaps it.
-  const override = ctx.buildingModels?.[kind];
-  const modelType = Object.values(BUILDING_DEFS[kind].eraModel)[0];
-  const g = buildModel(override ?? { type: modelType?.type ?? 'center_steam' }, ctx);
+  const g = buildModel(getBuildingGhostModel(kind, ctx.buildingModels), ctx);
   g.traverse((o) => {
     const mesh = o as THREE.Mesh;
     if (!mesh.isMesh) return;

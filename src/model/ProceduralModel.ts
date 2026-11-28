@@ -277,6 +277,7 @@ class Builder {
     mesh.position.set(o.x ?? 0, o.y ?? 0, o.z ?? 0);
     if (o.ry) mesh.rotation.y = o.ry;
     if (o.rx) mesh.rotation.x = o.rx;
+    if (o.rz) mesh.rotation.z = o.rz;
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     mesh.name = 'part';
@@ -2498,10 +2499,10 @@ function buildRedoubt1881(b: Builder): void {
   const outer = edge + bank / 2;
   const earth = mixHex('#7d7259', b.pal.wood, 0.25);
   const earthTop = mixHex(earth, '#a2967a', 0.45);
-  const ditch = mixHex(earth, '#4a4436', 0.55);
+  const ditch = mixHex(earth, '#2f2b22', 0.62);
   const bag = mixHex('#c2b592', b.pal.wood, 0.2);
   const gabion = mixHex('#9a8458', b.pal.wood, 0.25);
-  const straw = mixHex('#b09a5c', b.pal.wood, 0.2);
+  const straw = mixHex('#9c854c', b.pal.wood, 0.15);
   const timber = mixHex(b.pal.darkWood, '#6f5230', 0.6);
   const deck = mixHex(timber, '#a98a58', 0.4);
   const wheel = mixHex('#3f2f1e', b.pal.darkWood, 0.2);
@@ -2516,7 +2517,7 @@ function buildRedoubt1881(b: Builder): void {
     [d, 0, 0.24, w + 0.5],
     [-d, 0, 0.24, w + 0.5],
   ] as const) {
-    b.box(bw, 0.05, bd, ditch, { x, y: 0.025, z });
+    b.box(bw, 0.08, bd, ditch, { x, y: 0.04, z });
   }
 
   // Stepped earth parapet: a wide base and a narrower cap, open in the middle.
@@ -2535,13 +2536,14 @@ function buildRedoubt1881(b: Builder): void {
     });
   }
 
-  // Fascine crest: a straw bundle laid along the outer edge of the parapet (the audit's «fajina»).
-  const crestY = baseH + capH + 0.04;
-  const crest = w - 0.35;
-  b.box(crest, 0.1, 0.16, straw, { y: crestY, z: outer - 0.12 });
-  b.box(crest, 0.1, 0.16, straw, { y: crestY, z: -outer + 0.12 });
-  b.box(0.16, 0.1, crest, straw, { x: outer - 0.12, y: crestY });
-  b.box(0.16, 0.1, crest, straw, { x: -outer + 0.12, y: crestY });
+  // Fascine crest: short brush bundles laid end to end along the outer edge (the audit's «fajina»).
+  const crestY = baseH + capH + 0.05;
+  for (const at of [-1.2, -0.4, 0.4, 1.2]) {
+    b.box(0.68, 0.13, 0.15, straw, { x: at, y: crestY, z: outer - 0.12 });
+    b.box(0.68, 0.13, 0.15, straw, { x: at, y: crestY, z: -outer + 0.12 });
+    b.box(0.15, 0.13, 0.68, straw, { x: outer - 0.12, y: crestY, z: at });
+    b.box(0.15, 0.13, 0.68, straw, { x: -outer + 0.12, y: crestY, z: at });
+  }
 
   // Sandbag revetment on the front face (the Chilean assault came from the south, +Z).
   for (let row = 0; row < 2; row++) {
@@ -2555,18 +2557,20 @@ function buildRedoubt1881(b: Builder): void {
     }
   }
 
-  // Gabions at the parapet corners: wicker baskets filled with earth, a standard fieldwork revetment.
-  for (const x of [-1.3, 1.3]) {
-    b.cyl(0.3, 0.32, 0.86, 12, gabion, { x, y: 0.43, z: 1.42 });
-    b.cyl(0.33, 0.33, 0.05, 12, timber, { x, y: 0.09, z: 1.42 });
-    b.cyl(0.33, 0.33, 0.05, 12, timber, { x, y: 0.78, z: 1.42 });
-    b.cyl(0.22, 0.22, 0.04, 12, fill, { x, y: 0.86, z: 1.42 });
+  // Gabions at the front corners: wicker baskets filled with earth, standing proud of the parapet.
+  for (const x of [-1.5, 1.5]) {
+    b.cyl(0.3, 0.33, 1.05, 12, gabion, { x, y: 0.525, z: 1.58 });
+    b.cyl(0.34, 0.34, 0.05, 12, timber, { x, y: 0.12, z: 1.58 });
+    b.cyl(0.34, 0.34, 0.05, 12, timber, { x, y: 0.54, z: 1.58 });
+    b.cyl(0.34, 0.34, 0.05, 12, timber, { x, y: 0.95, z: 1.58 });
+    b.cyl(0.24, 0.24, 0.04, 12, fill, { x, y: 1.06, z: 1.58 });
   }
 
   // Gun platform: a low earth platform with a timber deck inside the parapet.
   b.box(2.2, 0.12, 1.4, earthTop, { y: 0.06, z: 0.15 });
   b.box(2.0, 0.04, 1.1, deck, { y: 0.14, z: 0.15, tex: 'wood' });
 
+  // Two static field-gun emplacements (not the mobile cannon unit), aimed over the front parapet.
   const fieldGun = (x: number): void => {
     b.box(0.5, 0.16, 0.3, timber, { x, y: 0.36, z: 0.05, tex: 'wood' });
     for (const side of [-1, 1]) {
