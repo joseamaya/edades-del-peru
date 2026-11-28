@@ -46,11 +46,16 @@ export interface DressingQuery extends TerrainQuery {
 /**
  * The household set of each culture, built from the same prop kinds: what changes is the mix and the tint,
  * not the geometry. The coast (Moche, Chimú, Paracas) keeps the fish drying rack and gourds; the highlands
- * (Wari, Inca, Chanca, Recuay) lean on baskets, cotton and benches, and Tiahuanaco adds the dressed megalith
- * its monumental architecture is known for. Undocumented parts follow the audit's remedy of reusing the Caral
- * set: `docs/release/0.2.0-asset-historical-audit.md` P2-4, and the economy in
- * `docs/historia/civilizaciones/{moche,wari,inca,chimu,chanca,paracas,recuay,tiahuanaco}.md`. The loom remains
- * a gap: no prop exists.
+ * (Wari, Inca, Chanca, Recuay, Tiahuanaco) keep baskets, benches and windbreaks. `cotton` is a crop prop, so it
+ * appears only where cotton growing or weaving is documented (Caral, Moche, Chimú, Paracas, Wari, Inca); the
+ * Chanca dossier
+ * documents organisation and war but no household economy, so its set is the audit's reuse remedy in a highland
+ * setting, not a claim about Chanca crafts. Tiahuanaco's dressed stone is architecture; the household kit has no
+ * stone prop. Undocumented parts follow the audit's remedy of reusing the Caral set:
+ * `docs/release/0.2.0-asset-historical-audit.md` P2-4, and the economy in
+ * `docs/historia/civilizaciones/{moche,wari,inca,chimu,chanca,paracas,recuay,tiahuanaco}.md` where it exists.
+ * The tints are presentation-only (a multiply that separates cultures at a glance), not a material claim. The
+ * loom remains a gap: no prop exists.
  */
 export interface DressingSet {
   /** Props placed, in order. */
@@ -124,25 +129,26 @@ export const DRESSING_SETS: Record<SettlementDressingProfile, DressingSet> = {
     tint: 0xf7e6d2,
     sequence: ['hearth', 'drying_rack', 'basket', 'gourd', 'cotton', 'bench', 'drying_rack', 'basket', 'gourd'],
   },
-  // Chanca: the militarised central-south highland confederation; no coastal rack.
+  // Chanca: the militarised central-south highland confederation; no household economy is documented, so this
+  // is the audit's reuse remedy in a highland setting (no rack, no cotton crop claim).
   chanca: {
     tint: 0xe0e6dc,
-    sequence: ['hearth', 'basket', 'cotton', 'bench', 'windbreak', 'gourd', 'cotton', 'basket'],
+    sequence: ['hearth', 'basket', 'basket', 'bench', 'windbreak', 'gourd', 'basket', 'bench'],
   },
   // Paracas: desert-coast fishing, valley agriculture and textiles; the drying rack stays.
   paracas: {
     tint: 0xf3dcc4,
     sequence: ['cotton', 'gourd', 'drying_rack', 'basket', 'hearth', 'cotton', 'gourd', 'windbreak'],
   },
-  // Recuay: Callejón de Huaylas camelid herding plus agriculture; the highland set without a rack.
+  // Recuay: Callejón de Huaylas camelid herding plus agriculture; no cotton at that altitude in the set.
   recuay: {
-    tint: 0xdfe7ea,
-    sequence: ['hearth', 'basket', 'cotton', 'bench', 'windbreak', 'gourd', 'basket', 'cotton'],
+    tint: 0xd6e4e8,
+    sequence: ['hearth', 'basket', 'gourd', 'bench', 'windbreak', 'basket', 'gourd', 'bench'],
   },
   // Tiahuanaco: altiplano waru-waru agriculture and camelids; its dressed stone is architecture, not a household prop.
   tiahuanaco: {
-    tint: 0xe7e0ea,
-    sequence: ['hearth', 'basket', 'cotton', 'bench', 'basket', 'gourd', 'cotton', 'windbreak'],
+    tint: 0xead9ea,
+    sequence: ['hearth', 'basket', 'gourd', 'bench', 'basket', 'gourd', 'bench', 'windbreak'],
   },
 };
 
